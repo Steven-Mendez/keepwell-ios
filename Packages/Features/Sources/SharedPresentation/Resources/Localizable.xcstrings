@@ -161,6 +161,26 @@
         }
       }
     },
+    "Hidden balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo oculto"
+          }
+        }
+      }
+    },
+    "Hide balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar saldo"
+          }
+        }
+      }
+    },
     "Housing" : {
       "localizations" : {
         "es" : {
@@ -277,12 +297,32 @@
         }
       }
     },
+    "See all" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver todos"
+          }
+        }
+      }
+    },
     "Shopping" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compras"
+          }
+        }
+      }
+    },
+    "Show balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar saldo"
           }
         }
       }

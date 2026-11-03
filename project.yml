@@ -216,6 +216,7 @@ schemes:
         - package: Features/HomeDomainTests
         - package: Features/HomePresentationTests
         - package: Features/TransactionsDomainTests
+        - package: Features/TransactionsPresentationTests
         - package: Features/SummaryDomainTests
         - package: Features/SettingsDomainTests
         - package: Features/CreditCardDomainTests

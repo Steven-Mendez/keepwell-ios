@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Accounts: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas: %@"
+          }
+        }
+      }
+    },
     "All" : {
       "localizations" : {
         "es" : {
@@ -11,12 +21,62 @@
         }
       }
     },
+    "All accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las cuentas"
+          }
+        }
+      }
+    },
+    "Available balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo disponible"
+          }
+        }
+      }
+    },
     "Balances update as if it never happened." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los saldos se actualizan como si nunca hubiera pasado."
+          }
+        }
+      }
+    },
+    "Bank account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta bancaria"
+          }
+        }
+      }
+    },
+    "Cash" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efectivo"
+          }
+        }
+      }
+    },
+    "Choose which account or card to show" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué cuenta o tarjeta mostrar"
           }
         }
       }
@@ -37,6 +97,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Confirmar"
+          }
+        }
+      }
+    },
+    "Credit card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de crédito"
+          }
+        }
+      }
+    },
+    "Current debt" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deuda actual"
           }
         }
       }
@@ -111,6 +191,16 @@
         }
       }
     },
+    "No movements here yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay movimientos aquí."
+          }
+        }
+      }
+    },
     "No transactions yet" : {
       "localizations" : {
         "es" : {
@@ -167,6 +257,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Buscar comercio, nota o categoría"
+          }
+        }
+      }
+    },
+    "Show all accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar todas las cuentas"
+          }
+        }
+      }
+    },
+    "Show movements from" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver movimientos de"
           }
         }
       }

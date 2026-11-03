@@ -12,6 +12,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Debit card screen: tap a debit card on Accounts to see it big with its account's name and
   balance, rename the account, change the card's color, freeze it, link another card or remove it.
 - Credit cards can be renamed and recolored from their screen, under a new "Manage card" list.
+- Transactions per account and card: an "All accounts" chip on Transactions opens a picker of
+  accounts and their cards; the month's totals and search follow the choice, and the chip's ✕
+  clears it.
+- Debit card screen: the account's latest movements with "See all"; credit card screen: "See all"
+  on "This cycle" opens the card's whole history. Both open the list already filtered.
+- Cash: tap the banknote or "See movements" to see the cash account's movements and balance.
+- Account and card screens show the balance big, with an eye to hide it; the choice is
+  remembered.
 
 - Settings › Language shows the app's language and opens the iPhone's Settings to pick another
   one only for Keepwell; the app follows the iPhone's language otherwise.

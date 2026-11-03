@@ -471,6 +471,16 @@
         }
       }
     },
+    "Nothing charged this cycle yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay cargos en este ciclo."
+          }
+        }
+      }
+    },
     "of %@" : {
       "localizations" : {
         "es" : {

@@ -4,33 +4,35 @@ import SharedPresentation
 import SwiftUI
 import TransactionsDomain
 
-/// Movements: search, filter chips, the month's totals, then planned movements and every
-/// confirmed one grouped by day. Long-press a row to confirm or delete it.
+/// Movements: search, the account filter and kind chips, the month's totals, then planned
+/// movements and every confirmed one grouped by day. Long-press a row to confirm or delete it.
+/// Pushed from an account or card (`onBack` set), it opens already filtered and shows that
+/// account's balance on top.
 public struct TransactionsView: View {
     @Bindable private var viewModel: TransactionsViewModel
     private let onNewMovement: () -> Void
+    private let onBack: (() -> Void)?
     @FocusState private var isSearchFocused: Bool
     @State private var pendingDeletion: Domain.Transaction?
+    @State private var isPickingScope = false
 
-    public init(viewModel: TransactionsViewModel, onNewMovement: @escaping () -> Void) {
+    public init(viewModel: TransactionsViewModel, onBack: (() -> Void)? = nil, onNewMovement: @escaping () -> Void) {
         self.viewModel = viewModel
+        self.onBack = onBack
         self.onNewMovement = onNewMovement
     }
 
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWLargeTitleHeader(String(localized: "Transactions", bundle: #bundle)) {
-                    KWCircleButton(
-                        .plus,
-                        style: .white,
-                        accessibilityLabel: String(localized: "New transaction", bundle: #bundle),
-                        action: onNewMovement,
-                    )
-                }
+                header
                 if viewModel.list != nil, !viewModel.hasTransactions {
                     emptyState
                 } else {
+                    if onBack != nil, let balance = viewModel.scopeBalance {
+                        BalanceHeader(balance.label, amount: balance.amount, details: balance.details, alignment: .leading)
+                            .padding(.bottom, KWSpacing.xxs)
+                    }
                     searchField
                     chips
                     monthTotals
@@ -49,7 +51,13 @@ public struct TransactionsView: View {
         .ignoresSafeArea(edges: .top)
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
+        .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
+        .sheet(isPresented: $isPickingScope) {
+            ScopePickerSheet(viewModel: viewModel) { isPickingScope = false }
+                .presentationDetents([.medium, .large])
+                .presentationBackground(KWColor.Surface.bg)
+        }
         .onChange(of: viewModel.wantsSearchFocus, initial: true) { _, wants in
             guard wants else { return }
             isSearchFocused = true
@@ -72,6 +80,22 @@ public struct TransactionsView: View {
             }
         } message: { _ in
             Text("Balances update as if it never happened.", bundle: #bundle)
+        }
+    }
+
+    @ViewBuilder
+    private var header: some View {
+        if let onBack {
+            KWNavigationHeader(String(localized: "Transactions", bundle: #bundle), onBack: onBack)
+        } else {
+            KWLargeTitleHeader(String(localized: "Transactions", bundle: #bundle)) {
+                KWCircleButton(
+                    .plus,
+                    style: .white,
+                    accessibilityLabel: String(localized: "New transaction", bundle: #bundle),
+                    action: onNewMovement,
+                )
+            }
         }
     }
 
@@ -137,6 +161,16 @@ public struct TransactionsView: View {
     private var chips: some View {
         ScrollView(.horizontal) {
             HStack(spacing: KWSpacing.xs) {
+                ScopeChip(
+                    title: viewModel.scopeTitle,
+                    isFiltered: viewModel.scope != .all,
+                    onPick: { isPickingScope = true },
+                    onClear: { viewModel.scope = .all },
+                )
+                Rectangle()
+                    .fill(KWColor.Surface.border)
+                    .frame(width: 1, height: 22)
+                    .accessibilityHidden(true)
                 ForEach(TransactionFilter.allCases, id: \.self) { filter in
                     KWChip(viewModel.filterTitle(filter), isSelected: viewModel.filter == filter) {
                         viewModel.filter = filter
@@ -153,11 +187,17 @@ public struct TransactionsView: View {
     private var sections: some View {
         let sections = viewModel.sections
         if sections.isEmpty, viewModel.list != nil {
-            Text("Nothing matches. Try another word or filter.", bundle: #bundle)
-                .font(KWTextStyle.body.font)
-                .foregroundStyle(KWColor.Text.muted)
-                .frame(maxWidth: .infinity)
-                .padding(.top, KWSpacing.xxl)
+            Group {
+                if viewModel.isScopeEmpty {
+                    Text("No movements here yet.", bundle: #bundle)
+                } else {
+                    Text("Nothing matches. Try another word or filter.", bundle: #bundle)
+                }
+            }
+            .font(KWTextStyle.body.font)
+            .foregroundStyle(KWColor.Text.muted)
+            .frame(maxWidth: .infinity)
+            .padding(.top, KWSpacing.xxl)
         }
         if let display = viewModel.display {
             ForEach(sections) { section in

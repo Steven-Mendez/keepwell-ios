@@ -10,6 +10,7 @@ public struct CreditCardView: View {
     private let onBack: () -> Void
     private let onPay: () -> Void
     private let onOpenAdditional: (UUID) -> Void
+    private let onSeeAllMovements: () -> Void
     @State private var sheet: Sheet?
 
     enum Sheet: String, Identifiable {
@@ -21,17 +22,20 @@ public struct CreditCardView: View {
     }
 
     /// `startsAddingAdditional` opens the new-additional form right away (from "Card added").
+    /// `onSeeAllMovements` opens the card's whole history, past cycles included.
     public init(
         viewModel: CreditCardViewModel,
         startsAddingAdditional: Bool = false,
         onBack: @escaping () -> Void,
         onPay: @escaping () -> Void,
         onOpenAdditional: @escaping (UUID) -> Void,
+        onSeeAllMovements: @escaping () -> Void,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onPay = onPay
         self.onOpenAdditional = onOpenAdditional
+        self.onSeeAllMovements = onSeeAllMovements
         _sheet = State(initialValue: startsAddingAdditional ? .newAdditional : nil)
     }
 
@@ -128,28 +132,11 @@ public struct CreditCardView: View {
     }
 
     private func debt(_ detail: CreditCardDetail) -> some View {
-        VStack(spacing: KWSpacing.xxs) {
-            Text("Current debt", bundle: #bundle)
-                .font(KWTextStyle.label.font.weight(.regular))
-                .foregroundStyle(KWColor.Text.onBrand)
-            Text(viewModel.owed(detail.totalDebt))
-                .kwTextStyle(.amountLg)
-                .tracking(-1.2)
-            if detail.balances.count > 1 {
-                HStack(spacing: 6) {
-                    ForEach(viewModel.debtsSecondFirst(detail), id: \.currency) { balance in
-                        Text(viewModel.owed(balance))
-                            .font(.kw(13, weight: 600, relativeTo: .footnote))
-                            .monospacedDigit()
-                            .padding(.horizontal, 10)
-                            .frame(height: 26)
-                            .background(KWColor.Overlay.white14, in: Capsule())
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
+        BalanceHeader(
+            String(localized: "Current debt", bundle: #bundle),
+            amount: viewModel.owed(detail.totalDebt),
+            details: detail.balances.count > 1 ? viewModel.debtsSecondFirst(detail).map(viewModel.owed) : [],
+        )
     }
 
     private func plastics(_ detail: CreditCardDetail) -> some View {
@@ -223,16 +210,16 @@ public struct CreditCardView: View {
 
     @ViewBuilder
     private func cycle(_ detail: CreditCardDetail) -> some View {
-        if let display = viewModel.display, !detail.cycleTransactions.isEmpty {
-            VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWSectionHeader(String(localized: "This cycle", bundle: #bundle), style: .large)
-                    .padding(.top, KWSpacing.xxs)
-                KWGroupedCard(verticalPadding: KWSpacing.xxs) {
-                    ForEach(detail.cycleTransactions) { transaction in
-                        cycleRow(transaction, display: display, detail: detail)
-                    }
-                }
+        if let display = viewModel.display {
+            LatestMovementsSection(
+                String(localized: "This cycle", bundle: #bundle),
+                transactions: detail.cycleTransactions,
+                emptyMessage: String(localized: "Nothing charged this cycle yet.", bundle: #bundle),
+                onSeeAll: onSeeAllMovements,
+            ) { transaction in
+                cycleRow(transaction, display: display, detail: detail)
             }
+            .padding(.top, KWSpacing.xxs)
         }
     }
 

@@ -97,12 +97,22 @@
         }
       }
     },
-    "Balance %@" : {
+    "Available balance" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saldo %@"
+            "value" : "Saldo disponible"
+          }
+        }
+      }
+    },
+    "Balance shared by %lld cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo compartido por %lld tarjetas"
           }
         }
       }
@@ -257,6 +267,16 @@
         }
       }
     },
+    "Latest movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Últimos movimientos"
+          }
+        }
+      }
+    },
     "Link another card" : {
       "localizations" : {
         "es" : {
@@ -283,6 +303,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Patrimonio neto %@"
+          }
+        }
+      }
+    },
+    "No movements on this account yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay movimientos en esta cuenta."
           }
         }
       }
@@ -347,12 +377,22 @@
         }
       }
     },
-    "shared by %lld cards" : {
+    "See movements" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "compartido por %lld tarjetas"
+            "value" : "Ver movimientos"
+          }
+        }
+      }
+    },
+    "Shows its movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra sus movimientos"
           }
         }
       }

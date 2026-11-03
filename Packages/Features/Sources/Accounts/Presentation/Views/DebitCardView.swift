@@ -5,12 +5,13 @@ import SharedPresentation
 import SwiftUI
 
 /// One debit card, laid out like a bank's "my card" screen: the card, the account's name and
-/// balance, round quick actions, then the list to manage it. The account's movements belong
-/// below the management list, after `manage(_:)`.
+/// balance (with an eye to hide it), round quick actions, the list to manage it and the account's
+/// latest movements.
 public struct DebitCardView: View {
     private let viewModel: DebitCardViewModel
     private let onBack: () -> Void
     private let onLinkCard: (UUID) -> Void
+    private let onSeeAllMovements: (UUID) -> Void
     @State private var sheet: Sheet?
     @State private var isConfirmingRemoval = false
 
@@ -20,10 +21,17 @@ public struct DebitCardView: View {
         var id: String { rawValue }
     }
 
-    public init(viewModel: DebitCardViewModel, onBack: @escaping () -> Void, onLinkCard: @escaping (UUID) -> Void) {
+    /// `onSeeAllMovements` opens the movement list filtered to the account it receives.
+    public init(
+        viewModel: DebitCardViewModel,
+        onBack: @escaping () -> Void,
+        onLinkCard: @escaping (UUID) -> Void,
+        onSeeAllMovements: @escaping (UUID) -> Void,
+    ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onLinkCard = onLinkCard
+        self.onSeeAllMovements = onSeeAllMovements
     }
 
     public var body: some View {
@@ -32,8 +40,11 @@ public struct DebitCardView: View {
                 KWNavigationHeader(String(localized: "Debit card", bundle: #bundle), buttonStyle: .translucent, onBack: onBack)
                 if let detail = viewModel.detail {
                     CardHero(art: art(detail), name: detail.account.name, subtitle: viewModel.subtitle(detail))
+                    BalanceHeader(String(localized: "Available balance", bundle: #bundle), amount: viewModel.balance(detail))
+                        .padding(.top, -KWSpacing.sm)
                     actions(detail)
                     manage(detail)
+                    latest(detail)
                 } else if viewModel.state == .failed {
                     Text("We couldn't load this card.", bundle: #bundle)
                         .foregroundStyle(KWColor.Text.muted)
@@ -180,6 +191,28 @@ public struct DebitCardView: View {
     }
 }
 
+extension DebitCardView {
+    @ViewBuilder
+    private func latest(_ detail: DebitCardDetail) -> some View {
+        if let display = viewModel.display {
+            LatestMovementsSection(
+                String(localized: "Latest movements", bundle: #bundle),
+                transactions: detail.latestTransactions,
+                emptyMessage: String(localized: "No movements on this account yet.", bundle: #bundle),
+                onSeeAll: detail.latestTransactions.isEmpty ? nil : { onSeeAllMovements(detail.account.id) },
+            ) { transaction in
+                KWTransactionRow(
+                    display.style(of: transaction),
+                    title: transaction.description,
+                    subtitle: display.subtitle(of: transaction),
+                    amount: display.amount(of: transaction),
+                    secondaryAmount: display.secondaryAmount(of: transaction),
+                )
+            }
+        }
+    }
+}
+
 #Preview {
     DebitCardPreview()
 }
@@ -188,7 +221,7 @@ private struct DebitCardPreview: View {
     @State private var viewModel = AccountsPreviewData.debitCardViewModel()
 
     var body: some View {
-        DebitCardView(viewModel: viewModel, onBack: {}, onLinkCard: { _ in })
+        DebitCardView(viewModel: viewModel, onBack: {}, onLinkCard: { _ in }, onSeeAllMovements: { _ in })
             .onAppear { KWFonts.register() }
     }
 }

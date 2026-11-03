@@ -139,6 +139,7 @@ struct RootView: View {
                 onOpenCreditCard: { router.push(.creditCard(accountID: $0)) },
                 onOpenDebitCard: { router.push(.debitCard(cardID: $0)) },
                 onLinkCard: { presentAddCard(linkingTo: $0) },
+                onOpenAccountMovements: { router.push(.transactions(accountID: $0)) },
             )
         case .summary:
             SummaryView(viewModel: screens.summary) { presentNewMovement() }
@@ -149,6 +150,7 @@ struct RootView: View {
         HomeView.Actions(
             search: {
                 screens.transactions.filter = .all
+                screens.transactions.scope = .all
                 screens.transactions.wantsSearchFocus = true
                 tab = .transactions
             },
@@ -163,32 +165,12 @@ struct RootView: View {
             },
             allPlanned: {
                 screens.transactions.query = ""
+                screens.transactions.scope = .all
                 screens.transactions.filter = .planned
                 tab = .transactions
             },
             additionalCard: { router.push(.additionalCard(accountID: $0, cardID: $1)) },
         )
-    }
-
-    @ViewBuilder
-    private func destination(_ route: AppRoute) -> some View {
-        switch route {
-        case .settings:
-            SettingsRoute(container: container, onBack: settingsClosed, onErased: returnToOnboarding)
-        case let .creditCard(accountID, addsAdditional):
-            CreditCardRoute(
-                container: container,
-                accountID: accountID,
-                addsAdditional: addsAdditional,
-                onBack: router.pop,
-                onPay: { presentNewMovement(.transfer, payingCard: accountID) },
-                onOpenAdditional: { router.push(.additionalCard(accountID: accountID, cardID: $0)) },
-            )
-        case let .additionalCard(accountID, cardID):
-            AdditionalCardRoute(container: container, accountID: accountID, cardID: cardID, onBack: router.pop)
-        case let .debitCard(cardID):
-            DebitCardRoute(container: container, cardID: cardID, onBack: router.pop) { presentAddCard(linkingTo: $0) }
-        }
     }
 
     // MARK: - Flows
@@ -292,6 +274,43 @@ struct RootView: View {
 }
 
 extension RootView {
+    // MARK: - Routes
+
+    @ViewBuilder
+    private func destination(_ route: AppRoute) -> some View {
+        switch route {
+        case .settings:
+            SettingsRoute(container: container, onBack: settingsClosed, onErased: returnToOnboarding)
+        case let .creditCard(accountID, addsAdditional):
+            CreditCardRoute(
+                container: container,
+                accountID: accountID,
+                addsAdditional: addsAdditional,
+                onBack: router.pop,
+                onPay: { presentNewMovement(.transfer, payingCard: accountID) },
+                onOpenAdditional: { router.push(.additionalCard(accountID: accountID, cardID: $0)) },
+                onSeeAllMovements: { router.push(.transactions(accountID: accountID)) },
+            )
+        case let .additionalCard(accountID, cardID):
+            AdditionalCardRoute(container: container, accountID: accountID, cardID: cardID, onBack: router.pop)
+        case let .debitCard(cardID):
+            DebitCardRoute(
+                container: container,
+                cardID: cardID,
+                onBack: router.pop,
+                onLinkCard: { presentAddCard(linkingTo: $0) },
+                onSeeAllMovements: { router.push(.transactions(accountID: $0)) },
+            )
+        case let .transactions(accountID, cardID):
+            TransactionsRoute(
+                container: container,
+                scope: cardID.map(TransactionScope.card) ?? accountID.map(TransactionScope.account) ?? .all,
+                onBack: router.pop,
+                onNewMovement: { presentNewMovement() },
+            )
+        }
+    }
+
     // MARK: - Outside the app
 
     /// Widget links: `keepwell://new-expense?category=…` opens a new expense in that category.

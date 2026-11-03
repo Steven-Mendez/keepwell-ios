@@ -10,7 +10,9 @@ enum DebitCardFactory {
     static func make(store: InMemoryStore = InMemoryStore(sample: .standard)) -> DebitCardViewModel {
         DebitCardViewModel(
             cardID: SampleData.IDs.savingsDebit,
-            getDetail: DefaultGetDebitCardDetailUseCase(accounts: store, cards: store, transactions: store, settings: store),
+            getDetail: DefaultGetDebitCardDetailUseCase(
+                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+            ),
             setFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
@@ -34,7 +36,8 @@ struct DebitCardViewModelTests {
         let detail = try #require(viewModel.detail)
         #expect(detail.account.name == "Savings")
         #expect(viewModel.bank(detail) == "Bank One")
-        #expect(viewModel.subtitle(detail).hasPrefix("Balance $"))
+        #expect(viewModel.balance(detail).hasPrefix("$"))
+        #expect(viewModel.subtitle(detail) == nil)
     }
 
     @Test

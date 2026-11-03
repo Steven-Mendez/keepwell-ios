@@ -13,6 +13,7 @@ public struct AccountsView: View {
     private let onOpenCreditCard: (UUID) -> Void
     private let onOpenDebitCard: (UUID) -> Void
     private let onLinkCard: (UUID) -> Void
+    private let onOpenAccountMovements: (UUID) -> Void
     @State private var cashAction: CashAction?
     private let formatter = CurrencyFormatter()
 
@@ -34,12 +35,14 @@ public struct AccountsView: View {
         onOpenCreditCard: @escaping (UUID) -> Void,
         onOpenDebitCard: @escaping (UUID) -> Void,
         onLinkCard: @escaping (UUID) -> Void,
+        onOpenAccountMovements: @escaping (UUID) -> Void,
     ) {
         self.viewModel = viewModel
         self.onAdd = onAdd
         self.onOpenCreditCard = onOpenCreditCard
         self.onOpenDebitCard = onOpenDebitCard
         self.onLinkCard = onLinkCard
+        self.onOpenAccountMovements = onOpenAccountMovements
     }
 
     public var body: some View {
@@ -68,16 +71,7 @@ public struct AccountsView: View {
                             )
                         }
                     }
-                    if !overview.cash.isEmpty {
-                        KWSectionHeader(String(localized: "Cash", bundle: #bundle), style: .large).padding(.top, 10)
-                        ForEach(overview.cash) { cash in
-                            CashNote(cash: cash, formatter: formatter) {
-                                cashAction = .reconcile(cash)
-                            } onWithdraw: {
-                                cashAction = .withdraw(cash)
-                            }
-                        }
-                    }
+                    cashSection(overview.cash)
                 }
             }
             .padding(.horizontal, KWLayout.gutter)
@@ -105,6 +99,22 @@ public struct AccountsView: View {
             }
             .presentationDetents([.medium])
             .presentationBackground(KWColor.Surface.bg)
+        }
+    }
+
+    @ViewBuilder
+    private func cashSection(_ notes: [AccountsOverview.Cash]) -> some View {
+        if !notes.isEmpty {
+            KWSectionHeader(String(localized: "Cash", bundle: #bundle), style: .large).padding(.top, 10)
+            ForEach(notes) { cash in
+                CashNote(cash: cash, formatter: formatter) {
+                    cashAction = .reconcile(cash)
+                } onWithdraw: {
+                    cashAction = .withdraw(cash)
+                } onOpen: {
+                    onOpenAccountMovements(cash.id)
+                }
+            }
         }
     }
 
@@ -192,7 +202,14 @@ private struct AccountsPreview: View {
     @State private var viewModel = AccountsPreviewData.viewModel()
 
     var body: some View {
-        AccountsView(viewModel: viewModel, onAdd: {}, onOpenCreditCard: { _ in }, onOpenDebitCard: { _ in }, onLinkCard: { _ in })
-            .onAppear { KWFonts.register() }
+        AccountsView(
+            viewModel: viewModel,
+            onAdd: {},
+            onOpenCreditCard: { _ in },
+            onOpenDebitCard: { _ in },
+            onLinkCard: { _ in },
+            onOpenAccountMovements: { _ in },
+        )
+        .onAppear { KWFonts.register() }
     }
 }

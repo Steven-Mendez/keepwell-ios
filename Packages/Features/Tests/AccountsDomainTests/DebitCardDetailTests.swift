@@ -10,7 +10,9 @@ struct DebitCardDetailTests {
 
     private func useCases(_ store: InMemoryStore) -> (DefaultGetDebitCardDetailUseCase, DefaultGetAccountsOverviewUseCase) {
         (
-            DefaultGetDebitCardDetailUseCase(accounts: store, cards: store, transactions: store, settings: store),
+            DefaultGetDebitCardDetailUseCase(
+                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+            ),
             DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
         )
     }
@@ -45,5 +47,19 @@ struct DebitCardDetailTests {
         await #expect(throws: DomainError.notFound(IDs.savingsTransfer)) {
             try await useCases(store).0.execute(cardID: IDs.savingsTransfer)
         }
+    }
+
+    @Test
+    func listsTheAccountsLatestConfirmedMovementsNewestFirst() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let card = try await useCases(store).0.execute(cardID: IDs.savingsDebit)
+        let latest = card.latestTransactions
+        #expect(!latest.isEmpty)
+        #expect(latest.count <= DebitCardDetail.latestCount)
+        #expect(latest.allSatisfy { $0.isConfirmed && ($0.accountID == IDs.savings || $0.destinationAccountID == IDs.savings) })
+        #expect(latest.map(\.date) == latest.map(\.date).sorted(by: >))
+        // The withdrawal moved through the account's transfer channel, yet it changed the balance.
+        #expect(latest.contains { $0.cardID == IDs.savingsTransfer })
+        #expect(!card.categories.isEmpty)
     }
 }

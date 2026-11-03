@@ -156,22 +156,37 @@ struct EmptyCardSlot: View {
     }
 }
 
-/// Cash as a banknote, with the two things a person does with it.
+/// Cash as a banknote, with the two things a person does with it. Tapping the note opens its
+/// movements, as tapping a card opens the card.
 struct CashNote: View {
     let cash: AccountsOverview.Cash
     let formatter: CurrencyFormatter
     let onReconcile: () -> Void
     let onWithdraw: () -> Void
+    let onOpen: () -> Void
 
     var body: some View {
-        VStack(spacing: KWSpacing.sm) {
-            note
+        VStack(alignment: .leading, spacing: KWSpacing.sm) {
+            Button(action: onOpen) { note }
+                .buttonStyle(.plain)
+                .accessibilityHint(Text("Shows its movements", bundle: #bundle))
             HStack(spacing: KWSpacing.xs) {
                 Button(action: onReconcile) { Text("Reconcile", bundle: #bundle) }
                     .buttonStyle(.kw(.primary, size: .medium))
                 Button(action: onWithdraw) { Text("ATM withdrawal", bundle: #bundle) }
                     .buttonStyle(.kw(.secondary, size: .medium))
             }
+            Button(action: onOpen) {
+                HStack(spacing: KWSpacing.xs) {
+                    KWIconView(.list, size: 20)
+                    Text("See movements", bundle: #bundle)
+                        .font(.kw(14, weight: 600, relativeTo: .subheadline))
+                }
+                .foregroundStyle(KWColor.Brand.link)
+                .frame(minHeight: KWLayout.minTouch)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 

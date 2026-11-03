@@ -3,6 +3,7 @@ import Core
 import Domain
 import Foundation
 import Observation
+import SharedPresentation
 
 /// Drives one debit card's screen: its art, the account it spends from and the edits a person
 /// can make to it.
@@ -134,12 +135,19 @@ public final class DebitCardViewModel {
         detail.account.bank ?? detail.account.name
     }
 
-    /// "Balance $9,994.55", plus how many cards share it when there are several.
-    func subtitle(_ detail: DebitCardDetail) -> String {
-        let balance = formatter.string(detail.balance)
-        let label = String(localized: "Balance \(balance)", bundle: #bundle)
-        guard detail.cardCount > 1 else { return label }
+    /// "$9,994.55", the account's balance the header shows big.
+    func balance(_ detail: DebitCardDetail) -> String {
+        formatter.string(detail.balance)
+    }
+
+    /// "Shared by 2 cards" when several plastics draw from the same balance.
+    func subtitle(_ detail: DebitCardDetail) -> String? {
+        guard detail.cardCount > 1 else { return nil }
         let count = detail.cardCount
-        return "\(label) · \(String(localized: "shared by \(count) cards", bundle: #bundle))"
+        return String(localized: "Balance shared by \(count) cards", bundle: #bundle)
+    }
+
+    var display: TransactionDisplay? {
+        detail.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories) }
     }
 }

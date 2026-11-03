@@ -293,6 +293,15 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
         ),
+        .testTarget(
+            name: "TransactionsPresentationTests",
+            dependencies: [
+                "TransactionsPresentation",
+                "TransactionsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
 
         // MARK: Summary
 

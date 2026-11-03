@@ -19,7 +19,9 @@ enum AccountsPreviewData {
         let store = InMemoryStore(sample: .standard)
         return DebitCardViewModel(
             cardID: cardID,
-            getDetail: DefaultGetDebitCardDetailUseCase(accounts: store, cards: store, transactions: store, settings: store),
+            getDetail: DefaultGetDebitCardDetailUseCase(
+                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+            ),
             setFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),

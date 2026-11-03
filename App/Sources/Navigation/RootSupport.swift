@@ -100,6 +100,7 @@ struct CreditCardRoute: View {
     let onBack: () -> Void
     let onPay: () -> Void
     let onOpenAdditional: (UUID) -> Void
+    let onSeeAllMovements: () -> Void
 
     init(
         container: AppContainer,
@@ -108,12 +109,14 @@ struct CreditCardRoute: View {
         onBack: @escaping () -> Void,
         onPay: @escaping () -> Void,
         onOpenAdditional: @escaping (UUID) -> Void,
+        onSeeAllMovements: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeCreditCardViewModel(accountID: accountID))
         self.addsAdditional = addsAdditional
         self.onBack = onBack
         self.onPay = onPay
         self.onOpenAdditional = onOpenAdditional
+        self.onSeeAllMovements = onSeeAllMovements
     }
 
     var body: some View {
@@ -123,6 +126,7 @@ struct CreditCardRoute: View {
             onBack: onBack,
             onPay: onPay,
             onOpenAdditional: onOpenAdditional,
+            onSeeAllMovements: onSeeAllMovements,
         )
         .navigationBarBackButtonHidden()
     }
@@ -149,15 +153,44 @@ struct DebitCardRoute: View {
     @State private var viewModel: DebitCardViewModel
     let onBack: () -> Void
     let onLinkCard: (UUID) -> Void
+    let onSeeAllMovements: (UUID) -> Void
 
-    init(container: AppContainer, cardID: UUID, onBack: @escaping () -> Void, onLinkCard: @escaping (UUID) -> Void) {
+    init(
+        container: AppContainer,
+        cardID: UUID,
+        onBack: @escaping () -> Void,
+        onLinkCard: @escaping (UUID) -> Void,
+        onSeeAllMovements: @escaping (UUID) -> Void,
+    ) {
         _viewModel = State(initialValue: container.makeDebitCardViewModel(cardID: cardID))
         self.onBack = onBack
         self.onLinkCard = onLinkCard
+        self.onSeeAllMovements = onSeeAllMovements
     }
 
     var body: some View {
-        DebitCardView(viewModel: viewModel, onBack: onBack, onLinkCard: onLinkCard)
+        DebitCardView(viewModel: viewModel, onBack: onBack, onLinkCard: onLinkCard, onSeeAllMovements: onSeeAllMovements)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+/// The movement list pushed from an account or card. It has its own view model so filtering it
+/// leaves the Transactions tab as the person left it.
+struct TransactionsRoute: View {
+    @State private var viewModel: TransactionsViewModel
+    let onBack: () -> Void
+    let onNewMovement: () -> Void
+
+    init(container: AppContainer, scope: TransactionScope, onBack: @escaping () -> Void, onNewMovement: @escaping () -> Void) {
+        let viewModel = container.makeTransactionsViewModel()
+        viewModel.scope = scope
+        _viewModel = State(initialValue: viewModel)
+        self.onBack = onBack
+        self.onNewMovement = onNewMovement
+    }
+
+    var body: some View {
+        TransactionsView(viewModel: viewModel, onBack: onBack, onNewMovement: onNewMovement)
             .navigationBarBackButtonHidden()
     }
 }
