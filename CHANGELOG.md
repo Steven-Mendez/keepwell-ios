@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Tabs without movements say so and offer "Anotar movimiento" instead of an empty screen.
 - Create movement: amount and type with the app's keypad, category, payment method, review (real
   bank debit, planned, shared, note) and a saved summary with the rate used and the new balance.
 - Add card: credit cards (plastic, debt in one or two currencies, billing cycle), debit cards linked

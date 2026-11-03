@@ -45,6 +45,12 @@ final class AppContainer {
     }
     #endif
 
+    /// Whether anything was recorded yet, for the empty states of tabs still to come.
+    func hasMovements() async -> Bool {
+        let movements = try? await store.fetchTransactions(in: nil)
+        return movements?.isEmpty == false
+    }
+
     // MARK: - Onboarding
 
     func makeGetSettings() -> any GetSettingsUseCase {
