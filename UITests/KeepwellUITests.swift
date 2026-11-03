@@ -6,11 +6,11 @@ final class KeepwellUITests: XCTestCase {
     }
 
     @MainActor
-    func testAppLaunchesOnTransactionsDashboard() {
+    func testAppLaunches() {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["transactions.month.title"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
     }
 }

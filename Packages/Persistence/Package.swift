@@ -9,16 +9,8 @@ let package = Package(
     products: [
         .library(name: "Persistence", targets: ["Persistence"]),
     ],
-    dependencies: [
-        .package(path: "../Features"),
-    ],
     targets: [
-        .target(
-            name: "Persistence",
-            dependencies: [
-                .product(name: "TransactionsData", package: "Features"),
-            ],
-        ),
+        .target(name: "Persistence"),
         .testTarget(
             name: "PersistenceTests",
             dependencies: ["Persistence"],

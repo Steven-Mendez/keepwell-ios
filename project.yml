@@ -76,12 +76,6 @@ targets:
       - package: Domain
       - package: Persistence
       - package: Core
-      - package: Features
-        product: TransactionsDomain
-      - package: Features
-        product: TransactionsData
-      - package: Features
-        product: TransactionsPresentation
     preBuildScripts:
       - name: SwiftLint
         basedOnDependencyAnalysis: false
@@ -137,17 +131,11 @@ schemes:
         - package: DesignSystem/DesignSystem
         - package: Domain/Domain
         - package: Persistence/Persistence
-        - package: Features/TransactionsDomain
-        - package: Features/TransactionsData
-        - package: Features/TransactionsPresentation
       targets:
         - package: Core/CoreTests
         - package: DesignSystem/DesignSystemTests
         - package: Domain/DomainTests
         - package: Persistence/PersistenceTests
-        - package: Features/TransactionsDomainTests
-        - package: Features/TransactionsDataTests
-        - package: Features/TransactionsPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release
