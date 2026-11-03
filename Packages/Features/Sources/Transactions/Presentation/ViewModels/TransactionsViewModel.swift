@@ -22,6 +22,8 @@ public final class TransactionsViewModel {
 
     public private(set) var state = State.loading
     public var filter = TransactionFilter.all
+    /// The account or card the list is narrowed to; `.all` shows every movement.
+    public var scope = TransactionScope.all
     public var query = ""
     /// Set by whoever opens the list to search ("Search transactions" on home); the view focuses
     /// the field and clears it.
@@ -31,6 +33,7 @@ public final class TransactionsViewModel {
     private let getList: any GetTransactionListUseCase
     private let confirmPlanned: any ConfirmPlannedTransactionUseCase
     private let deleteTransaction: any DeleteTransactionUseCase
+    private let filterTransactions: any FilterTransactionsUseCase
     private let calendar: Calendar
     private let now: () -> Date
     let formatter = CurrencyFormatter()
@@ -39,12 +42,14 @@ public final class TransactionsViewModel {
         getList: any GetTransactionListUseCase,
         confirmPlanned: any ConfirmPlannedTransactionUseCase,
         deleteTransaction: any DeleteTransactionUseCase,
+        filterTransactions: any FilterTransactionsUseCase = DefaultFilterTransactionsUseCase(),
         calendar: Calendar = .current,
         now: @escaping () -> Date = { .now },
     ) {
         self.getList = getList
         self.confirmPlanned = confirmPlanned
         self.deleteTransaction = deleteTransaction
+        self.filterTransactions = filterTransactions
         self.calendar = calendar
         self.now = now
     }
@@ -93,14 +98,23 @@ public final class TransactionsViewModel {
         list?.transactions.isEmpty == false
     }
 
+    private var transactionQuery: TransactionQuery {
+        TransactionQuery(kind: filter, scope: scope, text: query)
+    }
+
+    /// What the chips, the account filter and the search leave visible, newest first.
+    func visibleTransactions(ignoringKind: Bool = false) -> [Transaction] {
+        guard let list, let display else { return [] }
+        var query = transactionQuery
+        if ignoringKind {
+            query.kind = .all
+        }
+        return filterTransactions.execute(list.transactions, matching: query, searchableText: display.searchableText(of:))
+    }
+
     /// Planned movements first, then confirmed ones grouped by day, newest first.
     public var sections: [Section] {
-        guard let list, let display else { return [] }
-        let needle = query.trimmingCharacters(in: .whitespaces)
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-        let visible = list.transactions.filter { transaction in
-            filter.matches(transaction) && (needle.isEmpty || display.searchableText(of: transaction).contains(needle))
-        }
+        let visible = visibleTransactions()
         var sections: [Section] = []
         let planned = visible.filter { !$0.isConfirmed }.sorted { $0.date < $1.date }
         if !planned.isEmpty {
@@ -140,16 +154,72 @@ public final class TransactionsViewModel {
             : day.formatted(.dateTime.day().month(.wide).year())
     }
 
-    /// "October 2026", "−$709.58" and "+$2,452.24" for the current month's confirmed movements,
-    /// apart so the view can color what went out and what came in.
+    /// "October 2026", "−$709.58" and "+$2,452.24" for the current month's confirmed movements of
+    /// the chosen account and search, apart so the view can color what went out and what came in.
+    /// The kind chips don't change it: they pick which rows to read within the same month. Amounts
+    /// are converted to the principal currency, never mixed.
     var monthTotals: (title: String, spent: String, earned: String)? {
         guard let list else { return nil }
         let month = YearMonth(containing: now(), calendar: calendar)
-        let summary = MonthlySummary(month: month, transactions: list.transactions, currency: list.settings.principal, calendar: calendar)
+        let summary = MonthlySummary(
+            month: month,
+            transactions: visibleTransactions(ignoringKind: true),
+            currency: list.settings.principal,
+            calendar: calendar,
+        )
         let title = now().formatted(.dateTime.month(.wide).year()).localizedCapitalized
         let spent = formatter.string(from: -summary.expense, currencyCode: summary.currency)
         let earned = formatter.string(from: summary.income, currencyCode: summary.currency, sign: .always)
         return (title, spent, earned)
+    }
+
+    // MARK: - Account filter
+
+    public var scopeGroups: [TransactionScopeGroup] {
+        list?.scopeGroups ?? []
+    }
+
+    /// The account filter chip: "All accounts", "Savings" or "Debit •••• 1234".
+    var scopeTitle: String {
+        guard let list else { return String(localized: "All accounts", bundle: #bundle) }
+        switch scope {
+        case .all:
+            return String(localized: "All accounts", bundle: #bundle)
+        case .account:
+            return list.account(in: scope).map(CardDisplay.name(of:)) ?? String(localized: "All accounts", bundle: #bundle)
+        case .card:
+            guard let card = list.card(in: scope) else { return String(localized: "All accounts", bundle: #bundle) }
+            return CardDisplay.methodTitle(card, account: list.account(in: scope))
+        }
+    }
+
+    func cardTitle(_ card: Card, in group: TransactionScopeGroup) -> String {
+        CardDisplay.methodTitle(card, account: group.account)
+    }
+
+    /// The balance behind the chosen account or card, LAFISE-style: "Available balance" for money
+    /// the person holds, "Current debt" (as an amount owed) for a credit card, as the card's own
+    /// screen shows it. A single-currency account shows its own currency (cash in córdobas stays
+    /// in córdobas); one in two currencies headlines the principal-currency total and
+    /// lists each currency under it. `nil` without an account filter.
+    var scopeBalance: (label: String, amount: String, details: [String])? {
+        guard let list, let account = list.account(in: scope),
+              let balances = list.balances(in: scope, calendar: calendar),
+              let total = list.balanceTotal(in: scope, calendar: calendar) else { return nil }
+        let isCredit = account.kind == .credit
+        let shown: (Money) -> String = { money in
+            self.formatter.string(isCredit ? Money(-money.amount, money.currency) : money)
+        }
+        let label = isCredit
+            ? String(localized: "Current debt", bundle: #bundle)
+            : String(localized: "Available balance", bundle: #bundle)
+        guard balances.count > 1 else { return (label, balances.first.map(shown) ?? shown(total), []) }
+        return (label, shown(total), (isCredit ? balances.reversed() : balances).map(shown))
+    }
+
+    /// Shown when an account has nothing yet, so it doesn't read as a search that failed.
+    var isScopeEmpty: Bool {
+        scope != .all && query.trimmingCharacters(in: .whitespaces).isEmpty && filter == .all && visibleTransactions().isEmpty
     }
 
     func filterTitle(_ filter: TransactionFilter) -> String {

@@ -13,7 +13,8 @@ struct CardArtSnapshotTests {
             badge: .amount("−C$197.02 · −$16.79"),
             caption: "Credit · 2 cards",
             lastFour: "1234",
-            network: "mastercard",
+            network: .mastercard,
+            kindLabel: "Credit",
         )
         assertComponentSnapshot(of: card.padding(KWLayout.gutter), height: 290)
     }
@@ -25,17 +26,19 @@ struct CardArtSnapshotTests {
                 palette: .lima,
                 bank: "Bank One",
                 badge: .tag("Additional"),
-                caption: "Family",
+                holder: "Family",
                 lastFour: "5678",
-                network: "mastercard",
+                network: .mastercard,
+                kindLabel: "Credit",
             )
             KWCardArt(
                 palette: .lima,
                 bank: "Bank One",
                 badge: .tag("Frozen"),
-                caption: "Family",
+                holder: "Family",
                 lastFour: "5678",
-                network: "mastercard",
+                network: .mastercard,
+                kindLabel: "Credit",
                 isFrozen: true,
             )
             KWCardArt(palette: .grafito, bank: "Bank Two", badge: .amount("−C$941.30"), showsChip: false)
@@ -45,10 +48,21 @@ struct CardArtSnapshotTests {
                 badge: .tag("Credit"),
                 showsContactless: false,
                 lastFour: "1234",
-                network: "VISA",
+                network: .visa,
+                kindLabel: "Debit",
             )
         }
         .padding(KWLayout.gutter)
         assertComponentSnapshot(of: view, height: 1060)
+    }
+
+    @Test
+    func amexGroupsItsNumberAndPrintsTheBanknote() {
+        let view = VStack(spacing: KWSpacing.xl) {
+            KWCardArt(palette: .oro, bank: "Bank Three", lastFour: "1005", numberGroups: [4, 6, 5], network: .amex, kindLabel: "Credit")
+            KWBanknote(title: "Wallet", amount: "C$8,390", footnote: "≈ $229.08", currency: "NIO")
+        }
+        .padding(KWLayout.gutter)
+        assertComponentSnapshot(of: view, height: 480)
     }
 }

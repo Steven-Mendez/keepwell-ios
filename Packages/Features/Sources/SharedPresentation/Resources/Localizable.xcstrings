@@ -11,6 +11,16 @@
         }
       }
     },
+    "Account name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de la cuenta"
+          }
+        }
+      }
+    },
     "Additional" : {
       "localizations" : {
         "es" : {
@@ -51,6 +61,16 @@
         }
       }
     },
+    "Card color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de la tarjeta"
+          }
+        }
+      }
+    },
     "Category name" : {
       "localizations" : {
         "es" : {
@@ -81,12 +101,32 @@
         }
       }
     },
+    "Credit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito"
+          }
+        }
+      }
+    },
     "Cyan" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cian"
+          }
+        }
+      }
+    },
+    "Debit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débito"
           }
         }
       }
@@ -151,12 +191,32 @@
         }
       }
     },
+    "Edit name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar nombre"
+          }
+        }
+      }
+    },
     "Education" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Educación"
+          }
+        }
+      }
+    },
+    "Every card on this account shows this name." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las tarjetas de esta cuenta muestran este nombre."
           }
         }
       }
@@ -267,6 +327,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salud"
+          }
+        }
+      }
+    },
+    "Hidden balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo oculto"
+          }
+        }
+      }
+    },
+    "Hide balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar saldo"
           }
         }
       }
@@ -501,12 +581,32 @@
         }
       }
     },
+    "See all" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver todos"
+          }
+        }
+      }
+    },
     "Shopping" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compras"
+          }
+        }
+      }
+    },
+    "Show balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar saldo"
           }
         }
       }

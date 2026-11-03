@@ -94,9 +94,11 @@ public struct AdditionalCardView: View {
                 localized: "Additional",
                 bundle: #bundle,
             )),
-            caption: controls.holderName,
+            holder: controls.holderName,
             lastFour: card.lastFour,
-            network: CardDisplay.wordmark(for: card.network),
+            numberGroups: CardDisplay.numberGroups(for: card.network),
+            network: CardDisplay.networkMark(for: card.network),
+            kindLabel: CardDisplay.kindLabel(card.kind),
             isFrozen: controls.isFrozen,
         )
         .animation(.snappy, value: controls.isFrozen)

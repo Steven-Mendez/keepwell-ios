@@ -26,11 +26,13 @@ struct RootView: View {
         case main
     }
 
-    private let container: AppContainer
+    let container: AppContainer
     private let notifications: NotificationResponder
     @Environment(\.scenePhase) private var scenePhase
     @State private var phase = Phase.loading
     @State private var router = AppRouter()
+    /// For the route mapping in `RootView+Routes`; `AppRouter` is a reference, so pushes reach this stack.
+    var navigator: AppRouter { router }
     @State private var tab = MainTab.home
     @State private var screens: MainScreens?
     @State private var addCard: PresentedFlow<AddCardViewModel>?
@@ -169,7 +171,9 @@ struct RootView: View {
                 viewModel: screens.accounts,
                 onAdd: { presentAddCard() },
                 onOpenCreditCard: { router.push(.creditCard(accountID: $0)) },
+                onOpenDebitCard: { router.push(.debitCard(cardID: $0)) },
                 onLinkCard: { presentAddCard(linkingTo: $0) },
+                onOpenAccountMovements: { router.push(.transactions(accountID: $0)) },
             )
         case .summary:
             SummaryView(viewModel: screens.summary) { presentMovementMenu() }
@@ -180,6 +184,7 @@ struct RootView: View {
         HomeView.Actions(
             search: {
                 screens.transactions.filter = .all
+                screens.transactions.scope = .all
                 screens.transactions.wantsSearchFocus = true
                 tab = .transactions
             },
@@ -194,6 +199,7 @@ struct RootView: View {
             },
             allPlanned: {
                 screens.transactions.query = ""
+                screens.transactions.scope = .all
                 screens.transactions.filter = .planned
                 tab = .transactions
             },
@@ -204,32 +210,6 @@ struct RootView: View {
             },
             additionalCard: { router.push(.additionalCard(accountID: $0, cardID: $1)) },
         )
-    }
-
-    @ViewBuilder
-    private func destination(_ route: AppRoute) -> some View {
-        switch route {
-        case .settings:
-            SettingsRoute(
-                container: container,
-                onBack: settingsClosed,
-                onErased: returnToOnboarding,
-                onOpenCategories: { router.push(.categories(showsIncome: $0 == .income)) },
-            )
-        case let .categories(showsIncome):
-            CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: router.pop)
-        case let .creditCard(accountID, addsAdditional):
-            CreditCardRoute(
-                container: container,
-                accountID: accountID,
-                addsAdditional: addsAdditional,
-                onBack: router.pop,
-                onPay: { presentNewMovement(.cardPayment, payingCard: accountID) },
-                onOpenAdditional: { router.push(.additionalCard(accountID: accountID, cardID: $0)) },
-            )
-        case let .additionalCard(accountID, cardID):
-            AdditionalCardRoute(container: container, accountID: accountID, cardID: cardID, onBack: router.pop)
-        }
     }
 }
 
@@ -279,14 +259,16 @@ extension RootView {
     }
 
     /// After "Delete all my data" there's nothing left to show, so the app starts over.
-    private func returnToOnboarding() {
+    func returnToOnboarding() {
         Task { await container.clearOutside() }
         router.path = NavigationPath()
         screens = nil
         lock = LockState()
         phase = .onboarding(container.makeOnboardingViewModel())
     }
+}
 
+extension RootView {
     // MARK: - Outside the app
 
     /// Widget links: `keepwell://new-expense?category=…` opens a new expense in that category.
@@ -296,7 +278,6 @@ extension RootView {
         presentNewMovement(.expense, category: link)
     }
 
-    /// A quick-log widget button ran while the app was away; open what it asked for.
     /// A quick-log widget button ran while the app was away. The tap is an explicit request, so it
     /// replaces a flow left open.
     private func openQuickLogRequest() {
@@ -379,7 +360,7 @@ extension RootView {
     // MARK: - Flows
 
     /// "What are you recording?", for entries that don't already say which kind.
-    private func presentMovementMenu() {
+    func presentMovementMenu() {
         movementMenu = PresentedFlow(viewModel: container.makeNewMovementMenuViewModel())
     }
 
@@ -389,7 +370,7 @@ extension RootView {
         presentNewMovement(type)
     }
 
-    private func presentNewMovement(
+    func presentNewMovement(
         _ type: MovementType = .expense,
         payingCard cardAccountID: UUID? = nil,
         category categoryID: String? = nil,
@@ -404,7 +385,7 @@ extension RootView {
         newMovement = PresentedFlow(viewModel: viewModel)
     }
 
-    private func presentAddCard(linkingTo accountID: UUID? = nil) {
+    func presentAddCard(linkingTo accountID: UUID? = nil) {
         let viewModel = container.makeAddCardViewModel()
         if let accountID {
             viewModel.choose(.debit, linkingTo: accountID)
@@ -428,7 +409,7 @@ extension RootView {
         Task { await screens?.reload() }
     }
 
-    private func settingsClosed() {
+    func settingsClosed() {
         router.pop()
         Task { await refreshLockSettings() }
     }

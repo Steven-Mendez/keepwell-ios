@@ -49,12 +49,12 @@ extension KWColor.CardArt {
         self == .lima || self == .chip
     }
 
-    /// Opacity of the two decorative wave strokes.
-    var waveOpacities: (front: Double, back: Double) {
+    /// Opacity of the soft circles that catch the light; stronger on light art so they still show.
+    var orbOpacity: Double {
         switch self {
-        case .lima, .chip: (0.22, 0.14)
-        case .grafito: (0.06, 0.04)
-        default: (0.10, 0.07)
+        case .lima, .chip: 0.20
+        case .grafito: 0.05
+        default: 0.09
         }
     }
 

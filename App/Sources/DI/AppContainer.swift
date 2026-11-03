@@ -236,6 +236,23 @@ final class AppContainer {
             updateAdditional: DefaultUpdateAdditionalCardUseCase(cards: store),
             removeAdditional: DefaultRemoveAdditionalCardUseCase(cards: store),
             setCardFrozen: DefaultSetCardFrozenUseCase(cards: store),
+            setCardColor: DefaultSetCardColorUseCase(cards: store),
+            renameAccount: DefaultRenameAccountUseCase(accounts: store),
+        )
+    }
+
+    // MARK: - Debit card
+
+    func makeDebitCardViewModel(cardID: UUID) -> DebitCardViewModel {
+        DebitCardViewModel(
+            cardID: cardID,
+            getDetail: DefaultGetDebitCardDetailUseCase(
+                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+            ),
+            setFrozen: DefaultSetCardFrozenUseCase(cards: store),
+            setColor: DefaultSetCardColorUseCase(cards: store),
+            renameAccount: DefaultRenameAccountUseCase(accounts: store),
+            removeCard: DefaultRemoveCardUseCase(cards: store),
         )
     }
 

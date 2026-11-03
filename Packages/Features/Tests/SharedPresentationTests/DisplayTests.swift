@@ -17,9 +17,19 @@ struct DisplayTests {
         #expect(CardDisplay.methodTitle(debit, account: account) == "Debit •••• 1234")
         #expect(CardDisplay.methodTitle(transfer, account: account) == "Bank One · Bank transfer")
         #expect(CardDisplay.shortName(of: debit) == "Visa ··1234")
-        #expect(CardDisplay.wordmark(for: .mastercard) == "mastercard")
+        #expect(CardDisplay.networkMark(for: .mastercard) == .mastercard)
+        #expect(CardDisplay.networkMark(for: .other) == nil)
+        #expect(CardDisplay.numberGroups(for: .amex) == [4, 6, 5])
         #expect(CardDisplay.palette(for: .lima) == .lima)
         #expect(CardDisplay.cardColor(for: .oro) == .oro)
+    }
+
+    @Test
+    func cardFacesPrintTheNumberAsTheNetworkGroupsIt() {
+        #expect(KWCardArt.maskedNumber(lastFour: "6019") == "•••• •••• •••• 6019")
+        #expect(KWCardArt.maskedNumber(lastFour: "6019", groups: CardDisplay.numberGroups(for: .amex)) == "•••• •••••• •6019")
+        #expect(CardDisplay.kindLabel(.debit) == "Debit")
+        #expect(CardDisplay.kindLabel(.creditAdditional) == "Credit")
     }
 
     @Test

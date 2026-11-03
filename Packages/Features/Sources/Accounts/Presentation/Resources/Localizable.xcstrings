@@ -27,6 +27,26 @@
         }
       }
     },
+    "%lld cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tarjetas"
+          }
+        }
+      }
+    },
+    "A frozen card can't be picked to pay a movement." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una tarjeta congelada no se puede elegir para pagar un movimiento."
+          }
+        }
+      }
+    },
     "According to the app" : {
       "localizations" : {
         "es" : {
@@ -77,6 +97,36 @@
         }
       }
     },
+    "Available balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo disponible"
+          }
+        }
+      }
+    },
+    "Balance shared by %lld cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo compartido por %lld tarjetas"
+          }
+        }
+      }
+    },
+    "Card color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de la tarjeta"
+          }
+        }
+      }
+    },
     "Cash" : {
       "localizations" : {
         "es" : {
@@ -107,6 +157,16 @@
         }
       }
     },
+    "Color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        }
+      }
+    },
     "Credit cards" : {
       "localizations" : {
         "es" : {
@@ -117,52 +177,12 @@
         }
       }
     },
-    "Credit · %lld cards" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Credit · %lld card"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Credit · %lld cards"
-                }
-              }
-            }
-          }
-        },
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Crédito · %lld plástico"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Crédito · %lld plásticos"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "Debit" : {
+    "Debit card" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Débito"
+            "value" : "Tarjeta de débito"
           }
         }
       }
@@ -177,12 +197,12 @@
         }
       }
     },
-    "Debit · %@" : {
+    "Edit name" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Débito · %@"
+            "value" : "Editar nombre"
           }
         }
       }
@@ -207,12 +227,52 @@
         }
       }
     },
+    "Freeze" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Congelar"
+          }
+        }
+      }
+    },
+    "Frozen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Congelada"
+          }
+        }
+      }
+    },
     "If there's a difference, we record it as an adjustment so the balance matches." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si hay diferencia, la anotamos como un ajuste para que el saldo cuadre."
+          }
+        }
+      }
+    },
+    "Its past movements stay on the account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sus movimientos anteriores se quedan en la cuenta."
+          }
+        }
+      }
+    },
+    "Latest movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Últimos movimientos"
           }
         }
       }
@@ -227,12 +287,32 @@
         }
       }
     },
+    "Manage card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestionar tarjeta"
+          }
+        }
+      }
+    },
     "Net worth %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Patrimonio neto %@"
+          }
+        }
+      }
+    },
+    "No movements on this account yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay movimientos en esta cuenta."
           }
         }
       }
@@ -267,6 +347,26 @@
         }
       }
     },
+    "Remove card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar tarjeta"
+          }
+        }
+      }
+    },
+    "Remove this card?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Quitar esta tarjeta?"
+          }
+        }
+      }
+    },
     "Save withdrawal" : {
       "localizations" : {
         "es" : {
@@ -277,12 +377,62 @@
         }
       }
     },
+    "See movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver movimientos"
+          }
+        }
+      }
+    },
+    "Shows its movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra sus movimientos"
+          }
+        }
+      }
+    },
     "Tap to see details" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca para ver detalle"
+          }
+        }
+      }
+    },
+    "Unfreeze" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descongelar"
+          }
+        }
+      }
+    },
+    "We couldn't load this card." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar esta tarjeta."
+          }
+        }
+      }
+    },
+    "We couldn't save the change. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar el cambio. Inténtalo de nuevo."
           }
         }
       }
@@ -303,6 +453,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lo que tienes (%@)"
+          }
+        }
+      }
+    },
+    "Write a name for the account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe un nombre para la cuenta."
           }
         }
       }

@@ -167,9 +167,11 @@ struct NewAdditionalSheet: View {
             palette: CardDisplay.palette(for: color),
             bank: viewModel.detail.map(viewModel.bank) ?? "",
             badge: .tag(String(localized: "Additional", bundle: #bundle)),
-            caption: holderName.isEmpty ? nil : holderName,
+            holder: holderName.isEmpty ? nil : holderName,
             lastFour: lastFour.isEmpty ? nil : lastFour,
-            network: CardDisplay.wordmark(for: viewModel.detail?.holder?.network),
+            numberGroups: CardDisplay.numberGroups(for: viewModel.detail?.holder?.network),
+            network: CardDisplay.networkMark(for: viewModel.detail?.holder?.network),
+            kindLabel: String(localized: "Credit", bundle: #bundle),
             showsShadow: false,
         )
         .frame(maxWidth: 260)

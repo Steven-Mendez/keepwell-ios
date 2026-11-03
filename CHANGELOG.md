@@ -36,6 +36,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Create your own categories with a name, icon and color from "New category" when logging a
   movement (it starts from what you searched for), and rename, recolor or delete them in Settings ›
   Expense or Income categories. Deleting one moves its movements to "Other".
+- Debit card screen: tap a debit card on Accounts to see it big with its account's name and
+  balance, rename the account, change the card's color, freeze it, link another card or remove it.
+- Credit cards can be renamed and recolored from their screen, under a new "Manage card" list.
+- Transactions per account and card: an "All accounts" chip on Transactions opens a picker of
+  accounts and their cards; the month's totals and search follow the choice, and the chip's ✕
+  clears it.
+- Debit card screen: the account's latest movements with "See all"; credit card screen: "See all"
+  on "This cycle" opens the card's whole history. Both open the list already filtered.
+- Cash: tap the banknote or "See movements" to see the cash account's movements and balance.
+- Account and card screens show the balance big, with an eye to hide it; the choice is
+  remembered.
+
 - Settings › Language shows the app's language and opens the iPhone's Settings to pick another
   one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.
@@ -108,6 +120,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   in its first field. In onboarding's account form, amounts are tidied to "10,000.00" when you
   leave them, a half-typed ending or an amount that is not a number is explained under the form,
   and "Remove account" moved out of the footer, away from "Save".
+- Cards look like real plastics everywhere: the bank, the masked number in the network's grouping
+  ("•••• •••• •••• 1234", Amex 4-6-5), a gold chip with contacts, contactless, the network mark with
+  "Debit" or "Credit" under it, the holder's name on additional cards and a glossy gradient. Frozen
+  cards turn grey with a snowflake. Credit and debit card screens open with the card big, its name
+  and round quick actions, as banks show "my card".
 - Accounts shows every bank account through its debit cards, stacked like the credit cards, and
   cash as a banknote. The "Transfers" row is gone from the accounts list; a bank account without a
   card shows an empty card slot to add one.

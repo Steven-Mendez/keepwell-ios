@@ -31,7 +31,11 @@ public struct CardAddedView: View {
                     bank: viewModel.bank.isEmpty ? String(localized: "Bank", bundle: #bundle) : viewModel.bank,
                     showsContactless: false,
                     lastFour: viewModel.lastFour,
-                    network: CardDisplay.wordmark(for: viewModel.network),
+                    numberGroups: CardDisplay.numberGroups(for: viewModel.network),
+                    network: CardDisplay.networkMark(for: viewModel.network),
+                    kindLabel: viewModel.kind == .credit
+                        ? String(localized: "Credit", bundle: #bundle)
+                        : String(localized: "Debit", bundle: #bundle),
                 )
                 .rotationEffect(.degrees(-3))
                 VStack(spacing: KWSpacing.xs) {

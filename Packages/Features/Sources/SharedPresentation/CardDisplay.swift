@@ -20,14 +20,54 @@ public enum CardDisplay {
         CardColor(rawValue: palette.rawValue) ?? .azul
     }
 
-    /// The wordmark printed on card art ("VISA", "mastercard").
-    public static func wordmark(for network: CardNetwork?) -> String {
+    /// The network mark printed on card art; `nil` for networks without one.
+    public static func networkMark(for network: CardNetwork?) -> KWCardNetwork? {
         switch network {
-        case .visa: "VISA"
-        case .mastercard: "mastercard"
-        case .amex: "AMEX"
-        case .other, nil: ""
+        case .visa: .visa
+        case .mastercard: .mastercard
+        case .amex: .amex
+        case .other, nil: nil
         }
+    }
+
+    /// How the network groups the full card number: Amex prints 15 digits as 4-6-5.
+    public static func numberGroups(for network: CardNetwork?) -> [Int] {
+        network == .amex ? [4, 6, 5] : [4, 4, 4, 4]
+    }
+
+    /// "Debit" or "Credit", as printed under the network mark.
+    public static func kindLabel(_ kind: CardKind) -> String {
+        switch kind {
+        case .debit, .transfer: String(localized: "Debit", bundle: #bundle)
+        case .creditHolder, .creditAdditional: String(localized: "Credit", bundle: #bundle)
+        }
+    }
+
+    /// The art of a real plastic, so every screen prints a card the same way. `showsFace: false`
+    /// leaves only the header, for a card tucked behind another in a stack.
+    public static func art(
+        of card: Card?,
+        kind: CardKind,
+        bank: String,
+        badge: KWCardArt.Badge? = nil,
+        caption: String? = nil,
+        showsFace: Bool = true,
+        showsShadow: Bool = true,
+    ) -> KWCardArt {
+        KWCardArt(
+            palette: palette(for: card?.color),
+            bank: bank,
+            badge: badge,
+            showsChip: showsFace,
+            holder: showsFace ? card?.additional?.holderName : nil,
+            caption: showsFace ? caption : nil,
+            lastFour: showsFace ? card?.lastFour : nil,
+            numberGroups: numberGroups(for: card?.network),
+            network: showsFace ? networkMark(for: card?.network) : nil,
+            kindLabel: showsFace ? kindLabel(card?.kind ?? kind) : nil,
+            isFrozen: card?.isFrozen ?? false,
+            showsShadow: showsShadow,
+        )
     }
 
     public static func networkName(_ network: CardNetwork?) -> String {
