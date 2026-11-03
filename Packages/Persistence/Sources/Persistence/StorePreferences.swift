@@ -1,3 +1,4 @@
+import Domain
 import Foundation
 
 /// Device-local storage choices. The iCloud switch has to be known before the `ModelContainer`
@@ -25,5 +26,11 @@ public struct StorePreferences: @unchecked Sendable {
 
     public func reset() {
         defaults.removeObject(forKey: Self.iCloudKey)
+    }
+}
+
+extension StorePreferences: BackupPreference {
+    public func setICloudBackupEnabled(_ isEnabled: Bool) {
+        isICloudBackupEnabled = isEnabled
     }
 }

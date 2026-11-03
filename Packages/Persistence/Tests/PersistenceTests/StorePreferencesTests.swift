@@ -1,3 +1,4 @@
+import Domain
 import Foundation
 import Testing
 @testable import Persistence
@@ -28,5 +29,16 @@ struct StorePreferencesTests {
     @Test
     func missingContainerFallsBackToLocal() throws {
         #expect(try makePreferences().store(cloudKitContainer: "") == .local)
+    }
+}
+
+@Suite("Store preferences as backup preference")
+struct BackupPreferenceConformanceTests {
+    @Test
+    func setsThroughTheDomainContract() throws {
+        let defaults = try #require(UserDefaults(suiteName: "BackupPreference.\(UUID().uuidString)"))
+        let preference: any BackupPreference = StorePreferences(defaults: defaults)
+        preference.setICloudBackupEnabled(false)
+        #expect(!preference.isICloudBackupEnabled)
     }
 }

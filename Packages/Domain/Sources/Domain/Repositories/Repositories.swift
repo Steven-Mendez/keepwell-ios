@@ -40,3 +40,10 @@ public protocol SettingsRepository: Sendable {
 public protocol DataEraser: Sendable {
     func eraseAll() async throws(DomainError)
 }
+
+/// The device-local "Respaldo en iCloud" switch. It decides which store opens at launch, so it
+/// lives outside the synced settings.
+public protocol BackupPreference: Sendable {
+    var isICloudBackupEnabled: Bool { get }
+    func setICloudBackupEnabled(_ isEnabled: Bool)
+}
