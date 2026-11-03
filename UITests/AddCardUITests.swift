@@ -19,10 +19,10 @@ final class AddCardUITests: XCTestCase {
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Credit card")).firstMatch.tap()
 
         XCTAssertTrue(app.staticTexts["Your credit card"].waitForExistence(timeout: 5))
-        let bank = app.textFields["Bank name"]
+        let bank = app.textFields["Bank"]
         bank.tap()
         bank.typeText("Bank Three")
-        let digits = app.textFields["0000"]
+        let digits = app.textFields["Last 4 digits"]
         digits.tap()
         digits.typeText("2468")
         app.buttons["Violet"].tap()

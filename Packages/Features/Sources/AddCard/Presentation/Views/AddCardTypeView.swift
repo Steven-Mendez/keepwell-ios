@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import Domain
 import SwiftUI
@@ -99,9 +100,16 @@ struct NewAccountSheet: View {
     @State private var currency = ""
     @State private var balanceText = ""
     @State private var isSaving = false
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case bank
+        case name
+        case balance
+    }
 
     var body: some View {
-        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+        KWFormScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
                 Text(kind == .deposit ? "Bank account" : "Other wallet", bundle: #bundle).kwTextStyle(.titleSm)
@@ -109,22 +117,29 @@ struct NewAccountSheet: View {
                 if let error = viewModel.errorMessage {
                     Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
                 }
-                Spacer(minLength: 0)
-                addButton
             }
+        } footer: {
+            addButton
         }
+        .kwKeyboardToolbar($focus, order: kind == .deposit ? [.bank, .name, .balance] : [.name, .balance])
+        .onAppear { focus = kind == .deposit ? .bank : .name }
     }
 
     private var fields: some View {
         KWGroupedCard {
             if kind == .deposit {
-                FormTextRow(
-                    label: String(localized: "Bank", bundle: #bundle),
+                KWTextFieldRow(
+                    String(localized: "Bank", bundle: #bundle),
                     placeholder: String(localized: "Bank name", bundle: #bundle),
                     text: $bank,
                 )
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .kwFocused($focus, equals: .bank)
             }
-            FormTextRow(label: String(localized: "Name", bundle: #bundle), placeholder: namePlaceholder, text: $name)
+            KWTextFieldRow(String(localized: "Name", bundle: #bundle), placeholder: namePlaceholder, text: $name)
+                .textInputAutocapitalization(.words)
+                .kwFocused($focus, equals: .name)
             if let second = viewModel.second {
                 HStack {
                     Text("Currency", bundle: #bundle).foregroundStyle(KWColor.Text.secondary)
@@ -138,7 +153,12 @@ struct NewAccountSheet: View {
                 .font(KWTextStyle.body.font)
                 .padding(.vertical, 10)
             }
-            FormAmountRow(label: String(localized: "Today's balance", bundle: #bundle), text: $balanceText)
+            KWAmountFieldRow(
+                String(localized: "Today's balance", bundle: #bundle),
+                symbol: CurrencyFormatter.symbol(for: currencyBinding.wrappedValue),
+                text: $balanceText,
+            )
+            .kwFocused($focus, equals: .balance)
         }
     }
 
@@ -148,6 +168,7 @@ struct NewAccountSheet: View {
 
     private var addButton: some View {
         Button {
+            focus = nil
             isSaving = true
             Task {
                 let saved = await viewModel.createAccount(

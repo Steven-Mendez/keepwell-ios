@@ -12,36 +12,45 @@ struct ReconcileCashSheet: View {
     let onClose: () -> Void
     @State private var countedText = ""
     @State private var isSaving = false
+    @FocusState private var isCounting: Bool
 
     var body: some View {
-        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+        KWFormScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
                 Text("Reconcile cash", bundle: #bundle).kwTextStyle(.titleSm)
                 KWGroupedCard {
                     KWValueRow(String(localized: "According to the app", bundle: #bundle), value: formatter.string(cash.balance))
-                    SheetAmountRow(label: countedLabel, text: $countedText)
+                    KWAmountFieldRow(
+                        countedLabel,
+                        symbol: CurrencyFormatter.symbol(for: cash.balance.currency),
+                        text: $countedText,
+                    )
+                    .focused($isCounting)
                 }
                 Text("If there's a difference, we record it as an adjustment so the balance matches.", bundle: #bundle)
                     .font(KWTextStyle.captionSm.font)
                     .foregroundStyle(KWColor.Text.muted)
                 SheetError(message: viewModel.actionError)
-                Spacer(minLength: 0)
-                Button {
-                    isSaving = true
-                    Task {
-                        if await viewModel.reconcile(cash, countedText: countedText) {
-                            onClose()
-                        }
-                        isSaving = false
-                    }
-                } label: {
-                    Text("Reconcile", bundle: #bundle)
-                }
-                .buttonStyle(.kw())
-                .disabled(isSaving || countedText.isEmpty)
             }
+        } footer: {
+            Button {
+                isCounting = false
+                isSaving = true
+                Task {
+                    if await viewModel.reconcile(cash, countedText: countedText) {
+                        onClose()
+                    }
+                    isSaving = false
+                }
+            } label: {
+                Text("Reconcile", bundle: #bundle)
+            }
+            .buttonStyle(.kw())
+            .disabled(isSaving || countedText.isEmpty)
         }
+        // Counting is the only thing to do here, so the pad opens with the sheet.
+        .onAppear { isCounting = true }
         .onDisappear { viewModel.clearActionError() }
     }
 
@@ -62,9 +71,15 @@ struct WithdrawCashSheet: View {
     @State private var amountText = ""
     @State private var debitedText = ""
     @State private var isSaving = false
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case withdrawn
+        case debited
+    }
 
     var body: some View {
-        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+        KWFormScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
                 Text("ATM withdrawal", bundle: #bundle).kwTextStyle(.titleSm)
@@ -74,35 +89,40 @@ struct WithdrawCashSheet: View {
                     }
                 }
                 KWGroupedCard {
-                    SheetAmountRow(label: withdrawnLabel, text: $amountText)
+                    KWAmountFieldRow(withdrawnLabel, symbol: CurrencyFormatter.symbol(for: cash.balance.currency), text: $amountText)
+                        .kwFocused($focus, equals: .withdrawn)
                     if cash.balance.currency != principal {
-                        SheetAmountRow(
-                            label: debitedLabel,
+                        KWAmountFieldRow(
+                            debitedLabel,
                             hint: String(localized: "Optional · if it used another rate", bundle: #bundle),
+                            symbol: CurrencyFormatter.symbol(for: principal),
                             text: $debitedText,
                         )
+                        .kwFocused($focus, equals: .debited)
                     }
                 }
                 SheetError(message: viewModel.actionError)
-                Spacer(minLength: 0)
-                Button {
-                    guard let source = selectedSource else { return }
-                    isSaving = true
-                    Task {
-                        if await viewModel
-                            .withdraw(into: cash, from: source, amountText: amountText, debitedText: debitedText)
-                        {
-                            onClose()
-                        }
-                        isSaving = false
-                    }
-                } label: {
-                    Text("Save withdrawal", bundle: #bundle)
-                }
-                .buttonStyle(.kw())
-                .disabled(isSaving || amountText.isEmpty || selectedSource == nil)
             }
+        } footer: {
+            Button {
+                guard let source = selectedSource else { return }
+                focus = nil
+                isSaving = true
+                Task {
+                    if await viewModel
+                        .withdraw(into: cash, from: source, amountText: amountText, debitedText: debitedText)
+                    {
+                        onClose()
+                    }
+                    isSaving = false
+                }
+            } label: {
+                Text("Save withdrawal", bundle: #bundle)
+            }
+            .buttonStyle(.kw())
+            .disabled(isSaving || amountText.isEmpty || selectedSource == nil)
         }
+        .kwKeyboardToolbar($focus, order: cash.balance.currency != principal ? [.withdrawn, .debited] : [.withdrawn])
         .onDisappear { viewModel.clearActionError() }
     }
 
@@ -117,39 +137,6 @@ struct WithdrawCashSheet: View {
 
     private var selectedSource: UUID? {
         sourceID ?? sources.first?.id
-    }
-}
-
-/// Label on the left, compact amount field on the right, as in the review step's "USD the
-/// bank charged you".
-struct SheetAmountRow: View {
-    let label: String
-    var hint: String?
-    @Binding var text: String
-
-    var body: some View {
-        HStack(spacing: KWSpacing.sm) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .foregroundStyle(KWColor.Text.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let hint {
-                    Text(hint).font(KWTextStyle.captionSm.font).foregroundStyle(KWColor.Text.muted)
-                }
-            }
-            Spacer()
-            TextField(text: $text) { Text(verbatim: "0.00") }
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .font(.kw(15, weight: 600))
-                .monospacedDigit()
-                .padding(.vertical, KWSpacing.xs)
-                .padding(.horizontal, 10)
-                .frame(width: 100)
-                .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: 10))
-        }
-        .font(KWTextStyle.body.font)
-        .padding(.vertical, 11)
     }
 }
 
