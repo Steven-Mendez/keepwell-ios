@@ -29,8 +29,6 @@ public struct TransactionDraft: Sendable {
     public var destinationAccountID: UUID?
     public var description: String
     public var date: Date
-    public var isPlanned: Bool
-    public var isShared: Bool
     /// "USD charged by the bank".
     public var actualDebitedPrincipal: Decimal?
     public var note: String
@@ -45,8 +43,6 @@ public struct TransactionDraft: Sendable {
         destinationAccountID: UUID? = nil,
         description: String = "",
         date: Date = .now,
-        isPlanned: Bool = false,
-        isShared: Bool = false,
         actualDebitedPrincipal: Decimal? = nil,
         note: String = "",
     ) {
@@ -59,8 +55,6 @@ public struct TransactionDraft: Sendable {
         self.destinationAccountID = destinationAccountID
         self.description = description
         self.date = date
-        self.isPlanned = isPlanned
-        self.isShared = isShared
         self.actualDebitedPrincipal = actualDebitedPrincipal
         self.note = note
     }
@@ -141,7 +135,7 @@ public struct TransactionContext: Sendable {
 public struct SavedTransaction: Sendable {
     public let transaction: Transaction
     public let account: Account
-    /// The source account's balances after the movement (planned movements leave them unchanged).
+    /// The source account's balances after the movement.
     public let newBalances: [Money]
     /// Spending in the movement's category this month, in the principal currency.
     public let categoryMonthTotal: Money?

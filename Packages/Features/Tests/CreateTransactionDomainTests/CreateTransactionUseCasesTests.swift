@@ -47,15 +47,12 @@ struct CreateTransactionUseCasesTests {
     }
 
     @Test
-    func newBalanceReflectsTheMovementUnlessPlanned() async throws {
+    func newBalanceReflectsTheMovement() async throws {
         let before = try await contextUseCase().execute().balances[SampleData.IDs.cash]?.first?.amount ?? 0
         let saved = try await save(expense(100, source: .account(SampleData.IDs.cash)))
+        #expect(saved.transaction.status == .confirmed)
+        #expect(!saved.transaction.isShared)
         #expect(saved.newBalances.first?.amount == before - 100)
-        var planned = expense(50, source: .account(SampleData.IDs.cash))
-        planned.isPlanned = true
-        let plannedSaved = try await save(planned)
-        #expect(plannedSaved.transaction.status == .planned)
-        #expect(plannedSaved.newBalances.first?.amount == before - 100)
     }
 
     @Test

@@ -76,18 +76,4 @@ struct MovementTypeAndPreviewTests {
         #expect(preview.sourceAfter == saved.newBalances)
         #expect(preview.leaving == Money(Decimal(string: "24.28") ?? 0, "USD"))
     }
-
-    @Test
-    func plannedPreviewsLeaveBalancesAlone() async throws {
-        let context = try await context()
-        let draft = TransactionDraft(
-            kind: .transfer, amount: 50, currency: "USD", source: .card(SampleData.IDs.savingsTransfer),
-            destinationAccountID: SampleData.IDs.payroll, date: now, isPlanned: true,
-        )
-        let preview = try #require(context.preview(of: draft))
-        #expect(preview.sourceAfter == preview.sourceBefore)
-        #expect(preview.destinationAfter == preview.destinationBefore)
-        #expect(preview.arriving == Money(50, "USD"))
-        #expect(!preview.convertsCurrency(from: "USD"))
-    }
 }

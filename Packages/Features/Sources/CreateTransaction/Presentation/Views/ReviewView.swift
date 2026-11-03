@@ -182,18 +182,6 @@ public struct ReviewView: View {
         if viewModel.showsDebitedField {
             debitedRow
         }
-        Toggle(isOn: $viewModel.isPlanned) {
-            hint(viewModel.plannedLabel, viewModel.plannedHint)
-        }
-        .toggleStyle(.kw(tint: KWColor.State.pending))
-        .padding(.vertical, 11)
-        if viewModel.kind == .expense {
-            Toggle(isOn: $viewModel.isShared) {
-                hint(String(localized: "Shared", bundle: #bundle), String(localized: "Others owe you a share", bundle: #bundle))
-            }
-            .toggleStyle(.kw)
-            .padding(.vertical, 11)
-        }
     }
 
     private var noteValue: String {

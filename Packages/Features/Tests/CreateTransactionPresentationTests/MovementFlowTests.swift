@@ -142,9 +142,7 @@ struct MovementFlowTests {
         #expect(viewModel.fromParty?.caption == "From")
         #expect(viewModel.fromParty?.detail == "Balance after \(left)")
         #expect(viewModel.toParty?.detail == "Balance after \(landed)")
-        viewModel.isPlanned = true
-        #expect(viewModel.fromParty?.detail == "Balance \(viewModel.formatter.string(savings))")
-        #expect(viewModel.confirmTitle == "Slide to save as planned")
+        #expect(viewModel.confirmTitle == "Slide to move")
     }
 
     @Test

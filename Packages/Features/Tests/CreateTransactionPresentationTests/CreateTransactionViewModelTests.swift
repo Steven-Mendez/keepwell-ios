@@ -196,16 +196,6 @@ struct CreateTransactionViewModelTests {
     }
 
     @Test
-    func plannedChangesTheCopy() async {
-        let viewModel = await CreateTransactionFactory.loaded()
-        #expect(viewModel.saveTitle == "Save expense")
-        #expect(viewModel.plannedHint == "Already happened: counts in balances")
-        viewModel.isPlanned = true
-        #expect(viewModel.saveTitle == "Save as planned")
-        #expect(viewModel.plannedHint == "Doesn't count until confirmed")
-    }
-
-    @Test
     func startOverKeepsTypeAndClearsTheRest() async {
         let viewModel = await CreateTransactionFactory.loaded()
         type(viewModel, "12")
