@@ -1,13 +1,16 @@
 import AppIntents
 import Core
 import CreateTransactionDomain
+import DesignSystem
 import Domain
 import Foundation
 import Persistence
 import SharedPresentation
+import SwiftUI
 
-/// "Hey Siri, log 250 córdobas of lunch in cash": saves a confirmed expense without opening the
-/// app, through the same use case and checks as the in-app flow.
+/// "Hey Siri, log a Restaurants expense from Cash in Keepwell": saves a confirmed expense without
+/// opening the app, through the same use case and checks as the in-app flow. App Shortcut phrases
+/// can only carry entities, never a number, so Siri always asks for the amount after the phrase.
 struct LogExpenseIntent: AppIntent {
     static let title: LocalizedStringResource = "Log an expense"
     static let description = IntentDescription("Saves an expense in Keepwell with its amount, category and how you paid.")
@@ -37,7 +40,7 @@ struct LogExpenseIntent: AppIntent {
         }
     }
 
-    func perform() async throws -> some IntentResult & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
         let store = try await IntentStore.open()
         let context = DefaultGetTransactionContextUseCase(
             settings: store,
@@ -59,19 +62,27 @@ struct LogExpenseIntent: AppIntent {
         }
         let categoryID = category?.id ?? TransactionCategory.otherExpenseID
         let categoryName = current.categories.first { $0.id == categoryID }.map(CategoryDisplay.name(of:)) ?? ""
+        // A credit card pays with its plastic, so the expense lands on the debt of its currency.
+        let holder = current.cards.first { $0.accountID == accountID && $0.kind == .creditHolder }
         let draft = TransactionDraft(
             kind: .expense,
             amount: amount.amount,
             currency: currency,
             categoryID: categoryID,
-            source: .account(accountID),
+            source: holder.map { .card($0.id) } ?? .account(accountID),
             description: Self.description(detail) ?? category?.name ?? categoryName,
         )
         do {
             let saved = try await DefaultSaveTransactionUseCase(context: context, transactions: store).execute(draft)
             let spent = CurrencyFormatter().string(from: -saved.transaction.amount, currencyCode: saved.transaction.currency)
             let name = category?.name ?? categoryName
-            return .result(dialog: Self.dialog(String(localized: "Expense saved · \(name) \(spent)")))
+            let snippet = ExpenseSnippet(
+                category: current.categories.first { $0.id == categoryID },
+                categoryName: name,
+                amount: spent,
+                source: holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: saved.account),
+            )
+            return .result(dialog: Self.dialog(String(localized: "Expense saved · \(name) \(spent)")), view: snippet)
         } catch {
             throw IntentFailure.notSaved
         }
@@ -92,6 +103,39 @@ struct LogExpenseIntent: AppIntent {
     /// Cash first, since quick spoken expenses are usually paid in cash; else the first account.
     static func defaultAccount(in accounts: [Account]) -> Account? {
         accounts.first { $0.kind == .cash } ?? accounts.first { $0.kind == .deposit }
+    }
+}
+
+/// What Siri shows under its answer: the category's icon, the amount and what paid it, as the
+/// receipt in the app does.
+struct ExpenseSnippet: View {
+    let category: TransactionCategory?
+    let categoryName: String
+    let amount: String
+    let source: String
+
+    var body: some View {
+        HStack(spacing: KWSpacing.sm) {
+            Image(systemName: CategoryDisplay.symbol(for: category))
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(CategoryDisplay.color(for: category))
+                .frame(width: 40, height: 40)
+                .background(CategoryDisplay.color(for: category).opacity(0.16), in: Circle())
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(categoryName)
+                    .font(.kw(15, weight: 600))
+                Text(source)
+                    .font(KWTextStyle.captionSm.font.weight(.regular))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Text(amount)
+                .font(.kw(17, weight: 800))
+                .monospacedDigit()
+        }
+        .padding(KWSpacing.md)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -154,7 +198,7 @@ struct ExpenseCategoryQuery: EntityStringQuery {
     }
 }
 
-/// An account an expense can come out of: cash or a bank account.
+/// An account an expense can come out of: cash, a bank account or a credit card.
 struct PaymentAccountEntity: AppEntity {
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Account"
     static let defaultQuery = PaymentAccountQuery()
@@ -181,12 +225,15 @@ struct PaymentAccountQuery: EntityStringQuery {
     }
 
     private func all() async throws -> [PaymentAccountEntity] {
-        try await IntentStore.open().fetchAccounts()
-            .filter { $0.kind != .credit }
-            .map { account in
-                let name = [account.bank, account.name].compactMap(\.self).filter { !$0.isEmpty }.joined(separator: " ")
-                return PaymentAccountEntity(id: account.id, name: name)
-            }
+        let store = try await IntentStore.open()
+        let cards = try await store.fetchCards()
+        return try await store.fetchAccounts().map { account in
+            // A credit card answers to how the person names the plastic ("Premia ··0633").
+            let holder = cards.first { $0.accountID == account.id && $0.kind == .creditHolder }
+            let name = account.kind == .credit ? holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: account)
+                : CardDisplay.name(of: account)
+            return PaymentAccountEntity(id: account.id, name: name)
+        }
     }
 }
 
@@ -198,6 +245,7 @@ struct KeepwellShortcuts: AppShortcutsProvider {
             phrases: [
                 "Log an expense in \(.applicationName)",
                 "Log a \(\.$category) expense in \(.applicationName)",
+                "Log an expense from \(\.$account) in \(.applicationName)",
             ],
             shortTitle: "Log expense",
             systemImageName: "plus.circle",
