@@ -17,7 +17,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings › Security: set up, change or turn off the Keepwell passcode (six digits, stored only on
   this iPhone as a salted hash in the Keychain), and the name the lock screen greets you with. The
   unlock choice "iPhone passcode" is now "Passcode only": the Keepwell passcode when there is one.
-
+- Home greets you by time of day with today's date, and the hero's balance swipes like Revolut's:
+  net worth first, then each account in its own currency (with its "≈" conversion) and what the
+  cards owe, with page dots.
+- Home: an eye button next to the balance hides every amount on the screen; the choice stays on
+  this device.
+- Home: the three latest movements, with "See all" opening Transactions.
 - Settings › Language shows the app's language and opens the iPhone's Settings to pick another
   one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.
@@ -66,6 +71,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `AppContainer` composition root with init-based dependency injection.
 - Data stays on the iPhone with SwiftData and is backed up to the private iCloud database while
   "iCloud backup" is on (default); turning it off keeps data on the device only.
+
+### Changed
+
+- Expenses read as expenses: their amounts and arrow icon are coral red in Transactions, Home's
+  recent movements, a card's cycle and the month's totals ("−$8.18" red, "+$817.79" green);
+  Summary's "Went out" and Home's expense bar use the same color. The "−" sign stays.
 
 ### Fixed
 

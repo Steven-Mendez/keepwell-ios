@@ -1,7 +1,7 @@
 import Domain
 import Foundation
 
-/// Everything the home screen shows: net worth, this month, planned movements, additional cards
+/// Everything the home screen shows: net worth, the latest movements, this month, planned movements, additional cards
 /// close to their cap and the balance of each account.
 public struct HomeOverview: Hashable, Sendable {
     public struct AdditionalCardStatus: Identifiable, Hashable, Sendable {
@@ -31,6 +31,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let month: MonthlySummary
     /// Whether anything was recorded yet; without movements home invites logging the first one.
     public let hasTransactions: Bool
+    /// The latest confirmed movements, newest first, so home can show what just happened.
+    public let recent: [Transaction]
     /// Planned movements, soonest first.
     public let planned: [Transaction]
     public let plannedSummary: PlannedSummary
@@ -59,6 +61,7 @@ public struct HomeOverview: Hashable, Sendable {
         cardCount: Int,
         month: MonthlySummary,
         hasTransactions: Bool,
+        recent: [Transaction],
         planned: [Transaction],
         plannedSummary: PlannedSummary,
         additionalCards: [AdditionalCardStatus],
@@ -78,6 +81,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.cardCount = cardCount
         self.month = month
         self.hasTransactions = hasTransactions
+        self.recent = recent
         self.planned = planned
         self.plannedSummary = plannedSummary
         self.additionalCards = additionalCards

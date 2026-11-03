@@ -180,6 +180,11 @@ struct RootView: View {
                 screens.transactions.filter = .planned
                 tab = .transactions
             },
+            allTransactions: {
+                screens.transactions.query = ""
+                screens.transactions.filter = .all
+                tab = .transactions
+            },
             additionalCard: { router.push(.additionalCard(accountID: $0, cardID: $1)) },
         )
     }
@@ -248,7 +253,9 @@ struct RootView: View {
         router.pop()
         Task { await refreshLockSettings() }
     }
+}
 
+extension RootView {
     // MARK: - Phases
 
     private func load() async {
@@ -301,9 +308,7 @@ struct RootView: View {
         lock = LockState()
         phase = .onboarding(container.makeOnboardingViewModel())
     }
-}
 
-extension RootView {
     // MARK: - Outside the app
 
     /// Widget links: `keepwell://new-expense?category=…` opens a new expense in that category.

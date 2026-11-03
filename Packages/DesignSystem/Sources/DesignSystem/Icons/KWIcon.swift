@@ -22,6 +22,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     case cloud
     case contactless
     case creditCard
+    case eye
     case eyeOff
     case faceID
     case freeze
@@ -89,6 +90,11 @@ public enum KWIcon: String, CaseIterable, Sendable {
         case .cloud: [.path("M7 18a5 5 0 0 1-.6-10A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z")]
         case .contactless: [.path("M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17")]
         case .creditCard: [.rect(x: 3, y: 6, width: 18, height: 13, radius: 2), .path("M3 10h18M7 15h4")]
+        case .eye:
+            [
+                .path("M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"),
+                .circle(cx: 12, cy: 12, radius: 3),
+            ]
         case .eyeOff:
             [
                 .path("M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"),
