@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Onboarding: splash, welcome with restore from iCloud, currencies with a manual rate (default 1),
+  accounts (bank, credit card, cash), privacy and reminders, and a summary when done.
 - Project setup: XcodeGen, Debug/Staging/Release configurations, widgets extension, SwiftFormat,
   SwiftLint (with layer-boundary rules), Lefthook, GitHub Actions and Dependabot.
 - Packages: `Core` (`AppRouter`, `CurrencyFormatter`), `DesignSystem` (tokens, Inter typography,

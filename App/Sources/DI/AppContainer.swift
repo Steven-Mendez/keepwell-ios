@@ -1,6 +1,8 @@
 import Core
 import Domain
 import Foundation
+import OnboardingDomain
+import OnboardingPresentation
 import Persistence
 import SwiftData
 #if DEBUG
@@ -9,31 +11,40 @@ import DomainSamples
 
 /// Composition root: the only place that names concrete types and wires Data → Domain → Presentation.
 /// Features see protocols only, so swapping storage (e.g. for UI tests) is a change here alone.
+@MainActor
 final class AppContainer {
     let currencyFormatter = CurrencyFormatter()
     let store: SwiftDataStore
+    let preferences = StorePreferences()
 
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
     }
 
     #if DEBUG
-    /// Blocks launch until the sample is written so the first screen already shows it.
-    func seedSampleData() {
+    func seedSampleData() async {
         let sample = SampleData(referenceDate: .now)
-        let store = store
-        let semaphore = DispatchSemaphore(value: 0)
-        Task.detached {
-            try? await store.seed(
-                settings: sample.settings,
-                accounts: sample.accounts,
-                cards: sample.cards,
-                transactions: sample.transactions,
-                categories: sample.categories,
-            )
-            semaphore.signal()
-        }
-        semaphore.wait()
+        try? await store.seed(
+            settings: sample.settings,
+            accounts: sample.accounts,
+            cards: sample.cards,
+            transactions: sample.transactions,
+            categories: sample.categories,
+        )
     }
     #endif
+
+    // MARK: - Onboarding
+
+    func makeGetSettings() -> any GetSettingsUseCase {
+        DefaultGetSettingsUseCase(repository: store)
+    }
+
+    func makeOnboardingViewModel() -> OnboardingViewModel {
+        OnboardingViewModel(
+            completeOnboarding: DefaultCompleteOnboardingUseCase(settings: store, accounts: store, cards: store, backup: preferences),
+            restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store, backup: preferences),
+            notifications: UserNotificationAuthorizer(),
+        )
+    }
 }
