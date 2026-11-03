@@ -15,6 +15,7 @@ let package = Package(
         .library(name: "AccountsPresentation", targets: ["AccountsPresentation"]),
         .library(name: "AddCardDomain", targets: ["AddCardDomain"]),
         .library(name: "AddCardPresentation", targets: ["AddCardPresentation"]),
+        .library(name: "CreateTransactionDomain", targets: ["CreateTransactionDomain"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -160,6 +161,22 @@ let package = Package(
             name: "AddCardDomainTests",
             dependencies: [
                 "AddCardDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Create transaction
+
+        .target(
+            name: "CreateTransactionDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/CreateTransaction/Domain",
+        ),
+        .testTarget(
+            name: "CreateTransactionDomainTests",
+            dependencies: [
+                "CreateTransactionDomain",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
