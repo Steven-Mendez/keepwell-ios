@@ -2,6 +2,8 @@ import Domain
 import Foundation
 
 /// The last months side by side, each with its totals and categories, in the principal currency.
+/// Every amount comes from `Transaction.principalAmount`, converted with the rate stored on each
+/// movement, so the charts never add two currencies together.
 public struct SummaryReport: Hashable, Sendable {
     public let currency: String
     /// Oldest first; the last one is the current month.
@@ -10,6 +12,13 @@ public struct SummaryReport: Hashable, Sendable {
     public let averageExpense: Decimal?
     public let averageIncome: Decimal?
     public let categories: [TransactionCategory]
+    /// The whole window added up, for "in six months you saved…".
+    public let cashFlow: CashFlowTrend
+    /// Same order as `months`.
+    public let expenseBreakdowns: [CategoryBreakdown]
+    public let incomeBreakdowns: [CategoryBreakdown]
+    /// Same order as `months`, each against the month before it.
+    public let paces: [SpendingPace]
 
     public init(
         currency: String,
@@ -17,12 +26,17 @@ public struct SummaryReport: Hashable, Sendable {
         averageExpense: Decimal?,
         averageIncome: Decimal?,
         categories: [TransactionCategory],
+        paces: [SpendingPace],
     ) {
         self.currency = currency
         self.months = months
         self.averageExpense = averageExpense
         self.averageIncome = averageIncome
         self.categories = categories
+        self.paces = paces
+        cashFlow = CashFlowTrend(months: months)
+        expenseBreakdowns = months.map { CategoryBreakdown(totals: $0.categories) }
+        incomeBreakdowns = months.map { CategoryBreakdown(totals: $0.incomeCategories) }
     }
 }
 
@@ -82,6 +96,7 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
             averageExpense: SpendingHistory.averageMonthlyTotal(of: .expense, transactions: transactions, calendar: calendar),
             averageIncome: SpendingHistory.averageMonthlyTotal(of: .income, transactions: transactions, calendar: calendar),
             categories: categories,
+            paces: months.map { SpendingPace(month: $0.month, transactions: transactions, calendar: calendar, now: now) },
         )
     }
 }
