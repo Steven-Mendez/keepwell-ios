@@ -63,6 +63,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Accounts shows every bank account through its debit cards, stacked like the credit cards, and
   cash as a banknote. The "Transfers" row is gone from the accounts list; a bank account without a
   card shows an empty card slot to add one.
+- "How did you pay?" explains paying from a bank account without a card: the bare "Transfer" row is
+  now "Bank transfer · Charged directly to the account" with a transfer icon, after the account's
+  cards. Accounts beyond the two most used are grouped as bank accounts, cash and credit cards
+  instead of "Other"; credit cards show their bank instead of "Credit · holder" and cash shows its
+  name and what's available.
+- Movements name the card or account that paid them ("Visa •••• 3141", "LAFISE · Bank transfer")
+  instead of "Holder" or "Transfers LAFISE".
 - Builds signed without iCloud (free developer accounts) open with on-device storage instead of
   closing at launch.
 - Siri's prompts and messages appear in Spanish on Spanish iPhones.

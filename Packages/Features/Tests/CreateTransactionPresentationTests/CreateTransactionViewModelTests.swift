@@ -99,11 +99,26 @@ struct CreateTransactionViewModelTests {
         viewModel.selectCategory("restaurants")
         let sources = viewModel.methodGroups.flatMap(\.rows).map(\.source)
         #expect(!sources.contains(.card(SampleData.IDs.mastercardAdditional)))
-        #expect(viewModel.methodGroups.last?.title == "Other")
-        #expect(viewModel.methodGroups.count == 3)
+        #expect(viewModel.methodGroups.dropFirst(2).map(\.title) == ["Cash", "Credit cards"])
         viewModel.path = [.category]
         viewModel.selectCategory("groceries")
         #expect(viewModel.methodGroups.flatMap(\.rows).contains { $0.source == .card(SampleData.IDs.mastercardAdditional) })
+    }
+
+    @Test
+    func bankTransferReadsAsAChargeToTheAccountAfterItsCards() async throws {
+        let viewModel = await CreateTransactionFactory.loaded()
+        viewModel.selectCategory("restaurants")
+        let rows = viewModel.methodGroups.flatMap(\.rows)
+        let transfer = try #require(rows.first { $0.source == .card(SampleData.IDs.savingsTransfer) })
+        #expect(transfer.title == "Bank transfer")
+        #expect(transfer.thumbnail == .transfer)
+        #expect(["Charged directly to the account", "Charged directly to Bank One Savings"].contains(transfer.subtitle ?? ""))
+        let savingsRows = rows.filter { [.card(SampleData.IDs.savingsDebit), .card(SampleData.IDs.savingsTransfer)].contains($0.source) }
+        #expect(savingsRows.map(\.source) == [.card(SampleData.IDs.savingsDebit), .card(SampleData.IDs.savingsTransfer)])
+        #expect(!rows.contains { ["Holder", "Transfer"].contains($0.title) || $0.subtitle == "Credit · holder" })
+        viewModel.selectSource(.card(SampleData.IDs.savingsTransfer))
+        #expect(viewModel.sourceTitle == "Bank One · Bank transfer")
     }
 
     @Test

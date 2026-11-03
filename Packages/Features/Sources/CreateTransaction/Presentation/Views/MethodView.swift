@@ -71,7 +71,7 @@ public struct MethodView: View {
     private func thumbnail(_ thumbnail: MethodRow.Thumbnail) -> some View {
         switch thumbnail {
         case let .card(color): KWMiniCard(.palette(CardDisplay.palette(for: color)))
-        case .transfer: KWMiniCard(.neutral)
+        case .transfer: KWMiniCard(.transfer)
         case .cash: KWMiniCard(.solid(KWColor.State.positive))
         }
     }

@@ -21,6 +21,16 @@
         }
       }
     },
+    "Bank transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
     "Debit •••• %@" : {
       "localizations" : {
         "es" : {
@@ -87,16 +97,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salud"
-          }
-        }
-      }
-    },
-    "Holder" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titular"
           }
         }
       }
@@ -233,16 +233,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Herramientas"
-          }
-        }
-      }
-    },
-    "Transfers %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transferencias %@"
           }
         }
       }

@@ -13,11 +13,21 @@ struct DisplayTests {
         let transfer = try Card(accountID: account.id, kind: .transfer)
         #expect(CardDisplay.name(of: account) == "Bank One Savings")
         #expect(CardDisplay.methodTitle(debit, account: account) == "Debit •••• 1234")
-        #expect(CardDisplay.methodTitle(transfer, account: account) == "Transfers Bank One")
+        #expect(CardDisplay.methodTitle(transfer, account: account) == "Bank One · Bank transfer")
         #expect(CardDisplay.shortName(of: debit) == "Visa ··1234")
         #expect(CardDisplay.wordmark(for: .mastercard) == "mastercard")
         #expect(CardDisplay.palette(for: .lima) == .lima)
         #expect(CardDisplay.cardColor(for: .oro) == .oro)
+    }
+
+    @Test
+    func creditCardsReadAsTheirNumberNotTheirRole() throws {
+        let account = Account(name: "Visa", bank: "Bank One", kind: .credit, openingBalances: [Money(0, "USD")], openingDate: .now)
+        let holder = try Card(accountID: account.id, kind: .creditHolder, network: .visa, lastFour: "3141")
+        let unnamedBank = Account(name: " ", kind: .deposit, openingBalances: [Money(0, "USD")], openingDate: .now)
+        let transfer = try Card(accountID: unnamedBank.id, kind: .transfer)
+        #expect(CardDisplay.methodTitle(holder, account: account) == "Visa •••• 3141")
+        #expect(CardDisplay.methodTitle(transfer, account: unnamedBank) == "Bank transfer")
     }
 
     @Test

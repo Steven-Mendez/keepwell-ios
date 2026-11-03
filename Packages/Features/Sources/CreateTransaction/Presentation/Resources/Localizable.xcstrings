@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ available" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ disponible"
+          }
+        }
+      }
+    },
     "%@ charged by the bank" : {
       "localizations" : {
         "es" : {
@@ -81,12 +91,32 @@
         }
       }
     },
+    "Bank accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas bancarias"
+          }
+        }
+      }
+    },
     "Bank rate" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tasa del banco"
+          }
+        }
+      }
+    },
+    "Bank transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia bancaria"
           }
         }
       }
@@ -107,6 +137,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Categoría"
+          }
+        }
+      }
+    },
+    "Charged directly to %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cobra directo de %@"
+          }
+        }
+      }
+    },
+    "Charged directly to the account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cobra directo de la cuenta"
           }
         }
       }
@@ -161,12 +211,12 @@
         }
       }
     },
-    "Credit · holder" : {
+    "Credit cards" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crédito · titular"
+            "value" : "Tarjetas de crédito"
           }
         }
       }
@@ -271,16 +321,6 @@
         }
       }
     },
-    "Holder" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titular"
-          }
-        }
-      }
-    },
     "How did you pay?" : {
       "localizations" : {
         "es" : {
@@ -351,6 +391,16 @@
         }
       }
     },
+    "Main card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta principal"
+          }
+        }
+      }
+    },
     "Method" : {
       "localizations" : {
         "es" : {
@@ -397,16 +447,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opcional · si usó otra tasa"
-          }
-        }
-      }
-    },
-    "Other" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otras"
           }
         }
       }
