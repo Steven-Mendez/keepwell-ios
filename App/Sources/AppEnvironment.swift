@@ -9,6 +9,9 @@ struct AppEnvironment {
     /// `-sample-data`: start from the generic sample set in memory (Debug builds only), for UI
     /// tests and simulator checks against the design.
     let usesSampleData: Bool
+    /// `-open-new-movement`: opens the create-movement flow at launch (Debug builds only), so UI
+    /// tests can reach it directly.
+    let opensNewMovement: Bool
 
     static let current: AppEnvironment = {
         let info = Bundle.main.infoDictionary ?? [:]
@@ -18,6 +21,7 @@ struct AppEnvironment {
             cloudKitContainer: container,
             isUITesting: arguments.contains("-ui-testing"),
             usesSampleData: arguments.contains("-sample-data"),
+            opensNewMovement: arguments.contains("-open-new-movement"),
         )
     }()
 }

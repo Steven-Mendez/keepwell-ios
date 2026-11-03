@@ -3,6 +3,8 @@ import AccountsPresentation
 import AddCardDomain
 import AddCardPresentation
 import Core
+import CreateTransactionDomain
+import CreateTransactionPresentation
 import Domain
 import Foundation
 import OnboardingDomain
@@ -70,6 +72,19 @@ final class AppContainer {
             addCredit: DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store),
             addDebit: DefaultAddDebitCardUseCase(accounts: store, cards: store),
             addAccount: DefaultAddAccountUseCase(accounts: store, cards: store),
+        )
+    }
+
+    // MARK: - Create transaction
+
+    func makeCreateTransactionViewModel(kind: TransactionKind = .expense) -> CreateTransactionViewModel {
+        let context = DefaultGetTransactionContextUseCase(
+            settings: store, categories: store, accounts: store, cards: store, transactions: store,
+        )
+        return CreateTransactionViewModel(
+            getContext: context,
+            save: DefaultSaveTransactionUseCase(context: context, transactions: store),
+            kind: kind,
         )
     }
 }
