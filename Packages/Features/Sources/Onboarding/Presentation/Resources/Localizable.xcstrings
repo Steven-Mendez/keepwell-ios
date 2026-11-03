@@ -301,6 +301,16 @@
         }
       }
     },
+    "Drafts due today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borradores que vencen hoy"
+          }
+        }
+      }
+    },
     "Enter all 4 digits or leave it empty." : {
       "localizations" : {
         "es" : {
@@ -337,16 +347,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tasa de cambio (la pones tú)"
-          }
-        }
-      }
-    },
-    "Expected expenses due today" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gastos previstos que vencen hoy"
           }
         }
       }
@@ -451,12 +451,12 @@
         }
       }
     },
-    "Log expenses, income and transfers. Cards with extras, cash and expected expenses." : {
+    "Log expenses, income and transfers. Cards, cash and drafts to confirm later." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anota gastos, ingresos y transferencias. Tarjetas con adicionales, efectivo y gastos previstos."
+            "value" : "Anota gastos, ingresos y transferencias. Tarjetas, efectivo y borradores para confirmar después."
           }
         }
       }

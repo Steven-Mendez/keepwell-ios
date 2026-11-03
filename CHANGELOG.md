@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- "Save as draft" on a movement's review: it's saved without counting toward balances until you
+  confirm it. What the app called "Planned" is now "Drafts" everywhere (home, Transactions,
+  reminders, widgets).
 - Onboarding: the welcome screen has only "Start", and the next screen asks "Have you used Keepwell
   before?" with "Restore from iCloud", "Restore from a backup file (.json)" (accounts, cards and
   movements at once, straight to home) and "Start from scratch". The accounts step's CSV button

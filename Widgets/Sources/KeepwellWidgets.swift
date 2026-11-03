@@ -64,7 +64,7 @@ struct MonthWidget: Widget {
                 .widgetURL(AppLink.home)
         }
         .configurationDisplayName("This month")
-        .description("What you've spent this month and what's planned.")
+        .description("What you've spent this month and your drafts.")
         .supportedFamilies([.systemSmall])
     }
 }
@@ -221,7 +221,7 @@ extension WidgetSnapshot {
         return WidgetSnapshot(
             monthTitle: month,
             spent: "$709.58",
-            spentCaption: String(localized: "spent · 4 planned"),
+            spentCaption: String(localized: "spent · 4 drafts"),
             spentFraction: 0.29,
             netWorthTitle: String(localized: "Net worth"),
             netWorth: "$11,157.46",

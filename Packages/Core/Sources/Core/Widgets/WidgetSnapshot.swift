@@ -30,7 +30,7 @@ public struct WidgetSnapshot: Codable, Sendable, Equatable {
     public let monthTitle: String
     /// "$339.94".
     public let spent: String
-    /// "spent · 4 planned".
+    /// "spent · 4 drafts".
     public let spentCaption: String
     /// Spending against income, 0…1, for the bar.
     public let spentFraction: Double

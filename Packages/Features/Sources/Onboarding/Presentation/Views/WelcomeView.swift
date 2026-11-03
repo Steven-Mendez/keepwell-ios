@@ -22,7 +22,7 @@ public struct WelcomeView: View {
                     .padding(.top, 28)
                     .padding(.bottom, 12)
                     .accessibilityAddTraits(.isHeader)
-                Text("Log expenses, income and transfers. Cards with extras, cash and expected expenses.", bundle: #bundle)
+                Text("Log expenses, income and transfers. Cards, cash and drafts to confirm later.", bundle: #bundle)
                     .font(.kw(17, weight: 400))
                     .foregroundStyle(KWColor.Text.onBrand)
                     .lineSpacing(4)

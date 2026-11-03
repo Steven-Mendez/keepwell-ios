@@ -48,7 +48,16 @@ public struct ReviewView: View {
             .disabled(!viewModel.canSave)
             .padding(.horizontal, KWLayout.gutter)
             .padding(.top, KWSpacing.sm)
-            .padding(.bottom, 34)
+            // Not slid on purpose: a draft doesn't move money yet, so one tap is enough.
+            Button {
+                KWKeyboard.dismiss()
+                Task { await viewModel.save(asDraft: true) }
+            } label: {
+                Text("Save as draft", bundle: #bundle)
+            }
+            .buttonStyle(KWButtonStyle(.plain, size: .text, height: 44))
+            .disabled(!viewModel.canSave)
+            .padding(.bottom, 24)
         }
         .ignoresSafeArea(.container, edges: [.top, .bottom])
         .onAppear { viewModel.prefillDescription() }

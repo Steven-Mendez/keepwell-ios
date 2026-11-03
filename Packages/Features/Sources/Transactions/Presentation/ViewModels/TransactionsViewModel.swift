@@ -120,7 +120,7 @@ public final class TransactionsViewModel {
         if !planned.isEmpty {
             sections.append(Section(
                 id: "planned",
-                title: String(localized: "Planned · they don't affect balances", bundle: #bundle),
+                title: String(localized: "Drafts · they don't affect balances", bundle: #bundle),
                 transactions: planned,
             ))
         }
@@ -215,7 +215,7 @@ public final class TransactionsViewModel {
         case .expense: String(localized: "Expenses", bundle: #bundle)
         case .income: String(localized: "Income", bundle: #bundle)
         case .transfer: String(localized: "Transfers", bundle: #bundle)
-        case .planned: String(localized: "Planned", bundle: #bundle)
+        case .planned: String(localized: "Drafts", bundle: #bundle)
         }
     }
 }

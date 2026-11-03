@@ -41,7 +41,7 @@ extension HomeViewModel {
         let month = overview.month
         let plannedCount = overview.plannedSummary.count
         let spentCaption = plannedCount > 0
-            ? String(localized: "spent · \(plannedCount) planned", bundle: #bundle)
+            ? String(localized: "spent · \(plannedCount) drafts", bundle: #bundle)
             : String(localized: "spent", bundle: #bundle)
         let savedCaption = savedBadge(overview).map { "\(monthName(month.month).localizedCapitalized): \($0)" }
         return WidgetSnapshot(
@@ -86,7 +86,7 @@ extension HomeViewModel {
             return Reminder(
                 id: "planned-\(transaction.id)",
                 kind: .planned(transaction.id),
-                title: String(localized: "Planned for today", bundle: #bundle),
+                title: String(localized: "Draft for today", bundle: #bundle),
                 body: String(localized: "\(transaction.description) · \(amount) from \(method). Has it been paid?", bundle: #bundle),
                 date: date,
             )

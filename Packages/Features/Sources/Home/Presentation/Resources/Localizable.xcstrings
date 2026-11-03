@@ -181,6 +181,26 @@
         }
       }
     },
+    "Draft for today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrador para hoy"
+          }
+        }
+      }
+    },
+    "Drafts · %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borradores · %lld"
+          }
+        }
+      }
+    },
     "Expense" : {
       "localizations" : {
         "es" : {
@@ -391,26 +411,6 @@
         }
       }
     },
-    "Planned for today" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previsto para hoy"
-          }
-        }
-      }
-    },
-    "Planned · %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previstos · %lld"
-          }
-        }
-      }
-    },
     "Recent" : {
       "localizations" : {
         "es" : {
@@ -547,7 +547,7 @@
         }
       }
     },
-    "spent · %lld planned" : {
+    "spent · %lld drafts" : {
       "localizations" : {
         "en" : {
           "variations" : {
@@ -555,13 +555,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "spent · %lld planned"
+                  "value" : "spent · %lld draft"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "spent · %lld planned"
+                  "value" : "spent · %lld drafts"
                 }
               }
             }
@@ -573,13 +573,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "gastado · %lld previsto"
+                  "value" : "gastado · %lld borrador"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "gastado · %lld previstos"
+                  "value" : "gastado · %lld borradores"
                 }
               }
             }

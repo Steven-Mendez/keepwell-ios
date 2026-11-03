@@ -32,6 +32,8 @@ public struct TransactionDraft: Sendable {
     /// "USD charged by the bank".
     public var actualDebitedPrincipal: Decimal?
     public var note: String
+    /// Saved without counting toward balances until the person confirms it.
+    public var isDraft: Bool
 
     public init(
         id: UUID = UUID(),
@@ -45,6 +47,7 @@ public struct TransactionDraft: Sendable {
         date: Date = .now,
         actualDebitedPrincipal: Decimal? = nil,
         note: String = "",
+        isDraft: Bool = false,
     ) {
         self.id = id
         self.kind = kind
@@ -57,6 +60,7 @@ public struct TransactionDraft: Sendable {
         self.date = date
         self.actualDebitedPrincipal = actualDebitedPrincipal
         self.note = note
+        self.isDraft = isDraft
     }
 }
 

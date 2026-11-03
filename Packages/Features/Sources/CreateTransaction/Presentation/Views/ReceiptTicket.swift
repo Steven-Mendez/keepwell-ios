@@ -48,7 +48,7 @@ struct ReceiptTicket<Footer: View>: View {
     private var status: some View {
         let confirmed = saved.transaction.isConfirmed
         let color = confirmed ? KWColor.State.positive : KWColor.State.pending
-        return Text(confirmed ? String(localized: "Confirmed", bundle: #bundle) : String(localized: "Planned", bundle: #bundle))
+        return Text(confirmed ? String(localized: "Confirmed", bundle: #bundle) : String(localized: "Draft", bundle: #bundle))
             .font(.kw(12, weight: 700, relativeTo: .caption))
             .foregroundStyle(color)
             .padding(.horizontal, 10)

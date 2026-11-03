@@ -55,6 +55,16 @@ struct CreateTransactionUseCasesTests {
     }
 
     @Test
+    func aDraftIsSavedWithoutTouchingTheBalance() async throws {
+        let before = try await contextUseCase().execute().balances[SampleData.IDs.cash]?.first?.amount ?? 0
+        var draft = expense(100, source: .account(SampleData.IDs.cash))
+        draft.isDraft = true
+        let saved = try await save(draft)
+        #expect(saved.transaction.status == .planned)
+        #expect(saved.newBalances.first?.amount == before)
+    }
+
+    @Test
     func emptyDescriptionFallsBackToTheCategory() async throws {
         let saved = try await save(expense(source: .account(SampleData.IDs.cash)))
         #expect(saved.transaction.description == "Restaurants")

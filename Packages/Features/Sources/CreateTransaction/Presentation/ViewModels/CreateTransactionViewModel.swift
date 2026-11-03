@@ -241,10 +241,13 @@ public final class CreateTransactionViewModel {
         )
     }
 
-    public func save() async {
+    /// `asDraft` keeps it out of balances until it's confirmed from home or Transactions.
+    public func save(asDraft: Bool = false) async {
         guard canSave, context != nil else { return }
         isSaving = true
         defer { isSaving = false }
+        var draft = draft
+        draft.isDraft = asDraft
         do {
             saved = try await saveTransaction.execute(draft)
             errorMessage = nil

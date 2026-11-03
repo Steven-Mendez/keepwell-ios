@@ -125,7 +125,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
         return Transaction(
             id: draft.id,
             date: draft.date,
-            status: .confirmed,
+            status: draft.isDraft ? .planned : .confirmed,
             // Safety net only: the view model fills a localized description before saving.
             description: description.isEmpty ? (category?.name ?? "Transfer") : description,
             kind: draft.kind,
