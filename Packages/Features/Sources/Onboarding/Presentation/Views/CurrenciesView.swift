@@ -6,7 +6,6 @@ public struct CurrenciesView: View {
     @Bindable private var viewModel: OnboardingViewModel
     private let onBack: () -> Void
     @State private var isSearching = false
-    @FocusState private var isRateFocused: Bool
 
     public init(viewModel: OnboardingViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -36,9 +35,12 @@ public struct CurrenciesView: View {
                     rateCard
                 }
                 Spacer(minLength: 0)
-                Button("Continuar") { viewModel.continueFromCurrencies() }
-                    .buttonStyle(.kw())
-                    .disabled(!viewModel.canContinueFromCurrencies)
+                Button("Continuar") {
+                    KWKeyboard.dismiss()
+                    viewModel.continueFromCurrencies()
+                }
+                .buttonStyle(.kw())
+                .disabled(!viewModel.canContinueFromCurrencies)
             }
         }
         .sheet(isPresented: $isSearching) {
@@ -82,7 +84,6 @@ public struct CurrenciesView: View {
                 Text(verbatim: "1 \(viewModel.principal) =")
                 TextField("1.0000", text: $viewModel.rateText)
                     .keyboardType(.decimalPad)
-                    .focused($isRateFocused)
                     .monospacedDigit()
                     .padding(.horizontal, 14)
                     .frame(height: 48)
@@ -111,12 +112,6 @@ public struct CurrenciesView: View {
         .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface))
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Listo") { isRateFocused = false }
-            }
-        }
     }
 }
 
