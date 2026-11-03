@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "OnboardingPresentation", targets: ["OnboardingPresentation"]),
         .library(name: "AccountsDomain", targets: ["AccountsDomain"]),
         .library(name: "AccountsPresentation", targets: ["AccountsPresentation"]),
+        .library(name: "AddCardDomain", targets: ["AddCardDomain"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -119,6 +120,22 @@ let package = Package(
             name: "AccountsDomainTests",
             dependencies: [
                 "AccountsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Add card
+
+        .target(
+            name: "AddCardDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/AddCard/Domain",
+        ),
+        .testTarget(
+            name: "AddCardDomainTests",
+            dependencies: [
+                "AddCardDomain",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
