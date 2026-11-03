@@ -163,14 +163,25 @@ public protocol EraseAllDataUseCase: Sendable {
     func execute() async throws(DomainError)
 }
 
+/// Removes the iCloud copy itself. Deleting local records only reaches iCloud while sync is on and
+/// running, so with iCloud off (or before the deletions upload) the cloud copy would survive.
+public protocol CloudCopyEraser: Sendable {
+    func eraseCloudCopy() async throws(DomainError)
+}
+
 public struct DefaultEraseAllDataUseCase: EraseAllDataUseCase {
     private let eraser: any DataEraser
+    private let cloud: (any CloudCopyEraser)?
 
-    public init(eraser: any DataEraser) {
+    public init(eraser: any DataEraser, cloud: (any CloudCopyEraser)? = nil) {
         self.eraser = eraser
+        self.cloud = cloud
     }
 
+    /// This device first, so a failure to reach iCloud never leaves local data behind; running it
+    /// again then only retries the cloud.
     public func execute() async throws(DomainError) {
         try await eraser.eraseAll()
+        try await cloud?.eraseCloudCopy()
     }
 }

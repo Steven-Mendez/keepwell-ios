@@ -172,7 +172,7 @@ final class AppContainer {
             restoreBackup: DefaultRestoreBackupUseCase(
                 eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store,
             ),
-            eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
+            eraseAllData: DefaultEraseAllDataUseCase(eraser: store, cloud: makeCloudCopyEraser()),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
         )
@@ -238,6 +238,14 @@ final class AppContainer {
 
     func makeImportTransactions() -> any ImportTransactionsUseCase {
         DefaultImportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store, settings: store)
+    }
+
+    /// Sample-data and UI-test runs keep an in-memory store, so erasing them must never reach the
+    /// real iCloud copy.
+    private func makeCloudCopyEraser() -> (any CloudCopyEraser)? {
+        let environment = AppEnvironment.current
+        guard !environment.isUITesting, !environment.usesSampleData else { return nil }
+        return CloudKitCopyEraser(containerIdentifier: environment.cloudKitContainer)
     }
 
     // MARK: - Credit card
