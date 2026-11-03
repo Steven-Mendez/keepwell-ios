@@ -22,6 +22,7 @@ struct RootView: View {
     @State private var accounts: AccountsViewModel?
     @State private var addCard: PresentedFlow<AddCardViewModel>?
     @State private var newMovement: PresentedFlow<CreateTransactionViewModel>?
+    @State private var hasMovements = false
 
     init(container: AppContainer) {
         self.container = container
@@ -55,7 +56,8 @@ struct RootView: View {
                         )
                     }
                 case .home, .transactions, .summary:
-                    KWColor.Surface.bg
+                    PendingTabView(tab: tab, hasMovements: hasMovements, onNewMovement: presentNewMovement)
+                        .task { hasMovements = await container.hasMovements() }
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -82,7 +84,10 @@ struct RootView: View {
     }
 
     private func reloadAccounts() {
-        Task { await accounts?.load() }
+        Task {
+            await accounts?.load()
+            hasMovements = await container.hasMovements()
+        }
     }
 
     private func load() async {
