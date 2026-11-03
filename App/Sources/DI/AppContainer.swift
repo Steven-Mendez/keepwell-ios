@@ -1,3 +1,5 @@
+import AccountsDomain
+import AccountsPresentation
 import Core
 import Domain
 import Foundation
@@ -45,6 +47,16 @@ final class AppContainer {
             completeOnboarding: DefaultCompleteOnboardingUseCase(settings: store, accounts: store, cards: store, backup: preferences),
             restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store, backup: preferences),
             notifications: UserNotificationAuthorizer(),
+        )
+    }
+
+    // MARK: - Accounts
+
+    func makeAccountsViewModel() -> AccountsViewModel {
+        AccountsViewModel(
+            getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
+            reconcileCash: DefaultReconcileCashUseCase(transactions: store, settings: store),
+            withdrawCash: DefaultWithdrawCashUseCase(transactions: store, cards: store, settings: store),
         )
     }
 }
