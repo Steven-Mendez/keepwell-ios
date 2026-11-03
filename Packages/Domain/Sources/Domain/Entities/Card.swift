@@ -15,13 +15,16 @@ public enum CardNetwork: String, Codable, CaseIterable, Sendable {
     case other
 }
 
-/// Card art palette, by name so the domain stays free of UI colors.
+/// Card art palette, by name so the domain stays free of UI colors. Raw values are stored, so a
+/// color no longer offered (`violeta`, `coral`, `lima`) stays here for the cards saved with it.
 public enum CardColor: String, Codable, CaseIterable, Sendable {
     case azul
     case grafito
+    case platino
     case verde
     case violeta
     case coral
+    case rojo
     case oro
     case lima
 }

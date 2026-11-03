@@ -149,6 +149,7 @@ public struct CardColorSheet: View {
     private let onSave: (CardColor) async -> Bool
     private let onClose: () -> Void
     @State private var color: CardColor
+    private let colors: [CardColor]
 
     /// `onSave` returns whether the sheet can close.
     public init(
@@ -158,12 +159,11 @@ public struct CardColorSheet: View {
         onClose: @escaping () -> Void,
     ) {
         _color = State(initialValue: color ?? .azul)
+        colors = CardDisplay.selectableColors(keeping: color)
         self.preview = preview
         self.onSave = onSave
         self.onClose = onClose
     }
-
-    private static let colors: [CardColor] = [.azul, .grafito, .verde, .violeta, .coral, .oro, .lima]
 
     public var body: some View {
         KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
@@ -190,11 +190,13 @@ public struct CardColorSheet: View {
 
     private var swatches: some View {
         HStack(spacing: KWSpacing.xxs) {
-            ForEach(Self.colors, id: \.self) { option in
+            ForEach(colors, id: \.self) { option in
                 let palette = CardDisplay.palette(for: option)
                 Button { color = option } label: {
                     Circle()
                         .fill(palette.largeGradient)
+                        // Keeps the black swatch from disappearing into the black sheet.
+                        .overlay { Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1) }
                         .frame(width: 32, height: 32)
                         .overlay { Circle().strokeBorder(.white, lineWidth: color == option ? 2 : 0).padding(-4) }
                         .frame(width: KWLayout.minTouch, height: KWLayout.minTouch)

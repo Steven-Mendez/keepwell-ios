@@ -31,7 +31,7 @@ public struct AddCardTypeView: View {
                     ),
                 ) { viewModel.choose(.credit) }
                 option(
-                    palette: .coral,
+                    palette: .verde,
                     title: String(localized: "Debit card", bundle: #bundle),
                     subtitle: String(localized: "Your bank account, shown as its card: balance, bank and last 4", bundle: #bundle),
                 ) { viewModel.choose(.debit) }

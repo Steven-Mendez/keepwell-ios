@@ -21,6 +21,16 @@
         }
       }
     },
+    "Black" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negro"
+          }
+        }
+      }
+    },
     "Blue" : {
       "localizations" : {
         "es" : {
@@ -101,16 +111,6 @@
         }
       }
     },
-    "Graphite" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grafito"
-          }
-        }
-      }
-    },
     "Green" : {
       "localizations" : {
         "es" : {
@@ -161,12 +161,32 @@
         }
       }
     },
+    "Platinum" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Platino"
+          }
+        }
+      }
+    },
     "Previous field" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Campo anterior"
+          }
+        }
+      }
+    },
+    "Red" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rojo"
           }
         }
       }

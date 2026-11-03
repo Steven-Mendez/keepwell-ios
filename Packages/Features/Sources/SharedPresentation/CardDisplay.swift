@@ -8,9 +8,11 @@ public enum CardDisplay {
         switch color {
         case .azul, nil: .azul
         case .grafito: .grafito
+        case .platino: .platino
         case .verde: .verde
         case .violeta: .violeta
         case .coral: .coral
+        case .rojo: .rojo
         case .oro: .oro
         case .lima: .lima
         }
@@ -18,6 +20,14 @@ public enum CardDisplay {
 
     public static func cardColor(for palette: KWColor.CardArt) -> CardColor {
         CardColor(rawValue: palette.rawValue) ?? .azul
+    }
+
+    /// The colors offered for a card. A card painted in a color no longer offered keeps it at the
+    /// end of the row, so opening the picker doesn't silently change it.
+    public static func selectableColors(keeping current: CardColor? = nil) -> [CardColor] {
+        let offered = KWColor.CardArt.selectable.map(cardColor(for:))
+        guard let current, !offered.contains(current) else { return offered }
+        return offered + [current]
     }
 
     /// The network mark printed on card art; `nil` for networks without one.

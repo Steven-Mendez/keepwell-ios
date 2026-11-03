@@ -47,13 +47,16 @@ public enum KWColor {
         public static let extra = Color(hex: Hex.State.extra)
     }
 
-    /// Card art (two-stop gradients).
+    /// Card art (two-stop gradients). `violeta`, `coral` and `lima` are no longer offered but still
+    /// draw cards saved with them.
     public enum CardArt: String, CaseIterable, Sendable {
         case azul
         case grafito
+        case platino
         case verde
         case violeta
         case coral
+        case rojo
         case oro
         case lima
         case chip
@@ -62,10 +65,12 @@ public enum KWColor {
             switch self {
             case .azul: (0x4A74FF, 0x1A33A8)
             case .grafito: (0x3A3A44, 0x121216)
+            case .platino: (0xE4E6EA, 0x8C919B)
             case .verde: (0x1FC28E, 0x0B6B4F)
             case .violeta: (0xA47BFF, 0x5A2FD0)
             case .coral: (0xFF7A50, 0xC93A12)
-            case .oro: (0xE2C27A, 0x8E6B26)
+            case .rojo: (0xD8323F, 0x6E0B17)
+            case .oro: (0xEDD596, 0x9A7429)
             case .lima: (0xE4FC98, 0x9CD228)
             case .chip: (0xF3E6BC, 0xB99A5C)
             }

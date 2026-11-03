@@ -11,7 +11,7 @@ extension Card {
         for accountID: UUID,
         lastFour: String? = nil,
         network: CardNetwork? = nil,
-        color: CardColor = .coral,
+        color: CardColor = .verde,
     ) throws(DomainError) -> Self {
         let digits = lastFour?.trimmingCharacters(in: .whitespaces)
         return try Self(

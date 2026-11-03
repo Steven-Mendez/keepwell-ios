@@ -57,6 +57,17 @@ struct CardArtSnapshotTests {
     }
 
     @Test
+    func metallicPalettesPrintInDarkInk() {
+        let view = VStack(spacing: KWSpacing.xl) {
+            KWCardArt(palette: .platino, bank: "Bank One", holder: "ALEX", lastFour: "4321", network: .visa, kindLabel: "Credit")
+            KWCardArt(palette: .oro, bank: "Bank Two", holder: "ALEX", lastFour: "8765", network: .mastercard, kindLabel: "Credit")
+            KWCardArt(palette: .rojo, bank: "Bank Three", holder: "ALEX", lastFour: "1005", network: .visa, kindLabel: "Debit")
+        }
+        .padding(KWLayout.gutter)
+        assertComponentSnapshot(of: view, height: 800)
+    }
+
+    @Test
     func amexGroupsItsNumberAndPrintsTheBanknote() {
         let view = VStack(spacing: KWSpacing.xl) {
             KWCardArt(palette: .oro, bank: "Bank Three", lastFour: "1005", numberGroups: [4, 6, 5], network: .amex, kindLabel: "Credit")
