@@ -79,18 +79,35 @@ final class MainScreens {
 
 struct SettingsRoute: View {
     @State private var viewModel: SettingsViewModel
+    @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
+    private let container: AppContainer
     let onBack: () -> Void
     let onErased: () -> Void
 
     init(container: AppContainer, onBack: @escaping () -> Void, onErased: @escaping () -> Void) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
+        self.container = container
         self.onBack = onBack
         self.onErased = onErased
     }
 
     var body: some View {
-        SettingsView(viewModel: viewModel, onBack: onBack, onErased: onErased)
-            .navigationBarBackButtonHidden()
+        SettingsView(
+            viewModel: viewModel,
+            onBack: onBack,
+            onErased: onErased,
+            onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
+        )
+        .navigationBarBackButtonHidden()
+        .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in
+            PasscodeSetupView(viewModel: flow.viewModel, isChanging: viewModel.overview?.hasPasscode == true) {
+                passcodeSetup = nil
+            }
+        }
+    }
+
+    private func reload() {
+        Task { await viewModel.load() }
     }
 }
 

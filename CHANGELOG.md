@@ -9,6 +9,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Lock screen with a Keepwell passcode: a time-of-day greeting ("Good morning, Steven"), six
+  passcode dots and a keypad whose corner key is Face ID or Touch ID, asked on its own when the
+  screen appears. A wrong passcode shakes the dots with a haptic; after five, the keypad waits
+  longer each time (30 seconds up to an hour). "Forgot your passcode?" gets in with the iPhone
+  passcode and turns the Keepwell one off.
+- Settings › Security: set up, change or turn off the Keepwell passcode (six digits, stored only on
+  this iPhone as a salted hash in the Keychain), and the name the lock screen greets you with. The
+  unlock choice "iPhone passcode" is now "Passcode only": the Keepwell passcode when there is one.
+
 - Settings › Language shows the app's language and opens the iPhone's Settings to pick another
   one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.

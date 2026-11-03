@@ -21,6 +21,8 @@ public final class SettingsViewModel {
 
     public private(set) var state = State.loading
     public var rateText = ""
+    /// The lock screen's name as typed; saved when the field loses focus.
+    public var nameText = ""
     public private(set) var errorMessage: String?
     /// Set once the iCloud switch changed, since the store only switches on the next launch.
     public private(set) var backupChangeIsPending = false
@@ -43,6 +45,8 @@ public final class SettingsViewModel {
     private let createBackup: any CreateBackupUseCase
     private let restoreBackup: any RestoreBackupUseCase
     private let eraseAllData: any EraseAllDataUseCase
+    private let removePasscode: any RemovePasscodeUseCase
+    private let setPreferredName: any SetPreferredNameUseCase
     private let now: () -> Date
     let formatter = CurrencyFormatter()
 
@@ -55,8 +59,12 @@ public final class SettingsViewModel {
         createBackup: any CreateBackupUseCase,
         restoreBackup: any RestoreBackupUseCase,
         eraseAllData: any EraseAllDataUseCase,
+        removePasscode: any RemovePasscodeUseCase,
+        setPreferredName: any SetPreferredNameUseCase,
         now: @escaping () -> Date = { .now },
     ) {
+        self.removePasscode = removePasscode
+        self.setPreferredName = setPreferredName
         self.getOverview = getOverview
         self.updateSettings = updateSettings
         self.setICloudBackup = setICloudBackup
@@ -84,6 +92,7 @@ public final class SettingsViewModel {
         do {
             let overview = try await getOverview.execute()
             state = .loaded(overview)
+            nameText = overview.preferredName ?? ""
             rateText = formatter.number(overview.settings.currencies.rate, fractionDigits: 4).replacingOccurrences(of: ",", with: "")
         } catch {
             state = .failed
@@ -106,6 +115,17 @@ public final class SettingsViewModel {
 
     public func setUnlockMethod(_ method: UnlockMethod) async {
         await update { $0.unlockMethod = method }
+    }
+
+    public func turnOffPasscode() async {
+        await removePasscode.execute()
+        await load()
+    }
+
+    public func commitName() async {
+        guard nameText.trimmingCharacters(in: .whitespacesAndNewlines) != (overview?.preferredName ?? "") else { return }
+        await setPreferredName.execute(nameText)
+        await load()
     }
 
     public func setRelockAfter(_ seconds: TimeInterval) async {

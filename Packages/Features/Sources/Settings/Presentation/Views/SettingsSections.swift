@@ -55,8 +55,15 @@ struct SettingsMenuRow<Option: Hashable>: View {
 
 /// How the app unlocks, when it asks again and whether amounts hide in the app switcher.
 struct SecuritySection: View {
-    let viewModel: SettingsViewModel
-    let settings: Settings
+    @Bindable var viewModel: SettingsViewModel
+    let overview: SettingsOverview
+    let onSetUpPasscode: () -> Void
+    @State private var isConfirmingPasscodeOff = false
+    @FocusState private var isEditingName: Bool
+
+    private var settings: Settings {
+        overview.settings
+    }
 
     var body: some View {
         SettingsSection(title: String(localized: "Security and privacy", bundle: #bundle)) {
@@ -77,6 +84,8 @@ struct SecuritySection: View {
                 }
                 .padding(.vertical, 14)
                 if settings.unlockMethod != .disabled {
+                    passcodeRow
+                    nameRow
                     SettingsMenuRow(
                         label: String(localized: "Ask again after", bundle: #bundle),
                         value: viewModel.relockTitle(settings.relockAfter),
@@ -94,6 +103,78 @@ struct SecuritySection: View {
                 .padding(.vertical, 14)
             }
         }
+        .onChange(of: isEditingName) { _, editing in
+            if !editing {
+                Task { await viewModel.commitName() }
+            }
+        }
+        .confirmationDialog(
+            String(localized: "Turn off the Keepwell passcode?", bundle: #bundle),
+            isPresented: $isConfirmingPasscodeOff,
+            titleVisibility: .visible,
+        ) {
+            Button(role: .destructive) {
+                Task { await viewModel.turnOffPasscode() }
+            } label: {
+                Text("Turn off passcode", bundle: #bundle)
+            }
+        } message: {
+            Text("Keepwell will ask for your iPhone passcode instead.", bundle: #bundle)
+        }
+    }
+
+    /// The app's own six-digit code: the keypad on the lock screen, with Face ID on top.
+    @ViewBuilder
+    private var passcodeRow: some View {
+        let title = String(localized: "Keepwell passcode", bundle: #bundle)
+        if overview.hasPasscode {
+            Menu {
+                Button { onSetUpPasscode() } label: {
+                    Text("Change passcode", bundle: #bundle)
+                }
+                Button(role: .destructive) { isConfirmingPasscodeOff = true } label: {
+                    Text("Turn off passcode", bundle: #bundle)
+                }
+            } label: {
+                KWValueRow(title, value: String(localized: "On ›", bundle: #bundle), style: .navigation, verticalPadding: 14)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        } else {
+            Button(action: onSetUpPasscode) {
+                VStack(alignment: .leading, spacing: 2) {
+                    KWValueRow(title, value: String(localized: "Set up ›", bundle: #bundle), style: .navigation, verticalPadding: 0)
+                    Text("Six digits, kept only on this iPhone. Without one, the lock uses your iPhone passcode.", bundle: #bundle)
+                        .font(KWTextStyle.captionSm.font.weight(.regular))
+                        .foregroundStyle(KWColor.Text.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.vertical, 14)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    /// The name the lock screen greets with ("Good morning, Steven").
+    private var nameRow: some View {
+        HStack(spacing: KWSpacing.sm) {
+            Text("Your name", bundle: #bundle).font(KWTextStyle.body.font)
+            Spacer(minLength: KWSpacing.xs)
+            TextField(String(localized: "For the greeting", bundle: #bundle), text: $viewModel.nameText)
+                .multilineTextAlignment(.trailing)
+                .font(.kw(15, weight: 600))
+                .textContentType(.givenName)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .submitLabel(.done)
+                .focused($isEditingName)
+                .padding(.vertical, KWSpacing.xs)
+                .padding(.horizontal, 10)
+                .frame(maxWidth: 170)
+                .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: 10))
+        }
+        .padding(.vertical, 10)
     }
 
     private func unlockOption(_ method: UnlockMethod, isSelected: Bool) -> some View {

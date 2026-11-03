@@ -17,6 +17,10 @@ public struct SettingsOverview: Hashable, Sendable {
     public let isICloudBackupEnabled: Bool
     /// `nil` until the first upload finishes (or with backup off).
     public let lastBackupDate: Date?
+    /// Whether this iPhone has an app passcode; it's device-local, so not part of `settings`.
+    public let hasPasscode: Bool
+    /// The name the lock screen greets with.
+    public let preferredName: String?
 
     public init(
         settings: Settings,
@@ -25,8 +29,12 @@ public struct SettingsOverview: Hashable, Sendable {
         paymentMethodCount: Int,
         isICloudBackupEnabled: Bool,
         lastBackupDate: Date? = nil,
+        hasPasscode: Bool = false,
+        preferredName: String? = nil,
     ) {
         self.lastBackupDate = lastBackupDate
+        self.hasPasscode = hasPasscode
+        self.preferredName = preferredName
         self.settings = settings
         self.expenseCategoryCount = expenseCategoryCount
         self.incomeCategoryCount = incomeCategoryCount
@@ -45,6 +53,8 @@ public struct DefaultGetSettingsOverviewUseCase: GetSettingsOverviewUseCase {
     private let cards: any CardRepository
     private let backup: any BackupPreference
     private let status: (any BackupStatusProviding)?
+    private let passcodes: (any PasscodeRepository)?
+    private let profile: (any ProfileRepository)?
 
     public init(
         settings: any SettingsRepository,
@@ -52,8 +62,12 @@ public struct DefaultGetSettingsOverviewUseCase: GetSettingsOverviewUseCase {
         cards: any CardRepository,
         backup: any BackupPreference,
         status: (any BackupStatusProviding)? = nil,
+        passcodes: (any PasscodeRepository)? = nil,
+        profile: (any ProfileRepository)? = nil,
     ) {
         self.status = status
+        self.passcodes = passcodes
+        self.profile = profile
         self.settings = settings
         self.categories = categories
         self.cards = cards
@@ -70,6 +84,8 @@ public struct DefaultGetSettingsOverviewUseCase: GetSettingsOverviewUseCase {
             paymentMethodCount: cards.fetchCards().count,
             isICloudBackupEnabled: backup.isICloudBackupEnabled,
             lastBackupDate: backup.isICloudBackupEnabled ? status?.lastBackupDate : nil,
+            hasPasscode: passcodes?.hasPasscode() ?? false,
+            preferredName: profile?.preferredName(),
         )
     }
 }
@@ -122,6 +138,41 @@ public struct DefaultSetICloudBackupUseCase: SetICloudBackupUseCase {
         guard var current = try await settings.load() else { return }
         current.isICloudBackupEnabled = isEnabled
         try await settings.save(current)
+    }
+}
+
+/// Turns the app passcode off; the lock goes back to Face ID or the iPhone passcode.
+public protocol RemovePasscodeUseCase: Sendable {
+    func execute() async
+}
+
+public struct DefaultRemovePasscodeUseCase: RemovePasscodeUseCase {
+    private let passcodes: any PasscodeRepository
+
+    public init(passcodes: any PasscodeRepository) {
+        self.passcodes = passcodes
+    }
+
+    public func execute() async {
+        await passcodes.removePasscode()
+    }
+}
+
+/// The name the lock screen greets with; blank removes it.
+public protocol SetPreferredNameUseCase: Sendable {
+    func execute(_ name: String) async
+}
+
+public struct DefaultSetPreferredNameUseCase: SetPreferredNameUseCase {
+    private let profile: any ProfileRepository
+
+    public init(profile: any ProfileRepository) {
+        self.profile = profile
+    }
+
+    public func execute(_ name: String) async {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        await profile.setPreferredName(trimmed.isEmpty ? nil : String(trimmed.prefix(30)))
     }
 }
 

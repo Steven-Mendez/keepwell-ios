@@ -12,6 +12,7 @@ import Foundation
 import HomeDomain
 import HomePresentation
 import LockDomain
+import LockPresentation
 import OnboardingDomain
 import OnboardingPresentation
 import OSLog
@@ -36,6 +37,8 @@ final class AppContainer {
     let currencyFormatter = CurrencyFormatter()
     let store: SwiftDataStore
     let preferences = StorePreferences()
+    /// The app passcode's hash, in this device's Keychain only.
+    let passcodes: any PasscodeRepository = KeychainPasscodeStore()
     /// Started with the container so it hears CloudKit uploads from launch on.
     let backupStatus = BackupStatusTracker()
 
@@ -134,6 +137,7 @@ final class AppContainer {
         SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
                 settings: store, categories: store, cards: store, backup: preferences, status: backupStatus,
+                passcodes: passcodes, profile: preferences,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
             setICloudBackup: DefaultSetICloudBackupUseCase(backup: preferences, settings: store),
@@ -150,7 +154,23 @@ final class AppContainer {
                 eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store,
             ),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
+            removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
+            setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
         )
+    }
+
+    func makeLockViewModel(prefersPasscode: Bool) -> LockViewModel {
+        LockViewModel(
+            prefersPasscode: prefersPasscode,
+            getContext: DefaultGetLockContextUseCase(passcodes: passcodes, profile: preferences),
+            enterPasscode: DefaultEnterPasscodeUseCase(passcodes: passcodes),
+            unlockWithDevice: DefaultUnlockWithDeviceUseCase(authenticator: authenticator, passcodes: passcodes),
+            recoverPasscode: DefaultRecoverPasscodeUseCase(authenticator: authenticator, passcodes: passcodes),
+        )
+    }
+
+    func makePasscodeSetupViewModel() -> PasscodeSetupViewModel {
+        PasscodeSetupViewModel(setPasscode: DefaultSetPasscodeUseCase(passcodes: passcodes))
     }
 
     let authenticator: any DeviceAuthenticator = LocalDeviceAuthenticator()
@@ -175,6 +195,9 @@ final class AppContainer {
 
     /// After "Delete all my data": nothing of the old data may linger on the home screen.
     func clearOutside() async {
+        // The passcode and name live outside the store, so erasing the store alone would keep them.
+        await passcodes.removePasscode()
+        await preferences.setPreferredName(nil)
         widgetSnapshots.clear()
         WidgetCenter.shared.reloadAllTimelines()
         await reminders.removeAll()

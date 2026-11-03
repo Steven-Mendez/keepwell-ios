@@ -161,6 +161,16 @@
         }
       }
     },
+    "Change passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar código"
+          }
+        }
+      }
+    },
     "Credit cards" : {
       "localizations" : {
         "es" : {
@@ -261,6 +271,16 @@
         }
       }
     },
+    "For the greeting" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para el saludo"
+          }
+        }
+      }
+    },
     "Hide amounts when leaving" : {
       "localizations" : {
         "es" : {
@@ -311,12 +331,32 @@
         }
       }
     },
+    "Keepwell passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de Keepwell"
+          }
+        }
+      }
+    },
     "Keepwell uses your iPhone's language. To use another one only here, choose it in iPhone Settings." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keepwell usa el idioma de tu iPhone. Para usar otro solo aquí, elígelo en Ajustes del iPhone."
+          }
+        }
+      }
+    },
+    "Keepwell will ask for your iPhone passcode instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell te pedirá el código de tu iPhone en su lugar."
           }
         }
       }
@@ -381,12 +421,32 @@
         }
       }
     },
+    "On ›" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado ›"
+          }
+        }
+      }
+    },
     "Organization" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Organización"
+          }
+        }
+      }
+    },
+    "Passcode\nonly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo\ncódigo"
           }
         }
       }
@@ -501,12 +561,32 @@
         }
       }
     },
+    "Set up ›" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar ›"
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajustes"
+          }
+        }
+      }
+    },
+    "Six digits, kept only on this iPhone. Without one, the lock uses your iPhone passcode." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seis dígitos, guardados solo en este iPhone. Sin él, el bloqueo usa el código de tu iPhone."
           }
         }
       }
@@ -547,6 +627,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La tasa tiene que ser un número mayor que cero."
+          }
+        }
+      }
+    },
+    "Turn off passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivar código"
+          }
+        }
+      }
+    },
+    "Turn off the Keepwell passcode?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Desactivar el código de Keepwell?"
           }
         }
       }
@@ -691,22 +791,22 @@
         }
       }
     },
+    "Your name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu nombre"
+          }
+        }
+      }
+    },
     "iCloud backup" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Respaldo en iCloud"
-          }
-        }
-      }
-    },
-    "iPhone\npasscode" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Código del\niPhone"
           }
         }
       }

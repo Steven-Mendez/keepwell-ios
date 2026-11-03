@@ -34,3 +34,20 @@ extension StorePreferences: BackupPreference {
         isICloudBackupEnabled = isEnabled
     }
 }
+
+extension StorePreferences: ProfileRepository {
+    private static let nameKey = "lock.preferredName"
+
+    public func preferredName() async -> String? {
+        defaults.string(forKey: Self.nameKey)
+    }
+
+    public func setPreferredName(_ name: String?) async {
+        let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if trimmed.isEmpty {
+            defaults.removeObject(forKey: Self.nameKey)
+        } else {
+            defaults.set(trimmed, forKey: Self.nameKey)
+        }
+    }
+}

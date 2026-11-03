@@ -219,6 +219,8 @@ schemes:
         - package: Features/SummaryDomainTests
         - package: Features/SettingsDomainTests
         - package: Features/CreditCardDomainTests
+        - package: Features/LockDomainTests
+        - package: Features/LockPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release
