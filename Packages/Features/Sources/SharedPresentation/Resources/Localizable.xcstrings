@@ -431,6 +431,16 @@
         }
       }
     },
+    "Movements from deleted categories land here, so this one can be renamed but not deleted." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí llegan los movimientos de las categorías eliminadas, así que puedes renombrarla pero no eliminarla."
+          }
+        }
+      }
+    },
     "Name" : {
       "localizations" : {
         "es" : {

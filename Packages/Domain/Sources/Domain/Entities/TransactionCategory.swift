@@ -5,23 +5,63 @@ public struct TransactionCategory: Identifiable, Hashable, Sendable, Codable {
     public let id: String
     public let name: String
     public let kind: TransactionKind
-    /// The symbol the person picked for a category they created. Defaults leave it `nil` and take
-    /// theirs from the id, so a new app version can improve them without migrating data.
+    /// The symbol the person picked. Defaults leave it `nil` until then and take theirs from the
+    /// id, so a new app version can improve them without migrating data.
     public let icon: String?
     /// A key into the category palette; `nil` falls back to the id's own color.
     public let color: String?
+    /// Whether the person gave a default their own name. Until they do, `name` is the shipped
+    /// English text and screens translate it by id; afterwards it is shown exactly as typed.
+    /// Always `false` for categories the person created, whose name is theirs from the start.
+    public let isRenamed: Bool
 
-    public init(id: String, name: String, kind: TransactionKind, icon: String? = nil, color: String? = nil) {
+    public init(
+        id: String,
+        name: String,
+        kind: TransactionKind,
+        icon: String? = nil,
+        color: String? = nil,
+        isRenamed: Bool = false,
+    ) {
         self.id = id
         self.name = name
         self.kind = kind
         self.icon = icon
         self.color = color
+        self.isRenamed = isRenamed
     }
 
-    /// Defaults ship with the app and can't be deleted: imports, reconciliation and widgets rely on them.
+    /// Backups written before defaults could be renamed have no `isRenamed`.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        kind = try container.decode(TransactionKind.self, forKey: .kind)
+        icon = try container.decodeIfPresent(String.self, forKey: .icon)
+        color = try container.decodeIfPresent(String.self, forKey: .color)
+        isRenamed = try container.decodeIfPresent(Bool.self, forKey: .isRenamed) ?? false
+    }
+
+    /// Shipped with the app. The person can still rename, restyle or delete it, and bring it
+    /// back with "Restore default categories".
     public var isDefault: Bool {
-        Self.defaults.contains { $0.id == id }
+        Self.shipped(id: id) != nil
+    }
+
+    /// "Other" and "Other income" receive the movements of a deleted category, so they can be
+    /// renamed but never deleted.
+    public var isFallback: Bool {
+        id == Self.otherExpenseID || id == Self.otherIncomeID
+    }
+
+    /// Shows the person's name as-is once they renamed a default; until then it still translates.
+    public var translatesByID: Bool {
+        isDefault && !isRenamed
+    }
+
+    /// The shipped version of a default, which "Restore default categories" brings back.
+    public static func shipped(id: String) -> Self? {
+        defaults.first { $0.id == id }
     }
 
     /// Ids of created categories carry a prefix so they can never collide with a default added later.
@@ -62,16 +102,13 @@ extension TransactionCategory {
         kind == .income ? otherIncomeID : otherExpenseID
     }
 
-    /// The order screens list categories in: per kind, the defaults as shipped, then the person's
-    /// own in the order they were created, and the catch-all "Other" last so it never hides theirs.
+    /// The order screens list categories in: per kind, in the order the repository keeps (the
+    /// person's own arrangement, or shipped defaults then created ones), with the catch-all
+    /// "Other" last so it never hides theirs.
     public static func ordered(_ categories: [Self]) -> [Self] {
-        let rank = Dictionary(uniqueKeysWithValues: defaults.enumerated().map { ($0.element.id, $0.offset) })
-        let isOther: (Self) -> Bool = { $0.id == otherExpenseID || $0.id == otherIncomeID }
-        return [TransactionKind.expense, .income, .transfer].flatMap { kind in
+        [TransactionKind.expense, .income, .transfer].flatMap { kind in
             let ofKind = categories.filter { $0.kind == kind }
-            let shipped = ofKind.filter { rank[$0.id] != nil && !isOther($0) }.sorted { rank[$0.id] ?? 0 < rank[$1.id] ?? 0 }
-            let created = ofKind.filter { rank[$0.id] == nil }
-            return shipped + created + ofKind.filter(isOther)
+            return ofKind.filter { !$0.isFallback } + ofKind.filter(\.isFallback)
         }
     }
 }

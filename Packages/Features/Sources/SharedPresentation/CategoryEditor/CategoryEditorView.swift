@@ -70,7 +70,7 @@ public struct CategoryEditorView: View {
                 Text("Delete", bundle: #bundle)
             }
         } message: {
-            Text("Its movements move to “\(otherName)”.", bundle: #bundle)
+            Text("Its movements move to “\(viewModel.fallbackName)”.", bundle: #bundle)
         }
     }
 
@@ -87,6 +87,12 @@ public struct CategoryEditorView: View {
             colors
             KWSectionHeader(String(localized: "Icon", bundle: #bundle))
             icons
+            if viewModel.isFallback {
+                Text("Movements from deleted categories land here, so this one can be renamed but not deleted.", bundle: #bundle)
+                    .font(KWTextStyle.caption.font)
+                    .foregroundStyle(KWColor.Text.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if viewModel.canDelete {
                 Button { isConfirmingDelete = true } label: {
                     Text("Delete category", bundle: #bundle)
@@ -99,11 +105,6 @@ public struct CategoryEditorView: View {
 
     private var title: String {
         viewModel.isCreating ? String(localized: "New category", bundle: #bundle) : String(localized: "Edit category", bundle: #bundle)
-    }
-
-    private var otherName: String {
-        let other = TransactionCategory.defaults.first { $0.id == TransactionCategory.otherID(for: viewModel.kind) }
-        return other.map(CategoryDisplay.name(of:)) ?? ""
     }
 
     private var tint: Color {

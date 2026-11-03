@@ -178,7 +178,9 @@ final class AppContainer {
             kind: kind,
             getCategories: DefaultGetCategoriesUseCase(categories: store),
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+            reorder: DefaultReorderCategoriesUseCase(categories: store),
+            restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
         )
     }
 

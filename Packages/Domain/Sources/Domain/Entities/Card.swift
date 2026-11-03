@@ -106,6 +106,21 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
         additional?.isFrozen ?? isPlasticFrozen
     }
 
+    /// The same additional card with other controls.
+    public func with(additional controls: AdditionalCardControls) -> Self {
+        guard let copy = try? Self(
+            id: id,
+            accountID: accountID,
+            kind: kind,
+            network: network,
+            lastFour: lastFour,
+            color: color,
+            additional: controls,
+            isFrozen: isPlasticFrozen,
+        ) else { return self }
+        return copy
+    }
+
     /// The same card frozen or unfrozen; an additional card changes its controls.
     public func with(isFrozen: Bool) -> Self {
         guard let copy = try? Self(

@@ -149,6 +149,11 @@ public struct DefaultRestoreBackupUseCase: RestoreBackupUseCase {
         for category in document.categories {
             try await categories.save(category)
         }
+        // A default missing from the file was deleted on purpose; without this it would be seeded back.
+        let restoredIDs = Set(document.categories.map(\.id))
+        for category in TransactionCategory.defaults where !restoredIDs.contains(category.id) && !category.isFallback {
+            try await categories.deleteCategory(id: category.id)
+        }
         for account in document.accounts {
             try await accounts.save(account)
         }

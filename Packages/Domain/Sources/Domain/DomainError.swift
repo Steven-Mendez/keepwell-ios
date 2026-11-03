@@ -16,8 +16,8 @@ public enum DomainError: Error, Equatable, Sendable {
     case invalidDayOfMonth(Int)
     /// Another category of the same kind already has this name.
     case duplicateCategoryName(String)
-    /// Default categories ship with the app; only the person's own can be edited or deleted.
-    case defaultCategoryIsReadOnly(String)
+    /// "Other" and "Other income" take the movements of deleted categories, so they stay.
+    case fallbackCategoryCantBeDeleted(String)
     case categoryKindMismatch(expected: TransactionKind, actual: TransactionKind)
     case unsupportedTransactionKind(TransactionKind)
     /// A transfer needs a destination account different from its source.
