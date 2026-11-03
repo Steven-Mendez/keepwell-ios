@@ -1,4 +1,5 @@
 import DesignSystem
+import OnboardingPresentation
 import OSLog
 import Persistence
 import SwiftData
@@ -6,33 +7,44 @@ import SwiftUI
 
 @main
 struct KeepwellApp: App {
-    private let container: AppContainer
+    @State private var container: AppContainer?
 
     init() {
         KWFonts.register()
-        container = AppContainer(modelContainer: Self.makeModelContainer())
-        #if DEBUG
-        if AppEnvironment.current.usesSampleData {
-            container.seedSampleData()
-        }
-        #endif
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView(container: container)
-                .preferredColorScheme(.dark)
+            Group {
+                if let container {
+                    RootView(container: container)
+                } else {
+                    SplashView()
+                }
+            }
+            .preferredColorScheme(.dark)
+            .task { await bootstrap() }
         }
     }
 
-    /// CloudKit when backup is on, local otherwise; in memory for UI tests and sample runs.
-    /// Falls back to on-device storage when CloudKit is unavailable (e.g. a build without a
-    /// signing team).
-    private static func makeModelContainer() -> ModelContainer {
+    /// Opens the store while the splash shows. The splash stays at least briefly so it reads as
+    /// a deliberate screen rather than a flash.
+    private func bootstrap() async {
+        guard container == nil else { return }
         let environment = AppEnvironment.current
-        let store = environment.isUITesting || environment.usesSampleData
-            ? PersistenceStore.inMemory
-            : StorePreferences().store(cloudKitContainer: environment.cloudKitContainer)
+        async let minimumSplash: Void = (try? Task.sleep(for: .milliseconds(800))) ?? ()
+        let store = await StoreSelector.store(for: environment)
+        let made = AppContainer(modelContainer: Self.makeModelContainer(store: store))
+        #if DEBUG
+        if environment.usesSampleData {
+            await made.seedSampleData()
+        }
+        #endif
+        await minimumSplash
+        container = made
+    }
+
+    private static func makeModelContainer(store: PersistenceStore) -> ModelContainer {
         do {
             return try ModelContainerFactory.make(store: store)
         } catch {
