@@ -10,8 +10,10 @@ import OnboardingDomain
 @Observable
 public final class OnboardingViewModel {
     public enum Step: Hashable, Sendable {
+        case name
         case currencies
         case accounts
+        case protect
         case privacy
         case done
     }
@@ -31,11 +33,15 @@ public final class OnboardingViewModel {
 
     /// Pushed steps after the welcome screen.
     public var path: [Step] = []
+    /// What to call the person; saved with everything else at the end.
+    public var nameText = ""
     public private(set) var principal = "USD"
     public private(set) var second: String? = "NIO"
     public var rateText = OnboardingViewModel.defaultRateText
     public private(set) var accounts: [OnboardingAccountDraft]
     public var locksWithBiometrics = true
+    /// A Keepwell passcode was created on the protect step.
+    public private(set) var hasPasscode = false
     public var backsUpToICloud = true
     public var hidesAmountsInAppSwitcher = true
     public private(set) var restoreState = RestoreState.idle
@@ -152,7 +158,23 @@ public final class OnboardingViewModel {
     // MARK: Navigation
 
     public func start() {
-        path = [.currencies]
+        path = [.name]
+    }
+
+    /// The trimmed name, or `nil` while the field is blank.
+    public var preferredName: String? {
+        PreferredName.normalized(nameText)
+    }
+
+    public func continueFromName() {
+        nameText = String(nameText.prefix(PreferredName.maxLength))
+        path.append(.currencies)
+    }
+
+    /// "Skip": the greeting and the cards simply go without a name.
+    public func skipName() {
+        nameText = ""
+        path.append(.currencies)
     }
 
     public func continueFromCurrencies() {
@@ -161,6 +183,22 @@ public final class OnboardingViewModel {
     }
 
     public func continueFromAccounts() {
+        path.append(.protect)
+    }
+
+    /// The passcode setup screen saved a code; it's already in the Keychain.
+    public func passcodeCreated() {
+        hasPasscode = true
+    }
+
+    public func continueFromProtect() {
+        path.append(.privacy)
+    }
+
+    /// "Not now": no Keepwell passcode. Face ID, if left on, still locks the app with the
+    /// iPhone passcode behind it.
+    public func skipPasscode() {
+        hasPasscode = false
         path.append(.privacy)
     }
 
@@ -182,6 +220,12 @@ public final class OnboardingViewModel {
     }
 
     // MARK: Done summary
+
+    /// "All set, Steven" once there's a name to say.
+    public var doneTitle: String {
+        guard let name = preferredName else { return String(localized: "All set", bundle: #bundle) }
+        return String(localized: "All set, \(name)", bundle: #bundle)
+    }
 
     public var currenciesSummary: String {
         [principal, second].compactMap(\.self).joined(separator: " + ")
@@ -205,6 +249,8 @@ public final class OnboardingViewModel {
             locksWithBiometrics: locksWithBiometrics,
             backsUpToICloud: backsUpToICloud,
             hidesAmountsInAppSwitcher: hidesAmountsInAppSwitcher,
+            preferredName: preferredName,
+            hasPasscode: hasPasscode,
         )
         do {
             completedSettings = try await completeOnboarding.execute(draft)

@@ -2,7 +2,7 @@ import Domain
 import Foundation
 
 public protocol CompleteOnboardingUseCase: Sendable {
-    /// Saves settings, accounts and their payment methods; returns the stored settings.
+    /// Saves settings, accounts and their payment methods, and the name; returns the stored settings.
     func execute(_ draft: OnboardingDraft) async throws(DomainError) -> Settings
 }
 
@@ -11,6 +11,8 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
     private let accounts: any AccountRepository
     private let cards: any CardRepository
     private let backup: any BackupPreference
+    private let profile: any ProfileRepository
+    private let passcodes: any PasscodeRepository
     private let now: @Sendable () -> Date
 
     public init(
@@ -18,12 +20,16 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
         accounts: any AccountRepository,
         cards: any CardRepository,
         backup: any BackupPreference,
+        profile: any ProfileRepository,
+        passcodes: any PasscodeRepository,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
         self.settings = settings
         self.accounts = accounts
         self.cards = cards
         self.backup = backup
+        self.profile = profile
+        self.passcodes = passcodes
         self.now = now
     }
 
@@ -38,13 +44,19 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
         }
         let result = Settings(
             currencies: draft.currencies,
-            unlockMethod: draft.locksWithBiometrics ? .biometrics : .disabled,
+            unlockMethod: draft.unlockMethod,
             hidesAmountsInAppSwitcher: draft.hidesAmountsInAppSwitcher,
             isICloudBackupEnabled: draft.backsUpToICloud,
             hasCompletedOnboarding: true,
         )
         try await settings.save(result)
         backup.setICloudBackupEnabled(draft.backsUpToICloud)
+        await profile.setPreferredName(PreferredName.normalized(draft.preferredName))
+        // The Keychain outlives a reinstall, so a passcode from an earlier install (or an abandoned
+        // onboarding) would otherwise lock the app with a code the person may not remember.
+        if !draft.hasPasscode {
+            await passcodes.removePasscode()
+        }
         return result
     }
 

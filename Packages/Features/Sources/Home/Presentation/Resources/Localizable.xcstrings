@@ -231,6 +231,16 @@
         }
       }
     },
+    "Good afternoon, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas tardes, %@"
+          }
+        }
+      }
+    },
     "Good evening" : {
       "localizations" : {
         "es" : {
@@ -241,12 +251,32 @@
         }
       }
     },
+    "Good evening, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas noches, %@"
+          }
+        }
+      }
+    },
     "Good morning" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Buenos días"
+          }
+        }
+      }
+    },
+    "Good morning, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenos días, %@"
           }
         }
       }

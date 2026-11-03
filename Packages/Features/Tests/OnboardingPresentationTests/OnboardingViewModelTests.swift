@@ -134,9 +134,75 @@ struct OnboardingViewModelTests {
     func stepsAdvanceInOrder() {
         let viewModel = OnboardingFactory.make()
         viewModel.start()
+        viewModel.nameText = "Steven"
+        viewModel.continueFromName()
         viewModel.continueFromCurrencies()
         viewModel.continueFromAccounts()
-        #expect(viewModel.path == [.currencies, .accounts, .privacy])
+        viewModel.continueFromProtect()
+        #expect(viewModel.path == [.name, .currencies, .accounts, .protect, .privacy])
+    }
+
+    @Test
+    func nameIsTrimmedAndSavedWithTheDraft() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.start()
+        viewModel.nameText = "  Steven  "
+        viewModel.continueFromName()
+        #expect(viewModel.preferredName == "Steven")
+        #expect(viewModel.doneTitle == "All set, Steven")
+        await viewModel.skipNotifications()
+        #expect(complete.received.draft?.preferredName == "Steven")
+    }
+
+    @Test
+    func skippingTheNameLeavesItOut() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.start()
+        viewModel.nameText = "Typo"
+        viewModel.skipName()
+        #expect(viewModel.path == [.name, .currencies])
+        #expect(viewModel.preferredName == nil)
+        #expect(viewModel.doneTitle == "All set")
+        await viewModel.skipNotifications()
+        #expect(complete.received.draft?.preferredName == nil)
+    }
+
+    @Test
+    func blankNameCountsAsNoName() {
+        let viewModel = OnboardingFactory.make()
+        viewModel.nameText = "   "
+        #expect(viewModel.preferredName == nil)
+    }
+
+    @Test
+    func createdPasscodeLocksTheAppEvenWithoutFaceID() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.path = [.name, .currencies, .accounts, .protect]
+        viewModel.locksWithBiometrics = false
+        viewModel.passcodeCreated()
+        #expect(viewModel.hasPasscode)
+        viewModel.continueFromProtect()
+        #expect(viewModel.path.last == .privacy)
+        await viewModel.skipNotifications()
+        let draft = complete.received.draft
+        #expect(draft?.hasPasscode == true)
+        #expect(draft?.unlockMethod == .passcode)
+    }
+
+    @Test
+    func notNowSkipsThePasscodeButKeepsFaceID() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.path = [.name, .currencies, .accounts, .protect]
+        viewModel.skipPasscode()
+        #expect(viewModel.path.last == .privacy)
+        await viewModel.skipNotifications()
+        let draft = complete.received.draft
+        #expect(draft?.hasPasscode == false)
+        #expect(draft?.unlockMethod == .biometrics)
     }
 
     @Test

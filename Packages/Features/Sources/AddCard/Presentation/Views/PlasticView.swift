@@ -50,6 +50,7 @@ public struct PlasticView: View {
                 palette: CardDisplay.palette(for: viewModel.color),
                 bank: viewModel.bank.isEmpty ? bankPlaceholder : viewModel.bank,
                 showsContactless: false,
+                holder: viewModel.printedName,
                 lastFour: viewModel.lastFour.isEmpty ? "0000" : viewModel.lastFour,
                 numberGroups: CardDisplay.numberGroups(for: viewModel.network),
                 network: CardDisplay.networkMark(for: viewModel.network),

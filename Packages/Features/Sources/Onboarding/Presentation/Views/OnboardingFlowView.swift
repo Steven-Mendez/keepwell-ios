@@ -11,11 +11,20 @@ public struct OnboardingFlowView: View {
 
     @Bindable private var viewModel: OnboardingViewModel
     private let onImportCSV: () -> Void
+    private let onSetUpPasscode: () -> Void
     private let onFinish: (Exit) -> Void
 
-    public init(viewModel: OnboardingViewModel, onImportCSV: @escaping () -> Void, onFinish: @escaping (Exit) -> Void) {
+    /// `onSetUpPasscode` shows the lock feature's own passcode setup; once it saves, the app calls
+    /// `passcodeCreated()` on the view model.
+    public init(
+        viewModel: OnboardingViewModel,
+        onImportCSV: @escaping () -> Void,
+        onSetUpPasscode: @escaping () -> Void,
+        onFinish: @escaping (Exit) -> Void,
+    ) {
         self.viewModel = viewModel
         self.onImportCSV = onImportCSV
+        self.onSetUpPasscode = onSetUpPasscode
         self.onFinish = onFinish
     }
 
@@ -41,10 +50,14 @@ public struct OnboardingFlowView: View {
     @ViewBuilder
     private func destination(_ step: OnboardingViewModel.Step) -> some View {
         switch step {
+        case .name:
+            NameView(viewModel: viewModel, onBack: back)
         case .currencies:
             CurrenciesView(viewModel: viewModel, onBack: back)
         case .accounts:
             AccountsView(viewModel: viewModel, onBack: back, onImportCSV: onImportCSV)
+        case .protect:
+            ProtectView(viewModel: viewModel, onBack: back, onSetUpPasscode: onSetUpPasscode)
         case .privacy:
             PrivacyView(viewModel: viewModel, onBack: back)
         case .done:

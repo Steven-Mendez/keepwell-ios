@@ -30,6 +30,7 @@ public struct CardAddedView: View {
                     palette: CardDisplay.palette(for: viewModel.color),
                     bank: viewModel.bank.isEmpty ? String(localized: "Bank", bundle: #bundle) : viewModel.bank,
                     showsContactless: false,
+                    holder: viewModel.printedName,
                     lastFour: viewModel.lastFour,
                     numberGroups: CardDisplay.numberGroups(for: viewModel.network),
                     network: CardDisplay.networkMark(for: viewModel.network),

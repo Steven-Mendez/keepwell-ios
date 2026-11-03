@@ -77,6 +77,33 @@ final class MainScreens {
 // Each pushed screen keeps its view model in `@State`, so re-rendering the stack doesn't
 // recreate it and lose what the person was doing.
 
+/// Onboarding with the lock feature's passcode setup over it, so the protect step reuses the
+/// same screen and rules as Settings.
+struct OnboardingRoute: View {
+    let container: AppContainer
+    let viewModel: OnboardingViewModel
+    let onImportCSV: () -> Void
+    let onFinish: (OnboardingFlowView.Exit) -> Void
+    @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
+
+    var body: some View {
+        OnboardingFlowView(
+            viewModel: viewModel,
+            onImportCSV: onImportCSV,
+            onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
+            onFinish: onFinish,
+        )
+        .fullScreenCover(item: $passcodeSetup) { flow in
+            PasscodeSetupView(viewModel: flow.viewModel, isChanging: viewModel.hasPasscode) {
+                if flow.viewModel.isSaved {
+                    viewModel.passcodeCreated()
+                }
+                passcodeSetup = nil
+            }
+        }
+    }
+}
+
 struct SettingsRoute: View {
     @State private var viewModel: SettingsViewModel
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?

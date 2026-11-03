@@ -27,12 +27,21 @@ extension HomeViewModel {
     /// Shown instead of every amount while balances are hidden, the way banking apps mask them.
     static let maskedAmount = "••••"
 
-    /// "Good morning" until noon, "Good afternoon" until seven, "Good evening" otherwise.
+    /// "Good morning, Steven" until noon, "Good afternoon" until seven, "Good evening" otherwise;
+    /// without a name, just the time of day.
     func greeting(at date: Date) -> String {
-        switch calendar.component(.hour, from: date) {
-        case 5 ..< 12: String(localized: "Good morning", bundle: #bundle)
-        case 12 ..< 19: String(localized: "Good afternoon", bundle: #bundle)
-        default: String(localized: "Good evening", bundle: #bundle)
+        let hour = calendar.component(.hour, from: date)
+        guard let name = preferredName else {
+            return switch hour {
+            case 5 ..< 12: String(localized: "Good morning", bundle: #bundle)
+            case 12 ..< 19: String(localized: "Good afternoon", bundle: #bundle)
+            default: String(localized: "Good evening", bundle: #bundle)
+            }
+        }
+        return switch hour {
+        case 5 ..< 12: String(localized: "Good morning, \(name)", bundle: #bundle)
+        case 12 ..< 19: String(localized: "Good afternoon, \(name)", bundle: #bundle)
+        default: String(localized: "Good evening, \(name)", bundle: #bundle)
         }
     }
 

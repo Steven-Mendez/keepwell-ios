@@ -17,6 +17,7 @@ struct HomeOutsideTests {
                 accounts: store, cards: store, transactions: store, categories: store, settings: store, now: { [now] in now },
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
+            getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore()),
         )
         await viewModel.load()
         return viewModel

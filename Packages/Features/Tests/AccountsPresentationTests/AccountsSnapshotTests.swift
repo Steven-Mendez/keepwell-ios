@@ -26,7 +26,7 @@ struct AccountsSnapshotTests {
     func bankAccountIsOneCardFace() async throws {
         let viewModel = await AccountsFactory.loaded()
         let deposit = try #require(viewModel.overview?.deposits.first)
-        assertScreenSnapshot(of: DepositCard(deposit: deposit, formatter: .init()) {}.padding(16), height: 280)
+        assertScreenSnapshot(of: DepositCard(deposit: deposit, formatter: .init(), ownerName: "Steven") {}.padding(16), height: 280)
     }
 
     @Test

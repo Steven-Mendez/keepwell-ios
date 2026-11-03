@@ -44,11 +44,13 @@ public enum CardDisplay {
     }
 
     /// The art of a real plastic, so every screen prints a card the same way. `showsFace: false`
-    /// leaves only the header, for a card tucked behind another in a stack.
+    /// leaves only the header, for a card tucked behind another in a stack. `ownerName` is the
+    /// person's own name, printed on their main cards; an additional card prints its holder's.
     public static func art(
         of card: Card?,
         kind: CardKind,
         bank: String,
+        ownerName: String? = nil,
         badge: KWCardArt.Badge? = nil,
         caption: String? = nil,
         showsFace: Bool = true,
@@ -59,7 +61,7 @@ public enum CardDisplay {
             bank: bank,
             badge: badge,
             showsChip: showsFace,
-            holder: showsFace ? card?.additional?.holderName : nil,
+            holder: showsFace ? holderName(of: card, kind: kind, ownerName: ownerName) : nil,
             caption: showsFace ? caption : nil,
             lastFour: showsFace ? card?.lastFour : nil,
             numberGroups: numberGroups(for: card?.network),
@@ -68,6 +70,16 @@ public enum CardDisplay {
             isFrozen: card?.isFrozen ?? false,
             showsShadow: showsShadow,
         )
+    }
+
+    /// "STEVEN" on the owner's debit and credit cards, uppercased as banks emboss it; the holder's
+    /// name, as typed, on an additional card.
+    public static func holderName(of card: Card?, kind: CardKind, ownerName: String?) -> String? {
+        switch card?.kind ?? kind {
+        case .creditAdditional: card?.additional?.holderName
+        case .debit, .creditHolder: ownerName.flatMap(PreferredName.normalized)?.uppercased(with: .current)
+        case .transfer: nil
+        }
     }
 
     public static func networkName(_ network: CardNetwork?) -> String {

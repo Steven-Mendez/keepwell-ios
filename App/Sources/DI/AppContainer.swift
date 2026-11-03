@@ -81,7 +81,9 @@ final class AppContainer {
 
     func makeOnboardingViewModel() -> OnboardingViewModel {
         OnboardingViewModel(
-            completeOnboarding: DefaultCompleteOnboardingUseCase(settings: store, accounts: store, cards: store, backup: preferences),
+            completeOnboarding: DefaultCompleteOnboardingUseCase(
+                settings: store, accounts: store, cards: store, backup: preferences, profile: preferences, passcodes: passcodes,
+            ),
             restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store, backup: preferences),
             notifications: UserNotificationAuthorizer(),
         )
@@ -94,6 +96,7 @@ final class AppContainer {
             getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
             reconcileCash: DefaultReconcileCashUseCase(transactions: store, settings: store),
             withdrawCash: DefaultWithdrawCashUseCase(transactions: store, cards: store, settings: store),
+            getPreferredName: makeGetPreferredName(),
         )
     }
 
@@ -104,6 +107,7 @@ final class AppContainer {
             getContext: DefaultGetAddCardContextUseCase(settings: store),
             addCredit: DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store),
             addAccount: DefaultAddAccountUseCase(accounts: store, cards: store),
+            getPreferredName: makeGetPreferredName(),
         )
     }
 
@@ -119,7 +123,13 @@ final class AppContainer {
                 settings: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
+            getPreferredName: makeGetPreferredName(),
         )
+    }
+
+    /// The one name store behind the lock, home and the cards.
+    func makeGetPreferredName() -> any GetPreferredNameUseCase {
+        DefaultGetPreferredNameUseCase(profile: preferences)
     }
 
     func makeTransactionsViewModel() -> TransactionsViewModel {
@@ -249,6 +259,7 @@ final class AppContainer {
             setCardFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setCardColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
+            getPreferredName: makeGetPreferredName(),
         )
     }
 
@@ -264,6 +275,7 @@ final class AppContainer {
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
+            getPreferredName: makeGetPreferredName(),
         )
     }
 

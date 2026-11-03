@@ -79,6 +79,7 @@ public struct DebitCardView: View {
                                     of: detail.card.with(color: color),
                                     kind: .debit,
                                     bank: viewModel.bank(detail),
+                                    ownerName: viewModel.ownerName,
                                     caption: caption(detail),
                                 )
                             },
@@ -127,6 +128,7 @@ public struct DebitCardView: View {
             of: detail.card,
             kind: .debit,
             bank: viewModel.bank(detail),
+            ownerName: viewModel.ownerName,
             badge: detail.card.isFrozen ? .tag(String(localized: "Frozen", bundle: #bundle)) : nil,
             caption: caption(detail),
         )

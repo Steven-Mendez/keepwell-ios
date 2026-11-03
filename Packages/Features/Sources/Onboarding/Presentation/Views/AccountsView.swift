@@ -3,7 +3,7 @@ import DesignSystem
 import OnboardingDomain
 import SwiftUI
 
-/// Step 3 · Accounts.
+/// Step 4 · Accounts.
 public struct AccountsView: View {
     private let viewModel: OnboardingViewModel
     private let onBack: () -> Void
@@ -20,7 +20,7 @@ public struct AccountsView: View {
     public var body: some View {
         KWScreen(bottom: 40) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWFlowHeader(.back, progress: (3, 2), action: onBack)
+                KWFlowHeader(.back, progress: (5, 3), action: onBack)
                 OnboardingHeading(
                     title: String(localized: "Add your accounts", bundle: #bundle),
                     message: String(localized: "With today's balance. Credit cards start with what you owe.", bundle: #bundle),

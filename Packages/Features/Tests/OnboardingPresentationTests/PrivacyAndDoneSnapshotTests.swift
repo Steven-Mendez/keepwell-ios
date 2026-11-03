@@ -17,6 +17,7 @@ struct PrivacyAndDoneSnapshotTests {
         viewModel.useNicaraguaExample()
         viewModel.save(viewModel.newAccount(.bank))
         viewModel.save(viewModel.newAccount(.credit))
+        viewModel.nameText = "Steven"
         assertScreenSnapshot(of: DoneView(viewModel: viewModel, onLogFirstExpense: {}, onGoHome: {}))
     }
 }

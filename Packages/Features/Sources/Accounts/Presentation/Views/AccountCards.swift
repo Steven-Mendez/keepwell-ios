@@ -58,6 +58,7 @@ struct CardStack<Item: Identifiable, Art: View>: View {
 struct DepositCard: View {
     let deposit: AccountsOverview.Deposit
     let formatter: CurrencyFormatter
+    let ownerName: String?
     let onOpen: () -> Void
 
     var body: some View {
@@ -66,6 +67,7 @@ struct DepositCard: View {
                 of: deposit.debitCard,
                 kind: .debit,
                 bank: deposit.account.bank ?? deposit.account.name,
+                ownerName: ownerName,
                 badge: .amount(formatter.string(deposit.balance)),
                 // The account's own name when the bank already heads the card, so it isn't lost.
                 caption: deposit.account.bank == nil ? nil : deposit.account.name,

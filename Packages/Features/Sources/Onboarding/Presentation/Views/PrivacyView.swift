@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 4 · Privacy and notifications.
+/// Step 6 · Privacy and notifications. The lock itself was chosen on the step before.
 public struct PrivacyView: View {
     @Bindable private var viewModel: OnboardingViewModel
     private let onBack: () -> Void
@@ -14,9 +14,9 @@ public struct PrivacyView: View {
     public var body: some View {
         KWScreen(bottom: 40) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWFlowHeader(.back, progress: (3, 3), action: onBack)
+                KWFlowHeader(.back, progress: (5, 5), action: onBack)
                 OnboardingHeading(
-                    title: String(localized: "Protect your data", bundle: #bundle),
+                    title: String(localized: "Your data stays yours", bundle: #bundle),
                     message: String(
                         localized: "No account and no servers of ours. Your data lives on your iPhone and, if you want, in your iCloud.",
                         bundle: #bundle,
@@ -44,11 +44,6 @@ public struct PrivacyView: View {
 
     private var protectionToggles: some View {
         KWGroupedCard {
-            toggle(
-                String(localized: "Face ID or Touch ID", bundle: #bundle),
-                String(localized: "Whichever your iPhone has; if it fails, your passcode", bundle: #bundle),
-                isOn: $viewModel.locksWithBiometrics,
-            )
             toggle(
                 String(localized: "iCloud backup", bundle: #bundle),
                 String(localized: "Recover everything if you change iPhone", bundle: #bundle),

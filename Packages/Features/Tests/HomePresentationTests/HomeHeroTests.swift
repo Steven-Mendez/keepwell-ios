@@ -10,13 +10,14 @@ import Testing
 struct HomeHeroTests {
     private let now = SampleData.defaultReferenceDate
 
-    private func loadedViewModel(calendar: Calendar = .current) async -> HomeViewModel {
+    private func loadedViewModel(calendar: Calendar = .current, name: String? = nil) async -> HomeViewModel {
         let store = InMemoryStore(sample: .standard)
         let viewModel = HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store, now: { [now] in now },
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
+            getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: name)),
             calendar: calendar,
         )
         await viewModel.load()
@@ -75,5 +76,32 @@ struct HomeHeroTests {
         let viewModel = await loadedViewModel(calendar: calendar)
         let date = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 3, hour: hour)))
         #expect(viewModel.greeting(at: date) == expected)
+    }
+
+    @Test(arguments: [(7, "Good morning, Steven"), (14, "Good afternoon, Steven"), (21, "Good evening, Steven")])
+    func greetingNamesThePersonWhenTheyGaveAName(hour: Int, expected: String) async throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "UTC"))
+        let viewModel = await loadedViewModel(calendar: calendar, name: "Steven")
+        let date = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 3, hour: hour)))
+        #expect(viewModel.greeting(at: date) == expected)
+    }
+
+    @Test
+    func greetingPicksUpANameChangedInSettings() async {
+        let store = InMemoryStore(sample: .standard)
+        let profile = InMemoryPasscodeStore()
+        let viewModel = HomeViewModel(
+            getOverview: DefaultGetHomeOverviewUseCase(
+                accounts: store, cards: store, transactions: store, categories: store, settings: store, now: { [now] in now },
+            ),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
+            getPreferredName: DefaultGetPreferredNameUseCase(profile: profile),
+        )
+        await viewModel.load()
+        #expect(viewModel.preferredName == nil)
+        await profile.setPreferredName("Ana")
+        await viewModel.load()
+        #expect(viewModel.preferredName == "Ana")
     }
 }

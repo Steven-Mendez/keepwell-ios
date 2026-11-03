@@ -19,6 +19,8 @@ public final class CreditCardViewModel {
     public private(set) var state = State.loading
     public private(set) var errorMessage: String?
     public private(set) var isSaving = false
+    /// The person's own name, printed on their main cards.
+    public private(set) var ownerName: String?
 
     private let getDetail: any GetCreditCardDetailUseCase
     private let updateTerms: any UpdateCreditTermsUseCase
@@ -28,6 +30,7 @@ public final class CreditCardViewModel {
     private let setCardFrozen: any SetCardFrozenUseCase
     private let setCardColor: any SetCardColorUseCase
     private let renameAccount: any RenameAccountUseCase
+    private let getPreferredName: any GetPreferredNameUseCase
     let formatter = CurrencyFormatter()
 
     public init(
@@ -40,7 +43,9 @@ public final class CreditCardViewModel {
         setCardFrozen: any SetCardFrozenUseCase,
         setCardColor: any SetCardColorUseCase,
         renameAccount: any RenameAccountUseCase,
+        getPreferredName: any GetPreferredNameUseCase,
     ) {
+        self.getPreferredName = getPreferredName
         self.accountID = accountID
         self.getDetail = getDetail
         self.updateTerms = updateTerms
@@ -61,6 +66,7 @@ public final class CreditCardViewModel {
     }
 
     public func load() async {
+        ownerName = await getPreferredName.execute()
         do {
             state = try await .loaded(getDetail.execute(accountID: accountID))
         } catch {
@@ -245,10 +251,6 @@ public final class CreditCardViewModel {
         detail.holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: detail.account)
     }
 
-    func bank(_ detail: CreditCardDetail) -> String {
-        detail.account.bank ?? detail.account.name
-    }
-
     func money(_ money: Money, fractionDigits: Int = 2) -> String {
         formatter.string(money, fractionDigits: fractionDigits)
     }
@@ -307,6 +309,12 @@ public final class CreditCardViewModel {
 
     func thresholdPercent(_ detail: CreditCardDetail) -> String {
         "\(formatter.number(detail.capAlertThreshold * 100, fractionDigits: 0))%"
+    }
+}
+
+extension CreditCardViewModel {
+    func bank(_ detail: CreditCardDetail) -> String {
+        detail.account.bank ?? detail.account.name
     }
 }
 

@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 2 · Currencies and rate.
+/// Step 3 · Currencies and rate.
 public struct CurrenciesView: View {
     @Bindable private var viewModel: OnboardingViewModel
     private let onBack: () -> Void
@@ -15,7 +15,7 @@ public struct CurrenciesView: View {
     public var body: some View {
         KWFormScreen(bottom: 40) {
             VStack(alignment: .leading, spacing: 18) {
-                KWFlowHeader(.back, progress: (3, 1), action: onBack)
+                KWFlowHeader(.back, progress: (5, 2), action: onBack)
                 OnboardingHeading(
                     title: String(localized: "Which currencies do you use?", bundle: #bundle),
                     message: String(localized: "Reports and net worth are calculated in the main currency.", bundle: #bundle),

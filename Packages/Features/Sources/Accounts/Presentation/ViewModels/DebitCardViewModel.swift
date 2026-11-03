@@ -22,12 +22,15 @@ public final class DebitCardViewModel {
     public private(set) var state = State.loading
     public private(set) var errorMessage: String?
     public private(set) var isSaving = false
+    /// The person's own name, printed on their main cards.
+    public private(set) var ownerName: String?
 
     private let getDetail: any GetDebitCardDetailUseCase
     private let setFrozen: any SetCardFrozenUseCase
     private let setColor: any SetCardColorUseCase
     private let renameAccount: any RenameAccountUseCase
     private let deleteAccount: any DeleteAccountUseCase
+    private let getPreferredName: any GetPreferredNameUseCase
     private let formatter = CurrencyFormatter()
 
     public init(
@@ -37,7 +40,9 @@ public final class DebitCardViewModel {
         setColor: any SetCardColorUseCase,
         renameAccount: any RenameAccountUseCase,
         deleteAccount: any DeleteAccountUseCase,
+        getPreferredName: any GetPreferredNameUseCase,
     ) {
+        self.getPreferredName = getPreferredName
         self.accountID = accountID
         self.getDetail = getDetail
         self.setFrozen = setFrozen
@@ -56,6 +61,7 @@ public final class DebitCardViewModel {
 
     public func load() async {
         guard state != .deleted else { return }
+        ownerName = await getPreferredName.execute()
         do {
             state = try await .loaded(getDetail.execute(accountID: accountID))
         } catch {

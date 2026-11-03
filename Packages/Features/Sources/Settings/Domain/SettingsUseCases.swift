@@ -158,24 +158,6 @@ public struct DefaultRemovePasscodeUseCase: RemovePasscodeUseCase {
     }
 }
 
-/// The name the lock screen greets with; blank removes it.
-public protocol SetPreferredNameUseCase: Sendable {
-    func execute(_ name: String) async
-}
-
-public struct DefaultSetPreferredNameUseCase: SetPreferredNameUseCase {
-    private let profile: any ProfileRepository
-
-    public init(profile: any ProfileRepository) {
-        self.profile = profile
-    }
-
-    public func execute(_ name: String) async {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        await profile.setPreferredName(trimmed.isEmpty ? nil : String(trimmed.prefix(30)))
-    }
-}
-
 /// "Delete all my data": this device and the iCloud copy (App Store guideline 5.1.1).
 public protocol EraseAllDataUseCase: Sendable {
     func execute() async throws(DomainError)

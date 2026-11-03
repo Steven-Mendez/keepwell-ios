@@ -18,19 +18,24 @@ public final class HomeViewModel {
     /// Planned movements being confirmed, so their button can't be tapped twice.
     public private(set) var confirming: Set<UUID> = []
     public private(set) var actionError: String?
+    /// The name given in onboarding or Settings, read on every load so a change there shows here.
+    public private(set) var preferredName: String?
 
     private let getOverview: any GetHomeOverviewUseCase
     private let confirmPlanned: any ConfirmPlannedTransactionUseCase
+    private let getPreferredName: any GetPreferredNameUseCase
     let calendar: Calendar
     let formatter = CurrencyFormatter()
 
     public init(
         getOverview: any GetHomeOverviewUseCase,
         confirmPlanned: any ConfirmPlannedTransactionUseCase,
+        getPreferredName: any GetPreferredNameUseCase,
         calendar: Calendar = .current,
     ) {
         self.getOverview = getOverview
         self.confirmPlanned = confirmPlanned
+        self.getPreferredName = getPreferredName
         self.calendar = calendar
     }
 
@@ -43,6 +48,7 @@ public final class HomeViewModel {
     }
 
     public func load() async {
+        preferredName = await getPreferredName.execute()
         do {
             state = try await .loaded(getOverview.execute())
         } catch {

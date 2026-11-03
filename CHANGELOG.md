@@ -9,6 +9,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Onboarding asks "What should we call you?" right after the welcome (it can be skipped), and the
+  name is the same one Settings › Security edits. Home then greets you by it ("Good morning,
+  Steven"), the done screen says "All set, Steven", and your own debit and credit cards print it
+  in capitals, like a real plastic; additional cards keep their holder's name.
+- Onboarding has a "Protect Keepwell" step before privacy: create the six-digit Keepwell passcode
+  with the same screen as Settings, and keep Face ID or Touch ID on, or choose "Not now". A passcode
+  made here keeps the lock on even with Face ID off, and a leftover passcode from an earlier install
+  is cleared when none was made. The Face ID switch moved here from the privacy step, now titled
+  "Your data stays yours".
 - Settings › Categories is one editable list per kind: the shipped categories can now be renamed,
   given another icon and color, reordered ("Reorder") and deleted, like your own. A renamed default
   shows your name in every language; untouched ones keep translating. Deleted defaults stay deleted

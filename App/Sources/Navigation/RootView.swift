@@ -61,7 +61,12 @@ struct RootView: View {
                 // The splash stays while settings load, so launch never flashes black.
                 SplashView()
             case let .onboarding(viewModel):
-                OnboardingFlowView(viewModel: viewModel, onImportCSV: { isPickingImport = true }, onFinish: finishOnboarding)
+                OnboardingRoute(
+                    container: container,
+                    viewModel: viewModel,
+                    onImportCSV: { isPickingImport = true },
+                    onFinish: finishOnboarding,
+                )
             case .main:
                 main
             }

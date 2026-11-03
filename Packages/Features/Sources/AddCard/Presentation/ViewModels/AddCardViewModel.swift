@@ -50,22 +50,33 @@ public final class AddCardViewModel {
     public private(set) var createdCard: Card?
     public private(set) var isSaving = false
     public private(set) var errorMessage: String?
+    /// The person's own name, printed on their main cards.
+    public private(set) var ownerName: String?
 
     private let getContext: any GetAddCardContextUseCase
     private let addCredit: any AddCreditCardUseCase
     private let addAccount: any AddAccountUseCase
+    private let getPreferredName: any GetPreferredNameUseCase
 
     public init(
         getContext: any GetAddCardContextUseCase,
         addCredit: any AddCreditCardUseCase,
         addAccount: any AddAccountUseCase,
+        getPreferredName: any GetPreferredNameUseCase,
     ) {
+        self.getPreferredName = getPreferredName
         self.getContext = getContext
         self.addCredit = addCredit
         self.addAccount = addAccount
     }
 
+    /// The owner's name as the new plastic prints it.
+    public var printedName: String? {
+        CardDisplay.holderName(of: nil, kind: kind == .credit ? .creditHolder : .debit, ownerName: ownerName)
+    }
+
     public func load() async {
+        ownerName = await getPreferredName.execute()
         context = try? await getContext.execute()
         if context?.currencies.second == nil {
             debtMode = .principal

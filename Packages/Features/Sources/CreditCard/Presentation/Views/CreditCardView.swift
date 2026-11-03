@@ -96,9 +96,7 @@ public struct CreditCardView: View {
                     if let detail = viewModel.detail, let holder = detail.holder {
                         CardColorSheet(
                             color: holder.color,
-                            preview: { color in
-                                CardDisplay.art(of: holder.with(color: color), kind: .creditHolder, bank: viewModel.bank(detail))
-                            },
+                            preview: { color in colorPreview(holder.with(color: color), detail) },
                             onSave: viewModel.setHolderColor,
                             onClose: { self.sheet = nil },
                         )
@@ -122,9 +120,14 @@ public struct CreditCardView: View {
             of: detail.holder,
             kind: .creditHolder,
             bank: viewModel.bank(detail),
+            ownerName: viewModel.ownerName,
             badge: .tag(isHolderFrozen ? String(localized: "Frozen", bundle: #bundle) : String(localized: "Holder", bundle: #bundle)),
             caption: detail.account.bank == nil ? nil : detail.account.name,
         )
+    }
+
+    private func colorPreview(_ holder: Card, _ detail: CreditCardDetail) -> KWCardArt {
+        CardDisplay.art(of: holder, kind: .creditHolder, bank: viewModel.bank(detail), ownerName: viewModel.ownerName)
     }
 
     private var isHolderFrozen: Bool {

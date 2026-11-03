@@ -12,6 +12,7 @@ enum AddCardFactory {
             getContext: DefaultGetAddCardContextUseCase(settings: store),
             addCredit: DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store),
             addAccount: DefaultAddAccountUseCase(accounts: store, cards: store),
+            getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),
         )
     }
 

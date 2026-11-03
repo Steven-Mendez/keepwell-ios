@@ -61,6 +61,16 @@
         }
       }
     },
+    "All set, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo listo, %@"
+          }
+        }
+      }
+    },
     "Allow notifications" : {
       "localizations" : {
         "es" : {
@@ -147,6 +157,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continuar"
+          }
+        }
+      }
+    },
+    "Create passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear código"
           }
         }
       }
@@ -371,6 +391,16 @@
         }
       }
     },
+    "Keepwell passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de Keepwell"
+          }
+        }
+      }
+    },
     "Last 4 digits" : {
       "localizations" : {
         "es" : {
@@ -491,12 +521,32 @@
         }
       }
     },
+    "On" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado"
+          }
+        }
+      }
+    },
     "On your iPhone, backed up to your iCloud" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "En tu iPhone, con respaldo en tu iCloud"
+          }
+        }
+      }
+    },
+    "On · tap to choose another" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado · toca para elegir otro"
           }
         }
       }
@@ -541,12 +591,12 @@
         }
       }
     },
-    "Protect your data" : {
+    "Protect Keepwell" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Protege tus datos"
+            "value" : "Protege Keepwell"
           }
         }
       }
@@ -651,6 +701,26 @@
         }
       }
     },
+    "Six digits, kept only on this iPhone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seis dígitos, guardados solo en este iPhone"
+          }
+        }
+      }
+    },
+    "Skip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir"
+          }
+        }
+      }
+    },
     "Start" : {
       "localizations" : {
         "es" : {
@@ -721,6 +791,26 @@
         }
       }
     },
+    "We'll greet you by name and print it on your cards. It stays on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te saludaremos por tu nombre y lo pondremos en tus tarjetas. Se queda en este iPhone."
+          }
+        }
+      }
+    },
+    "What should we call you?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo quieres que te llamemos?"
+          }
+        }
+      }
+    },
     "Which currencies do you use?" : {
       "localizations" : {
         "es" : {
@@ -741,12 +831,12 @@
         }
       }
     },
-    "Whichever your iPhone has; if it fails, your passcode" : {
+    "Whichever your iPhone has" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El que tenga tu iPhone; si falla, tu código"
+            "value" : "El que tenga tu iPhone"
           }
         }
       }
@@ -771,12 +861,52 @@
         }
       }
     },
+    "Your balances are yours alone. Lock the app so only you can open it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus saldos son solo tuyos. Bloquea la app para que solo tú puedas abrirla."
+          }
+        }
+      }
+    },
+    "Your data stays yours" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos son tuyos"
+          }
+        }
+      }
+    },
+    "Your first name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu nombre"
+          }
+        }
+      }
+    },
     "Your money, clear, in one or two currencies" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu dinero claro, en una o dos monedas"
+          }
+        }
+      }
+    },
+    "Your name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu nombre"
           }
         }
       }

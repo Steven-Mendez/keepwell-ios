@@ -54,13 +54,17 @@ public struct AccountsView: View {
                                 .foregroundStyle(KWColor.Text.muted)
                         }
                         .padding(.top, 6)
-                        CreditCardStack(cards: overview.creditCards, formatter: formatter, onOpen: onOpenCreditCard)
+                        CreditCardStack(
+                            cards: overview.creditCards, formatter: formatter, ownerName: viewModel.ownerName, onOpen: onOpenCreditCard,
+                        )
                     }
                     if !overview.deposits.isEmpty {
                         KWSectionHeader(String(localized: "Bank accounts", bundle: #bundle), style: .large)
                             .padding(.top, 10)
                         ForEach(overview.deposits) { deposit in
-                            DepositCard(deposit: deposit, formatter: formatter) { onOpenBankAccount(deposit.id) }
+                            DepositCard(deposit: deposit, formatter: formatter, ownerName: viewModel.ownerName) {
+                                onOpenBankAccount(deposit.id)
+                            }
                         }
                     }
                     cashSection(overview.cash)
@@ -144,6 +148,7 @@ public struct AccountsView: View {
 struct CreditCardStack: View {
     let cards: [AccountsOverview.CreditCard]
     let formatter: CurrencyFormatter
+    let ownerName: String?
     let onOpen: (UUID) -> Void
 
     var body: some View {
@@ -160,6 +165,7 @@ struct CreditCardStack: View {
             of: card.holder,
             kind: .creditHolder,
             bank: card.account.bank ?? card.account.name,
+            ownerName: ownerName,
             badge: .amount(formatter.joined(card.balances)),
             caption: caption(card),
             showsFace: isFront,
