@@ -27,7 +27,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   sheet (expense, income, between my accounts, ATM withdrawal, card payment), a large amount with
   the app's own keypad, what the source has available and a note pill, a review card with what is
   left in each account and a pencil to change the amount, "Slide to save" to confirm (VoiceOver:
-  double tap), and a ticket-style receipt with a reference and "Share receipt".
+  double tap), and a ticket-style receipt with a reference.
+- The receipt saves and shares as an image, as a bank's: "Save image" adds it to Photos (Keepwell
+  only asks to add photos, never to read them, and points to Settings if access was turned off)
+  and "Share" sends the picture, with the text receipt for apps that only take text. The image is
+  the ticket on the brand gradient under the Keepwell wordmark, without the screen's buttons.
 - Transfers, withdrawals and card payments start by choosing the accounts: the source as a card
   and the destination from the accounts that can receive it. When the destination keeps another
   currency, the amount, review and receipt say what arrives and at which rate.

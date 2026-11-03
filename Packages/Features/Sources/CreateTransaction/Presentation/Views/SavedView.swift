@@ -1,14 +1,17 @@
 import CreateTransactionDomain
 import DesignSystem
 import Domain
-import SharedPresentation
 import SwiftUI
+import UIKit
 
-/// The receipt: a ticket with what was saved, where it moved, the rate and the new balance, and a
-/// text version to share.
+/// The receipt: a ticket with what was saved, where it moved, the rate and the new balance, with
+/// two round actions at its foot, as a bank's receipt: save it to Photos or share it as an image.
 public struct SavedView: View {
     private let viewModel: CreateTransactionViewModel
     private let onClose: () -> Void
+    /// Rendered once per receipt, since the share sheet needs the image up front.
+    @State private var image: RenderedReceipt?
+    @Environment(\.openURL) private var openURL
 
     public init(viewModel: CreateTransactionViewModel, onClose: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -19,8 +22,10 @@ public struct SavedView: View {
         VStack(spacing: 0) {
             ScrollView {
                 if let saved = viewModel.saved {
-                    ticket(saved)
-                        .padding(.top, 36)
+                    ReceiptTicket(viewModel: viewModel, saved: saved) {
+                        actions(saved)
+                    }
+                    .padding(.top, 36)
                 }
             }
             .scrollIndicators(.hidden)
@@ -39,102 +44,138 @@ public struct SavedView: View {
         .ignoresSafeArea(.container, edges: [.top, .bottom])
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
+        .task(id: viewModel.saved?.transaction.id) { render() }
+        .sensoryFeedback(.success, trigger: viewModel.receiptImageStatus == .saved)
+        .alert(
+            Text("Allow access to Photos", bundle: #bundle),
+            isPresented: messageBinding(for: .denied),
+        ) {
+            Button { openSettings() } label: { Text("Open Settings", bundle: #bundle) }
+            Button(role: .cancel) {} label: { Text("Not now", bundle: #bundle) }
+        } message: {
+            Text("Keepwell needs permission to add photos to save your receipt. You can turn it on in Settings.", bundle: #bundle)
+        }
+        .alert(
+            Text("We couldn't save the image", bundle: #bundle),
+            isPresented: messageBinding(for: .failed),
+        ) {
+            Button(role: .cancel) {} label: { Text("OK", bundle: #bundle) }
+        } message: {
+            Text("Try again, or share the receipt instead.", bundle: #bundle)
+        }
     }
 
-    private func ticket(_ saved: SavedTransaction) -> some View {
-        VStack(spacing: KWSpacing.sm) {
-            Text(viewModel.receiptDate(saved))
-                .font(KWTextStyle.captionSm.font)
-                .foregroundStyle(KWColor.Text.muted)
-                .multilineTextAlignment(.center)
-                .padding(.top, 40)
-            VStack(spacing: 2) {
-                Text(viewModel.receiptHeadline).font(KWTextStyle.label.font).foregroundStyle(KWColor.Text.secondary)
-                Text(viewModel.reviewAmount)
-                    .font(.kw(40, weight: 800, relativeTo: .largeTitle))
-                    .tracking(-1)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-                Text(saved.transaction.description).font(.kw(17, weight: 600))
-                status(saved)
-            }
-            KWDivider().padding(.vertical, KWSpacing.xxs)
-            VStack(spacing: 0) {
-                ForEach(rows(saved), id: \.label) { row in
-                    KWValueRow(row.label, value: row.value)
-                }
-            }
+    // MARK: Actions
+
+    private func actions(_ saved: SavedTransaction) -> some View {
+        VStack(spacing: KWSpacing.md) {
             KWDivider()
-            ShareLink(item: viewModel.receiptText(saved)) {
-                HStack(spacing: KWSpacing.xs) {
-                    KWIconView(.share, size: 18, lineWidth: 2)
-                    Text("Share receipt", bundle: #bundle).font(.kw(15, weight: 600))
+            HStack(alignment: .top, spacing: KWSpacing.xl) {
+                if viewModel.canSaveReceiptImage {
+                    Button { Task { await viewModel.saveReceiptImage(image?.receipt.png) } } label: { saveLabel }
+                        .buttonStyle(.plain)
+                        .disabled(viewModel.receiptImageStatus == .saving || viewModel.receiptImageStatus == .saved)
                 }
-                .foregroundStyle(KWColor.Brand.link)
-                .frame(maxWidth: .infinity)
-                .frame(height: KWLayout.minTouch)
+                shareLink(saved)
             }
-            .padding(.bottom, KWSpacing.md)
         }
-        .padding(.horizontal, KWSpacing.md)
-        .padding(.bottom, 8)
-        .background(KWColor.Surface.surface, in: KWTicketShape())
-        .overlay(alignment: .top) { checkBadge.offset(y: -30) }
+        .padding(.bottom, KWSpacing.md)
     }
 
-    private func status(_ saved: SavedTransaction) -> some View {
-        Text(saved.transaction.isConfirmed ? String(localized: "Confirmed", bundle: #bundle) : String(
-            localized: "Planned",
-            bundle: #bundle,
-        ))
-        .font(.kw(12, weight: 700, relativeTo: .caption))
-        .foregroundStyle(saved.transaction.isConfirmed ? KWColor.State.positive : KWColor.State.pending)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(
-            (saved.transaction.isConfirmed ? KWColor.State.positive : KWColor.State.pending).opacity(0.14),
-            in: Capsule(),
-        )
-        .padding(.top, KWSpacing.xxs)
+    @ViewBuilder
+    private var saveLabel: some View {
+        switch viewModel.receiptImageStatus {
+        case .saving:
+            RoundAction(title: String(localized: "Save image", bundle: #bundle)) { ProgressView().tint(KWColor.Brand.link) }
+        case .saved:
+            RoundAction(title: String(localized: "Saved to Photos", bundle: #bundle), tint: KWColor.State.positive) {
+                KWIconView(.check, size: 22)
+            }
+        case .idle, .denied, .failed:
+            RoundAction(title: String(localized: "Save image", bundle: #bundle)) { KWIconView(.download, size: 22) }
+        }
     }
 
-    /// Method or ends of the transfer, then the category, note, money rows and the reference.
-    private func rows(_ saved: SavedTransaction) -> [CreateTransactionViewModel.Row] {
-        var rows: [CreateTransactionViewModel.Row] = []
-        if viewModel.type.movesBetweenAccounts {
-            if let from = viewModel.fromParty {
-                rows.append(.init(label: from.caption, value: from.title))
-            }
-            if let toParty = viewModel.toParty {
-                rows.append(.init(label: toParty.caption, value: toParty.title))
-            }
+    @ViewBuilder
+    private func shareLink(_ saved: SavedTransaction) -> some View {
+        let label = RoundAction(title: String(localized: "Share", bundle: #bundle)) { KWIconView(.share, size: 22) }
+        if let image {
+            ShareLink(
+                item: image.receipt,
+                preview: SharePreview(String(localized: "Share receipt", bundle: #bundle), image: image.preview),
+            ) { label }
+                .buttonStyle(.plain)
         } else {
-            rows.append(.init(label: String(localized: "Method", bundle: #bundle), value: viewModel.sourceTitle ?? "—"))
-            if let category = viewModel.category {
-                rows.append(.init(label: String(localized: "Category", bundle: #bundle), value: CategoryDisplay.name(of: category)))
-            }
+            // Rendering failed: the text receipt still goes out.
+            ShareLink(item: viewModel.receiptText(saved)) { label }
+                .buttonStyle(.plain)
         }
-        if let note = saved.transaction.note {
-            rows.append(.init(label: String(localized: "Note", bundle: #bundle), value: note))
-        }
-        rows += viewModel.savedRows(saved)
-        if let arrived = viewModel.arrivedRow {
-            rows.append(arrived)
-        }
-        if let total = viewModel.categoryTotalRow(saved) {
-            rows.append(total)
-        }
-        rows.append(.init(label: String(localized: "Reference", bundle: #bundle), value: viewModel.reference(saved)))
-        return rows
     }
 
-    private var checkBadge: some View {
-        KWIconView(.check, size: 28, lineWidth: 2.8)
-            .foregroundStyle(KWColor.Text.onPositive)
-            .frame(width: 60, height: 60)
-            .background(KWColor.State.positive, in: Circle())
-            .overlay(Circle().strokeBorder(KWColor.Surface.bg, lineWidth: 5))
-            .accessibilityLabel(Text("Saved", bundle: #bundle))
+    // MARK: Private
+
+    private func render() {
+        guard let saved = viewModel.saved,
+              let uiImage = ReceiptImageRenderer.image(of: viewModel, saved: saved),
+              let png = uiImage.pngData()
+        else {
+            image = nil
+            return
+        }
+        image = RenderedReceipt(
+            receipt: ReceiptImage(
+                png: png,
+                text: viewModel.receiptText(saved),
+                fileName: "Keepwell \(viewModel.reference(saved)).png",
+            ),
+            preview: Image(uiImage: uiImage),
+        )
+    }
+
+    private func messageBinding(for status: CreateTransactionViewModel.ReceiptImageStatus) -> Binding<Bool> {
+        Binding(
+            get: { viewModel.receiptImageStatus == status },
+            set: {
+                if !$0 {
+                    viewModel.dismissReceiptImageMessage()
+                }
+            },
+        )
+    }
+
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            openURL(url)
+        }
+    }
+}
+
+private struct RenderedReceipt {
+    let receipt: ReceiptImage
+    let preview: Image
+}
+
+/// A tinted circle with its caption underneath, as the receipt actions of banking apps.
+private struct RoundAction<Icon: View>: View {
+    let title: String
+    var tint: Color = KWColor.Brand.link
+    @ViewBuilder let icon: Icon
+
+    var body: some View {
+        VStack(spacing: KWSpacing.xs) {
+            icon
+                .foregroundStyle(tint)
+                .frame(width: 52, height: 52)
+                .background(tint.opacity(0.14), in: Circle())
+            Text(title)
+                .font(.kw(13, weight: 600, relativeTo: .caption))
+                .foregroundStyle(KWColor.Text.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(minWidth: 88)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(title))
     }
 }

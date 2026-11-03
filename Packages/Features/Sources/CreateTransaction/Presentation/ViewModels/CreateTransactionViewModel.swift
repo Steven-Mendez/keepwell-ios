@@ -54,6 +54,8 @@ public final class CreateTransactionViewModel {
     public private(set) var saved: SavedTransaction?
     public private(set) var isSaving = false
     public private(set) var errorMessage: String?
+    /// Where "Save image" stands for the current receipt.
+    public internal(set) var receiptImageStatus: ReceiptImageStatus = .idle
     /// The id the next saved movement gets.
     private var movementID: UUID
 
@@ -64,6 +66,8 @@ public final class CreateTransactionViewModel {
     private let saveTransaction: any SaveTransactionUseCase
     private let makeID: () -> UUID
     let saveCategory: (any SaveCategoryUseCase)?
+    /// Without one the receipt offers sharing only.
+    let receiptSaver: (any ReceiptImageSaving)?
     static let maxAmountLength = 9
     /// Four rows of three tiles fit above the fold; past that the grid collapses behind "See all".
     static let categorySlots = 12
@@ -72,6 +76,7 @@ public final class CreateTransactionViewModel {
         getContext: any GetTransactionContextUseCase,
         save: any SaveTransactionUseCase,
         saveCategory: (any SaveCategoryUseCase)? = nil,
+        receiptSaver: (any ReceiptImageSaving)? = nil,
         type: MovementType = .expense,
         calendar: Calendar = .current,
         now: @escaping () -> Date = { .now },
@@ -80,6 +85,7 @@ public final class CreateTransactionViewModel {
         self.getContext = getContext
         saveTransaction = save
         self.saveCategory = saveCategory
+        self.receiptSaver = receiptSaver
         self.type = type
         self.calendar = calendar
         self.now = now
@@ -266,6 +272,7 @@ public final class CreateTransactionViewModel {
         date = now()
         movementID = makeID()
         saved = nil
+        receiptImageStatus = .idle
         categoryQuery = ""
         showsAllCategories = false
         categoryEditor = nil

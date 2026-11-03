@@ -16,6 +16,22 @@
           }
         }
       }
+    },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell saves the receipts you choose to your photo library."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell guarda en tu fototeca los comprobantes que elijas."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

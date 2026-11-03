@@ -264,6 +264,7 @@ final class AppContainer {
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
+            receiptSaver: PhotoLibraryReceiptSaver(),
             type: type,
         )
     }
