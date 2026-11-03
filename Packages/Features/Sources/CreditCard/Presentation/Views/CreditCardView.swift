@@ -229,7 +229,7 @@ public struct CreditCardView: View {
             Text(display.amount(of: transaction))
                 .font(.kw(15, weight: 700))
                 .monospacedDigit()
-                .foregroundStyle(transaction.isConfirmed ? KWColor.Text.primary : KWColor.State.pending)
+                .foregroundStyle(display.style(of: transaction).amountColor)
         }
         .padding(.vertical, KWSpacing.sm)
         .accessibilityElement(children: .combine)

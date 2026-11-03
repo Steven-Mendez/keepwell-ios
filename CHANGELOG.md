@@ -64,6 +64,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Data stays on the iPhone with SwiftData and is backed up to the private iCloud database while
   "iCloud backup" is on (default); turning it off keeps data on the device only.
 
+### Changed
+
+- Expenses read as expenses: their amounts and arrow icon are coral red in Transactions, Home's
+  recent movements, a card's cycle and the month's totals ("−$8.18" red, "+$817.79" green);
+  Summary's "Went out" and Home's expense bar use the same color. The "−" sign stays.
+
 ### Fixed
 
 - Builds signed without iCloud (free developer accounts) open with on-device storage instead of

@@ -149,7 +149,12 @@ public struct SummaryView: View {
                     fraction: flow.incomeFraction,
                     color: KWColor.State.positive,
                 )
-                flowCard(String(localized: "Went out", bundle: #bundle), flow.expense, fraction: flow.expenseFraction, color: .white)
+                flowCard(
+                    String(localized: "Went out", bundle: #bundle),
+                    flow.expense,
+                    fraction: flow.expenseFraction,
+                    color: KWColor.State.negative,
+                )
             }
         }
     }
@@ -161,7 +166,7 @@ public struct SummaryView: View {
                 .foregroundStyle(KWColor.Text.muted)
             Text(amount)
                 .font(.kw(20, weight: 800, relativeTo: .title3))
-                .foregroundStyle(color == .white ? KWColor.Text.primary : color)
+                .foregroundStyle(color)
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)

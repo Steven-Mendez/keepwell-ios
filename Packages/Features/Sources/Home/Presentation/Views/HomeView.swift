@@ -141,7 +141,7 @@ public struct HomeView: View {
                     String(localized: "Expenses", bundle: #bundle),
                     month.expense,
                     of: largest,
-                    fill: KWColor.Brand.accent,
+                    fill: KWColor.State.negative,
                     overview,
                 )
             }

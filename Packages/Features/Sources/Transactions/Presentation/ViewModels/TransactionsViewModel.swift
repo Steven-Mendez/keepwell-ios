@@ -140,15 +140,16 @@ public final class TransactionsViewModel {
             : day.formatted(.dateTime.day().month(.wide).year())
     }
 
-    /// "October 2026" and "−$709.58 · +$2,452.24" for the current month's confirmed movements.
-    var monthTotals: (title: String, totals: String)? {
+    /// "October 2026", "−$709.58" and "+$2,452.24" for the current month's confirmed movements,
+    /// apart so the view can color what went out and what came in.
+    var monthTotals: (title: String, spent: String, earned: String)? {
         guard let list else { return nil }
         let month = YearMonth(containing: now(), calendar: calendar)
         let summary = MonthlySummary(month: month, transactions: list.transactions, currency: list.settings.principal, calendar: calendar)
         let title = now().formatted(.dateTime.month(.wide).year()).localizedCapitalized
         let spent = formatter.string(from: -summary.expense, currencyCode: summary.currency)
         let earned = formatter.string(from: summary.income, currencyCode: summary.currency, sign: .always)
-        return (title, "\(spent) · \(earned)")
+        return (title, spent, earned)
     }
 
     func filterTitle(_ filter: TransactionFilter) -> String {
