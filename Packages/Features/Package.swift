@@ -10,6 +10,7 @@ let package = Package(
     platforms: [.iOS(.v26)],
     products: [
         .library(name: "OnboardingDomain", targets: ["OnboardingDomain"]),
+        .library(name: "OnboardingPresentation", targets: ["OnboardingPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -19,12 +20,34 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.7"),
     ],
     targets: [
+        // Snapshot helpers shared by the Presentation test targets.
+        .target(
+            name: "FeatureTestSupport",
+            dependencies: [
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+            ],
+            path: "Tests/FeatureTestSupport",
+        ),
+
         // MARK: Onboarding
 
         .target(
             name: "OnboardingDomain",
             dependencies: [.product(name: "Domain", package: "Domain")],
             path: "Sources/Onboarding/Domain",
+        ),
+        .target(
+            name: "OnboardingPresentation",
+            dependencies: [
+                "OnboardingDomain",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                // `#Preview` sample data only.
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/Onboarding/Presentation",
         ),
         .testTarget(
             name: "OnboardingDomainTests",
@@ -33,6 +56,17 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+        ),
+        .testTarget(
+            name: "OnboardingPresentationTests",
+            dependencies: [
+                "OnboardingPresentation",
+                "OnboardingDomain",
+                "FeatureTestSupport",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            exclude: ["__Snapshots__"],
         ),
     ],
     swiftLanguageModes: [.v6],
