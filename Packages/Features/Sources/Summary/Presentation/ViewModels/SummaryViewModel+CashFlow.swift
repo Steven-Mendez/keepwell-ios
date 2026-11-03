@@ -45,6 +45,21 @@ extension SummaryViewModel {
         }
     }
 
+    /// The dashed line across the chart: spending per month over the months with data, so a month
+    /// reads against what's usual rather than only against its neighbors.
+    struct AverageSpending: Equatable {
+        let value: Double
+        let text: String
+    }
+
+    var averageSpending: AverageSpending? {
+        guard let average = report?.averageExpense, average > 0 else { return nil }
+        return AverageSpending(
+            value: average.doubleValue,
+            text: String(localized: "Average \(money(average)) / month", bundle: #bundle),
+        )
+    }
+
     func selectMonth(key: String) {
         if let index = report?.months.firstIndex(where: { $0.month.description == key }) {
             selectedIndex = index
