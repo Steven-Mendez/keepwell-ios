@@ -10,7 +10,7 @@ struct AddCardUseCasesTests {
 
     private func draft(_ mode: DebtMode = .dual) -> CreditCardDraft {
         CreditCardDraft(
-            bank: "Banco Tres", lastFour: "2468", network: .mastercard, color: .violeta, debtMode: mode,
+            bank: "Bank Three", lastFour: "2468", network: .mastercard, color: .violeta, debtMode: mode,
             principalDebt: 10, secondDebt: 250, limit: 1500, cutoffDay: 28, dueDay: 15,
         )
     }
@@ -21,7 +21,7 @@ struct AddCardUseCasesTests {
         #expect(account.kind == .credit)
         #expect(account.openingBalances == [Money(-10, "USD"), Money(-250, "NIO")])
         #expect(try account.creditTerms == CreditTerms(debtMode: .dual, limit: Money(1500, "USD"), cutoffDay: 28, dueDay: 15))
-        #expect(account.bank == "Banco Tres")
+        #expect(account.bank == "Bank Three")
         #expect(holder.kind == .creditHolder)
         #expect(holder.accountID == account.id)
         #expect(await store.fetchCards().contains(holder))
@@ -59,7 +59,7 @@ struct AddCardUseCasesTests {
     @Test
     func bankAccountGetsATransferMethod() async throws {
         let account = try await DefaultAddAccountUseCase(accounts: store, cards: store)
-            .execute(kind: .deposit, name: "Corriente", bank: "Banco Tres", balance: Money(50, "USD"))
+            .execute(kind: .deposit, name: "Checking", bank: "Bank Three", balance: Money(50, "USD"))
         #expect(await store.fetchCards().contains { $0.accountID == account.id && $0.kind == .transfer })
     }
 
@@ -67,7 +67,7 @@ struct AddCardUseCasesTests {
     func walletNeedsANameAndNoNegativeBalance() async {
         let useCase = DefaultAddAccountUseCase(accounts: store, cards: store)
         await #expect(throws: DomainError.invalidAmount) {
-            _ = try await useCase.execute(kind: .cash, name: "Sobre", bank: nil, balance: Money(-1, "NIO"))
+            _ = try await useCase.execute(kind: .cash, name: "Envelope", bank: nil, balance: Money(-1, "NIO"))
         }
         await #expect(throws: DomainError.corruptedData("Empty account name")) {
             _ = try await useCase.execute(kind: .cash, name: " ", bank: nil, balance: Money(1, "NIO"))

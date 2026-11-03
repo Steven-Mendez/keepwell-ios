@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The design's 52×32 switch: label on the leading side, switch trailing. `tint` is the on color,
-/// green by default and amber for "gasto previsto".
+/// green by default and amber for "planned expense".
 public struct KWToggleStyle: ToggleStyle {
     private let tint: Color
 
@@ -28,7 +28,7 @@ public struct KWToggleStyle: ToggleStyle {
         .onTapGesture { configuration.isOn.toggle() }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isToggle)
-        .accessibilityValue(configuration.isOn ? Text("Activado") : Text("Desactivado"))
+        .accessibilityValue(configuration.isOn ? Text("On", bundle: #bundle) : Text("Off", bundle: #bundle))
         .accessibilityAction { configuration.isOn.toggle() }
     }
 }
@@ -45,8 +45,8 @@ extension ToggleStyle where Self == KWToggleStyle {
     @Previewable @State var on = true
     @Previewable @State var planned = false
     VStack(spacing: KWSpacing.md) {
-        Toggle("Respaldo en iCloud", isOn: $on).toggleStyle(.kw)
-        Toggle("Es un gasto previsto", isOn: $planned).toggleStyle(.kw(tint: KWColor.State.pending))
+        Toggle("iCloud backup", isOn: $on).toggleStyle(.kw)
+        Toggle("This is a planned expense", isOn: $planned).toggleStyle(.kw(tint: KWColor.State.pending))
     }
     .font(KWTextStyle.body.font)
     .foregroundStyle(KWColor.Text.primary)

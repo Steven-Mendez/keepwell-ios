@@ -5,7 +5,7 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// Cuentas: credit cards stacked like Wallet, deposit accounts with their linked methods, and cash.
+/// Accounts: credit cards stacked like Wallet, deposit accounts with their linked methods, and cash.
 public struct AccountsView: View {
     private let viewModel: AccountsViewModel
     private let onAdd: () -> Void
@@ -44,8 +44,8 @@ public struct AccountsView: View {
                 header
                 if let overview = viewModel.overview {
                     if !overview.creditCards.isEmpty {
-                        KWSectionHeader("Tarjetas de crédito", style: .large) {
-                            Text("Toca para ver detalle")
+                        KWSectionHeader(String(localized: "Credit cards", bundle: #bundle), style: .large) {
+                            Text("Tap to see details", bundle: #bundle)
                                 .font(KWTextStyle.label.font.weight(.regular))
                                 .foregroundStyle(KWColor.Text.muted)
                         }
@@ -53,13 +53,13 @@ public struct AccountsView: View {
                         CreditCardStack(cards: overview.creditCards, formatter: formatter, onOpen: onOpenCreditCard)
                     }
                     if !overview.deposits.isEmpty {
-                        KWSectionHeader("Depósitos", style: .large).padding(.top, 10)
+                        KWSectionHeader(String(localized: "Deposits", bundle: #bundle), style: .large).padding(.top, 10)
                         ForEach(overview.deposits) { deposit in
                             DepositCard(deposit: deposit, formatter: formatter) { onLinkCard(deposit.id) }
                         }
                     }
                     if !overview.cash.isEmpty {
-                        KWSectionHeader("Efectivo", style: .large).padding(.top, 10)
+                        KWSectionHeader(String(localized: "Cash", bundle: #bundle), style: .large).padding(.top, 10)
                         ForEach(overview.cash) { cash in
                             CashCard(cash: cash, formatter: formatter) {
                                 cashAction = .reconcile(cash)
@@ -98,16 +98,32 @@ public struct AccountsView: View {
         }
     }
 
+    /// One localized sentence with only the amount emphasized, since word order differs per language.
+    private func netWorthText(_ netWorth: Money) -> AttributedString {
+        let amount = formatter.string(netWorth)
+        var text = AttributedString(String(localized: "Net worth \(amount)", bundle: #bundle))
+        if let range = text.range(of: amount) {
+            text[range].foregroundColor = KWColor.Text.primary
+            text[range].inlinePresentationIntent = .stronglyEmphasized
+        }
+        return text
+    }
+
     private var header: some View {
-        KWLargeTitleHeader("Cuentas", alignment: .top) {
+        KWLargeTitleHeader(String(localized: "Accounts", bundle: #bundle), alignment: .top) {
             if let overview = viewModel.overview {
-                (Text("Patrimonio neto ") + Text(formatter.string(overview.netWorth)).foregroundStyle(KWColor.Text.primary).bold())
+                Text(netWorthText(overview.netWorth))
                     .font(KWTextStyle.label.font.weight(.regular))
                     .foregroundStyle(KWColor.Text.muted)
                     .monospacedDigit()
             }
         } trailing: {
-            KWCircleButton(.plus, style: .white, accessibilityLabel: "Agregar cuenta o tarjeta", action: onAdd)
+            KWCircleButton(
+                .plus,
+                style: .white,
+                accessibilityLabel: String(localized: "Add account or card", bundle: #bundle),
+                action: onAdd,
+            )
         }
     }
 }
@@ -150,12 +166,13 @@ struct CreditCardStack: View {
 
     private func art(_ card: AccountsOverview.CreditCard, isFront: Bool) -> KWCardArt {
         let palette = CardDisplay.palette(for: card.holder?.color)
+        let plastics = card.plasticCount
         return KWCardArt(
             palette: palette,
             bank: card.account.bank ?? card.account.name,
             badge: .amount(formatter.joined(card.balances)),
             showsChip: isFront,
-            caption: isFront ? "Crédito · \(card.plasticCount) \(card.plasticCount == 1 ? "plástico" : "plásticos")" : nil,
+            caption: isFront ? String(localized: "Credit · \(plastics) cards", bundle: #bundle) : nil,
             lastFour: isFront ? card.holder?.lastFour : nil,
             network: isFront ? CardDisplay.wordmark(for: card.holder?.network) : nil,
         )
@@ -177,12 +194,22 @@ struct DepositCard: View {
     let formatter: CurrencyFormatter
     let onLink: () -> Void
 
+    private var linkedMethods: String {
+        let count = deposit.methods.count
+        return String(localized: "\(count) linked methods", bundle: #bundle)
+    }
+
+    private func debitName(_ method: Card) -> String {
+        let network = CardDisplay.networkName(method.network)
+        return String(localized: "\(network) Debit", bundle: #bundle)
+    }
+
     var body: some View {
         KWGroupedCard(verticalPadding: KWSpacing.xxs) {
             HStack(spacing: KWSpacing.sm) {
                 KWTitleSubtitle(
                     CardDisplay.name(of: deposit.account),
-                    subtitle: "\(deposit.balance.currency) · \(deposit.methods.count) \(deposit.methods.count == 1 ? "medio vinculado" : "medios vinculados")",
+                    subtitle: "\(deposit.balance.currency) · \(linkedMethods)",
                     titleFont: KWTextStyle.heading.font,
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -199,7 +226,7 @@ struct DepositCard: View {
                         Text(CardDisplay.methodTitle(method, account: deposit.account))
                             .font(.kw(14, weight: 600, relativeTo: .subheadline))
                         if method.kind == .debit {
-                            Text("\(CardDisplay.networkName(method.network)) Débito")
+                            Text(debitName(method))
                                 .font(KWTextStyle.captionSm.font)
                                 .foregroundStyle(KWColor.Text.muted)
                         }
@@ -210,7 +237,7 @@ struct DepositCard: View {
             Button(action: onLink) {
                 HStack(spacing: KWSpacing.sm) {
                     KWMiniCard(.add)
-                    Text("Vincular otra tarjeta")
+                    Text("Link another card", bundle: #bundle)
                         .font(.kw(14, weight: 600, relativeTo: .subheadline))
                         .foregroundStyle(KWColor.Brand.link)
                 }
@@ -243,8 +270,10 @@ struct CashCard: View {
                     .monospacedDigit()
             }
             HStack(spacing: KWSpacing.xs) {
-                Button("Cuadrar", action: onReconcile).buttonStyle(.kw(.primary, size: .medium))
-                Button("Retiro de cajero", action: onWithdraw).buttonStyle(.kw(.secondary, size: .medium))
+                Button(action: onReconcile) { Text("Reconcile", bundle: #bundle) }
+                    .buttonStyle(.kw(.primary, size: .medium))
+                Button(action: onWithdraw) { Text("ATM withdrawal", bundle: #bundle) }
+                    .buttonStyle(.kw(.secondary, size: .medium))
             }
         }
         .padding(KWSpacing.md)

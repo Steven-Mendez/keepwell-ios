@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// "Banco · Banpro": label left, borderless input right, as in the plastic step.
+/// "Bank · Bank One": label left, borderless input right, as in the plastic step.
 struct FormTextRow: View {
     let label: String
     let placeholder: String
@@ -24,7 +24,7 @@ struct FormTextRow: View {
     }
 }
 
-/// "Deuda en USD · [0.00]": label left, filled amount field right.
+/// "Debt in USD · [0.00]": label left, filled amount field right.
 struct FormAmountRow: View {
     let label: String
     @Binding var text: String

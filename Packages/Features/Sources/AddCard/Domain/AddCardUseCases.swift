@@ -108,7 +108,7 @@ public struct DefaultAddCreditCardUseCase: AddCreditCardUseCase {
         case .visa: "Visa"
         case .mastercard: "Mastercard"
         case .amex: "Amex"
-        case .other: "Tarjeta"
+        case .other: "Card"
         }
     }
 }
@@ -138,7 +138,7 @@ public struct DefaultAddDebitCardUseCase: AddDebitCardUseCase {
     }
 }
 
-/// "Cuenta de banco" and "Otra billetera" from the add menu.
+/// "Bank account" and "Other wallet" from the add menu.
 public protocol AddAccountUseCase: Sendable {
     func execute(kind: AccountKind, name: String, bank: String?, balance: Money) async throws(DomainError) -> Account
 }

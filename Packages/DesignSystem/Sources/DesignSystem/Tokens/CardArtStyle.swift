@@ -8,15 +8,16 @@ extension KWColor.CardArt {
     public static let selectable: [Self] = [.azul, .grafito, .verde, .violeta, .coral, .oro]
 
     public var displayName: String {
+        // The cases keep their stored names; only the label a person reads is localized.
         switch self {
-        case .azul: "Azul"
-        case .grafito: "Grafito"
-        case .verde: "Verde"
-        case .violeta: "Violeta"
-        case .coral: "Coral"
-        case .oro: "Oro"
-        case .lima: "Lima"
-        case .chip: "Chip"
+        case .azul: String(localized: "Blue", bundle: #bundle)
+        case .grafito: String(localized: "Graphite", bundle: #bundle)
+        case .verde: String(localized: "Green", bundle: #bundle)
+        case .violeta: String(localized: "Violet", bundle: #bundle)
+        case .coral: String(localized: "Coral", bundle: #bundle)
+        case .oro: String(localized: "Gold", bundle: #bundle)
+        case .lima: String(localized: "Lime", bundle: #bundle)
+        case .chip: String(localized: "Chip", bundle: #bundle)
         }
     }
 

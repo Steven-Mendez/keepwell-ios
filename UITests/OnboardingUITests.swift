@@ -10,38 +10,38 @@ final class OnboardingUITests: XCTestCase {
     @MainActor
     func testOnboardingReachesTheMainTabs() {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing"]
+        app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        XCTAssertTrue(app.buttons["Empezar"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
         attachScreenshot("1-welcome")
-        app.buttons["Empezar"].tap()
+        app.buttons["Start"].tap()
 
-        XCTAssertTrue(app.staticTexts["¿Con qué monedas trabajas?"].waitForExistence(timeout: 5))
-        let rate = app.textFields["Tasa de cambio"]
+        XCTAssertTrue(app.staticTexts["Which currencies do you use?"].waitForExistence(timeout: 5))
+        let rate = app.textFields["Exchange rate"]
         rate.tap()
         attachScreenshot("2-currencies-editing")
-        XCTAssertFalse(app.buttons["Listo"].exists, "The design has no keyboard toolbar button")
-        app.staticTexts["Segunda moneda"].tap()
+        XCTAssertFalse(app.buttons["Done"].exists, "The design has no keyboard toolbar button")
+        app.staticTexts["Second currency"].tap()
         XCTAssertEqual(app.keyboards.count, 0)
-        app.buttons["Ejemplo Nicaragua: 1 USD = 36.6243 NIO"].tap()
+        app.buttons["Nicaragua example: 1 USD = 36.6243 NIO"].tap()
         attachScreenshot("2-currencies")
-        app.buttons["Continuar"].tap()
+        app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.staticTexts["Agrega tus cuentas"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Add your accounts"].waitForExistence(timeout: 5))
         attachScreenshot("3-accounts")
-        app.buttons["Continuar"].tap()
+        app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.staticTexts["Protege tus datos"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Protect your data"].waitForExistence(timeout: 5))
         attachScreenshot("4-privacy")
-        app.buttons["Ahora no"].tap()
+        app.buttons["Not now"].tap()
 
-        XCTAssertTrue(app.staticTexts["Todo listo"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["All set"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["1 USD = 36.6243 NIO"].exists)
         attachScreenshot("5-done")
-        app.buttons["Ir al inicio"].tap()
+        app.buttons["Go to home"].tap()
 
-        XCTAssertTrue(app.buttons["Inicio"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Home"].waitForExistence(timeout: 5))
     }
 
     private func attachScreenshot(_ name: String) {

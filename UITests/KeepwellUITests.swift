@@ -8,7 +8,7 @@ final class KeepwellUITests: XCTestCase {
     @MainActor
     func testAppLaunches() {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing"]
+        app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))

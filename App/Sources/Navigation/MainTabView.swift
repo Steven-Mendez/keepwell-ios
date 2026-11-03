@@ -9,10 +9,10 @@ enum MainTab: Hashable {
     case summary
 
     static let items = [
-        KWTabItem(id: Self.home, icon: .home, title: "Inicio"),
-        KWTabItem(id: Self.transactions, icon: .list, title: "Movimientos"),
-        KWTabItem(id: Self.accounts, icon: .tabAccounts, title: "Cuentas"),
-        KWTabItem(id: Self.summary, icon: .chartBars, title: "Resumen"),
+        KWTabItem(id: Self.home, icon: .home, title: String(localized: "Home")),
+        KWTabItem(id: Self.transactions, icon: .list, title: String(localized: "Transactions")),
+        KWTabItem(id: Self.accounts, icon: .tabAccounts, title: String(localized: "Accounts")),
+        KWTabItem(id: Self.summary, icon: .chartBars, title: String(localized: "Summary")),
     ]
 }
 

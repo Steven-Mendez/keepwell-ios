@@ -4,7 +4,7 @@ import DesignSystem
 import SharedPresentation
 import SwiftUI
 
-/// "Cuadrar efectivo": the person types what they counted; the difference becomes a movement.
+/// "Reconcile cash": the person types what they counted; the difference becomes a movement.
 struct ReconcileCashSheet: View {
     let viewModel: AccountsViewModel
     let cash: AccountsOverview.Cash
@@ -17,17 +17,17 @@ struct ReconcileCashSheet: View {
         KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
-                Text("Cuadrar efectivo").kwTextStyle(.titleSm)
+                Text("Reconcile cash", bundle: #bundle).kwTextStyle(.titleSm)
                 KWGroupedCard {
-                    KWValueRow("Según la app", value: formatter.string(cash.balance))
-                    SheetAmountRow(label: "Lo que tienes (\(cash.balance.currency))", text: $countedText)
+                    KWValueRow(String(localized: "According to the app", bundle: #bundle), value: formatter.string(cash.balance))
+                    SheetAmountRow(label: countedLabel, text: $countedText)
                 }
-                Text("Si hay diferencia, la anotamos como un ajuste para que el saldo cuadre.")
+                Text("If there's a difference, we record it as an adjustment so the balance matches.", bundle: #bundle)
                     .font(KWTextStyle.captionSm.font)
                     .foregroundStyle(KWColor.Text.muted)
                 SheetError(message: viewModel.actionError)
                 Spacer(minLength: 0)
-                Button("Cuadrar") {
+                Button {
                     isSaving = true
                     Task {
                         if await viewModel.reconcile(cash, countedText: countedText) {
@@ -35,6 +35,8 @@ struct ReconcileCashSheet: View {
                         }
                         isSaving = false
                     }
+                } label: {
+                    Text("Reconcile", bundle: #bundle)
                 }
                 .buttonStyle(.kw())
                 .disabled(isSaving || countedText.isEmpty)
@@ -42,9 +44,14 @@ struct ReconcileCashSheet: View {
         }
         .onDisappear { viewModel.clearActionError() }
     }
+
+    private var countedLabel: String {
+        let currency = cash.balance.currency
+        return String(localized: "What you have (\(currency))", bundle: #bundle)
+    }
 }
 
-/// "Retiro de cajero": money taken from a bank account into cash.
+/// "ATM withdrawal": money taken from a bank account into cash.
 struct WithdrawCashSheet: View {
     let viewModel: AccountsViewModel
     let cash: AccountsOverview.Cash
@@ -60,21 +67,25 @@ struct WithdrawCashSheet: View {
         KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
-                Text("Retiro de cajero").kwTextStyle(.titleSm)
+                Text("ATM withdrawal", bundle: #bundle).kwTextStyle(.titleSm)
                 KWFlowLayout {
                     ForEach(sources) { source in
                         KWChip(CardDisplay.name(of: source.account), isSelected: selectedSource == source.id) { sourceID = source.id }
                     }
                 }
                 KWGroupedCard {
-                    SheetAmountRow(label: "Retiraste (\(cash.balance.currency))", text: $amountText)
+                    SheetAmountRow(label: withdrawnLabel, text: $amountText)
                     if cash.balance.currency != principal {
-                        SheetAmountRow(label: "\(principal) que te cobró el banco", hint: "Opcional · si usó otra tasa", text: $debitedText)
+                        SheetAmountRow(
+                            label: debitedLabel,
+                            hint: String(localized: "Optional · if it used another rate", bundle: #bundle),
+                            text: $debitedText,
+                        )
                     }
                 }
                 SheetError(message: viewModel.actionError)
                 Spacer(minLength: 0)
-                Button("Guardar retiro") {
+                Button {
                     guard let source = selectedSource else { return }
                     isSaving = true
                     Task {
@@ -85,6 +96,8 @@ struct WithdrawCashSheet: View {
                         }
                         isSaving = false
                     }
+                } label: {
+                    Text("Save withdrawal", bundle: #bundle)
                 }
                 .buttonStyle(.kw())
                 .disabled(isSaving || amountText.isEmpty || selectedSource == nil)
@@ -93,13 +106,22 @@ struct WithdrawCashSheet: View {
         .onDisappear { viewModel.clearActionError() }
     }
 
+    private var withdrawnLabel: String {
+        let currency = cash.balance.currency
+        return String(localized: "You withdrew (\(currency))", bundle: #bundle)
+    }
+
+    private var debitedLabel: String {
+        String(localized: "\(principal) the bank charged you", bundle: #bundle)
+    }
+
     private var selectedSource: UUID? {
         sourceID ?? sources.first?.id
     }
 }
 
-/// Label on the left, compact amount field on the right, as in the review step's "USD que te
-/// cobró el banco".
+/// Label on the left, compact amount field on the right, as in the review step's "USD the
+/// bank charged you".
 struct SheetAmountRow: View {
     let label: String
     var hint: String?
@@ -116,7 +138,7 @@ struct SheetAmountRow: View {
                 }
             }
             Spacer()
-            TextField("0.00", text: $text)
+            TextField(text: $text) { Text(verbatim: "0.00") }
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .font(.kw(15, weight: 600))

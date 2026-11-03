@@ -39,26 +39,30 @@ struct AccountFormView: View {
 
     var body: some View {
         KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: KWSpacing.md) {
-                    KWFlowHeader(.close, action: onClose)
-                    Text(title)
-                        .kwTextStyle(.titleSm)
-                        .accessibilityAddTraits(.isHeader)
-                    fields
-                    if draft.kind == .credit, second != nil {
-                        debtModes
+            VStack(spacing: KWSpacing.sm) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: KWSpacing.md) {
+                        KWFlowHeader(.close, action: onClose)
+                        Text(title)
+                            .kwTextStyle(.titleSm)
+                            .accessibilityAddTraits(.isHeader)
+                        fields
+                        if draft.kind == .credit, second != nil {
+                            debtModes
+                        }
                     }
                 }
-            }
-            .scrollIndicators(.hidden)
-            VStack(spacing: KWSpacing.xs) {
-                Button(isNew ? "Agregar" : "Guardar") { save() }
+                .scrollIndicators(.hidden)
+                VStack(spacing: KWSpacing.xs) {
+                    Button { save() } label: {
+                        isNew ? Text("Add", bundle: #bundle) : Text("Save", bundle: #bundle)
+                    }
                     .buttonStyle(.kw())
                     .disabled(!isValid)
-                if !isNew, draft.kind != .cash {
-                    Button("Quitar cuenta", action: onRemove)
-                        .buttonStyle(.kw(.destructive, size: .row))
+                    if !isNew, draft.kind != .cash {
+                        Button(action: onRemove) { Text("Remove account", bundle: #bundle) }
+                            .buttonStyle(.kw(.destructive, size: .row))
+                    }
                 }
             }
         }
@@ -67,9 +71,9 @@ struct AccountFormView: View {
 
     private var title: String {
         switch draft.kind {
-        case .bank: "Cuenta de banco"
-        case .credit: "Tarjeta de crédito"
-        case .cash: "Efectivo"
+        case .bank: String(localized: "Bank account", bundle: #bundle)
+        case .credit: String(localized: "Credit card", bundle: #bundle)
+        case .cash: String(localized: "Cash", bundle: #bundle)
         }
     }
 
@@ -77,16 +81,22 @@ struct AccountFormView: View {
     private var fields: some View {
         KWGroupedCard {
             if draft.kind != .cash {
-                textRow("Banco", text: optionalBinding(\.bank), placeholder: "Nombre del banco")
                 textRow(
-                    draft.kind == .credit ? "Nombre" : "Cuenta",
-                    text: $draft.name,
-                    placeholder: draft.kind == .credit ? "Visa" : "Ahorro",
+                    String(localized: "Bank", bundle: #bundle),
+                    text: optionalBinding(\.bank),
+                    placeholder: String(localized: "Bank name", bundle: #bundle),
                 )
                 textRow(
-                    draft.kind == .credit ? "Últimos 4 dígitos" : "Débito, últimos 4",
+                    draft.kind == .credit ? String(localized: "Name", bundle: #bundle) : String(localized: "Account", bundle: #bundle),
+                    text: $draft.name,
+                    placeholder: draft.kind == .credit ? "Visa" : String(localized: "Savings", bundle: #bundle),
+                )
+                textRow(
+                    draft.kind == .credit
+                        ? String(localized: "Last 4 digits", bundle: #bundle)
+                        : String(localized: "Debit, last 4", bundle: #bundle),
                     text: optionalBinding(\.lastFour),
-                    placeholder: "Opcional",
+                    placeholder: String(localized: "Optional", bundle: #bundle),
                     numeric: true,
                 )
             }
@@ -95,7 +105,7 @@ struct AccountFormView: View {
             }
             amountRow(balanceLabel, text: $balanceText)
             if draft.kind == .credit, draft.debtMode == .dual, let second {
-                amountRow("Deuda en \(second)", text: $secondBalanceText)
+                amountRow(debtLabel(second), text: $secondBalanceText)
             }
         }
         if draft.kind == .credit {
@@ -110,15 +120,23 @@ struct AccountFormView: View {
     private var balanceLabel: String {
         switch draft.kind {
         case .credit:
-            draft.debtMode == .second ? "Deuda en \(second ?? principal)" : "Deuda en \(principal)"
+            debtLabel(draft.debtMode == .second ? second ?? principal : principal)
         case .bank, .cash:
-            "Saldo de hoy (\(draft.currency))"
+            todaysBalanceLabel(currency: draft.currency)
         }
+    }
+
+    private func debtLabel(_ currency: String) -> String {
+        String(localized: "Debt in \(currency)", bundle: #bundle)
+    }
+
+    private func todaysBalanceLabel(currency: String) -> String {
+        String(localized: "Today's balance (\(currency))", bundle: #bundle)
     }
 
     private var debtModes: some View {
         VStack(alignment: .leading, spacing: KWSpacing.xs) {
-            KWSectionHeader("¿En qué monedas te cobra?")
+            KWSectionHeader(String(localized: "Which currencies does it charge you in?", bundle: #bundle))
             ForEach([DebtMode.dual, .principal, .second], id: \.self) { mode in
                 Button { draft.debtMode = mode } label: {
                     Text(modeTitle(mode))
@@ -143,9 +161,11 @@ struct AccountFormView: View {
 
     private func modeTitle(_ mode: DebtMode) -> String {
         switch mode {
-        case .dual: "Dos monedas"
-        case .principal: "Solo \(principal)"
-        case .second: "Solo \(second ?? principal)"
+        case .dual: return String(localized: "Two currencies", bundle: #bundle)
+        case .principal: return String(localized: "Only \(principal)", bundle: #bundle)
+        case .second:
+            let currency = second ?? principal
+            return String(localized: "Only \(currency)", bundle: #bundle)
         }
     }
 
@@ -165,7 +185,7 @@ struct AccountFormView: View {
         HStack(spacing: KWSpacing.sm) {
             Text(label).foregroundStyle(KWColor.Text.secondary)
             Spacer()
-            TextField("0.00", text: text)
+            TextField(label, text: text, prompt: Text(verbatim: "0.00"))
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .font(.kw(15, weight: 600))
@@ -181,7 +201,7 @@ struct AccountFormView: View {
 
     private func currencyRow(options: [String]) -> some View {
         HStack {
-            Text("Moneda").foregroundStyle(KWColor.Text.secondary)
+            Text("Currency", bundle: #bundle).foregroundStyle(KWColor.Text.secondary)
             Spacer()
             KWSegmentedControl(options.map { (value: $0, title: $0) }, selection: $draft.currency, style: .accent)
         }
@@ -216,7 +236,7 @@ struct AccountFormView: View {
         case .visa: "Visa"
         case .mastercard: "Mastercard"
         case .amex: "Amex"
-        case .other: "Otra"
+        case .other: String(localized: "Other", bundle: #bundle)
         }
     }
 }

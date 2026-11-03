@@ -2,7 +2,7 @@ import DesignSystem
 import Domain
 import SwiftUI
 
-/// Step 1 · ¿Qué agregar?
+/// Step 1 · What to add?
 public struct AddCardTypeView: View {
     private let viewModel: AddCardViewModel
     private let onClose: () -> Void
@@ -17,24 +17,27 @@ public struct AddCardTypeView: View {
         KWScreen(bottom: 34) {
             VStack(alignment: .leading, spacing: 14) {
                 KWFlowHeader(.close, action: onClose)
-                Text("¿Qué quieres agregar?")
+                Text("What do you want to add?", bundle: #bundle)
                     .kwTextStyle(.titleSm)
                     .padding(.top, KWSpacing.xxs)
                     .accessibilityAddTraits(.isHeader)
                 option(
                     palette: .azul,
-                    title: "Tarjeta de crédito",
-                    subtitle: "Es su propia cuenta: deuda en una o dos monedas, corte y pago",
+                    title: String(localized: "Credit card", bundle: #bundle),
+                    subtitle: String(
+                        localized: "It's its own account: debt in one or two currencies, cutoff and due dates",
+                        bundle: #bundle,
+                    ),
                 ) { viewModel.choose(.credit) }
                 option(
                     palette: .coral,
-                    title: "Tarjeta de débito",
-                    subtitle: "Se vincula a una cuenta de banco; puede haber varias por cuenta",
+                    title: String(localized: "Debit card", bundle: #bundle),
+                    subtitle: String(localized: "Linked to a bank account; an account can have several", bundle: #bundle),
                 ) { viewModel.choose(.debit) }
-                KWSectionHeader("Cuentas").padding(.top, KWSpacing.xs)
+                KWSectionHeader(String(localized: "Accounts", bundle: #bundle)).padding(.top, KWSpacing.xs)
                 HStack(spacing: 10) {
-                    tile(.bank, "Cuenta de banco") { newAccountKind = .deposit }
-                    tile(.cash, "Otra billetera") { newAccountKind = .cash }
+                    tile(.bank, String(localized: "Bank account", bundle: #bundle)) { newAccountKind = .deposit }
+                    tile(.cash, String(localized: "Other wallet", bundle: #bundle)) { newAccountKind = .cash }
                 }
             }
         }
@@ -86,7 +89,7 @@ extension AccountKind: @retroactive Identifiable {
     public var id: String { rawValue }
 }
 
-/// "Cuenta de banco" / "Otra billetera": name, bank, currency and today's balance.
+/// "Bank account" / "Other wallet": name, bank, currency and today's balance.
 struct NewAccountSheet: View {
     let viewModel: AddCardViewModel
     let kind: AccountKind
@@ -101,7 +104,7 @@ struct NewAccountSheet: View {
         KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
-                Text(kind == .deposit ? "Cuenta de banco" : "Otra billetera").kwTextStyle(.titleSm)
+                Text(kind == .deposit ? "Bank account" : "Other wallet", bundle: #bundle).kwTextStyle(.titleSm)
                 fields
                 if let error = viewModel.errorMessage {
                     Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
@@ -115,12 +118,16 @@ struct NewAccountSheet: View {
     private var fields: some View {
         KWGroupedCard {
             if kind == .deposit {
-                FormTextRow(label: "Banco", placeholder: "Nombre del banco", text: $bank)
+                FormTextRow(
+                    label: String(localized: "Bank", bundle: #bundle),
+                    placeholder: String(localized: "Bank name", bundle: #bundle),
+                    text: $bank,
+                )
             }
-            FormTextRow(label: "Nombre", placeholder: kind == .deposit ? "Ahorro" : "Sobre", text: $name)
+            FormTextRow(label: String(localized: "Name", bundle: #bundle), placeholder: namePlaceholder, text: $name)
             if let second = viewModel.second {
                 HStack {
-                    Text("Moneda").foregroundStyle(KWColor.Text.secondary)
+                    Text("Currency", bundle: #bundle).foregroundStyle(KWColor.Text.secondary)
                     Spacer()
                     KWSegmentedControl(
                         [(value: viewModel.principal, title: viewModel.principal), (value: second, title: second)],
@@ -131,12 +138,16 @@ struct NewAccountSheet: View {
                 .font(KWTextStyle.body.font)
                 .padding(.vertical, 10)
             }
-            FormAmountRow(label: "Saldo de hoy", text: $balanceText)
+            FormAmountRow(label: String(localized: "Today's balance", bundle: #bundle), text: $balanceText)
         }
     }
 
+    private var namePlaceholder: String {
+        kind == .deposit ? String(localized: "Savings", bundle: #bundle) : String(localized: "Envelope", bundle: #bundle)
+    }
+
     private var addButton: some View {
-        Button("Agregar") {
+        Button {
             isSaving = true
             Task {
                 let saved = await viewModel.createAccount(
@@ -151,6 +162,8 @@ struct NewAccountSheet: View {
                     onClose()
                 }
             }
+        } label: {
+            Text("Add", bundle: #bundle)
         }
         .buttonStyle(.kw())
         .disabled(isSaving || name.trimmingCharacters(in: .whitespaces).isEmpty)

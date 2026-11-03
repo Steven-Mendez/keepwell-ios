@@ -4,7 +4,7 @@ import Domain
 import Foundation
 import Observation
 
-/// Drives "Agregar tarjeta": type → plastic → debt and cycle (credit only) → added.
+/// Drives "Add card": type → plastic → debt and cycle (credit only) → added.
 @MainActor
 @Observable
 public final class AddCardViewModel {
@@ -79,7 +79,7 @@ public final class AddCardViewModel {
     // MARK: Steps
 
     /// Starts the plastic step; `accountID` preselects the bank account when linking a debit card
-    /// from an account's "Vincular otra tarjeta".
+    /// from an account's "Link another card".
     public func choose(_ kind: Kind, linkingTo accountID: UUID? = nil) {
         self.kind = kind
         network = kind == .credit ? .mastercard : .visa
@@ -140,7 +140,7 @@ public final class AddCardViewModel {
         }
     }
 
-    /// Restarts at the type step for "Agregar otra".
+    /// Restarts at the type step for "Add another".
     public func restart() {
         bank = ""
         lastFour = ""
@@ -154,7 +154,7 @@ public final class AddCardViewModel {
 
     public func createAccount(kind: AccountKind, name: String, bank: String?, currency: String, balanceText: String) async -> Bool {
         guard let balance = Self.amount(balanceText) else {
-            errorMessage = "Revisa el saldo."
+            errorMessage = String(localized: "Check the balance.", bundle: #bundle)
             return false
         }
         do {
@@ -163,7 +163,7 @@ public final class AddCardViewModel {
             await load()
             return true
         } catch {
-            errorMessage = "No pudimos guardar la cuenta."
+            errorMessage = String(localized: "We couldn't save the account.", bundle: #bundle)
             return false
         }
     }
@@ -171,38 +171,57 @@ public final class AddCardViewModel {
     // MARK: Copy
 
     public var plasticTitle: String {
-        kind == .credit ? "Tu tarjeta de crédito" : "Tu tarjeta de débito"
+        kind == .credit
+            ? String(localized: "Your credit card", bundle: #bundle)
+            : String(localized: "Your debit card", bundle: #bundle)
     }
 
     public func modeTitle(_ mode: DebtMode) -> String {
-        switch mode {
-        case .dual: "Dos monedas"
-        case .principal: "Solo \(principal)"
-        case .second: "Solo \(second ?? principal)"
+        let first = principal
+        let other = second ?? first
+        return switch mode {
+        case .dual: String(localized: "Two currencies", bundle: #bundle)
+        case .principal: String(localized: "Only \(first)", bundle: #bundle)
+        case .second: String(localized: "Only \(other)", bundle: #bundle)
         }
+    }
+
+    private func principalSubtitle(_ principal: String) -> String {
+        if principal == "USD" {
+            return String(localized: "Everything is converted to dollars", bundle: #bundle)
+        }
+        return String(localized: "Everything is converted to \(principal)", bundle: #bundle)
     }
 
     public func modeSubtitle(_ mode: DebtMode) -> String {
-        switch mode {
-        case .dual: "\(principal) y \(second ?? principal) por separado, se pagan aparte"
-        case .principal: principal == "USD" ? "Todo se convierte a dólares" : "Todo se convierte a \(principal)"
-        case .second: "Todo en moneda local"
+        let first = principal
+        let other = second ?? first
+        return switch mode {
+        case .dual: String(localized: "\(first) and \(other), paid separately", bundle: #bundle)
+        case .principal: principalSubtitle(first)
+        case .second: String(localized: "Everything in local currency", bundle: #bundle)
         }
     }
 
-    /// The sentence under "Tarjeta agregada".
+    /// The sentence under "Card added".
     public var summary: String {
         if kind == .debit {
             let account = context?.depositAccounts.first { $0.id == createdCard?.accountID }
-            return "Vinculada a \([account?.bank, account?.name].compactMap(\.self).joined(separator: " "))."
+            let accountName = [account?.bank, account?.name].compactMap(\.self).joined(separator: " ")
+            return String(localized: "Linked to \(accountName).", bundle: #bundle)
         }
+        let first = principal
+        let other = second ?? first
         let debt = switch debtMode {
-        case .dual: "Deuda en \(principal) y \(second ?? principal)"
-        case .principal: "Deuda en \(principal)"
-        case .second: "Deuda en \(second ?? principal)"
+        case .dual: String(localized: "Debt in \(first) and \(other)", bundle: #bundle)
+        case .principal: String(localized: "Debt in \(first)", bundle: #bundle)
+        case .second: String(localized: "Debt in \(other)", bundle: #bundle)
         }
+        let (cutoffDay, dueDay) = (cutoffDay, dueDay)
+        let cycle = String(localized: "\(debt) · cutoff day \(cutoffDay) · due day \(dueDay).", bundle: #bundle)
         let days = context?.paymentReminderDaysBefore ?? 3
-        return "\(debt) · corte día \(cutoffDay) · pago día \(dueDay). Te avisamos \(days) días antes del pago."
+        let reminder = String(localized: "We'll remind you \(days) days before the due date.", bundle: #bundle)
+        return "\(cycle) \(reminder)"
     }
 
     // MARK: Private
@@ -224,7 +243,7 @@ public final class AddCardViewModel {
             errorMessage = nil
             path.append(.done)
         } catch {
-            errorMessage = "No pudimos agregar la tarjeta. Intenta de nuevo."
+            errorMessage = String(localized: "We couldn't add the card. Try again.", bundle: #bundle)
         }
     }
 

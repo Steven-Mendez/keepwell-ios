@@ -6,7 +6,7 @@ import PackageDescription
 /// `Domain` kernel and `Persistence`, so features only add a Data target when they own storage.
 let package = Package(
     name: "Features",
-    defaultLocalization: "es",
+    defaultLocalization: "en",
     platforms: [.iOS(.v26)],
     products: [
         .library(name: "OnboardingDomain", targets: ["OnboardingDomain"]),
@@ -17,6 +17,18 @@ let package = Package(
         .library(name: "AddCardPresentation", targets: ["AddCardPresentation"]),
         .library(name: "CreateTransactionDomain", targets: ["CreateTransactionDomain"]),
         .library(name: "CreateTransactionPresentation", targets: ["CreateTransactionPresentation"]),
+        .library(name: "HomeDomain", targets: ["HomeDomain"]),
+        .library(name: "HomePresentation", targets: ["HomePresentation"]),
+        .library(name: "TransactionsDomain", targets: ["TransactionsDomain"]),
+        .library(name: "TransactionsPresentation", targets: ["TransactionsPresentation"]),
+        .library(name: "SummaryDomain", targets: ["SummaryDomain"]),
+        .library(name: "SummaryPresentation", targets: ["SummaryPresentation"]),
+        .library(name: "SettingsDomain", targets: ["SettingsDomain"]),
+        .library(name: "SettingsPresentation", targets: ["SettingsPresentation"]),
+        .library(name: "CreditCardDomain", targets: ["CreditCardDomain"]),
+        .library(name: "CreditCardPresentation", targets: ["CreditCardPresentation"]),
+        .library(name: "LockDomain", targets: ["LockDomain"]),
+        .library(name: "LockPresentation", targets: ["LockPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -44,6 +56,7 @@ let package = Package(
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "Domain", package: "Domain"),
             ],
+            resources: [.process("Resources")],
         ),
         .testTarget(
             name: "SharedPresentationTests",
@@ -68,6 +81,7 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
             path: "Sources/Onboarding/Presentation",
+            resources: [.process("Resources")],
         ),
         .testTarget(
             name: "OnboardingDomainTests",
@@ -107,6 +121,7 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
             path: "Sources/Accounts/Presentation",
+            resources: [.process("Resources")],
         ),
         .testTarget(
             name: "AccountsPresentationTests",
@@ -146,6 +161,7 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
             path: "Sources/AddCard/Presentation",
+            resources: [.process("Resources")],
         ),
         .testTarget(
             name: "AddCardPresentationTests",
@@ -185,6 +201,7 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
             path: "Sources/CreateTransaction/Presentation",
+            resources: [.process("Resources")],
         ),
         .testTarget(
             name: "CreateTransactionPresentationTests",
@@ -204,6 +221,164 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+        ),
+
+        // MARK: Home
+
+        .target(
+            name: "HomeDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Home/Domain",
+        ),
+        .target(
+            name: "HomePresentation",
+            dependencies: [
+                "HomeDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+            path: "Sources/Home/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "HomeDomainTests",
+            dependencies: [
+                "HomeDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Transactions
+
+        .target(
+            name: "TransactionsDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Transactions/Domain",
+        ),
+        .target(
+            name: "TransactionsPresentation",
+            dependencies: [
+                "TransactionsDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+            path: "Sources/Transactions/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "TransactionsDomainTests",
+            dependencies: [
+                "TransactionsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Summary
+
+        .target(
+            name: "SummaryDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Summary/Domain",
+        ),
+        .target(
+            name: "SummaryPresentation",
+            dependencies: [
+                "SummaryDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+            path: "Sources/Summary/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "SummaryDomainTests",
+            dependencies: [
+                "SummaryDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Settings
+
+        .target(
+            name: "SettingsDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Settings/Domain",
+        ),
+        .target(
+            name: "SettingsPresentation",
+            dependencies: [
+                "SettingsDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+            path: "Sources/Settings/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "SettingsDomainTests",
+            dependencies: [
+                "SettingsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Credit card
+
+        .target(
+            name: "CreditCardDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/CreditCard/Domain",
+        ),
+        .target(
+            name: "CreditCardPresentation",
+            dependencies: [
+                "CreditCardDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+            path: "Sources/CreditCard/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "CreditCardDomainTests",
+            dependencies: [
+                "CreditCardDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Lock
+
+        .target(
+            name: "LockDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Lock/Domain",
+        ),
+        .target(
+            name: "LockPresentation",
+            dependencies: [
+                "LockDomain",
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+            path: "Sources/Lock/Presentation",
+            resources: [.process("Resources")],
         ),
     ],
     swiftLanguageModes: [.v6],

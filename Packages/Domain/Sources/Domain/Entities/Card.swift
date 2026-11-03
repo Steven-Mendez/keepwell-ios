@@ -28,7 +28,7 @@ public enum CardColor: String, Codable, CaseIterable, Sendable {
 
 /// Controls the holder sets on an additional card given to someone else.
 public struct AdditionalCardControls: Hashable, Sendable, Codable {
-    /// Who carries it ("Súper familiar"); shown as the card's name.
+    /// Who carries it ("Super family"); shown as the card's name.
     public let holderName: String
     /// Spending cap per billing cycle; `nil` means no cap.
     public let cycleCap: Money?

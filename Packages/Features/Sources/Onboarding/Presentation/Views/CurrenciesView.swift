@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 2 · Monedas y tasa.
+/// Step 2 · Currencies and rate.
 public struct CurrenciesView: View {
     @Bindable private var viewModel: OnboardingViewModel
     private let onBack: () -> Void
@@ -17,11 +17,11 @@ public struct CurrenciesView: View {
             VStack(alignment: .leading, spacing: 18) {
                 KWFlowHeader(.back, progress: (3, 1), action: onBack)
                 OnboardingHeading(
-                    title: "¿Con qué monedas trabajas?",
-                    message: "Los reportes y el patrimonio se calculan en la moneda principal.",
+                    title: String(localized: "Which currencies do you use?", bundle: #bundle),
+                    message: String(localized: "Reports and net worth are calculated in the main currency.", bundle: #bundle),
                 )
                 principalRow
-                KWSectionHeader("Segunda moneda")
+                KWSectionHeader(String(localized: "Second currency", bundle: #bundle))
                     .padding(.top, KWSpacing.xxs)
                 KWFlowLayout {
                     ForEach(viewModel.secondCurrencyOptions) { option in
@@ -29,15 +29,19 @@ public struct CurrenciesView: View {
                             viewModel.selectSecond(option.code)
                         }
                     }
-                    KWChip("Buscar…", isSelected: false, style: .outlined, height: 38) { isSearching = true }
+                    KWChip(String(localized: "Search…", bundle: #bundle), isSelected: false, style: .outlined, height: 38) {
+                        isSearching = true
+                    }
                 }
                 if viewModel.second != nil {
                     rateCard
                 }
                 Spacer(minLength: 0)
-                Button("Continuar") {
+                Button {
                     KWKeyboard.dismiss()
                     viewModel.continueFromCurrencies()
+                } label: {
+                    Text("Continue", bundle: #bundle)
                 }
                 .buttonStyle(.kw())
                 .disabled(!viewModel.canContinueFromCurrencies)
@@ -59,7 +63,7 @@ public struct CurrenciesView: View {
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Moneda principal")
+                    Text("Main currency", bundle: #bundle)
                         .font(KWTextStyle.caption.font)
                         .foregroundStyle(KWColor.Text.muted)
                     Text(viewModel.principalLabel)
@@ -77,7 +81,7 @@ public struct CurrenciesView: View {
 
     private var rateCard: some View {
         VStack(alignment: .leading, spacing: KWSpacing.sm) {
-            Text("Tasa de cambio (la pones tú)")
+            Text("Exchange rate (you set it)", bundle: #bundle)
                 .font(KWTextStyle.caption.font)
                 .foregroundStyle(KWColor.Text.muted)
             HStack(spacing: 10) {
@@ -88,14 +92,14 @@ public struct CurrenciesView: View {
                     .padding(.horizontal, 14)
                     .frame(height: 48)
                     .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: KWRadius.input))
-                    .accessibilityLabel("Tasa de cambio")
+                    .accessibilityLabel(Text("Exchange rate", bundle: #bundle))
                 Text(viewModel.second ?? "")
             }
             .font(.kw(20, weight: 700, relativeTo: .title3))
             Button {
                 viewModel.useNicaraguaExample()
             } label: {
-                Text("Ejemplo Nicaragua: 1 USD = 36.6243 NIO")
+                Text("Nicaragua example: 1 USD = 36.6243 NIO", bundle: #bundle)
                     .font(.kw(13, weight: 600, relativeTo: .footnote))
                     .foregroundStyle(KWColor.Brand.linkHover)
                     .padding(.horizontal, KWSpacing.sm)
@@ -103,7 +107,7 @@ public struct CurrenciesView: View {
                     .background(KWColor.Tint.accent, in: Capsule())
             }
             .buttonStyle(.plain)
-            Text("Por defecto es 1. Cámbiala cuando quieras; cada movimiento guarda la tasa del momento en que lo anotaste.")
+            Text("It defaults to 1. Change it whenever you want; each transaction keeps the rate from when you logged it.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font)
                 .foregroundStyle(KWColor.Text.muted)
                 .lineSpacing(3)
@@ -115,17 +119,17 @@ public struct CurrenciesView: View {
     }
 }
 
-/// "Buscar…": every ISO currency, searchable by code or name.
+/// "Search…": every ISO currency, searchable by code or name.
 struct CurrencySearchView: View {
     let excluding: String
     let onPick: (String) -> Void
     @State private var query = ""
 
     private var currencies: [(code: String, name: String)] {
-        let spanish = Locale(identifier: "es")
+        let locale = Locale.current
         return Locale.commonISOCurrencyCodes
             .filter { $0 != excluding }
-            .map { ($0, spanish.localizedString(forCurrencyCode: $0) ?? $0) }
+            .map { ($0, locale.localizedString(forCurrencyCode: $0) ?? $0) }
             .filter { query.isEmpty || $0.code.localizedCaseInsensitiveContains(query) || $0.name.localizedCaseInsensitiveContains(query) }
     }
 
@@ -146,8 +150,8 @@ struct CurrencySearchView: View {
             }
             .scrollContentBackground(.hidden)
             .background(KWColor.Surface.bg)
-            .searchable(text: $query, prompt: "Buscar moneda")
-            .navigationTitle("Segunda moneda")
+            .searchable(text: $query, prompt: Text("Search currency", bundle: #bundle))
+            .navigationTitle(Text("Second currency", bundle: #bundle))
             .navigationBarTitleDisplayMode(.inline)
         }
         .preferredColorScheme(.dark)

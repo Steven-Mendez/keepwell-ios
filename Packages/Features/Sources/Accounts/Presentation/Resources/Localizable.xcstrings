@@ -1,0 +1,326 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ Debit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Débito"
+          }
+        }
+      }
+    },
+    "%@ the bank charged you" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ que te cobró el banco"
+          }
+        }
+      }
+    },
+    "%lld linked methods" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld linked method"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld linked methods"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld medio vinculado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld medios vinculados"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "According to the app" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Según la app"
+          }
+        }
+      }
+    },
+    "Accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas"
+          }
+        }
+      }
+    },
+    "Add account or card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar cuenta o tarjeta"
+          }
+        }
+      }
+    },
+    "ATM withdrawal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retiro de cajero"
+          }
+        }
+      }
+    },
+    "Cash" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efectivo"
+          }
+        }
+      }
+    },
+    "Cash adjustment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajuste de efectivo"
+          }
+        }
+      }
+    },
+    "Check the amount the bank charged you." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisa el monto que te cobró el banco."
+          }
+        }
+      }
+    },
+    "Credit cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjetas de crédito"
+          }
+        }
+      }
+    },
+    "Credit · %lld cards" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Credit · %lld card"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Credit · %lld cards"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Crédito · %lld plástico"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Crédito · %lld plásticos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Deposits" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depósitos"
+          }
+        }
+      }
+    },
+    "Enter how much cash you have." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe cuánto efectivo tienes."
+          }
+        }
+      }
+    },
+    "Enter the amount you withdrew." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe el monto que retiraste."
+          }
+        }
+      }
+    },
+    "If there's a difference, we record it as an adjustment so the balance matches." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si hay diferencia, la anotamos como un ajuste para que el saldo cuadre."
+          }
+        }
+      }
+    },
+    "Link another card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vincular otra tarjeta"
+          }
+        }
+      }
+    },
+    "Net worth %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patrimonio neto %@"
+          }
+        }
+      }
+    },
+    "Optional · if it used another rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcional · si usó otra tasa"
+          }
+        }
+      }
+    },
+    "Reconcile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuadrar"
+          }
+        }
+      }
+    },
+    "Reconcile cash" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuadrar efectivo"
+          }
+        }
+      }
+    },
+    "Save withdrawal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar retiro"
+          }
+        }
+      }
+    },
+    "Tap to see details" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para ver detalle"
+          }
+        }
+      }
+    },
+    "We couldn't save. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar. Intenta de nuevo."
+          }
+        }
+      }
+    },
+    "What you have (%@)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que tienes (%@)"
+          }
+        }
+      }
+    },
+    "You withdrew (%@)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retiraste (%@)"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

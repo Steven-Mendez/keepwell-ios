@@ -23,7 +23,7 @@ public final class OnboardingViewModel {
     }
 
     public struct CurrencyOption: Identifiable, Hashable, Sendable {
-        /// `nil` is "Solo una moneda".
+        /// `nil` is "Single currency only".
         public let code: String?
         public let label: String
         public var id: String { code ?? "single" }
@@ -49,7 +49,12 @@ public final class OnboardingViewModel {
     private let notifications: any NotificationAuthorizing
 
     static let defaultRateText = "1.0000"
-    static let featuredSecondCurrencies = [("NIO", "Córdoba"), ("MXN", "Peso"), ("COP", "Peso"), ("EUR", "Euro")]
+    static let featuredSecondCurrencies = [
+        ("NIO", String(localized: "Córdoba", bundle: #bundle)),
+        ("MXN", String(localized: "Peso", bundle: #bundle)),
+        ("COP", String(localized: "Peso", bundle: #bundle)),
+        ("EUR", String(localized: "Euro", bundle: #bundle)),
+    ]
 
     public init(
         completeOnboarding: any CompleteOnboardingUseCase,
@@ -59,7 +64,7 @@ public final class OnboardingViewModel {
         self.completeOnboarding = completeOnboarding
         self.restoreFromBackup = restoreFromBackup
         self.notifications = notifications
-        accounts = [OnboardingAccountDraft(kind: .cash, name: "Efectivo", currency: "NIO")]
+        accounts = [OnboardingAccountDraft(kind: .cash, name: String(localized: "Cash", bundle: #bundle), currency: "NIO")]
     }
 
     // MARK: Currencies
@@ -71,7 +76,7 @@ public final class OnboardingViewModel {
         let searched = searchedCurrencies
             .filter { code in code != principal && !featured.contains { $0.code == code } }
             .map { CurrencyOption(code: $0, label: "\($0) · \(Self.shortName(for: $0))") }
-        return featured + searched + [CurrencyOption(code: nil, label: "Solo una moneda")]
+        return featured + searched + [CurrencyOption(code: nil, label: String(localized: "Single currency only", bundle: #bundle))]
     }
 
     public var principalLabel: String {
@@ -126,7 +131,7 @@ public final class OnboardingViewModel {
             )
         case .cash: accounts.first { $0.kind == .cash } ?? OnboardingAccountDraft(
                 kind: .cash,
-                name: "Efectivo",
+                name: String(localized: "Cash", bundle: #bundle),
                 currency: second ?? principal,
             )
         }
@@ -205,7 +210,7 @@ public final class OnboardingViewModel {
             completedSettings = try await completeOnboarding.execute(draft)
             path.append(.done)
         } catch {
-            errorMessage = "No pudimos guardar tus datos. Intenta de nuevo."
+            errorMessage = String(localized: "We couldn't save your data. Try again.", bundle: #bundle)
         }
     }
 
@@ -220,7 +225,7 @@ public final class OnboardingViewModel {
     }
 
     static func fullName(for code: String) -> String {
-        let name = Locale(identifier: "es").localizedString(forCurrencyCode: code) ?? code
+        let name = Locale.current.localizedString(forCurrencyCode: code) ?? code
         return name.prefix(1).uppercased() + name.dropFirst()
     }
 

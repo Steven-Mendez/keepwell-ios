@@ -1,0 +1,22 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSFaceIDUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell uses Face ID to protect your financial data."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell usa Face ID para proteger tus datos financieros."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

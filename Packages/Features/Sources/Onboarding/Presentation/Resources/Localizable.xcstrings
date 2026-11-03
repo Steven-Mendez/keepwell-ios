@@ -1,0 +1,766 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ · already included" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · ya incluida"
+          }
+        }
+      }
+    },
+    "Account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta"
+          }
+        }
+      }
+    },
+    "Accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas"
+          }
+        }
+      }
+    },
+    "Add" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar"
+          }
+        }
+      }
+    },
+    "Add your accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega tus cuentas"
+          }
+        }
+      }
+    },
+    "All set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo listo"
+          }
+        }
+      }
+    },
+    "Allow notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir avisos"
+          }
+        }
+      }
+    },
+    "Any currency, with your own rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cualquier moneda, con tu propia tasa"
+          }
+        }
+      }
+    },
+    "Bank" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banco"
+          }
+        }
+      }
+    },
+    "Bank account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta de banco"
+          }
+        }
+      }
+    },
+    "Bank name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del banco"
+          }
+        }
+      }
+    },
+    "Bank · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banco · %@"
+          }
+        }
+      }
+    },
+    "Bank · %@ · Debit ··%@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banco · %@ · Débito ··%@"
+          }
+        }
+      }
+    },
+    "Cash" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efectivo"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        }
+      }
+    },
+    "Credit card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de crédito"
+          }
+        }
+      }
+    },
+    "Credit · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito · %@"
+          }
+        }
+      }
+    },
+    "Credit · %@ and %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito · %@ y %@"
+          }
+        }
+      }
+    },
+    "Currencies" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monedas"
+          }
+        }
+      }
+    },
+    "Currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda"
+          }
+        }
+      }
+    },
+    "Córdoba" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Córdoba"
+          }
+        }
+      }
+    },
+    "Debit, last 4" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débito, últimos 4"
+          }
+        }
+      }
+    },
+    "Debt in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deuda en %@"
+          }
+        }
+      }
+    },
+    "Euro" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Euro"
+          }
+        }
+      }
+    },
+    "Exchange rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasa de cambio"
+          }
+        }
+      }
+    },
+    "Exchange rate (you set it)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasa de cambio (la pones tú)"
+          }
+        }
+      }
+    },
+    "Expected expenses due today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastos previstos que vencen hoy"
+          }
+        }
+      }
+    },
+    "Face ID or Touch ID" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID o Touch ID"
+          }
+        }
+      }
+    },
+    "Go to home" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ir al inicio"
+          }
+        }
+      }
+    },
+    "Hide amounts when leaving" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar montos al salir"
+          }
+        }
+      }
+    },
+    "I've used it before: restore from iCloud" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya la usaba: restaurar desde iCloud"
+          }
+        }
+      }
+    },
+    "iCloud backup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respaldo en iCloud"
+          }
+        }
+      }
+    },
+    "Import transactions from CSV" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar movimientos desde CSV"
+          }
+        }
+      }
+    },
+    "In the app switcher" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En el selector de apps"
+          }
+        }
+      }
+    },
+    "It defaults to 1. Change it whenever you want; each transaction keeps the rate from when you logged it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por defecto es 1. Cámbiala cuando quieras; cada movimiento guarda la tasa del momento en que lo anotaste."
+          }
+        }
+      }
+    },
+    "Last 4 digits" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Últimos 4 dígitos"
+          }
+        }
+      }
+    },
+    "Limits on additional cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Topes de tarjetas adicionales"
+          }
+        }
+      }
+    },
+    "Log expenses, income and transfers. Cards with extras, cash and expected expenses." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anota gastos, ingresos y transferencias. Tarjetas con adicionales, efectivo y gastos previstos."
+          }
+        }
+      }
+    },
+    "Log first expense" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anotar primer gasto"
+          }
+        }
+      }
+    },
+    "Looking for your backup…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando tu respaldo…"
+          }
+        }
+      }
+    },
+    "Main currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda principal"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        }
+      }
+    },
+    "Nicaragua example: 1 USD = 36.6243 NIO" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejemplo Nicaragua: 1 USD = 36.6243 NIO"
+          }
+        }
+      }
+    },
+    "No account and no servers of ours. Your data lives on your iPhone and, if you want, in your iCloud." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin cuenta y sin nuestros servidores. Tus datos viven en tu iPhone y, si quieres, en tu iCloud."
+          }
+        }
+      }
+    },
+    "No account or sign-up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin cuenta ni registro"
+          }
+        }
+      }
+    },
+    "Not now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        }
+      }
+    },
+    "Now log your first transaction. The more you record, the better your monthly summary." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora anota tu primer movimiento. Mientras más registres, mejor tu resumen del mes."
+          }
+        }
+      }
+    },
+    "On your iPhone, backed up to your iCloud" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En tu iPhone, con respaldo en tu iCloud"
+          }
+        }
+      }
+    },
+    "Only %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo %@"
+          }
+        }
+      }
+    },
+    "Optional" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcional"
+          }
+        }
+      }
+    },
+    "Other" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otra"
+          }
+        }
+      }
+    },
+    "Peso" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso"
+          }
+        }
+      }
+    },
+    "Protect your data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protege tus datos"
+          }
+        }
+      }
+    },
+    "Rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasa"
+          }
+        }
+      }
+    },
+    "Recover everything if you change iPhone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recupera todo si cambias de iPhone"
+          }
+        }
+      }
+    },
+    "Remove account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar cuenta"
+          }
+        }
+      }
+    },
+    "Reports and net worth are calculated in the main currency." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los reportes y el patrimonio se calculan en la moneda principal."
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        }
+      }
+    },
+    "Savings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorro"
+          }
+        }
+      }
+    },
+    "Search currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar moneda"
+          }
+        }
+      }
+    },
+    "Search…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar…"
+          }
+        }
+      }
+    },
+    "Second currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segunda moneda"
+          }
+        }
+      }
+    },
+    "Single currency only" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo una moneda"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar"
+          }
+        }
+      }
+    },
+    "Statement and payment dates for your cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corte y pago de tus tarjetas"
+          }
+        }
+      }
+    },
+    "Today's balance (%@)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo de hoy (%@)"
+          }
+        }
+      }
+    },
+    "Two currencies" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dos monedas"
+          }
+        }
+      }
+    },
+    "Useful notifications, no spam" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avisos útiles, sin spam"
+          }
+        }
+      }
+    },
+    "We couldn't find a backup in your iCloud." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No encontramos un respaldo en tu iCloud."
+          }
+        }
+      }
+    },
+    "We couldn't save your data. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar tus datos. Intenta de nuevo."
+          }
+        }
+      }
+    },
+    "Which currencies do you use?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Con qué monedas trabajas?"
+          }
+        }
+      }
+    },
+    "Which currencies does it charge you in?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿En qué monedas te cobra?"
+          }
+        }
+      }
+    },
+    "Whichever your iPhone has; if it fails, your passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El que tenga tu iPhone; si falla, tu código"
+          }
+        }
+      }
+    },
+    "With today's balance. Credit cards start with what you owe." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con su saldo de hoy. Las tarjetas de crédito empiezan con lo que debes."
+          }
+        }
+      }
+    },
+    "You can link more cards and add extra ones later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podrás vincular más tarjetas y agregar adicionales después."
+          }
+        }
+      }
+    },
+    "Your money, clear, in one or two currencies" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu dinero claro, en una o dos monedas"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

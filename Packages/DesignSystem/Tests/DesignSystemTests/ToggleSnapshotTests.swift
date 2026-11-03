@@ -8,9 +8,9 @@ struct ToggleSnapshotTests {
     @Test
     func onOffAndPendingTint() {
         let view = VStack(spacing: KWSpacing.md) {
-            Toggle("Respaldo en iCloud", isOn: .constant(true)).toggleStyle(.kw)
-            Toggle("Ocultar montos al salir", isOn: .constant(false)).toggleStyle(.kw)
-            Toggle("Es un gasto previsto", isOn: .constant(true)).toggleStyle(.kw(tint: KWColor.State.pending))
+            Toggle("iCloud backup", isOn: .constant(true)).toggleStyle(.kw)
+            Toggle("Hide amounts on exit", isOn: .constant(false)).toggleStyle(.kw)
+            Toggle("This is a planned expense", isOn: .constant(true)).toggleStyle(.kw(tint: KWColor.State.pending))
         }
         .font(KWTextStyle.body.font)
         .foregroundStyle(KWColor.Text.primary)

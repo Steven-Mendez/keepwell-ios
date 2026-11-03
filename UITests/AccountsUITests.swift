@@ -8,13 +8,13 @@ final class AccountsUITests: XCTestCase {
     @MainActor
     func testAccountsTabShowsCardsDepositsAndCash() {
         let app = XCUIApplication()
-        app.launchArguments = ["-sample-data"]
+        app.launchArguments = ["-sample-data", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        XCTAssertTrue(app.buttons["Cuentas"].waitForExistence(timeout: 10))
-        app.buttons["Cuentas"].tap()
-        XCTAssertTrue(app.staticTexts["Depósitos"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Cuadrar"].exists)
+        XCTAssertTrue(app.buttons["Accounts"].waitForExistence(timeout: 10))
+        app.buttons["Accounts"].tap()
+        XCTAssertTrue(app.staticTexts["Deposits"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Reconcile"].exists)
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "accounts"
         attachment.lifetime = .keepAlways

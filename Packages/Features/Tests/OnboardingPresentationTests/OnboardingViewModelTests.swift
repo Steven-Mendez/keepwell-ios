@@ -58,7 +58,7 @@ struct OnboardingViewModelTests {
         #expect(viewModel.rate == 1)
         #expect(viewModel.accounts.map(\.kind) == [.cash])
         #expect(viewModel.accounts.first?.currency == "NIO")
-        #expect(viewModel.principalLabel == "USD · Dólar estadounidense")
+        #expect(viewModel.principalLabel == "USD · US Dollar")
     }
 
     @Test
@@ -104,7 +104,7 @@ struct OnboardingViewModelTests {
         let viewModel = OnboardingFactory.make()
         viewModel.selectSecond("CRC")
         #expect(viewModel.secondCurrencyOptions.map(\.code).contains("CRC"))
-        #expect(viewModel.secondCurrencyOptions.last?.label == "Solo una moneda")
+        #expect(viewModel.secondCurrencyOptions.last?.label == "Single currency only")
     }
 
     @Test
@@ -119,7 +119,7 @@ struct OnboardingViewModelTests {
     func accountsCanBeAddedEditedAndRemovedButCashStays() {
         let viewModel = OnboardingFactory.make()
         var bank = viewModel.newAccount(.bank)
-        bank.name = "Ahorro"
+        bank.name = "Savings"
         viewModel.save(bank)
         bank.balance = 100
         viewModel.save(bank)

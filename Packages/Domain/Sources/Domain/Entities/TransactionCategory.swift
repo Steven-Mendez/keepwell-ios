@@ -14,18 +14,19 @@ public struct TransactionCategory: Identifiable, Hashable, Sendable, Codable {
 }
 
 extension TransactionCategory {
-    /// Initial set from HANDOFF → "Categorías". People can edit them later.
+    /// Initial set from HANDOFF → "Categories". The names are the English source text and the
+    /// stored default; screens show a localized name by `id` while the stored name is unchanged.
     public static let defaultExpense: [Self] = [
-        ("groceries", "Supermercado"), ("restaurants", "Restaurantes"), ("transport", "Transporte"),
-        ("housing", "Vivienda"), ("utilities", "Servicios"), ("health", "Salud"), ("education", "Educación"),
-        ("leisure", "Ocio"), ("shopping", "Compras"), ("subscriptions", "Suscripciones"),
-        ("personal-care", "Cuidado personal"), ("family", "Familia"), ("travel", "Viajes"),
-        ("fees", "Comisiones"), ("tools", "Herramientas"), ("other-expense", "Otros"),
+        ("groceries", "Groceries"), ("restaurants", "Restaurants"), ("transport", "Transport"),
+        ("housing", "Housing"), ("utilities", "Utilities"), ("health", "Health"), ("education", "Education"),
+        ("leisure", "Leisure"), ("shopping", "Shopping"), ("subscriptions", "Subscriptions"),
+        ("personal-care", "Personal care"), ("family", "Family"), ("travel", "Travel"),
+        ("fees", "Fees"), ("tools", "Tools"), ("other-expense", "Other"),
     ].map { Self(id: $0.0, name: $0.1, kind: .expense) }
 
     public static let defaultIncome: [Self] = [
-        ("salary", "Salario"), ("extra", "Extra"), ("interest", "Intereses"),
-        ("refunds", "Reembolsos"), ("other-income", "Otros ingresos"),
+        ("salary", "Salary"), ("extra", "Extra"), ("interest", "Interest"),
+        ("refunds", "Refunds"), ("other-income", "Other income"),
     ].map { Self(id: $0.0, name: $0.1, kind: .income) }
 
     public static var defaults: [Self] {

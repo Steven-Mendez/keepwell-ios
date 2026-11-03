@@ -3,7 +3,7 @@ import DesignSystem
 import SharedPresentation
 import SwiftUI
 
-/// Step 3 · Medio de pago. The method decides which account moves.
+/// Step 3 · Payment method. The method decides which account moves.
 public struct MethodView: View {
     private let viewModel: CreateTransactionViewModel
     private let onBack: () -> Void

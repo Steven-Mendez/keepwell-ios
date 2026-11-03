@@ -13,8 +13,8 @@ struct AccountsSnapshotTests {
         cash.balance = 560
         viewModel.save(cash)
         var bank = viewModel.newAccount(.bank)
-        bank.bank = "Banco Uno"
-        bank.name = "Ahorro"
+        bank.bank = "Bank One"
+        bank.name = "Savings"
         bank.balance = 9443.6
         bank.lastFour = "1234"
         viewModel.save(bank)
@@ -41,7 +41,7 @@ struct AccountsSnapshotTests {
 
     @Test
     func initials() {
-        #expect(AccountsView.initials("Banco Uno") == "BU")
+        #expect(AccountsView.initials("Bank One") == "BO")
         #expect(AccountsView.initials("Lafise") == "LA")
     }
 

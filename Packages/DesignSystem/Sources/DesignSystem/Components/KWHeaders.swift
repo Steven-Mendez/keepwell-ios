@@ -64,7 +64,7 @@ public struct KWStepProgress: View {
             }
         }
         .accessibilityElement()
-        .accessibilityLabel("Paso \(current) de \(total)")
+        .accessibilityLabel(Text("Step \(current) of \(total)", bundle: #bundle))
     }
 }
 
@@ -89,7 +89,9 @@ public struct KWFlowHeader: View {
         HStack(spacing: KWSpacing.sm) {
             KWCircleButton(
                 leading == .back ? .chevronLeft : .close,
-                accessibilityLabel: leading == .back ? "Atrás" : "Cerrar",
+                accessibilityLabel: leading == .back
+                    ? String(localized: "Back", bundle: #bundle)
+                    : String(localized: "Close", bundle: #bundle),
                 action: action,
             )
             if let progress {
@@ -149,7 +151,7 @@ public struct KWNavigationHeader: View {
         case centered
         /// 17/700 title with a 13pt subtitle next to the button.
         case leading
-        /// 26/800 title next to the button ("Ajustes").
+        /// 26/800 title next to the button ("Settings").
         case large
     }
 
@@ -175,7 +177,7 @@ public struct KWNavigationHeader: View {
 
     public var body: some View {
         HStack(spacing: KWSpacing.sm) {
-            KWCircleButton(.chevronLeft, style: buttonStyle, accessibilityLabel: "Volver", action: onBack)
+            KWCircleButton(.chevronLeft, style: buttonStyle, accessibilityLabel: String(localized: "Back", bundle: #bundle), action: onBack)
             switch style {
             case .centered:
                 Text(title)
@@ -208,12 +210,12 @@ public struct KWNavigationHeader: View {
 #Preview {
     VStack(spacing: KWSpacing.xl) {
         KWFlowHeader(.close, progress: (4, 1)) {}
-        KWLargeTitleHeader("Movimientos") {
-            KWCircleButton(.plus, style: .white, accessibilityLabel: "Nuevo movimiento") {}
+        KWLargeTitleHeader("Transactions") {
+            KWCircleButton(.plus, style: .white, accessibilityLabel: "New transaction") {}
         }
         KWNavigationHeader("Mastercard ··1234") {}
-        KWNavigationHeader("Familiar", subtitle: "Adicional de Mastercard ··1234", style: .leading) {}
-        KWNavigationHeader("Ajustes", style: .large) {}
+        KWNavigationHeader("Family", subtitle: "Mastercard ··1234 additional", style: .leading) {}
+        KWNavigationHeader("Settings", style: .large) {}
     }
     .padding(KWLayout.gutter)
     .background(KWColor.Surface.bg)

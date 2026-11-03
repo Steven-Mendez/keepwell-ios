@@ -8,18 +8,18 @@ struct ListSnapshotTests {
     @Test
     func groupedCardWithRowsAndHeaders() {
         let view = VStack(alignment: .leading, spacing: KWSpacing.xs) {
-            KWSectionHeader("Moneda")
+            KWSectionHeader("Currency")
             KWGroupedCard {
-                KWValueRow("Moneda principal", value: "USD · Dólar ›", style: .setting, verticalPadding: 14)
-                KWValueRow("Categorías de gasto", value: "15 ›", style: .navigation, verticalPadding: 14)
+                KWValueRow("Main currency", value: "USD · US dollar ›", style: .setting, verticalPadding: 14)
+                KWValueRow("Expense categories", value: "15 ›", style: .navigation, verticalPadding: 14)
             }
-            KWSectionHeader("Plásticos", style: .large) {
-                Text("+ Adicional").font(KWTextStyle.label.font).foregroundStyle(KWColor.Brand.link)
+            KWSectionHeader("Cards", style: .large) {
+                Text("+ Additional").font(KWTextStyle.label.font).foregroundStyle(KWColor.Brand.link)
             }
             KWGroupedCard(verticalPadding: 4) {
-                KWValueRow("Límite de crédito", value: "Sin definir", style: .placeholder)
-                KWValueRow("Estado", value: "Confirmado", valueColor: KWColor.State.positive)
-                KWTitleSubtitle("Efectivo", subtitle: "NIO · ya incluida").padding(.vertical, 14)
+                KWValueRow("Credit limit", value: "Not set", style: .placeholder)
+                KWValueRow("Status", value: "Confirmed", valueColor: KWColor.State.positive)
+                KWTitleSubtitle("Cash", subtitle: "NIO · already included").padding(.vertical, 14)
             }
         }
         .padding(KWLayout.gutter)

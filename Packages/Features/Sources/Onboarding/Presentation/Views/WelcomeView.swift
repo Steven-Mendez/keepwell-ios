@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 1 · Bienvenida.
+/// Step 1 · Welcome.
 public struct WelcomeView: View {
     private let restoreState: OnboardingViewModel.RestoreState
     private let onStart: () -> Void
@@ -19,44 +19,52 @@ public struct WelcomeView: View {
         } content: {
             VStack(alignment: .leading, spacing: 0) {
                 CardsIllustration()
-                Text("Tu dinero claro, en una o dos monedas")
+                Text("Your money, clear, in one or two currencies", bundle: #bundle)
                     .font(.kw(30, weight: 800, relativeTo: .title))
                     .tracking(-1)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 28)
                     .padding(.bottom, 12)
                     .accessibilityAddTraits(.isHeader)
-                Text("Anota gastos, ingresos y transferencias. Tarjetas con adicionales, efectivo y gastos previstos.")
+                Text("Log expenses, income and transfers. Cards with extras, cash and expected expenses.", bundle: #bundle)
                     .font(.kw(17, weight: 400))
                     .foregroundStyle(KWColor.Text.onBrand)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 14) {
-                    feature(.personOff, "Sin cuenta ni registro")
-                    feature(.phone, "En tu iPhone, con respaldo en tu iCloud")
-                    feature(.transfer, "Cualquier moneda, con tu propia tasa")
+                    feature(.personOff, String(localized: "No account or sign-up", bundle: #bundle))
+                    feature(.phone, String(localized: "On your iPhone, backed up to your iCloud", bundle: #bundle))
+                    feature(.transfer, String(localized: "Any currency, with your own rate", bundle: #bundle))
                 }
                 .padding(.top, KWSpacing.xl)
                 Spacer(minLength: KWSpacing.md)
-                Button("Empezar", action: onStart)
+                Button(action: onStart) { Text("Start", bundle: #bundle) }
                     .buttonStyle(.kw())
-                Button(action: onRestore) {
-                    HStack(spacing: KWSpacing.xs) {
-                        KWIconView(.cloud, size: 18)
-                        Text(restoreState == .searching ? "Buscando tu respaldo…" : "Ya la usaba: restaurar desde iCloud")
-                    }
-                }
-                .buttonStyle(KWButtonStyle(.plain, size: .text, height: 48))
-                .disabled(restoreState == .searching)
-                .padding(.top, 10)
+                restoreButton
                 if restoreState == .notFound {
-                    Text("No encontramos un respaldo en tu iCloud.")
+                    Text("We couldn't find a backup in your iCloud.", bundle: #bundle)
                         .font(KWTextStyle.caption.font)
                         .foregroundStyle(KWColor.Text.muted)
                         .frame(maxWidth: .infinity)
                 }
             }
         }
+    }
+
+    private var restoreButton: some View {
+        Button(action: onRestore) {
+            HStack(spacing: KWSpacing.xs) {
+                KWIconView(.cloud, size: 18)
+                if restoreState == .searching {
+                    Text("Looking for your backup…", bundle: #bundle)
+                } else {
+                    Text("I've used it before: restore from iCloud", bundle: #bundle)
+                }
+            }
+        }
+        .buttonStyle(KWButtonStyle(.plain, size: .text, height: 48))
+        .disabled(restoreState == .searching)
+        .padding(.top, 10)
     }
 
     private func feature(_ icon: KWIcon, _ text: String) -> some View {

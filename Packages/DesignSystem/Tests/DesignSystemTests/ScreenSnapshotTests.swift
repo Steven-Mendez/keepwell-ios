@@ -8,7 +8,7 @@ struct ScreenSnapshotTests {
     @Test
     func screenPadsFromTheDesignTop() {
         let view = KWScreen {
-            Text("Contenido").font(KWTextStyle.heading.font)
+            Text("Content").font(KWTextStyle.heading.font)
         }
         assertComponentSnapshot(of: view, height: 140)
     }

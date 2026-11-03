@@ -20,7 +20,7 @@ struct ReviewSnapshotTests {
         let viewModel = await filled()
         viewModel.selectCategory("restaurants")
         viewModel.selectSource(.card(SampleData.IDs.savingsDebit))
-        viewModel.description = "Pollo (a domicilio)"
+        viewModel.description = "Chicken (delivery)"
         viewModel.debitedText = "24.28"
         assertScreenSnapshot(of: ReviewView(viewModel: viewModel) {})
     }

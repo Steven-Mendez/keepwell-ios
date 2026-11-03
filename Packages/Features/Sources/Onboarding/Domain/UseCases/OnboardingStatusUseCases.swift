@@ -18,7 +18,7 @@ public struct DefaultGetSettingsUseCase: GetSettingsUseCase {
     }
 }
 
-/// "Ya la usaba: restaurar desde iCloud". With backup on, the private database syncs down on
+/// "I've used it before: restore from iCloud". With backup on, the private database syncs down on
 /// its own; this waits for finished settings to arrive.
 public protocol RestoreFromBackupUseCase: Sendable {
     /// The restored settings, or `nil` when nothing arrived within the wait.

@@ -3,7 +3,7 @@ import DesignSystem
 import SharedPresentation
 import SwiftUI
 
-/// Step 2 · Categoría. For transfers the step picks the destination account instead.
+/// Step 2 · Category. For transfers the step picks the destination account instead.
 public struct CategoryView: View {
     @Bindable private var viewModel: CreateTransactionViewModel
     private let onBack: () -> Void
@@ -18,7 +18,7 @@ public struct CategoryView: View {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.back, progress: (4, 2), action: onBack)
                 HStack(alignment: .firstTextBaseline) {
-                    Text(viewModel.kind == .transfer ? "¿A dónde va?" : "¿En qué fue?")
+                    Text(title)
                         .kwTextStyle(.titleSm)
                         .accessibilityAddTraits(.isHeader)
                     Spacer()
@@ -35,11 +35,22 @@ public struct CategoryView: View {
         }
     }
 
+    private var title: String {
+        viewModel.kind == .transfer
+            ? String(localized: "Where is it going?", bundle: #bundle)
+            : String(localized: "What was it for?", bundle: #bundle)
+    }
+
+    private var seeAllTitle: String {
+        let count = viewModel.categories.count
+        return String(localized: "See all \(count)", bundle: #bundle)
+    }
+
     private var categories: some View {
         VStack(alignment: .leading, spacing: KWSpacing.md) {
             HStack(spacing: KWSpacing.xs) {
                 KWIconView(.search, size: 18)
-                TextField("Buscar categoría", text: $viewModel.categoryQuery)
+                TextField(String(localized: "Search category", bundle: #bundle), text: $viewModel.categoryQuery)
                     .font(KWTextStyle.body.font)
                     .foregroundStyle(KWColor.Text.primary)
             }
@@ -50,12 +61,13 @@ public struct CategoryView: View {
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                     ForEach(viewModel.visibleCategories) { category in
-                        tile(CategoryDisplay.icon(for: category.id), category.name, isSelected: category.id == viewModel.categoryID) {
+                        let isSelected = category.id == viewModel.categoryID
+                        tile(CategoryDisplay.icon(for: category.id), CategoryDisplay.name(of: category), isSelected: isSelected) {
                             viewModel.selectCategory(category.id)
                         }
                     }
                     if viewModel.hasMoreCategories {
-                        tile(.moreFilled, "Ver las \(viewModel.categories.count)", isSelected: false) {
+                        tile(.moreFilled, seeAllTitle, isSelected: false) {
                             viewModel.showsAllCategories = true
                         }
                     }
@@ -111,6 +123,6 @@ struct SelectedCheck: View {
             .foregroundStyle(KWColor.Text.onPositive)
             .frame(width: 24, height: 24)
             .background(KWColor.State.positive, in: Circle())
-            .accessibilityLabel("Seleccionado")
+            .accessibilityLabel(Text("Selected", bundle: #bundle))
     }
 }

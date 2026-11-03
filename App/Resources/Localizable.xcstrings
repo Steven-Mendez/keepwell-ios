@@ -1,0 +1,136 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas"
+          }
+        }
+      }
+    },
+    "Home" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio"
+          }
+        }
+      }
+    },
+    "Log transaction" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anotar movimiento"
+          }
+        }
+      }
+    },
+    "Log your first expense, income or transfer and it shows up here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anota tu primer gasto, ingreso o transferencia y aparece aquí."
+          }
+        }
+      }
+    },
+    "Log your first expense, income or transfer and you will see your month here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anota tu primer gasto, ingreso o transferencia y aquí verás tu mes."
+          }
+        }
+      }
+    },
+    "New transaction" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo movimiento"
+          }
+        }
+      }
+    },
+    "No transactions yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no tienes movimientos"
+          }
+        }
+      }
+    },
+    "Once you log expenses and income, you will see what came in, what went out and what you spent it on." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando anotes gastos e ingresos verás cuánto entró, cuánto salió y en qué gastaste."
+          }
+        }
+      }
+    },
+    "Screen on its way" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantalla en camino"
+          }
+        }
+      }
+    },
+    "Summary" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumen"
+          }
+        }
+      }
+    },
+    "This section is still being built. Your transactions are already saved." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta sección todavía se está construyendo. Tus movimientos ya están guardados."
+          }
+        }
+      }
+    },
+    "Transactions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movimientos"
+          }
+        }
+      }
+    },
+    "Your summary starts with one transaction" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu resumen empieza con un movimiento"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

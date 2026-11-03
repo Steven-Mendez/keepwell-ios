@@ -1,11 +1,18 @@
 import Domain
 import Foundation
 
-/// "Cuadrar": records the difference between the counted cash and the balance.
+/// "Reconcile": records the difference between the counted cash and the balance.
 public protocol ReconcileCashUseCase: Sendable {
     /// Returns the adjustment saved, or `nil` when the count already matched.
     @discardableResult
-    func execute(cash: AccountsOverview.Cash, counted: Decimal) async throws(DomainError) -> Transaction?
+    func execute(cash: AccountsOverview.Cash, counted: Decimal, description: String) async throws(DomainError) -> Transaction?
+}
+
+extension ReconcileCashUseCase {
+    @discardableResult
+    public func execute(cash: AccountsOverview.Cash, counted: Decimal) async throws(DomainError) -> Transaction? {
+        try await execute(cash: cash, counted: counted, description: "Cash adjustment")
+    }
 }
 
 public struct DefaultReconcileCashUseCase: ReconcileCashUseCase {
@@ -20,17 +27,18 @@ public struct DefaultReconcileCashUseCase: ReconcileCashUseCase {
     }
 
     @discardableResult
-    public func execute(cash: AccountsOverview.Cash, counted: Decimal) async throws(DomainError) -> Transaction? {
+    public func execute(cash: AccountsOverview.Cash, counted: Decimal, description: String) async throws(DomainError) -> Transaction? {
         let rate = try await settings.load()?.currencies.exchangeRate ?? CurrencySettings.fallback.exchangeRate
         guard let adjustment = try CashReconciliation.adjustment(
             for: cash.account, balance: cash.balance, counted: counted, date: now(), exchangeRate: rate,
+            description: description,
         ) else { return nil }
         try await transactions.save(adjustment)
         return adjustment
     }
 }
 
-/// "Retiro de cajero": a transfer from a bank account into cash, in the cash's currency, with
+/// "ATM withdrawal": a transfer from a bank account into cash, in the cash's currency, with
 /// what the bank actually debited when it differs (rule 4).
 public struct CashWithdrawal: Sendable {
     public let sourceAccountID: UUID
@@ -38,12 +46,21 @@ public struct CashWithdrawal: Sendable {
     public let amount: Money
     /// What the bank charged in the principal currency, when known.
     public let debitedPrincipal: Decimal?
+    /// Persisted as the movement's text, so the caller passes it already in the user's language.
+    public let description: String
 
-    public init(sourceAccountID: UUID, cashAccountID: UUID, amount: Money, debitedPrincipal: Decimal?) {
+    public init(
+        sourceAccountID: UUID,
+        cashAccountID: UUID,
+        amount: Money,
+        debitedPrincipal: Decimal?,
+        description: String = "ATM withdrawal",
+    ) {
         self.sourceAccountID = sourceAccountID
         self.cashAccountID = cashAccountID
         self.amount = amount
         self.debitedPrincipal = debitedPrincipal
+        self.description = description
     }
 }
 
@@ -78,7 +95,7 @@ public struct DefaultWithdrawCashUseCase: WithdrawCashUseCase {
         let transferMethod = try await cards.fetchCards().first { $0.accountID == withdrawal.sourceAccountID && $0.kind == .transfer }
         let transaction = Transaction(
             date: now(),
-            description: "Retiro de cajero",
+            description: withdrawal.description,
             kind: .transfer,
             categoryID: nil,
             amount: withdrawal.amount.amount,

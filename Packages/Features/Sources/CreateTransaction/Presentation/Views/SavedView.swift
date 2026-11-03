@@ -1,9 +1,10 @@
 import CreateTransactionDomain
 import DesignSystem
 import Domain
+import SharedPresentation
 import SwiftUI
 
-/// Step 5 · Guardado: what was saved, the rate used and the new balance.
+/// Step 5 · Saved: what was saved, the rate used and the new balance.
 public struct SavedView: View {
     private let viewModel: CreateTransactionViewModel
     private let onClose: () -> Void
@@ -18,19 +19,21 @@ public struct SavedView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     Spacer()
-                    KWCircleButton(.close, accessibilityLabel: "Cerrar", action: onClose)
+                    KWCircleButton(.close, accessibilityLabel: String(localized: "Close", bundle: #bundle), action: onClose)
                 }
                 if let saved = viewModel.saved {
                     header(saved)
                     KWGroupedCard {
                         KWValueRow(
-                            "Estado",
-                            value: saved.transaction.isConfirmed ? "Confirmado" : "Previsto",
+                            String(localized: "Status", bundle: #bundle),
+                            value: saved.transaction.isConfirmed
+                                ? String(localized: "Confirmed", bundle: #bundle)
+                                : String(localized: "Planned", bundle: #bundle),
                             valueColor: saved.transaction.isConfirmed ? KWColor.State.positive : KWColor.State.pending,
                         )
-                        KWValueRow("Medio", value: viewModel.sourceTitle ?? "—")
+                        KWValueRow(String(localized: "Method", bundle: #bundle), value: viewModel.sourceTitle ?? "—")
                         if let category = viewModel.category {
-                            KWValueRow("Categoría", value: category.name)
+                            KWValueRow(String(localized: "Category", bundle: #bundle), value: CategoryDisplay.name(of: category))
                         }
                     }
                     KWGroupedCard {
@@ -46,9 +49,9 @@ public struct SavedView: View {
                 }
                 Spacer(minLength: 0)
                 HStack(spacing: 10) {
-                    Button("Anotar otro") { Task { await viewModel.startOver() } }
+                    Button { Task { await viewModel.startOver() } } label: { Text("Log another", bundle: #bundle) }
                         .buttonStyle(.kw(.surface, size: .regular))
-                    Button("Listo", action: onClose)
+                    Button(action: onClose) { Text("Done", bundle: #bundle) }
                         .buttonStyle(.kw(.primary, size: .regular))
                 }
             }
@@ -63,7 +66,7 @@ public struct SavedView: View {
                     .tracking(-1)
                     .monospacedDigit()
                 Text(saved.transaction.description).font(.kw(17, weight: 600))
-                Text("\(viewModel.dayLabel(saved.transaction.date)) · \(viewModel.timeLabel(saved.transaction.date))")
+                Text(verbatim: "\(viewModel.dayLabel(saved.transaction.date)) · \(viewModel.timeLabel(saved.transaction.date))")
                     .font(KWTextStyle.label.font.weight(.regular))
                     .foregroundStyle(KWColor.Text.muted)
             }

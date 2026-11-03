@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 5 · Listo.
+/// Step 5 · Done.
 public struct DoneView: View {
     private let viewModel: OnboardingViewModel
     private let onLogFirstExpense: () -> Void
@@ -22,12 +22,12 @@ public struct DoneView: View {
                     .foregroundStyle(KWColor.Text.onPositive)
                     .frame(width: 88, height: 88)
                     .background(KWColor.State.positive, in: Circle())
-                Text("Todo listo")
+                Text("All set", bundle: #bundle)
                     .kwTextStyle(.title)
                     .padding(.top, 28)
                     .padding(.bottom, 10)
                     .accessibilityAddTraits(.isHeader)
-                Text("Ahora anota tu primer movimiento. Mientras más registres, mejor tu resumen del mes.")
+                Text("Now log your first transaction. The more you record, the better your monthly summary.", bundle: #bundle)
                     .font(.kw(17, weight: 400))
                     .foregroundStyle(KWColor.Text.secondary)
                     .multilineTextAlignment(.center)
@@ -36,9 +36,9 @@ public struct DoneView: View {
                 summary
                     .padding(.top, 28)
                 Spacer(minLength: KWSpacing.md)
-                Button("Anotar primer gasto", action: onLogFirstExpense)
+                Button(action: onLogFirstExpense) { Text("Log first expense", bundle: #bundle) }
                     .buttonStyle(.kw())
-                Button("Ir al inicio", action: onGoHome)
+                Button(action: onGoHome) { Text("Go to home", bundle: #bundle) }
                     .buttonStyle(.kw(.plain, size: .text))
                     .padding(.top, KWSpacing.xs)
             }
@@ -64,10 +64,10 @@ public struct DoneView: View {
 
     @ViewBuilder
     private var rows: some View {
-        KWValueRow("Monedas", value: viewModel.currenciesSummary)
+        KWValueRow(String(localized: "Currencies", bundle: #bundle), value: viewModel.currenciesSummary)
         if let rate = viewModel.rateSummary {
-            KWValueRow("Tasa", value: rate)
+            KWValueRow(String(localized: "Rate", bundle: #bundle), value: rate)
         }
-        KWValueRow("Cuentas", value: "\(viewModel.accounts.count)")
+        KWValueRow(String(localized: "Accounts", bundle: #bundle), value: "\(viewModel.accounts.count)")
     }
 }

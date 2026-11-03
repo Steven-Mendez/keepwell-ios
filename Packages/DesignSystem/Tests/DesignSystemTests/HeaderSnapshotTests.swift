@@ -11,12 +11,12 @@ struct HeaderSnapshotTests {
             KWFlowHeader(.close, progress: (4, 1)) {}
             KWFlowHeader(.back, progress: (3, 2)) {}
             KWFlowHeader(.close) {}
-            KWLargeTitleHeader("Movimientos") {
-                KWCircleButton(.plus, style: .white, accessibilityLabel: "Nuevo movimiento") {}
+            KWLargeTitleHeader("Transactions") {
+                KWCircleButton(.plus, style: .white, accessibilityLabel: "New transaction") {}
             }
             KWNavigationHeader("Mastercard ··1234", buttonStyle: .translucent) {}
-            KWNavigationHeader("Familiar", subtitle: "Adicional de Mastercard ··1234", style: .leading) {}
-            KWNavigationHeader("Ajustes", style: .large) {}
+            KWNavigationHeader("Family", subtitle: "Mastercard ··1234 additional", style: .leading) {}
+            KWNavigationHeader("Settings", style: .large) {}
         }
         .padding(KWLayout.gutter)
         assertComponentSnapshot(of: view, height: 480)

@@ -2,7 +2,7 @@ import DesignSystem
 import SharedPresentation
 import SwiftUI
 
-/// Step 4 · Agregada.
+/// Step 4 · Added.
 public struct CardAddedView: View {
     private let viewModel: AddCardViewModel
     private let onViewCard: () -> Void
@@ -28,14 +28,14 @@ public struct CardAddedView: View {
             VStack(spacing: 18) {
                 KWCardArt(
                     palette: CardDisplay.palette(for: viewModel.color),
-                    bank: viewModel.bank.isEmpty ? "Banco" : viewModel.bank,
+                    bank: viewModel.bank.isEmpty ? String(localized: "Bank", bundle: #bundle) : viewModel.bank,
                     showsContactless: false,
                     lastFour: viewModel.lastFour,
                     network: CardDisplay.wordmark(for: viewModel.network),
                 )
                 .rotationEffect(.degrees(-3))
                 VStack(spacing: KWSpacing.xs) {
-                    Text("Tarjeta agregada").kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
+                    Text("Card added", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
                     Text(viewModel.summary)
                         .font(KWTextStyle.body.font)
                         .foregroundStyle(KWColor.Text.onBrand)
@@ -49,8 +49,8 @@ public struct CardAddedView: View {
                 }
                 Spacer(minLength: 0)
                 VStack(spacing: 0) {
-                    Button("Ver tarjeta", action: onViewCard).buttonStyle(.kw())
-                    Button("Agregar otra", action: onAddAnother)
+                    Button(action: onViewCard) { Text("View card", bundle: #bundle) }.buttonStyle(.kw())
+                    Button(action: onAddAnother) { Text("Add another", bundle: #bundle) }
                         .buttonStyle(KWButtonStyle(.plain, size: .text, height: 40))
                         .padding(.top, 18)
                 }
@@ -63,8 +63,8 @@ public struct CardAddedView: View {
             HStack(spacing: 14) {
                 KWMiniCard(.palette(.lima))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("¿Le diste una adicional a alguien?").font(.kw(15, weight: 700))
-                    Text("Agrégala con su tope y categorías")
+                    Text("Did you give someone an additional card?", bundle: #bundle).font(.kw(15, weight: 700))
+                    Text("Add it with its limit and categories", bundle: #bundle)
                         .font(KWTextStyle.caption.font.weight(.regular))
                         .foregroundStyle(KWColor.Text.muted)
                 }

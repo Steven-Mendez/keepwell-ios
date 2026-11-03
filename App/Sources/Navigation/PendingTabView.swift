@@ -14,22 +14,27 @@ struct PendingTabView: View {
             VStack(spacing: 0) {
                 KWLargeTitleHeader(title) {
                     if tab == .transactions {
-                        KWCircleButton(.plus, style: .white, accessibilityLabel: "Nuevo movimiento", action: onNewMovement)
+                        KWCircleButton(
+                            .plus,
+                            style: .white,
+                            accessibilityLabel: String(localized: "New transaction"),
+                            action: onNewMovement,
+                        )
                     }
                 }
                 Spacer(minLength: KWSpacing.md)
                 if hasMovements {
                     KWEmptyState(
                         icon: icon,
-                        title: "Pantalla en camino",
-                        message: "Esta sección todavía se está construyendo. Tus movimientos ya están guardados.",
+                        title: String(localized: "Screen on its way"),
+                        message: String(localized: "This section is still being built. Your transactions are already saved."),
                     )
                 } else {
                     KWEmptyState(
                         icon: icon,
                         title: emptyTitle,
                         message: emptyMessage,
-                        actionTitle: "Anotar movimiento",
+                        actionTitle: String(localized: "Log transaction"),
                         action: onNewMovement,
                     )
                 }
@@ -40,10 +45,10 @@ struct PendingTabView: View {
 
     private var title: String {
         switch tab {
-        case .home: "Inicio"
-        case .transactions: "Movimientos"
-        case .accounts: "Cuentas"
-        case .summary: "Resumen"
+        case .home: String(localized: "Home")
+        case .transactions: String(localized: "Transactions")
+        case .accounts: String(localized: "Accounts")
+        case .summary: String(localized: "Summary")
         }
     }
 
@@ -57,14 +62,15 @@ struct PendingTabView: View {
     }
 
     private var emptyTitle: String {
-        tab == .summary ? "Tu resumen empieza con un movimiento" : "Aún no tienes movimientos"
+        tab == .summary ? String(localized: "Your summary starts with one transaction") : String(localized: "No transactions yet")
     }
 
     private var emptyMessage: String {
         switch tab {
-        case .summary: "Cuando anotes gastos e ingresos verás cuánto entró, cuánto salió y en qué gastaste."
-        case .home: "Anota tu primer gasto, ingreso o transferencia y aquí verás tu mes."
-        case .transactions, .accounts: "Anota tu primer gasto, ingreso o transferencia y aparece aquí."
+        case .summary:
+            String(localized: "Once you log expenses and income, you will see what came in, what went out and what you spent it on.")
+        case .home: String(localized: "Log your first expense, income or transfer and you will see your month here.")
+        case .transactions, .accounts: String(localized: "Log your first expense, income or transfer and it shows up here.")
         }
     }
 }

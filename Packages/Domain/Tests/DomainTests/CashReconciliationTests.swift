@@ -4,7 +4,7 @@ import Testing
 
 @Suite("Cash reconciliation")
 struct CashReconciliationTests {
-    private let cash = Account(name: "Billetera", kind: .cash, openingBalances: [Money(0, "NIO")], openingDate: .now)
+    private let cash = Account(name: "Wallet", kind: .cash, openingBalances: [Money(0, "NIO")], openingDate: .now)
 
     private func adjust(balance: Decimal, counted: Decimal) throws -> Transaction? {
         try CashReconciliation.adjustment(

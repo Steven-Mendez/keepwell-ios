@@ -89,7 +89,7 @@ struct CreateTransactionViewModelTests {
         #expect(viewModel.hasMoreCategories)
         viewModel.showsAllCategories = true
         #expect(viewModel.visibleCategories.count == 16)
-        viewModel.categoryQuery = "super"
+        viewModel.categoryQuery = "groc"
         #expect(viewModel.visibleCategories.map(\.id) == ["groceries"])
     }
 
@@ -99,7 +99,7 @@ struct CreateTransactionViewModelTests {
         viewModel.selectCategory("restaurants")
         let sources = viewModel.methodGroups.flatMap(\.rows).map(\.source)
         #expect(!sources.contains(.card(SampleData.IDs.mastercardAdditional)))
-        #expect(viewModel.methodGroups.last?.title == "Otras")
+        #expect(viewModel.methodGroups.last?.title == "Other")
         #expect(viewModel.methodGroups.count == 3)
         viewModel.path = [.category]
         viewModel.selectCategory("groceries")
@@ -115,10 +115,10 @@ struct CreateTransactionViewModelTests {
         viewModel.selectSource(.card(SampleData.IDs.savingsDebit))
         #expect(viewModel.path == [.category, .method, .review])
         #expect(viewModel.showsDebitedField)
-        #expect(viewModel.reviewSubtitle == "Restaurantes · Débito •••• 1234")
-        #expect(viewModel.accountLabel(viewModel.sourceAccount) == "Banco Uno Ahorro (USD)")
+        #expect(viewModel.reviewSubtitle == "Restaurants · Debit •••• 1234")
+        #expect(viewModel.accountLabel(viewModel.sourceAccount) == "Bank One Savings (USD)")
         viewModel.debitedText = "24.28"
-        viewModel.description = "Pollo"
+        viewModel.description = "Chicken"
         await viewModel.save()
         #expect(viewModel.path.last == .saved)
         let saved = try #require(viewModel.saved)
@@ -129,11 +129,11 @@ struct CreateTransactionViewModelTests {
     @Test
     func plannedChangesTheCopy() async {
         let viewModel = await CreateTransactionFactory.loaded()
-        #expect(viewModel.saveTitle == "Guardar gasto")
-        #expect(viewModel.plannedHint == "Ya pasó: cuenta en saldos")
+        #expect(viewModel.saveTitle == "Save expense")
+        #expect(viewModel.plannedHint == "Already happened: counts in balances")
         viewModel.isPlanned = true
-        #expect(viewModel.saveTitle == "Guardar como previsto")
-        #expect(viewModel.plannedHint == "No cuenta hasta confirmarlo")
+        #expect(viewModel.saveTitle == "Save as planned")
+        #expect(viewModel.plannedHint == "Doesn't count until confirmed")
     }
 
     @Test
@@ -162,6 +162,6 @@ struct CreateTransactionViewModelTests {
     @Test
     func dayLabels() async {
         let viewModel = await CreateTransactionFactory.loaded()
-        #expect(viewModel.dayLabel(CreateTransactionFactory.now).hasPrefix("Hoy, 22"))
+        #expect(viewModel.dayLabel(CreateTransactionFactory.now).hasPrefix("Today, "))
     }
 }
