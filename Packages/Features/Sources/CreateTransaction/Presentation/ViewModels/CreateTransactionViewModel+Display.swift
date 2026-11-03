@@ -115,10 +115,22 @@ extension CreateTransactionViewModel {
     // MARK: Private
 
     private func sources(of account: Account, in context: TransactionContext) -> [PaymentSource] {
-        let cards = context.cards.filter { $0.accountID == account.id }
-        guard !cards.isEmpty else { return [.account(account.id)] }
+        let all = context.cards.filter { $0.accountID == account.id }
+        guard !all.isEmpty else { return [.account(account.id)] }
+        // A bank account is its card: paying "without the card" moves the very same balance, so
+        // the account's transfer method only shows when nothing else stands for the account.
+        let cards = all.contains { $0.kind != .transfer } ? all.filter { $0.kind != .transfer } : all
         let order: [CardKind] = [.debit, .creditHolder, .transfer]
         return cards.sorted { (order.firstIndex(of: $0.kind) ?? 0) < (order.firstIndex(of: $1.kind) ?? 0) }.map { .card($0.id) }
+    }
+
+    /// A movement last paid through the account's hidden transfer method preselects its card,
+    /// which the picker shows in its place.
+    func pickerSource(for source: PaymentSource, in context: TransactionContext) -> PaymentSource {
+        guard case let .card(id) = source, let card = context.card(id), card.kind == .transfer,
+              let sibling = context.cards.first(where: { $0.accountID == card.accountID && $0.kind != .transfer })
+        else { return source }
+        return .card(sibling.id)
     }
 
     /// "USD and NIO" / "USD y NIO": the list joiner follows the person's language.

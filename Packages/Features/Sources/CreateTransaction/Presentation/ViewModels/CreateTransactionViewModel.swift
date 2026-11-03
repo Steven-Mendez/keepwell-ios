@@ -112,7 +112,7 @@ public final class CreateTransactionViewModel {
         if type.movesBetweenAccounts {
             chooseDefaultAccounts()
         } else {
-            source = source ?? loaded.lastUsedSource
+            source = source ?? loaded.lastUsedSource.map { pickerSource(for: $0, in: loaded) }
         }
     }
 

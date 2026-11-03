@@ -146,29 +146,21 @@ struct CreateTransactionViewModelTests {
     }
 
     @Test
-    func theAccountsCardlessMethodSitsUnderItsCardWordedForAnExpense() async throws {
-        let viewModel = await CreateTransactionFactory.loaded()
-        viewModel.selectCategory("restaurants")
-        let rows = viewModel.methodGroups.flatMap(\.rows)
-        let transfer = try #require(rows.first { $0.source == .card(SampleData.IDs.savingsTransfer) })
-        #expect(transfer.title == "Transfer or direct debit")
-        #expect(transfer.thumbnail == .transfer)
-        #expect(["Without the card, straight from the account", "Without the card, from Bank One Savings"]
-            .contains(transfer.subtitle ?? ""))
-        let savingsRows = rows.filter { [.card(SampleData.IDs.savingsDebit), .card(SampleData.IDs.savingsTransfer)].contains($0.source) }
-        #expect(savingsRows.map(\.source) == [.card(SampleData.IDs.savingsDebit), .card(SampleData.IDs.savingsTransfer)])
-        #expect(!rows.contains { ["Holder", "Transfer"].contains($0.title) || $0.subtitle == "Credit · holder" })
-        viewModel.selectSource(.card(SampleData.IDs.savingsTransfer))
-        #expect(viewModel.sourceTitle == "Bank One · Bank transfer")
+    func aBankAccountOffersOnlyItsCard() async {
+        for kind in [MovementType.expense, .income] {
+            let viewModel = await CreateTransactionFactory.loaded(kind)
+            let sources = viewModel.methodGroups.flatMap(\.rows).map(\.source)
+            #expect(sources.contains(.card(SampleData.IDs.savingsDebit)))
+            #expect(!sources.contains(.card(SampleData.IDs.savingsTransfer)))
+        }
     }
 
     @Test
-    func incomeIntoTheAccountIsNotWordedAsACharge() async throws {
-        let viewModel = await CreateTransactionFactory.loaded(.income)
-        let rows = viewModel.methodGroups.flatMap(\.rows)
-        let transfer = try #require(rows.first { $0.source == .card(SampleData.IDs.savingsTransfer) })
-        #expect(transfer.title == "Transfer or deposit")
-        #expect(["Straight into the account", "Straight into Bank One Savings"].contains(transfer.subtitle ?? ""))
+    func aMovementLastPaidByTransferPreselectsTheAccountsCard() async throws {
+        let viewModel = await CreateTransactionFactory.loaded()
+        let context = try #require(viewModel.context)
+        #expect(viewModel.pickerSource(for: .card(SampleData.IDs.savingsTransfer), in: context) == .card(SampleData.IDs.savingsDebit))
+        #expect(viewModel.pickerSource(for: .card(SampleData.IDs.savingsDebit), in: context) == .card(SampleData.IDs.savingsDebit))
     }
 
     @Test

@@ -145,8 +145,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   used one and its siblings' movements move to it; accounts without a card get one. No movement is
   deleted.
 - Transactions' account filter is a flat list, one row per account shown with its card.
-- "How did you pay?": the account's cardless option sits under its card and reads by what the
-  movement does: "Transfer or direct debit" for expenses, "Transfer or deposit" for income.
+- "How did you pay?" shows each bank account once, as its card: the separate "Transfer or direct
+  debit" / "Transfer or deposit" row is gone, since it moved the same balance. A movement last
+  paid that way preselects the account's card.
 
 - Expenses read as expenses: their amounts and arrow icon are coral red in Transactions, Home's
   recent movements, a card's cycle and the month's totals ("−$8.18" red, "+$817.79" green);
