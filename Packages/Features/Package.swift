@@ -31,6 +31,20 @@ let package = Package(
             path: "Tests/FeatureTestSupport",
         ),
 
+        // Display mappings (cards, money, categories) shared by the Presentation targets.
+        .target(
+            name: "SharedPresentation",
+            dependencies: [
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "SharedPresentationTests",
+            dependencies: ["SharedPresentation", .product(name: "Domain", package: "Domain"), .product(name: "Core", package: "Core")],
+        ),
+
         // MARK: Onboarding
 
         .target(

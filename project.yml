@@ -151,6 +151,7 @@ schemes:
         - package: Features/OnboardingDomainTests
         - package: Features/OnboardingPresentationTests
         - package: Features/AccountsDomainTests
+        - package: Features/SharedPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release
