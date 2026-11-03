@@ -9,10 +9,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
-- Onboarding asks "What should we call you?" right after the welcome (it can be skipped), and the
+- Onboarding asks "What's your name?" right after the welcome (it can be skipped), and the
   name is the same one Settings › Security edits. Home then greets you by it ("Good morning,
-  Steven"), the done screen says "All set, Steven", and your own debit and credit cards print it
-  in capitals, like a real plastic; additional cards keep their holder's name.
+  Steven"), the done screen says "All set, Steven", and your debit and credit cards print it
+  in capitals, like a real plastic.
 - Onboarding has a "Protect Keepwell" step before privacy: create the six-digit Keepwell passcode
   with the same screen as Settings, and keep Face ID or Touch ID on, or choose "Not now". A passcode
   made here keeps the lock on even with Face ID off, and a leftover passcode from an earlier install
@@ -21,8 +21,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings › Categories is one editable list per kind: the shipped categories can now be renamed,
   given another icon and color, reordered ("Reorder") and deleted, like your own. A renamed default
   shows your name in every language; untouched ones keep translating. Deleted defaults stay deleted
-  (also after restoring a backup), their movements move to "Other" and additional cards stop
-  pointing at them. "Other" and "Other income" can be renamed but not deleted. "Restore default
+  (also after restoring a backup), their movements move to "Other". "Other" and "Other income" can be renamed but not deleted. "Restore default
   categories" brings deleted defaults back and undoes edits to them, after a confirmation.
 - Lock screen with a Keepwell passcode: a time-of-day greeting ("Good morning, Steven"), six
   passcode dots and a keypad whose corner key is Face ID or Touch ID, asked on its own when the
@@ -56,7 +55,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   movement (it starts from what you searched for), and rename, recolor or delete them in Settings ›
   Expense or Income categories. Deleting one moves its movements to "Other".
 - Debit card screen: tap a debit card on Accounts to see it big with its account's name and
-  balance, rename the account, change the card's color, freeze it, link another card or remove it.
+  balance, rename the account or change the card's color.
 - Credit cards can be renamed and recolored from their screen, under a new "Manage card" list.
 - Transactions per account and card: an "All accounts" chip on Transactions opens a picker of
   accounts and their cards; the month's totals and search follow the choice, and the chip's ✕
@@ -71,28 +70,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.
 - Home: net worth with its second-currency equivalent, quick actions (expense, income, move, pay
-  card), the month's spending and savings, planned movements to confirm, additional cards against
-  their cap and every account's balance.
+  card), the month's spending and savings, planned movements to confirm and every account's
+  balance.
 - Transactions: search, filters (all, expenses, income, transfers, planned), the month's totals and
   movements grouped by day; long-press to confirm a planned movement or delete one.
-- Summary: six months of spending or income with the average, what came in and went out, savings
-  rate and spending by category.
+- Summary: three charts behind a switch, with a month stepper that moves them all. "Cash flow"
+  pairs income and spending bars for six months with a green/red result bar per month and says it
+  plainly ("You saved in November +$2,112", "You spent $44 more than came in") with the share kept
+  and the six-month total. "Categories" is a ring of where the money went (top five, the rest
+  grouped) with the list as its legend and an Expenses/Income switch. "Pace" compares this month's
+  running spending with last month's by the same day. Every bar and slice reads out in VoiceOver.
 - Credit card detail: current debt per currency, limit and available credit, cutoff and payment
-  days, plastics and this cycle's movements; "Pay" opens a transfer to the card.
-- Additional cards: add one, freeze it, set a cap per cycle, choose where it can be used, alerts
-  and the category its purchases default to.
-- Settings: exchange rate, payment and cap reminders, unlock method, hide amounts, iCloud backup,
+  days and this cycle's movements; "Pay" opens a transfer to the card.
+- Settings: exchange rate, payment reminders, unlock method, hide amounts, iCloud backup,
   CSV export and deleting all data.
 - App lock with Face ID, Touch ID or the iPhone passcode, asked again after a chosen time away, and
   amounts hidden in the app switcher; the lock covers any flow left open. With "iPhone passcode"
   chosen, only the passcode is asked, never Face ID or Touch ID.
 - Widgets: this month's spending, quick log in your usual categories, and net worth with your
   largest balances.
-- Reminders: planned movements on their day (confirm or postpone from the notification), card
-  payments ahead of time and additional cards reaching their cap.
+- Reminders: planned movements on their day (confirm or postpone from the notification) and card
+  payments ahead of time.
 - Siri and Shortcuts: "Log an expense in Keepwell" with amount, category and account.
 - Import CSV from settings or onboarding; rows already recorded or for unknown accounts are skipped.
-- Freeze a credit card's main plastic so it can't be chosen to pay.
 - Settings show when the data last reached iCloud, and "Back up now" / "Restore" save a complete
   backup file to iCloud Drive or Files and bring it back.
 - The app is available in English and Spanish and follows the device language; English is the
@@ -100,12 +100,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   prompt have a Spanish translation in `Localizable.xcstrings` catalogs.
 - Tabs without movements say so and offer to log one instead of an empty screen.
 - Create transaction: amount and type with the app's keypad, category, payment method, review (real
-  bank debit, planned, shared, note) and a saved summary with the rate used and the new balance.
+  bank debit, note) and a saved summary with the rate used and the new balance.
 - Add card: credit cards (plastic, debt in one or two currencies, billing cycle), debit cards linked
   to a bank account, new bank accounts and wallets.
 - Accounts: credit cards stacked like Wallet, deposit accounts with their linked cards, and cash
   with "Reconcile" and "ATM withdrawal".
-- Onboarding: splash, welcome with restore from iCloud, currencies with a manual rate (default 1),
+- Onboarding: splash, welcome with restore from iCloud, currencies ("One currency" or "Two
+  currencies"; the main one starts as the iPhone's region currency, any ISO code can be searched,
+  common ones are offered first and "Swap" exchanges main and second, inverting the manual rate),
   accounts (bank, credit card, cash), privacy and reminders, and a summary when done.
 - Project setup: XcodeGen, Debug/Staging/Release configurations, widgets extension, SwiftFormat,
   SwiftLint (with layer-boundary rules), Lefthook, GitHub Actions and Dependabot.
@@ -118,9 +120,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Keepwell tracks cards, it doesn't run them: additional cards (their screen, caps, allowed
+  categories, cap reminders and setting), "Holder", "Plastics" and freezing a card are gone. Cards
+  already saved as additional are skipped and older backups with them still restore; their
+  purchases stay on the credit card. Cutoff and payment dates and their reminders stay.
+- Card colors are the ones real cards come in: black, platinum, gold, blue, green and red, with
+  platinum and gold drawn as metal and printed in dark ink. Cards in a color no longer offered keep
+  it.
+- "Card added" shows the new card straight, and the debt step no longer has a thumbnail beside its
+  title.
+- Logging a movement no longer asks whether it's planned or shared; it's saved as it happened.
+
 - A bank account is one card. Accounts shows each bank account as a single debit card with its
   balance (no stacks, no "Link another card", no empty "Add a debit card" slot), and tapping it
-  opens one "Bank account" screen where the name, color and freeze apply to the account and its
+  opens one "Bank account" screen where the name and color apply to the account and its
   card. "Remove card" is now "Delete account", which says how many movements go with it and that
   transfers with other accounts go too.
 - Adding a debit card creates its bank account (name, bank, last 4, currency and today's balance);
@@ -153,7 +166,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   leave the app.
 - Forms keep their main button ("Add", "Save", "Reconcile", "Continue") just above the keyboard
   instead of hidden behind the number pad, in onboarding accounts, new accounts and cards, debt,
-  review, cash, card terms and additional cards. Forms with several fields show previous / next
+  review, cash and card terms. Forms with several fields show previous / next
   and "Done" on top of the keyboard, return moves to the next field, and tapping outside or
   dragging the form hides the keyboard.
 - Account and card forms: every editable value sits on a filled field, amounts show their currency
@@ -163,8 +176,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   and "Remove account" moved out of the footer, away from "Save".
 - Cards look like real plastics everywhere: the bank, the masked number in the network's grouping
   ("•••• •••• •••• 1234", Amex 4-6-5), a gold chip with contacts, contactless, the network mark with
-  "Debit" or "Credit" under it, the holder's name on additional cards and a glossy gradient. Frozen
-  cards turn grey with a snowflake. Credit and debit card screens open with the card big, its name
+  "Debit" or "Credit" under it, your name and a glossy gradient. Credit and debit card screens open with the card big, its name
   and round quick actions, as banks show "my card".
 - Accounts shows every bank account through its debit cards, stacked like the credit cards, and
   cash as a banknote. The "Transfers" row is gone from the accounts list; a bank account without a
@@ -181,7 +193,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Siri's prompts and messages appear in Spanish on Spanish iPhones.
 - The add and edit account forms in onboarding no longer draw their buttons over the title.
 - Launch goes straight from the brand blue to the splash, with no black flash in between.
-- Additional cards on a two-currency credit card are capped in the local currency.
+- Summary's category percentages ("100 %") no longer wrap onto two lines.
 - The review step shows the suggested description as editable text instead of an empty field.
 - The app icon shows the keepwell mark on the brand gradient, as on the brand board, drawn flat
   (Icon Composer layers without glass) so iOS 26 doesn't add a halo around the mark.
