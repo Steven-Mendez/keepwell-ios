@@ -4,16 +4,15 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// One debit card, laid out like a bank's "my card" screen: the card, the account's name and
-/// balance (with an eye to hide it), round quick actions, the list to manage it and the account's
-/// latest movements.
+/// A bank account and its card as one screen, laid out like a bank's "my card" screen: the card,
+/// the account's name and balance (with an eye to hide it), round quick actions, the list to
+/// manage both, the latest movements and, set apart at the end, deleting the account.
 public struct DebitCardView: View {
     private let viewModel: DebitCardViewModel
     private let onBack: () -> Void
-    private let onLinkCard: (UUID) -> Void
     private let onSeeAllMovements: (UUID) -> Void
     @State private var sheet: Sheet?
-    @State private var isConfirmingRemoval = false
+    @State private var isConfirmingDeletion = false
 
     enum Sheet: String, Identifiable {
         case name
@@ -25,19 +24,17 @@ public struct DebitCardView: View {
     public init(
         viewModel: DebitCardViewModel,
         onBack: @escaping () -> Void,
-        onLinkCard: @escaping (UUID) -> Void,
         onSeeAllMovements: @escaping (UUID) -> Void,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
-        self.onLinkCard = onLinkCard
         self.onSeeAllMovements = onSeeAllMovements
     }
 
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: KWSpacing.lg) {
-                KWNavigationHeader(String(localized: "Debit card", bundle: #bundle), buttonStyle: .translucent, onBack: onBack)
+                KWNavigationHeader(String(localized: "Bank account", bundle: #bundle), buttonStyle: .translucent, onBack: onBack)
                 if let detail = viewModel.detail {
                     CardHero(art: art(detail), name: detail.account.name, subtitle: viewModel.subtitle(detail))
                     BalanceHeader(String(localized: "Available balance", bundle: #bundle), amount: viewModel.balance(detail))
@@ -45,8 +42,9 @@ public struct DebitCardView: View {
                     actions(detail)
                     manage(detail)
                     latest(detail)
+                    deleteButton
                 } else if viewModel.state == .failed {
-                    Text("We couldn't load this card.", bundle: #bundle)
+                    Text("We couldn't load this account.", bundle: #bundle)
                         .foregroundStyle(KWColor.Text.muted)
                 }
             }
@@ -94,21 +92,23 @@ public struct DebitCardView: View {
             .presentationBackground(KWColor.Surface.bg)
         }
         .confirmationDialog(
-            String(localized: "Remove this card?", bundle: #bundle),
-            isPresented: $isConfirmingRemoval,
+            viewModel.detail.map(viewModel.deleteTitle) ?? "",
+            isPresented: $isConfirmingDeletion,
             titleVisibility: .visible,
         ) {
             Button(role: .destructive) {
                 Task {
-                    if await viewModel.remove() {
+                    if await viewModel.delete() {
                         onBack()
                     }
                 }
             } label: {
-                Text("Remove card", bundle: #bundle)
+                Text("Delete account", bundle: #bundle)
             }
         } message: {
-            Text("Its past movements stay on the account.", bundle: #bundle)
+            if let detail = viewModel.detail {
+                Text(viewModel.deleteMessage(detail))
+            }
         }
     }
 
@@ -168,7 +168,7 @@ public struct DebitCardView: View {
 
     private func manage(_ detail: DebitCardDetail) -> some View {
         VStack(alignment: .leading, spacing: KWSpacing.sm) {
-            KWSectionHeader(String(localized: "Manage card", bundle: #bundle), style: .large)
+            KWSectionHeader(String(localized: "Manage account", bundle: #bundle), style: .large)
             KWGroupedCard(verticalPadding: KWSpacing.xxs) {
                 CardManageRow(String(localized: "Edit name", bundle: #bundle), icon: .pencil, value: detail.account.name) {
                     sheet = .name
@@ -180,18 +180,21 @@ public struct DebitCardView: View {
                 ) {
                     sheet = .color
                 }
-                CardManageRow(String(localized: "Link another card", bundle: #bundle), icon: .addCard) {
-                    onLinkCard(detail.account.id)
-                }
-                CardManageRow(String(localized: "Remove card", bundle: #bundle), icon: .trash, isDestructive: true) {
-                    isConfirmingRemoval = true
-                }
             }
         }
     }
 }
 
 extension DebitCardView {
+    /// Apart from the edits, Revolut-style, so it isn't tapped on the way to "Card color".
+    private var deleteButton: some View {
+        KWGroupedCard(verticalPadding: KWSpacing.xxs) {
+            CardManageRow(String(localized: "Delete account", bundle: #bundle), icon: .trash, isDestructive: true) {
+                isConfirmingDeletion = true
+            }
+        }
+    }
+
     @ViewBuilder
     private func latest(_ detail: DebitCardDetail) -> some View {
         if let display = viewModel.display {
@@ -221,7 +224,7 @@ private struct DebitCardPreview: View {
     @State private var viewModel = AccountsPreviewData.debitCardViewModel()
 
     var body: some View {
-        DebitCardView(viewModel: viewModel, onBack: {}, onLinkCard: { _ in }, onSeeAllMovements: { _ in })
+        DebitCardView(viewModel: viewModel, onBack: {}, onSeeAllMovements: { _ in })
             .onAppear { KWFonts.register() }
     }
 }

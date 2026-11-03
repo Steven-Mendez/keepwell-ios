@@ -17,6 +17,8 @@ struct DisplayTests {
         #expect(CardDisplay.methodTitle(debit, account: account) == "Debit •••• 1234")
         #expect(CardDisplay.methodTitle(transfer, account: account) == "Bank One · Bank transfer")
         #expect(CardDisplay.shortName(of: debit) == "Visa ··1234")
+        // A bank account's card saved without digits still reads as a card.
+        #expect(try CardDisplay.methodTitle(Card.debit(for: account.id), account: account) == "Debit card")
         #expect(CardDisplay.networkMark(for: .mastercard) == .mastercard)
         #expect(CardDisplay.networkMark(for: .other) == nil)
         #expect(CardDisplay.numberGroups(for: .amex) == [4, 6, 5])

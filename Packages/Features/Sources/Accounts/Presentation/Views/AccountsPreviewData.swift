@@ -15,17 +15,17 @@ enum AccountsPreviewData {
         )
     }
 
-    static func debitCardViewModel(cardID: UUID = SampleData.IDs.savingsDebit) -> DebitCardViewModel {
+    static func debitCardViewModel(accountID: UUID = SampleData.IDs.savings) -> DebitCardViewModel {
         let store = InMemoryStore(sample: .standard)
         return DebitCardViewModel(
-            cardID: cardID,
+            accountID: accountID,
             getDetail: DefaultGetDebitCardDetailUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
             setFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            removeCard: DefaultRemoveCardUseCase(cards: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
         )
     }
 }

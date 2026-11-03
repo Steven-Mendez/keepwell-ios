@@ -20,7 +20,7 @@ struct PlasticSnapshotTests {
     }
 
     @Test
-    func debitPlasticPicksTheAccount() async {
+    func debitPlasticAsksForTheAccount() async {
         let viewModel = await AddCardFactory.loaded()
         viewModel.choose(.debit)
         assertScreenSnapshot(of: PlasticView(viewModel: viewModel) {})

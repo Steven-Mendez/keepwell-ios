@@ -113,34 +113,36 @@ public struct DefaultAddCreditCardUseCase: AddCreditCardUseCase {
     }
 }
 
-public protocol AddDebitCardUseCase: Sendable {
-    func execute(accountID: UUID, lastFour: String, network: CardNetwork, color: CardColor) async throws(DomainError) -> Card
-}
+/// The card a bank account is created with. A bank account is shown and used as its card, so it
+/// always gets one; without digits it still exists and can be filled in later.
+public struct DebitCardDraft: Sendable, Equatable {
+    public var lastFour: String?
+    public var network: CardNetwork?
+    public var color: CardColor
 
-public struct DefaultAddDebitCardUseCase: AddDebitCardUseCase {
-    private let accounts: any AccountRepository
-    private let cards: any CardRepository
-
-    public init(accounts: any AccountRepository, cards: any CardRepository) {
-        self.accounts = accounts
-        self.cards = cards
-    }
-
-    public func execute(accountID: UUID, lastFour: String, network: CardNetwork, color: CardColor) async throws(DomainError) -> Card {
-        guard let account = try await accounts.fetchAccounts().first(where: { $0.id == accountID }) else {
-            throw .notFound(accountID)
-        }
-        // Debit cards draw from a bank account; a credit card's plastics come from its own flow.
-        guard account.kind == .deposit else { throw .invalidTransferDestination }
-        let card = try Card(accountID: accountID, kind: .debit, network: network, lastFour: lastFour, color: color)
-        try await cards.save(card)
-        return card
+    public init(lastFour: String? = nil, network: CardNetwork? = nil, color: CardColor = .coral) {
+        self.lastFour = lastFour
+        self.network = network
+        self.color = color
     }
 }
 
-/// "Bank account" and "Other wallet" from the add menu.
+/// "Debit card" (a bank account with its card) and "Other wallet" from the add menu.
 public protocol AddAccountUseCase: Sendable {
-    func execute(kind: AccountKind, name: String, bank: String?, balance: Money) async throws(DomainError) -> Account
+    /// `debitCard` is used for bank accounts only; cash has no card.
+    func execute(
+        kind: AccountKind,
+        name: String,
+        bank: String?,
+        balance: Money,
+        debitCard: DebitCardDraft,
+    ) async throws(DomainError) -> Account
+}
+
+extension AddAccountUseCase {
+    public func execute(kind: AccountKind, name: String, bank: String?, balance: Money) async throws(DomainError) -> Account {
+        try await execute(kind: kind, name: name, bank: bank, balance: balance, debitCard: DebitCardDraft())
+    }
 }
 
 public struct DefaultAddAccountUseCase: AddAccountUseCase {
@@ -154,15 +156,35 @@ public struct DefaultAddAccountUseCase: AddAccountUseCase {
         self.now = now
     }
 
-    public func execute(kind: AccountKind, name: String, bank: String?, balance: Money) async throws(DomainError) -> Account {
+    public func execute(
+        kind: AccountKind,
+        name: String,
+        bank: String?,
+        balance: Money,
+        debitCard: DebitCardDraft,
+    ) async throws(DomainError) -> Account {
         guard kind != .credit else { throw .unsupportedTransactionKind(.transfer) }
         guard balance.amount >= 0 else { throw .invalidAmount }
         let trimmed = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { throw .corruptedData("Empty account name") }
-        let account = Account(name: trimmed, bank: bank, kind: kind, openingBalances: [balance], openingDate: now())
+        guard !trimmed.isEmpty else { throw .missingName }
+        let trimmedBank = bank?.trimmingCharacters(in: .whitespaces)
+        let account = Account(
+            name: trimmed,
+            bank: trimmedBank?.isEmpty == false ? trimmedBank : nil,
+            kind: kind,
+            openingBalances: [balance],
+            openingDate: now(),
+        )
+        // Built before saving anything, so bad digits leave no account without its card.
+        let methods: [Card] = kind == .deposit
+            ? try [
+                Card.debit(for: account.id, lastFour: debitCard.lastFour, network: debitCard.network, color: debitCard.color),
+                Card(accountID: account.id, kind: .transfer),
+            ]
+            : []
         try await accounts.save(account)
-        if kind == .deposit {
-            try await cards.save(Card(accountID: account.id, kind: .transfer))
+        for method in methods {
+            try await cards.save(method)
         }
         return account
     }

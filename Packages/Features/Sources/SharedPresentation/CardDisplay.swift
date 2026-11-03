@@ -95,13 +95,18 @@ public enum CardDisplay {
     /// "Visa •••• 3141". Credit cards show their network and digits rather than the "holder" role,
     /// which only means something next to the card's additionals.
     public static func methodTitle(_ card: Card, account: Account?) -> String {
-        let lastFour = card.lastFour ?? ""
-        return switch card.kind {
-        case .debit: String(localized: "Debit •••• \(lastFour)", bundle: #bundle)
+        switch card.kind {
+        case .debit: debitTitle(card)
         case .transfer: bankTransferTitle(account: account)
         case .creditHolder: cardNumber(card)
         case .creditAdditional: card.additional?.holderName ?? String(localized: "Additional", bundle: #bundle)
         }
+    }
+
+    /// "Debit •••• 3922", or "Debit card" for a bank account's card saved without its digits.
+    public static func debitTitle(_ card: Card) -> String {
+        guard let lastFour = card.lastFour else { return String(localized: "Debit card", bundle: #bundle) }
+        return String(localized: "Debit •••• \(lastFour)", bundle: #bundle)
     }
 
     /// "Visa •••• 3141", or just the network when the digits are unknown.

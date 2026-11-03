@@ -32,18 +32,17 @@ extension RootView {
             )
         case let .additionalCard(accountID, cardID):
             AdditionalCardRoute(container: container, accountID: accountID, cardID: cardID, onBack: navigator.pop)
-        case let .debitCard(cardID):
+        case let .bankAccount(accountID):
             DebitCardRoute(
                 container: container,
-                cardID: cardID,
+                accountID: accountID,
                 onBack: navigator.pop,
-                onLinkCard: { presentAddCard(linkingTo: $0) },
                 onSeeAllMovements: { navigator.push(.transactions(accountID: $0)) },
             )
-        case let .transactions(accountID, cardID):
+        case let .transactions(accountID):
             TransactionsRoute(
                 container: container,
-                scope: cardID.map(TransactionScope.card) ?? accountID.map(TransactionScope.account) ?? .all,
+                scope: accountID.map(TransactionScope.account) ?? .all,
                 onBack: navigator.pop,
                 onNewMovement: { presentMovementMenu() },
             )

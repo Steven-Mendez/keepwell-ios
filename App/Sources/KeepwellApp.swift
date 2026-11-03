@@ -44,6 +44,7 @@ struct KeepwellApp: App {
             await made.seedSampleData()
         }
         #endif
+        await made.normalizeBankCards()
         await minimumSplash
         container = made
     }

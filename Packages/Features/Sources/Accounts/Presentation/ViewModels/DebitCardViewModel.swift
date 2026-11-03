@@ -5,8 +5,8 @@ import Foundation
 import Observation
 import SharedPresentation
 
-/// Drives one debit card's screen: its art, the account it spends from and the edits a person
-/// can make to it.
+/// Drives a bank account's screen, which is also its card's: one name, one color, one freeze and
+/// one delete, because the person sees the account and its card as the same thing.
 @MainActor
 @Observable
 public final class DebitCardViewModel {
@@ -14,11 +14,11 @@ public final class DebitCardViewModel {
         case loading
         case loaded(DebitCardDetail)
         case failed
-        /// The card was removed from this screen; there is nothing left to show.
-        case removed
+        /// The account was deleted from this screen; there is nothing left to show.
+        case deleted
     }
 
-    public let cardID: UUID
+    public let accountID: UUID
     public private(set) var state = State.loading
     public private(set) var errorMessage: String?
     public private(set) var isSaving = false
@@ -27,23 +27,23 @@ public final class DebitCardViewModel {
     private let setFrozen: any SetCardFrozenUseCase
     private let setColor: any SetCardColorUseCase
     private let renameAccount: any RenameAccountUseCase
-    private let removeCard: any RemoveCardUseCase
+    private let deleteAccount: any DeleteAccountUseCase
     private let formatter = CurrencyFormatter()
 
     public init(
-        cardID: UUID,
+        accountID: UUID,
         getDetail: any GetDebitCardDetailUseCase,
         setFrozen: any SetCardFrozenUseCase,
         setColor: any SetCardColorUseCase,
         renameAccount: any RenameAccountUseCase,
-        removeCard: any RemoveCardUseCase,
+        deleteAccount: any DeleteAccountUseCase,
     ) {
-        self.cardID = cardID
+        self.accountID = accountID
         self.getDetail = getDetail
         self.setFrozen = setFrozen
         self.setColor = setColor
         self.renameAccount = renameAccount
-        self.removeCard = removeCard
+        self.deleteAccount = deleteAccount
     }
 
     public var detail: DebitCardDetail? {
@@ -55,9 +55,9 @@ public final class DebitCardViewModel {
     }
 
     public func load() async {
-        guard state != .removed else { return }
+        guard state != .deleted else { return }
         do {
-            state = try await .loaded(getDetail.execute(cardID: cardID))
+            state = try await .loaded(getDetail.execute(accountID: accountID))
         } catch {
             state = .failed
         }
@@ -72,13 +72,14 @@ public final class DebitCardViewModel {
     public func toggleFrozen() async {
         guard let detail else { return }
         _ = await perform { () async throws(DomainError) in
-            try await setFrozen.execute(cardID: cardID, isFrozen: !detail.card.isFrozen)
+            try await setFrozen.execute(cardID: detail.card.id, isFrozen: !detail.card.isFrozen)
         }
     }
 
     /// Returns whether the sheet can close.
     public func setColor(_ color: CardColor) async -> Bool {
-        await perform { () async throws(DomainError) in
+        guard let cardID = detail?.card.id else { return false }
+        return await perform { () async throws(DomainError) in
             try await setColor.execute(cardID: cardID, color: color)
         }
     }
@@ -95,14 +96,14 @@ public final class DebitCardViewModel {
         return saved
     }
 
-    /// Returns whether the card is gone, so the screen can close.
-    public func remove() async -> Bool {
+    /// Returns whether the account is gone, so the screen can close.
+    public func delete() async -> Bool {
         isSaving = true
         defer { isSaving = false }
         do {
-            try await removeCard.execute(cardID: cardID)
+            try await deleteAccount.execute(accountID: accountID)
             errorMessage = nil
-            state = .removed
+            state = .deleted
             return true
         } catch {
             errorMessage = Self.saveError
@@ -140,11 +141,29 @@ public final class DebitCardViewModel {
         formatter.string(detail.balance)
     }
 
-    /// "Shared by 2 cards" when several plastics draw from the same balance.
-    func subtitle(_ detail: DebitCardDetail) -> String? {
-        guard detail.cardCount > 1 else { return nil }
-        let count = detail.cardCount
-        return String(localized: "Balance shared by \(count) cards", bundle: #bundle)
+    /// "Bank account · USD": the hero names what the card is, since it is also the account.
+    func subtitle(_ detail: DebitCardDetail) -> String {
+        let currencies = detail.account.currencies.formatted(.list(type: .and))
+        return String(localized: "Bank account · \(currencies)", bundle: #bundle)
+    }
+
+    /// "Delete Bank One Savings?"
+    func deleteTitle(_ detail: DebitCardDetail) -> String {
+        let name = CardDisplay.name(of: detail.account)
+        return String(localized: "Delete \(name)?", bundle: #bundle)
+    }
+
+    /// Says what goes with the account before the person confirms, including the part that
+    /// reaches other accounts: transfers with them disappear, so their balances change too.
+    func deleteMessage(_ detail: DebitCardDetail) -> String {
+        let count = detail.movementCount
+        guard count > 0 else {
+            return String(localized: "The account and its card are deleted. This can't be undone.", bundle: #bundle)
+        }
+        return String(
+            localized: "The account, its card and its \(count) movements are deleted, including transfers with your other accounts, so their balances change too. This can't be undone.",
+            bundle: #bundle,
+        )
     }
 
     var display: TransactionDisplay? {

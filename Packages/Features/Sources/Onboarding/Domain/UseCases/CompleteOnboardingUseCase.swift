@@ -71,11 +71,11 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
                 id: id, name: name, bank: draft.bank, kind: .deposit,
                 openingBalances: [Money(draft.balance, draft.currency)], openingDate: date,
             )
-            var accountCards = try [Card(accountID: id, kind: .transfer)]
-            if let lastFour = draft.lastFour, !lastFour.isEmpty {
-                try accountCards.insert(Card(accountID: id, kind: .debit, network: draft.network, lastFour: lastFour, color: .coral), at: 0)
-            }
-            return (account, accountCards)
+            // A bank account is its card, so it gets one even before the person gives its digits.
+            return try (account, [
+                Card.debit(for: id, lastFour: draft.lastFour, network: draft.network),
+                Card(accountID: id, kind: .transfer),
+            ])
         case .credit:
             let mode = currencies.second == nil ? .principal : (draft.debtMode ?? .dual)
             // Credit balances are debts, so they start negative (rule 5).

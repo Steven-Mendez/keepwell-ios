@@ -726,6 +726,16 @@
           }
         }
       }
+    },
+    "Debit card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de débito"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

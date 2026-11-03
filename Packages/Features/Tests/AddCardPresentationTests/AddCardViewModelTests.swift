@@ -9,9 +9,8 @@ import Testing
 enum AddCardFactory {
     static func make(store: InMemoryStore = InMemoryStore(sample: .standard)) -> AddCardViewModel {
         AddCardViewModel(
-            getContext: DefaultGetAddCardContextUseCase(settings: store, accounts: store),
+            getContext: DefaultGetAddCardContextUseCase(settings: store),
             addCredit: DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store),
-            addDebit: DefaultAddDebitCardUseCase(accounts: store, cards: store),
             addAccount: DefaultAddAccountUseCase(accounts: store, cards: store),
         )
     }
@@ -54,14 +53,37 @@ struct AddCardViewModelTests {
     }
 
     @Test
-    func debitCardSavesFromThePlasticStep() async {
-        let viewModel = await AddCardFactory.loaded()
-        viewModel.choose(.debit, linkingTo: SampleData.IDs.payroll)
+    func aDebitCardCreatesItsBankAccount() async {
+        let store = InMemoryStore(sample: .standard)
+        let viewModel = AddCardFactory.make(store: store)
+        await viewModel.load()
+        viewModel.choose(.debit)
+        viewModel.bank = "Bank Three"
         viewModel.lastFour = "1357"
+        #expect(!viewModel.canContinueFromPlastic)
+        viewModel.accountName = "Checking"
+        viewModel.accountCurrency = "NIO"
+        viewModel.balanceText = "1,200"
         await viewModel.continueFromPlastic()
         #expect(viewModel.path == [.plastic, .done])
-        #expect(viewModel.createdCard?.accountID == SampleData.IDs.payroll)
-        #expect(viewModel.summary == "Linked to Bank Two Payroll.")
+        let account = viewModel.createdAccount
+        #expect(account?.kind == .deposit)
+        #expect(account?.openingBalances == [Money(1200, "NIO")])
+        let cards = await store.fetchCards().filter { $0.accountID == account?.id && $0.kind == .debit }
+        #expect(cards.map(\.lastFour) == ["1357"])
+        #expect(viewModel.summary == "Bank Three Checking is ready: this card is the account, with its balance and movements.")
+    }
+
+    @Test
+    func aDebitCardNeedsABalanceThatReads() async {
+        let viewModel = await AddCardFactory.loaded()
+        viewModel.choose(.debit)
+        viewModel.lastFour = "1357"
+        viewModel.accountName = "Checking"
+        viewModel.balanceText = "abc"
+        #expect(!viewModel.canContinueFromPlastic)
+        viewModel.balanceText = ""
+        #expect(viewModel.canContinueFromPlastic)
     }
 
     @Test
@@ -93,11 +115,10 @@ struct AddCardViewModelTests {
     }
 
     @Test
-    func creatingAWalletReloadsTheContext() async {
+    func creatingAWalletChecksTheBalance() async {
         let viewModel = await AddCardFactory.loaded()
-        #expect(await viewModel.createAccount(kind: .deposit, name: "Checking", bank: "Bank Three", currency: "USD", balanceText: "40"))
-        #expect(viewModel.context?.depositAccounts.count == 3)
-        #expect(await !viewModel.createAccount(kind: .cash, name: "Envelope", bank: nil, currency: "NIO", balanceText: "abc"))
+        #expect(await viewModel.createWallet(name: "Envelope", currency: "NIO", balanceText: "40"))
+        #expect(await !viewModel.createWallet(name: "Envelope", currency: "NIO", balanceText: "abc"))
     }
 
     @Test

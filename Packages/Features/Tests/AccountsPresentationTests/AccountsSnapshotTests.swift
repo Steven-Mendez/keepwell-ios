@@ -15,8 +15,7 @@ struct AccountsSnapshotTests {
                 viewModel: viewModel,
                 onAdd: {},
                 onOpenCreditCard: { _ in },
-                onOpenDebitCard: { _ in },
-                onLinkCard: { _ in },
+                onOpenBankAccount: { _ in },
                 onOpenAccountMovements: { _ in },
             ),
             height: 1500,
@@ -24,18 +23,17 @@ struct AccountsSnapshotTests {
     }
 
     @Test
-    func bankAccountWithoutCardShowsAnEmptySlot() async throws {
+    func bankAccountIsOneCardFace() async throws {
         let viewModel = await AccountsFactory.loaded()
         let deposit = try #require(viewModel.overview?.deposits.first)
-        let cardless = AccountsOverview.Deposit(account: deposit.account, balance: deposit.balance, debitCards: [])
-        assertScreenSnapshot(of: DepositCards(deposit: cardless, formatter: .init()) {}.padding(16), height: 280)
+        assertScreenSnapshot(of: DepositCard(deposit: deposit, formatter: .init()) {}.padding(16), height: 280)
     }
 
     @Test
     func debitCardDetail() async {
         let viewModel = await DebitCardFactory.loaded()
         assertScreenSnapshot(
-            of: DebitCardView(viewModel: viewModel, onBack: {}, onLinkCard: { _ in }, onSeeAllMovements: { _ in }),
+            of: DebitCardView(viewModel: viewModel, onBack: {}, onSeeAllMovements: { _ in }),
             height: 1500,
         )
     }
@@ -45,7 +43,7 @@ struct AccountsSnapshotTests {
         let viewModel = await DebitCardFactory.loaded()
         await viewModel.toggleFrozen()
         assertScreenSnapshot(
-            of: DebitCardView(viewModel: viewModel, onBack: {}, onLinkCard: { _ in }, onSeeAllMovements: { _ in }),
+            of: DebitCardView(viewModel: viewModel, onBack: {}, onSeeAllMovements: { _ in }),
             height: 1500,
         )
     }

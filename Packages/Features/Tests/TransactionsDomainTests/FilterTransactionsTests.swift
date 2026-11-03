@@ -36,17 +36,6 @@ struct FilterTransactionsTests {
     }
 
     @Test
-    func aCardKeepsOnlyWhatItPaid() async throws {
-        let list = try await list()
-        let card = run(TransactionQuery(scope: .card(IDs.savingsDebit)), on: list)
-        let account = run(TransactionQuery(scope: .account(IDs.savings)), on: list)
-        #expect(!card.isEmpty)
-        #expect(card.allSatisfy { $0.cardID == IDs.savingsDebit })
-        // The withdrawal went through the account's transfer channel, not the plastic.
-        #expect(account.count > card.count)
-    }
-
-    @Test
     func kindScopeAndSearchCombine() async throws {
         let list = try await list()
         let movies = run(TransactionQuery(kind: .expense, scope: .account(IDs.savings), text: "  MOVIES "), on: list)
@@ -67,25 +56,24 @@ struct FilterTransactionsTests {
     }
 
     @Test
-    func pickerGroupsAccountsLikeTheAccountsTabWithoutTransferChannels() async throws {
-        let groups = try await list().scopeGroups
-        #expect(groups.map(\.account.kind) == [.credit, .credit, .deposit, .deposit, .cash])
-        #expect(groups.allSatisfy { $0.cards.allSatisfy { $0.kind != .transfer } })
-        let mastercard = try #require(groups.first { $0.id == IDs.mastercard })
-        #expect(mastercard.cards.map(\.id) == [IDs.mastercardHolder, IDs.mastercardAdditional])
-        #expect(groups.first { $0.id == IDs.cash }?.cards.isEmpty == true)
+    func pickerListsEachAccountOnceAsItsCard() async throws {
+        let options = try await list().scopeOptions
+        #expect(options.map(\.account.kind) == [.credit, .credit, .deposit, .deposit, .cash])
+        #expect(options.first { $0.id == IDs.savings }?.card?.id == IDs.savingsDebit)
+        // A credit card shows its main plastic; its additionals have their own screen.
+        #expect(options.first { $0.id == IDs.mastercard }?.card?.id == IDs.mastercardHolder)
+        #expect(options.first { $0.id == IDs.cash }?.card == nil)
     }
 
     @Test
-    func aCardsBalanceIsItsAccounts() async throws {
+    func anAccountsBalanceIsTheOneItsCardShows() async throws {
         let list = try await list()
         let calendar = Calendar.current
         let account = try #require(list.accounts.first { $0.id == IDs.savings })
         let expected = Balances.balance(of: account, transactions: list.transactions, calendar: calendar)
-        #expect(list.balances(in: .card(IDs.savingsDebit), calendar: calendar) == expected)
         #expect(list.balances(in: .account(IDs.savings), calendar: calendar) == expected)
         #expect(list.balances(in: .all, calendar: calendar) == nil)
-        #expect(list.account(in: .card(IDs.savingsDebit))?.id == IDs.savings)
+        #expect(list.account(in: .account(IDs.savings))?.id == IDs.savings)
         // A dual card's two debts become one principal-currency total, converted, never summed raw.
         let debts = try #require(list.balances(in: .account(IDs.mastercard), calendar: calendar))
         let total = try #require(list.balanceTotal(in: .account(IDs.mastercard), calendar: calendar))

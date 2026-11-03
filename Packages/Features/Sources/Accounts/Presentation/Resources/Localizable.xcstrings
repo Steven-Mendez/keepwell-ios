@@ -67,16 +67,6 @@
         }
       }
     },
-    "Add a debit card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agregar tarjeta de débito"
-          }
-        }
-      }
-    },
     "Add account or card" : {
       "localizations" : {
         "es" : {
@@ -103,16 +93,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saldo disponible"
-          }
-        }
-      }
-    },
-    "Balance shared by %lld cards" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saldo compartido por %lld tarjetas"
           }
         }
       }
@@ -177,26 +157,6 @@
         }
       }
     },
-    "Debit card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tarjeta de débito"
-          }
-        }
-      }
-    },
-    "Debit cards" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tarjetas de débito"
-          }
-        }
-      }
-    },
     "Edit name" : {
       "localizations" : {
         "es" : {
@@ -257,42 +217,12 @@
         }
       }
     },
-    "Its past movements stay on the account." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sus movimientos anteriores se quedan en la cuenta."
-          }
-        }
-      }
-    },
     "Latest movements" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Últimos movimientos"
-          }
-        }
-      }
-    },
-    "Link another card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vincular otra tarjeta"
-          }
-        }
-      }
-    },
-    "Manage card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gestionar tarjeta"
           }
         }
       }
@@ -347,26 +277,6 @@
         }
       }
     },
-    "Remove card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quitar tarjeta"
-          }
-        }
-      }
-    },
-    "Remove this card?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Quitar esta tarjeta?"
-          }
-        }
-      }
-    },
     "Save withdrawal" : {
       "localizations" : {
         "es" : {
@@ -417,16 +327,6 @@
         }
       }
     },
-    "We couldn't load this card." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudimos cargar esta tarjeta."
-          }
-        }
-      }
-    },
     "We couldn't save the change. Try again." : {
       "localizations" : {
         "es" : {
@@ -473,6 +373,142 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retiraste (%@)"
+          }
+        }
+      }
+    },
+    "%@ debit card, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ debit card, %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de débito %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Bank accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas de banco"
+          }
+        }
+      }
+    },
+    "Bank account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta de banco"
+          }
+        }
+      }
+    },
+    "We couldn't load this account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar esta cuenta."
+          }
+        }
+      }
+    },
+    "Delete account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar cuenta"
+          }
+        }
+      }
+    },
+    "Manage account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administrar cuenta"
+          }
+        }
+      }
+    },
+    "Bank account · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta de banco · %@"
+          }
+        }
+      }
+    },
+    "Delete %@?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar %@?"
+          }
+        }
+      }
+    },
+    "The account and its card are deleted. This can't be undone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se eliminan la cuenta y su tarjeta. No se puede deshacer."
+          }
+        }
+      }
+    },
+    "The account, its card and its %lld movements are deleted, including transfers with your other accounts, so their balances change too. This can't be undone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The account, its card and its %lld movement are deleted, including any transfer with your other accounts, so their balances change too. This can't be undone."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The account, its card and its %lld movements are deleted, including transfers with your other accounts, so their balances change too. This can't be undone."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se eliminan la cuenta, su tarjeta y su %lld movimiento, incluida cualquier transferencia con tus otras cuentas, así que sus saldos también cambian. No se puede deshacer."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se eliminan la cuenta, su tarjeta y sus %lld movimientos, incluidas las transferencias con tus otras cuentas, así que sus saldos también cambian. No se puede deshacer."
+                }
+              }
+            }
           }
         }
       }

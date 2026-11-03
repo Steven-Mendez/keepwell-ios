@@ -175,26 +175,13 @@ public final class TransactionsViewModel {
 
     // MARK: - Account filter
 
-    public var scopeGroups: [TransactionScopeGroup] {
-        list?.scopeGroups ?? []
+    public var scopeOptions: [TransactionScopeOption] {
+        list?.scopeOptions ?? []
     }
 
-    /// The account filter chip: "All accounts", "Savings" or "Debit •••• 1234".
+    /// The account filter chip: "All accounts" or "Bank One Savings".
     var scopeTitle: String {
-        guard let list else { return String(localized: "All accounts", bundle: #bundle) }
-        switch scope {
-        case .all:
-            return String(localized: "All accounts", bundle: #bundle)
-        case .account:
-            return list.account(in: scope).map(CardDisplay.name(of:)) ?? String(localized: "All accounts", bundle: #bundle)
-        case .card:
-            guard let card = list.card(in: scope) else { return String(localized: "All accounts", bundle: #bundle) }
-            return CardDisplay.methodTitle(card, account: list.account(in: scope))
-        }
-    }
-
-    func cardTitle(_ card: Card, in group: TransactionScopeGroup) -> String {
-        CardDisplay.methodTitle(card, account: group.account)
+        list?.account(in: scope).map(CardDisplay.name(of:)) ?? String(localized: "All accounts", bundle: #bundle)
     }
 
     /// The balance behind the chosen account or card, LAFISE-style: "Available balance" for money

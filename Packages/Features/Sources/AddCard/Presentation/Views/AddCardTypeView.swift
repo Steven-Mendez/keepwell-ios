@@ -7,7 +7,7 @@ import SwiftUI
 public struct AddCardTypeView: View {
     private let viewModel: AddCardViewModel
     private let onClose: () -> Void
-    @State private var newAccountKind: AccountKind?
+    @State private var isAddingWallet = false
 
     public init(viewModel: AddCardViewModel, onClose: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -33,17 +33,14 @@ public struct AddCardTypeView: View {
                 option(
                     palette: .coral,
                     title: String(localized: "Debit card", bundle: #bundle),
-                    subtitle: String(localized: "Linked to a bank account; an account can have several", bundle: #bundle),
+                    subtitle: String(localized: "Your bank account, shown as its card: balance, bank and last 4", bundle: #bundle),
                 ) { viewModel.choose(.debit) }
-                KWSectionHeader(String(localized: "Accounts", bundle: #bundle)).padding(.top, KWSpacing.xs)
-                HStack(spacing: 10) {
-                    tile(.bank, String(localized: "Bank account", bundle: #bundle)) { newAccountKind = .deposit }
-                    tile(.cash, String(localized: "Other wallet", bundle: #bundle)) { newAccountKind = .cash }
-                }
+                KWSectionHeader(String(localized: "Without a card", bundle: #bundle)).padding(.top, KWSpacing.xs)
+                tile(.cash, String(localized: "Other wallet", bundle: #bundle)) { isAddingWallet = true }
             }
         }
-        .sheet(item: $newAccountKind) { kind in
-            NewAccountSheet(viewModel: viewModel, kind: kind) { newAccountKind = nil }
+        .sheet(isPresented: $isAddingWallet) {
+            NewWalletSheet(viewModel: viewModel) { isAddingWallet = false }
                 .presentationDetents([.medium, .large])
                 .presentationBackground(KWColor.Surface.bg)
         }
@@ -86,24 +83,18 @@ public struct AddCardTypeView: View {
     }
 }
 
-extension AccountKind: @retroactive Identifiable {
-    public var id: String { rawValue }
-}
-
-/// "Bank account" / "Other wallet": name, bank, currency and today's balance.
-struct NewAccountSheet: View {
+/// "Other wallet": cash kept somewhere other than the main wallet, with a name, currency and
+/// today's balance. Bank accounts come with their card instead, from "Debit card".
+struct NewWalletSheet: View {
     let viewModel: AddCardViewModel
-    let kind: AccountKind
     let onClose: () -> Void
     @State private var name = ""
-    @State private var bank = ""
     @State private var currency = ""
     @State private var balanceText = ""
     @State private var isSaving = false
     @FocusState private var focus: Field?
 
     private enum Field: Hashable {
-        case bank
         case name
         case balance
     }
@@ -112,7 +103,7 @@ struct NewAccountSheet: View {
         KWFormScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
-                Text(kind == .deposit ? "Bank account" : "Other wallet", bundle: #bundle).kwTextStyle(.titleSm)
+                Text("Other wallet", bundle: #bundle).kwTextStyle(.titleSm)
                 fields
                 if let error = viewModel.errorMessage {
                     Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
@@ -121,25 +112,19 @@ struct NewAccountSheet: View {
         } footer: {
             addButton
         }
-        .kwKeyboardToolbar($focus, order: kind == .deposit ? [.bank, .name, .balance] : [.name, .balance])
-        .onAppear { focus = kind == .deposit ? .bank : .name }
+        .kwKeyboardToolbar($focus, order: [.name, .balance])
+        .onAppear { focus = .name }
     }
 
     private var fields: some View {
         KWGroupedCard {
-            if kind == .deposit {
-                KWTextFieldRow(
-                    String(localized: "Bank", bundle: #bundle),
-                    placeholder: String(localized: "Bank name", bundle: #bundle),
-                    text: $bank,
-                )
-                .textInputAutocapitalization(.words)
-                .autocorrectionDisabled()
-                .kwFocused($focus, equals: .bank)
-            }
-            KWTextFieldRow(String(localized: "Name", bundle: #bundle), placeholder: namePlaceholder, text: $name)
-                .textInputAutocapitalization(.words)
-                .kwFocused($focus, equals: .name)
+            KWTextFieldRow(
+                String(localized: "Name", bundle: #bundle),
+                placeholder: String(localized: "Envelope", bundle: #bundle),
+                text: $name,
+            )
+            .textInputAutocapitalization(.words)
+            .kwFocused($focus, equals: .name)
             if let second = viewModel.second {
                 HStack {
                     Text("Currency", bundle: #bundle).foregroundStyle(KWColor.Text.secondary)
@@ -162,19 +147,13 @@ struct NewAccountSheet: View {
         }
     }
 
-    private var namePlaceholder: String {
-        kind == .deposit ? String(localized: "Savings", bundle: #bundle) : String(localized: "Envelope", bundle: #bundle)
-    }
-
     private var addButton: some View {
         Button {
             focus = nil
             isSaving = true
             Task {
-                let saved = await viewModel.createAccount(
-                    kind: kind,
+                let saved = await viewModel.createWallet(
                     name: name,
-                    bank: bank.isEmpty ? nil : bank,
                     currency: currencyBinding.wrappedValue,
                     balanceText: balanceText,
                 )
@@ -192,7 +171,7 @@ struct NewAccountSheet: View {
 
     private var currencyBinding: Binding<String> {
         Binding(
-            get: { currency.isEmpty ? (kind == .cash ? viewModel.second ?? viewModel.principal : viewModel.principal) : currency },
+            get: { currency.isEmpty ? viewModel.second ?? viewModel.principal : currency },
             set: { currency = $0 },
         )
     }

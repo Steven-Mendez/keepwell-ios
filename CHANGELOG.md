@@ -99,6 +99,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- A bank account is one card. Accounts shows each bank account as a single debit card with its
+  balance (no stacks, no "Link another card", no empty "Add a debit card" slot), and tapping it
+  opens one "Bank account" screen where the name, color and freeze apply to the account and its
+  card. "Remove card" is now "Delete account", which says how many movements go with it and that
+  transfers with other accounts go too.
+- Adding a debit card creates its bank account (name, bank, last 4, currency and today's balance);
+  "Other wallet" stays for cash. Onboarding gives a bank account its card even without the last 4.
+- Existing data is brought to the rule at launch: accounts with several debit cards keep the most
+  used one and its siblings' movements move to it; accounts without a card get one. No movement is
+  deleted.
+- Transactions' account filter is a flat list, one row per account shown with its card.
+- "How did you pay?": the account's cardless option sits under its card and reads by what the
+  movement does: "Transfer or direct debit" for expenses, "Transfer or deposit" for income.
+
 - Expenses read as expenses: their amounts and arrow icon are coral red in Transactions, Home's
   recent movements, a card's cycle and the month's totals ("−$8.18" red, "+$817.79" green);
   Summary's "Went out" and Home's expense bar use the same color. The "−" sign stays.

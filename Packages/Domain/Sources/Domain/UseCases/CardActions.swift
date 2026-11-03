@@ -65,24 +65,6 @@ public struct DefaultRenameAccountUseCase: RenameAccountUseCase {
     }
 }
 
-/// Removes a plastic from its account. Movements it paid stay on the account, so balances and
-/// history don't change.
-public protocol RemoveCardUseCase: Sendable {
-    func execute(cardID: UUID) async throws(DomainError)
-}
-
-public struct DefaultRemoveCardUseCase: RemoveCardUseCase {
-    private let cards: any CardRepository
-
-    public init(cards: any CardRepository) {
-        self.cards = cards
-    }
-
-    public func execute(cardID: UUID) async throws(DomainError) {
-        try await cards.deleteCard(id: cardID)
-    }
-}
-
 extension Card {
     /// The same card with new art.
     public func with(color: CardColor) -> Self {

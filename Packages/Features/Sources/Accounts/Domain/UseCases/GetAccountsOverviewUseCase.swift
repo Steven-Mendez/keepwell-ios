@@ -68,7 +68,7 @@ public struct DefaultGetAccountsOverviewUseCase: GetAccountsOverviewUseCase {
                 deposits.append(AccountsOverview.Deposit(
                     account: account,
                     balance: balances.first ?? .zero(currencies.principal),
-                    debitCards: accountCards.filter { $0.kind == .debit },
+                    debitCard: accountCards.first { $0.kind == .debit },
                 ))
             case .cash:
                 let balance = balances.first ?? .zero(currencies.principal)

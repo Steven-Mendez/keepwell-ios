@@ -64,15 +64,6 @@ struct CardActionsTests {
         }
     }
 
-    @Test
-    func removingACardKeepsItsMovements() async throws {
-        let store = InMemoryStore(sample: .standard)
-        let paid = await store.fetchTransactions(in: nil).count { $0.cardID == IDs.savingsDebit }
-        try await DefaultRemoveCardUseCase(cards: store).execute(cardID: IDs.savingsDebit)
-        #expect(await store.fetchCards().contains { $0.id == IDs.savingsDebit } == false)
-        #expect(await store.fetchTransactions(in: nil).count { $0.cardID == IDs.savingsDebit } == paid)
-    }
-
     private func card(_ id: UUID, in store: InMemoryStore) async throws -> Card {
         try #require(await store.fetchCards().first { $0.id == id })
     }

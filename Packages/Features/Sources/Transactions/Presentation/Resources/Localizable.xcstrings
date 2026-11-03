@@ -71,16 +71,6 @@
         }
       }
     },
-    "Choose which account or card to show" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige qué cuenta o tarjeta mostrar"
-          }
-        }
-      }
-    },
     "Clear search" : {
       "localizations" : {
         "es" : {
@@ -307,6 +297,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos guardar el cambio. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Choose which account to show" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué cuenta mostrar"
           }
         }
       }
