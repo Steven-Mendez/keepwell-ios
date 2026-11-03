@@ -14,6 +14,7 @@ public struct SettingsView: View {
     private let onOpenCategories: (TransactionKind) -> Void
     private let onOpenPaymentMethods: () -> Void
     @State private var isConfirmingErase = false
+    @State private var isConfirmingSwap = false
     @FocusState private var isEditingRate: Bool
     @Environment(\.openURL) private var openURL
 
@@ -104,6 +105,30 @@ public struct SettingsView: View {
                 currencyRow(String(localized: "Main currency", bundle: #bundle), code: settings.currencies.principal)
                 if let second = settings.currencies.second {
                     currencyRow(String(localized: "Second currency", bundle: #bundle), code: second)
+                    Button { isConfirmingSwap = true } label: {
+                        KWValueRow(
+                            String(localized: "Make \(second) the main currency", bundle: #bundle),
+                            value: "⇅",
+                            style: .navigation,
+                            verticalPadding: 14,
+                        )
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .confirmationDialog(
+                        String(localized: "Make \(second) the main currency?", bundle: #bundle),
+                        isPresented: $isConfirmingSwap,
+                        titleVisibility: .visible,
+                    ) {
+                        Button { Task { await viewModel.swapCurrencies() } } label: {
+                            Text("Swap currencies", bundle: #bundle)
+                        }
+                    } message: {
+                        Text(
+                            "Net worth, summaries and new movements will be in \(second), and the rate is turned around. Past movements keep the rate they were logged with.",
+                            bundle: #bundle,
+                        )
+                    }
                     rateRow(settings.currencies)
                     Text(viewModel.rateFootnote)
                         .font(KWTextStyle.captionSm.font.weight(.regular))

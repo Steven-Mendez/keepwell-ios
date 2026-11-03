@@ -116,6 +116,12 @@ extension Settings {
     public mutating func setRate(_ rate: Decimal) throws(DomainError) {
         currencies = try CurrencySettings(principal: currencies.principal, second: currencies.second, rate: rate)
     }
+
+    /// Makes the second currency the main one: net worth, summaries and new movements follow it.
+    public mutating func swapCurrencies() throws(DomainError) {
+        guard let swapped = currencies.swapped() else { throw .invalidExchangeRate }
+        currencies = swapped
+    }
 }
 
 /// The device's iCloud switch. It picks the store at launch, so it takes effect next time the

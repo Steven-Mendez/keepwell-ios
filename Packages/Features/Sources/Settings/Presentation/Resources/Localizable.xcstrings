@@ -531,6 +531,26 @@
         }
       }
     },
+    "Make %@ the main currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar %@ como moneda principal"
+          }
+        }
+      }
+    },
+    "Make %@ the main currency?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Usar %@ como moneda principal?"
+          }
+        }
+      }
+    },
     "Manual · default 1" : {
       "localizations" : {
         "es" : {
@@ -557,6 +577,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subir"
+          }
+        }
+      }
+    },
+    "Net worth, summaries and new movements will be in %@, and the rate is turned around. Past movements keep the rate they were logged with." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El patrimonio, los resúmenes y los movimientos nuevos estarán en %@, y la tasa se invierte. Los movimientos anteriores conservan la tasa con la que se anotaron."
           }
         }
       }
@@ -787,6 +817,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seis dígitos, guardados solo en este iPhone. Sin él, el bloqueo usa el código de tu iPhone."
+          }
+        }
+      }
+    },
+    "Swap currencies" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intercambiar monedas"
           }
         }
       }

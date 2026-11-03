@@ -92,7 +92,7 @@ public final class SettingsViewModel {
             let overview = try await getOverview.execute()
             state = .loaded(overview)
             nameText = overview.preferredName ?? ""
-            rateText = formatter.number(overview.settings.currencies.rate, fractionDigits: 4).replacingOccurrences(of: ",", with: "")
+            rateText = rateDisplay(overview.settings.currencies.rate)
         } catch {
             state = .failed
         }
@@ -103,13 +103,26 @@ public final class SettingsViewModel {
     /// Saves the typed rate; an invalid one is put back to the stored value.
     public func commitRate() async {
         guard let current = settings?.currencies.rate else { return }
+        // Untouched text is the rounded display of the stored rate, not a new value to save.
+        guard rateText != rateDisplay(current) else { return }
         guard let rate = AmountInput.decimal(from: rateText), rate > 0 else {
             errorMessage = String(localized: "The rate has to be a number greater than zero.", bundle: #bundle)
-            rateText = formatter.number(current, fractionDigits: 4).replacingOccurrences(of: ",", with: "")
+            rateText = rateDisplay(current)
             return
         }
         guard rate != current else { return }
         await update { settings throws(DomainError) in try settings.setRate(rate) }
+    }
+
+    /// Makes the second currency the main one, turning the rate around.
+    public func swapCurrencies() async {
+        await update { settings throws(DomainError) in try settings.swapCurrencies() }
+    }
+
+    /// Four decimals for "1 USD = 36.6243 NIO", six for a rate below one ("1 NIO = 0.027304 USD"),
+    /// where four would round away what the rate means.
+    func rateDisplay(_ rate: Decimal) -> String {
+        formatter.number(rate, fractionDigits: rate < 1 ? 6 : 4).replacingOccurrences(of: ",", with: "")
     }
 
     public func setUnlockMethod(_ method: UnlockMethod) async {

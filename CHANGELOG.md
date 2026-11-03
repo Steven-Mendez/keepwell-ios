@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Settings › Currency: "Make NIO the main currency" swaps the main and second currencies and
+  turns the rate around; net worth, summaries and new movements follow the new main currency, and
+  past movements keep the rate they were logged with.
 - Cards keep their product name ("Premia", "Platinum Walmart") and expiry month and year, from
   "Product and expiry" on a credit or debit card's screen. A card with a product name is shown as
   "Premia ··0633" (the credit card screen's title too); never the full number or CVV.
@@ -175,6 +178,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Settings: leaving the rate field without editing it no longer saves its rounded display over
+  the exact rate; rates below one show six decimals.
 - "Delete all my data" also deletes the iCloud copy itself, even with iCloud backup off; before,
   a copy uploaded earlier could stay in iCloud. If iCloud can't be reached, the iPhone is still
   emptied and trying again retries iCloud.

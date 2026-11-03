@@ -21,6 +21,17 @@ struct SettingsUseCasesTests {
     }
 
     @Test
+    func swappingCurrenciesIsSaved() async throws {
+        let store = InMemoryStore(sample: sample)
+        let updated = try await DefaultUpdateSettingsUseCase(settings: store).execute { settings throws(DomainError) in
+            try settings.swapCurrencies()
+        }
+        #expect(updated.currencies.principal == sample.settings.currencies.second)
+        #expect(updated.currencies.second == sample.settings.currencies.principal)
+        #expect(await store.load() == updated)
+    }
+
+    @Test
     func aZeroRateIsRefusedAndNothingIsSaved() async throws {
         let store = InMemoryStore(sample: sample)
         await #expect(throws: DomainError.invalidExchangeRate) {
