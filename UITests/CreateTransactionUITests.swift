@@ -37,7 +37,8 @@ final class CreateTransactionUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["Confirmed"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["36.20 NIO"].exists)
-        XCTAssertTrue(app.buttons["Share receipt"].exists)
+        XCTAssertTrue(app.buttons["Share"].exists)
+        XCTAssertTrue(app.buttons["Save image"].exists)
         attach("expense-5-receipt")
         app.buttons["Done"].tap()
         XCTAssertTrue(app.buttons["Accounts"].waitForExistence(timeout: 5))
