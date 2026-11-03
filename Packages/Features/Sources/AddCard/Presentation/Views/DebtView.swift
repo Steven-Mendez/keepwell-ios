@@ -1,7 +1,6 @@
 import Core
 import DesignSystem
 import Domain
-import SharedPresentation
 import SwiftUI
 
 /// Step 3 · Debt and cycle (credit cards).
@@ -44,10 +43,7 @@ public struct DebtView: View {
     private var form: some View {
         VStack(alignment: .leading, spacing: 14) {
             KWFlowHeader(.back, progress: (2, 2), action: onBack)
-            HStack(spacing: KWSpacing.sm) {
-                KWMiniCard(.palette(CardDisplay.palette(for: viewModel.color)), size: .medium)
-                Text("How the debt works", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
-            }
+            Text("How the debt works", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
             if viewModel.second != nil {
                 KWSectionHeader(String(localized: "Which currencies does it charge you in?", bundle: #bundle)).padding(.top, KWSpacing.xxs)
                 VStack(spacing: KWSpacing.xs) {
