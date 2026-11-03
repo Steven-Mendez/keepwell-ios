@@ -99,7 +99,7 @@ public struct AccountsView: View {
     }
 
     private var header: some View {
-        KWLargeTitleHeader("Cuentas") {
+        KWLargeTitleHeader("Cuentas", alignment: .top) {
             if let overview = viewModel.overview {
                 (Text("Patrimonio neto ") + Text(formatter.string(overview.netWorth)).foregroundStyle(KWColor.Text.primary).bold())
                     .font(KWTextStyle.label.font.weight(.regular))
