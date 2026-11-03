@@ -83,6 +83,8 @@ targets:
         product: OnboardingDomain
       - package: Features
         product: OnboardingPresentation
+      - package: Features
+        product: AccountsDomain
     preBuildScripts:
       - name: SwiftLint
         basedOnDependencyAnalysis: false
@@ -140,6 +142,7 @@ schemes:
         - package: Persistence/Persistence
         - package: Features/OnboardingDomain
         - package: Features/OnboardingPresentation
+        - package: Features/AccountsDomain
       targets:
         - package: Core/CoreTests
         - package: DesignSystem/DesignSystemTests
@@ -147,6 +150,7 @@ schemes:
         - package: Persistence/PersistenceTests
         - package: Features/OnboardingDomainTests
         - package: Features/OnboardingPresentationTests
+        - package: Features/AccountsDomainTests
         - name: KeepwellUITests
     profile:
       config: Release

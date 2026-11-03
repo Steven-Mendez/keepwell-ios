@@ -11,6 +11,7 @@ let package = Package(
     products: [
         .library(name: "OnboardingDomain", targets: ["OnboardingDomain"]),
         .library(name: "OnboardingPresentation", targets: ["OnboardingPresentation"]),
+        .library(name: "AccountsDomain", targets: ["AccountsDomain"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -67,6 +68,22 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
             exclude: ["__Snapshots__"],
+        ),
+
+        // MARK: Accounts
+
+        .target(
+            name: "AccountsDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Accounts/Domain",
+        ),
+        .testTarget(
+            name: "AccountsDomainTests",
+            dependencies: [
+                "AccountsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
     ],
     swiftLanguageModes: [.v6],
