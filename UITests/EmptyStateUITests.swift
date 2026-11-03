@@ -30,6 +30,8 @@ final class EmptyStateUITests: XCTestCase {
         attach("resumen")
 
         app.buttons["Log transaction"].tap()
+        XCTAssertTrue(app.staticTexts["What are you recording?"].waitForExistence(timeout: 5))
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Expense")).firstMatch.tap()
         XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 5))
     }
 

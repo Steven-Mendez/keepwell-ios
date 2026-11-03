@@ -28,4 +28,22 @@ struct ActionAndProgressSnapshotTests {
         .padding(KWLayout.gutter)
         assertComponentSnapshot(of: view, height: 100)
     }
+
+    @Test
+    func swipeToConfirm() {
+        let view = VStack(spacing: KWSpacing.md) {
+            KWSwipeToConfirm("Slide to save expense") {}
+            KWSwipeToConfirm("Slide to move") {}.disabled(true)
+        }
+        .padding(KWLayout.gutter)
+        assertComponentSnapshot(of: view, height: 170)
+    }
+
+    @Test
+    func ticket() {
+        let view = KWTicketShape()
+            .fill(KWColor.Surface.surface)
+            .padding(KWLayout.gutter)
+        assertComponentSnapshot(of: view, height: 160)
+    }
 }

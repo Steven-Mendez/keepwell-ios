@@ -7,8 +7,19 @@ public enum PaymentSource: Hashable, Sendable {
     case account(UUID)
 }
 
+extension PaymentSource {
+    var cardID: UUID? {
+        if case let .card(id) = self {
+            return id
+        }
+        return nil
+    }
+}
+
 /// A movement as the five steps build it.
 public struct TransactionDraft: Sendable {
+    /// Chosen when the flow starts, so the receipt can show its reference before anything reloads.
+    public var id: UUID
     public var kind: TransactionKind
     public var amount: Decimal
     public var currency: String
@@ -25,6 +36,7 @@ public struct TransactionDraft: Sendable {
     public var note: String
 
     public init(
+        id: UUID = UUID(),
         kind: TransactionKind = .expense,
         amount: Decimal = 0,
         currency: String,
@@ -38,6 +50,7 @@ public struct TransactionDraft: Sendable {
         actualDebitedPrincipal: Decimal? = nil,
         note: String = "",
     ) {
+        self.id = id
         self.kind = kind
         self.amount = amount
         self.currency = currency

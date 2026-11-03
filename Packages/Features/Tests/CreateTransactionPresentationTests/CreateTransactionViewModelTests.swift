@@ -8,9 +8,11 @@ import Testing
 @MainActor
 enum CreateTransactionFactory {
     nonisolated static let now = SampleData.defaultReferenceDate
+    /// Fixed so the receipt's reference doesn't change between snapshot runs.
+    nonisolated static let movementID = UUID(uuidString: "7E1A2B3C-0000-4000-8000-000000000001") ?? UUID()
 
     static func make(
-        kind: TransactionKind = .expense,
+        type: MovementType = .expense,
         store: InMemoryStore = InMemoryStore(sample: .standard),
     ) -> CreateTransactionViewModel {
         let context = DefaultGetTransactionContextUseCase(
@@ -20,13 +22,14 @@ enum CreateTransactionFactory {
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
-            kind: kind,
+            type: type,
             now: { now },
+            makeID: { movementID },
         )
     }
 
-    static func loaded(kind: TransactionKind = .expense) async -> CreateTransactionViewModel {
-        let viewModel = make(kind: kind)
+    static func loaded(_ type: MovementType = .expense) async -> CreateTransactionViewModel {
+        let viewModel = make(type: type)
         await viewModel.load()
         return viewModel
     }
@@ -69,10 +72,11 @@ struct CreateTransactionViewModelTests {
         #expect(viewModel.currency == "NIO")
         #expect(viewModel.amountDisplay == "−C$879")
         #expect(viewModel.conversionLine == "≈ $24.00 · 1 USD = 36.6243 NIO")
-        viewModel.setKind(.income)
-        #expect(viewModel.amountDisplay == "+C$879")
-        viewModel.currency = "USD"
-        #expect(viewModel.conversionLine == "≈ C$32,192.76 · 1 USD = 36.6243 NIO")
+        let income = await CreateTransactionFactory.loaded(.income)
+        type(income, "879")
+        #expect(income.amountDisplay == "+C$879")
+        income.currency = "USD"
+        #expect(income.conversionLine == "≈ C$32,192.76 · 1 USD = 36.6243 NIO")
     }
 
     @Test
@@ -98,7 +102,7 @@ struct CreateTransactionViewModelTests {
 
     @Test
     func aShortListShowsEverythingWithoutSeeAll() async {
-        let viewModel = await CreateTransactionFactory.loaded(kind: .income)
+        let viewModel = await CreateTransactionFactory.loaded(.income)
         #expect(!viewModel.hasMoreCategories)
         #expect(viewModel.visibleCategories.count == TransactionCategory.defaultIncome.count)
     }
@@ -125,7 +129,7 @@ struct CreateTransactionViewModelTests {
 
     @Test
     func transfersCantCreateCategories() async {
-        let viewModel = await CreateTransactionFactory.loaded(kind: .transfer)
+        let viewModel = await CreateTransactionFactory.loaded(.transfer)
         #expect(!viewModel.canCreateCategory)
         viewModel.startNewCategory()
         #expect(viewModel.categoryEditor == nil)
@@ -187,18 +191,6 @@ struct CreateTransactionViewModelTests {
         viewModel.isPlanned = true
         #expect(viewModel.saveTitle == "Save as planned")
         #expect(viewModel.plannedHint == "Doesn't count until confirmed")
-    }
-
-    @Test
-    func transferPicksADestinationThenExcludesItAsSource() async {
-        let viewModel = await CreateTransactionFactory.loaded(kind: .transfer)
-        type(viewModel, "500")
-        viewModel.continueFromAmount()
-        viewModel.selectDestination(SampleData.IDs.cash)
-        #expect(!viewModel.methodGroups.flatMap(\.rows).contains { $0.source == .account(SampleData.IDs.cash) })
-        viewModel.selectSource(.card(SampleData.IDs.savingsTransfer))
-        await viewModel.save()
-        #expect(viewModel.saved?.transaction.destinationAccountID == SampleData.IDs.cash)
     }
 
     @Test

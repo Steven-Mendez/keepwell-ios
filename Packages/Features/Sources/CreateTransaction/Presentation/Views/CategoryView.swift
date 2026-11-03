@@ -3,7 +3,7 @@ import DesignSystem
 import SharedPresentation
 import SwiftUI
 
-/// Step 2 · Category. For transfers the step picks the destination account instead.
+/// Expenses and income · What was it for?
 public struct CategoryView: View {
     @Bindable private var viewModel: CreateTransactionViewModel
     private let onBack: () -> Void
@@ -16,7 +16,7 @@ public struct CategoryView: View {
     public var body: some View {
         KWScreen(bottom: 34) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWFlowHeader(.back, progress: (4, 2), action: onBack)
+                KWFlowHeader(.back, progress: viewModel.progress(of: .category), action: onBack)
                 HStack(alignment: .firstTextBaseline) {
                     Text(title)
                         .kwTextStyle(.titleSm)
@@ -26,11 +26,7 @@ public struct CategoryView: View {
                         .font(KWTextStyle.heading.font)
                         .monospacedDigit()
                 }
-                if viewModel.kind == .transfer {
-                    destinations
-                } else {
-                    categories
-                }
+                categories
             }
         }
         .sheet(item: $viewModel.categoryEditor) { editor in
@@ -41,8 +37,8 @@ public struct CategoryView: View {
     }
 
     private var title: String {
-        viewModel.kind == .transfer
-            ? String(localized: "Where is it going?", bundle: #bundle)
+        viewModel.kind == .income
+            ? String(localized: "Where did it come from?", bundle: #bundle)
             : String(localized: "What was it for?", bundle: #bundle)
     }
 
@@ -93,25 +89,6 @@ public struct CategoryView: View {
         }
     }
 
-    private var destinations: some View {
-        KWGroupedCard(horizontalPadding: 14) {
-            ForEach(viewModel.destinationOptions) { account in
-                Button { viewModel.selectDestination(account.id) } label: {
-                    HStack {
-                        KWTitleSubtitle(CardDisplay.name(of: account), subtitle: viewModel.balanceLabel(of: account))
-                        Spacer()
-                        if account.id == viewModel.destinationAccountID {
-                            SelectedCheck()
-                        }
-                    }
-                    .padding(.vertical, KWSpacing.sm)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
-
     /// `isDashed` sets apart the tile that adds a category from the ones that pick one.
     private func tile(
         _ icon: some View,
@@ -141,16 +118,5 @@ public struct CategoryView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-}
-
-/// The green check that marks the chosen row.
-struct SelectedCheck: View {
-    var body: some View {
-        KWIconView(.check, size: 14, lineWidth: 3)
-            .foregroundStyle(KWColor.Text.onPositive)
-            .frame(width: 24, height: 24)
-            .background(KWColor.State.positive, in: Circle())
-            .accessibilityLabel(Text("Selected", bundle: #bundle))
     }
 }

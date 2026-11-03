@@ -96,10 +96,12 @@ extension CreateTransactionViewModel {
         if isPlanned {
             return String(localized: "Save as planned", bundle: #bundle)
         }
-        return switch kind {
+        return switch type {
         case .expense: String(localized: "Save expense", bundle: #bundle)
         case .income: String(localized: "Save income", bundle: #bundle)
         case .transfer: String(localized: "Save transfer", bundle: #bundle)
+        case .withdrawal: String(localized: "Save withdrawal", bundle: #bundle)
+        case .cardPayment: String(localized: "Save card payment", bundle: #bundle)
         }
     }
 
@@ -128,10 +130,6 @@ extension CreateTransactionViewModel {
     }
 
     // MARK: Private
-
-    private func lastUse(of account: Account, in context: TransactionContext) -> Date {
-        sources(of: account, in: context).compactMap { context.lastUsed[$0] }.max() ?? .distantPast
-    }
 
     private func sources(of account: Account, in context: TransactionContext) -> [PaymentSource] {
         let cards = context.cards.filter { $0.accountID == account.id }

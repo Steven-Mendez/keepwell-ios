@@ -9,6 +9,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- New movement flow in the style of a bank's "send to my own account": a "What are you recording?"
+  sheet (expense, income, between my accounts, ATM withdrawal, card payment), a large amount with
+  the app's own keypad, what the source has available and a note pill, a review card with what is
+  left in each account and a pencil to change the amount, "Slide to save" to confirm (VoiceOver:
+  double tap), and a ticket-style receipt with a reference and "Share receipt".
+- Transfers, withdrawals and card payments start by choosing the accounts: the source as a card
+  and the destination from the accounts that can receive it. When the destination keeps another
+  currency, the amount, review and receipt say what arrives and at which rate.
 - Categories: every category has its own icon, and there are new ones for pets, gifts, insurance,
   taxes, savings and donations, and for freelance, investments, rental and gifts received income.
 - Create your own categories with a name, icon and color from "New category" when logging a

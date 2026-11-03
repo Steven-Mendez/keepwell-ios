@@ -215,15 +215,21 @@ final class AppContainer {
 
     // MARK: - Create transaction
 
-    func makeCreateTransactionViewModel(kind: TransactionKind = .expense) -> CreateTransactionViewModel {
-        let context = DefaultGetTransactionContextUseCase(
-            settings: store, categories: store, accounts: store, cards: store, transactions: store,
-        )
+    func makeCreateTransactionViewModel(type: MovementType = .expense) -> CreateTransactionViewModel {
+        let context = makeGetTransactionContext()
         return CreateTransactionViewModel(
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
-            kind: kind,
+            type: type,
         )
+    }
+
+    func makeNewMovementMenuViewModel() -> NewMovementMenuViewModel {
+        NewMovementMenuViewModel(getContext: makeGetTransactionContext())
+    }
+
+    private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
+        DefaultGetTransactionContextUseCase(settings: store, categories: store, accounts: store, cards: store, transactions: store)
     }
 }
