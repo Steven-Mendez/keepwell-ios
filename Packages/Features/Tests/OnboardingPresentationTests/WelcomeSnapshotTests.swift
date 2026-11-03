@@ -13,11 +13,20 @@ struct WelcomeSnapshotTests {
 
     @Test
     func welcome() {
-        assertScreenSnapshot(of: WelcomeView(restoreState: .idle, onStart: {}, onRestore: {}))
+        assertScreenSnapshot(of: WelcomeView(onStart: {}))
     }
 
     @Test
-    func welcomeAfterFailedRestore() {
-        assertScreenSnapshot(of: WelcomeView(restoreState: .notFound, onStart: {}, onRestore: {}))
+    func returning() {
+        assertScreenSnapshot(of: ReturningView(
+            restoreState: .idle, onBack: {}, onRestoreFromICloud: {}, onRestoreFromFile: {}, onStartFresh: {},
+        ))
+    }
+
+    @Test
+    func returningAfterFailedRestore() {
+        assertScreenSnapshot(of: ReturningView(
+            restoreState: .notFound, onBack: {}, onRestoreFromICloud: {}, onRestoreFromFile: {}, onStartFresh: {},
+        ))
     }
 }

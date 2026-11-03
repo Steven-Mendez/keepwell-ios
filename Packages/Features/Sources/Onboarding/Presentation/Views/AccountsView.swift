@@ -11,6 +11,8 @@ public struct AccountsView: View {
     @State private var editing: OnboardingAccountDraft?
     private let formatter = CurrencyFormatter()
 
+    /// `onImportCSV` only adds movements to the accounts made here; backups are restored a step
+    /// before, from "Have you used Keepwell before?".
     public init(viewModel: OnboardingViewModel, onBack: @escaping () -> Void, onImportCSV: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onBack = onBack

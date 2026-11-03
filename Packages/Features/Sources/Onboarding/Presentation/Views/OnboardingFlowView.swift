@@ -33,28 +33,32 @@ public struct OnboardingFlowView: View {
 
     public var body: some View {
         NavigationStack(path: $viewModel.path) {
-            WelcomeView(restoreState: viewModel.restoreState) {
-                viewModel.start()
-            } onRestore: {
-                Task {
-                    if await viewModel.restore() != nil {
-                        onFinish(.home)
-                    }
+            WelcomeView(onStart: viewModel.begin)
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: OnboardingViewModel.Step.self) { step in
+                    destination(step)
+                        .toolbar(.hidden, for: .navigationBar)
                 }
-            } onRestoreFile: {
-                onRestoreFile()
-            }
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: OnboardingViewModel.Step.self) { step in
-                destination(step)
-                    .toolbar(.hidden, for: .navigationBar)
-            }
         }
     }
 
     @ViewBuilder
     private func destination(_ step: OnboardingViewModel.Step) -> some View {
         switch step {
+        case .returning:
+            ReturningView(
+                restoreState: viewModel.restoreState,
+                onBack: back,
+                onRestoreFromICloud: {
+                    Task {
+                        if await viewModel.restore() != nil {
+                            onFinish(.home)
+                        }
+                    }
+                },
+                onRestoreFromFile: onRestoreFile,
+                onStartFresh: viewModel.start,
+            )
         case .name:
             NameView(viewModel: viewModel, onBack: back)
         case .currencies:

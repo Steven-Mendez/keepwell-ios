@@ -11,6 +11,16 @@
         }
       }
     },
+    "A file saved with “Back up now” in Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un archivo guardado con “Respaldar ahora” en Ajustes"
+          }
+        }
+      }
+    },
     "Account" : {
       "localizations" : {
         "es" : {
@@ -147,6 +157,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Banco · %@ · Débito ··%@"
+          }
+        }
+      }
+    },
+    "Bring your accounts, cards and movements from a backup, or set everything up from scratch." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trae tus cuentas, tarjetas y movimientos desde un respaldo, o configura todo desde cero."
           }
         }
       }
@@ -351,6 +371,16 @@
         }
       }
     },
+    "Have you used Keepwell before?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Ya usaste Keepwell?"
+          }
+        }
+      }
+    },
     "Hide amounts when leaving" : {
       "localizations" : {
         "es" : {
@@ -361,12 +391,12 @@
         }
       }
     },
-    "I've used it before: restore from iCloud" : {
+    "If iCloud backup was on in Keepwell" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ya la usaba: restaurar desde iCloud"
+            "value" : "Si tenías activado el respaldo en iCloud en Keepwell"
           }
         }
       }
@@ -641,6 +671,16 @@
         }
       }
     },
+    "Restore from iCloud" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar desde iCloud"
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "es" : {
@@ -717,6 +757,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empezar"
+          }
+        }
+      }
+    },
+    "Start from scratch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar de cero"
           }
         }
       }
