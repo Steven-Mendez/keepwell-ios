@@ -13,7 +13,7 @@ public struct CurrenciesView: View {
     }
 
     public var body: some View {
-        KWScreen(bottom: 40) {
+        KWFormScreen(bottom: 40) {
             VStack(alignment: .leading, spacing: 18) {
                 KWFlowHeader(.back, progress: (3, 1), action: onBack)
                 OnboardingHeading(
@@ -36,16 +36,16 @@ public struct CurrenciesView: View {
                 if viewModel.second != nil {
                     rateCard
                 }
-                Spacer(minLength: 0)
-                Button {
-                    KWKeyboard.dismiss()
-                    viewModel.continueFromCurrencies()
-                } label: {
-                    Text("Continue", bundle: #bundle)
-                }
-                .buttonStyle(.kw())
-                .disabled(!viewModel.canContinueFromCurrencies)
             }
+        } footer: {
+            Button {
+                KWKeyboard.dismiss()
+                viewModel.continueFromCurrencies()
+            } label: {
+                Text("Continue", bundle: #bundle)
+            }
+            .buttonStyle(.kw())
+            .disabled(!viewModel.canContinueFromCurrencies)
         }
         .sheet(isPresented: $isSearching) {
             CurrencySearchView(excluding: viewModel.principal) { code in

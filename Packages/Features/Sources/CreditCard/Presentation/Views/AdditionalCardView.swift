@@ -1,3 +1,4 @@
+import Core
 import CreditCardDomain
 import DesignSystem
 import Domain
@@ -271,13 +272,14 @@ struct CapSheet: View {
     }
 
     var body: some View {
-        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+        KWFormScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
                 Text("Cap per cycle", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
                 KWGroupedCard {
-                    SheetAmountField(
-                        label: String(localized: "Amount (\(viewModel.detail?.capCurrency ?? ""))", bundle: #bundle),
+                    KWAmountFieldRow(
+                        String(localized: "Amount (\(viewModel.detail?.capCurrency ?? ""))", bundle: #bundle),
+                        symbol: viewModel.detail.map { CurrencyFormatter.symbol(for: $0.capCurrency) },
                         placeholder: String(localized: "No cap", bundle: #bundle),
                         text: $capText,
                     )
@@ -286,20 +288,20 @@ struct CapSheet: View {
                     .font(KWTextStyle.captionSm.font.weight(.regular))
                     .foregroundStyle(KWColor.Text.muted)
                 SheetError(message: viewModel.errorMessage)
-                Spacer(minLength: 0)
-                Button {
-                    KWKeyboard.dismiss()
-                    Task {
-                        if await viewModel.setCap(cardID, capText: capText) {
-                            onClose()
-                        }
-                    }
-                } label: {
-                    Text("Save", bundle: #bundle)
-                }
-                .buttonStyle(.kw())
-                .disabled(viewModel.isSaving)
             }
+        } footer: {
+            Button {
+                KWKeyboard.dismiss()
+                Task {
+                    if await viewModel.setCap(cardID, capText: capText) {
+                        onClose()
+                    }
+                }
+            } label: {
+                Text("Save", bundle: #bundle)
+            }
+            .buttonStyle(.kw())
+            .disabled(viewModel.isSaving)
         }
     }
 }

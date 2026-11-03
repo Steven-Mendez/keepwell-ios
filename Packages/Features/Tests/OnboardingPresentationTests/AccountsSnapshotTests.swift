@@ -52,4 +52,34 @@ struct AccountsSnapshotTests {
         #expect(AccountFormView.amount("12,5") == Decimal(string: "12.5"))
         #expect(AccountFormView.amount("-1") == nil)
     }
+
+    @Test
+    func bankAccountForm() {
+        let viewModel = OnboardingFactory.make()
+        var draft = viewModel.newAccount(.bank)
+        draft.bank = "LAFISE"
+        draft.name = "Savings"
+        draft.lastFour = "1234"
+        draft.balance = 10000
+        let form = AccountFormView(
+            draft: draft, principal: "USD", second: "NIO", isNew: false,
+            onSave: { _ in }, onRemove: {}, onClose: {},
+        )
+        assertScreenSnapshot(of: form)
+    }
+
+    @Test
+    func validationPointsAtTheFirstProblem() {
+        #expect(AccountFormView.problem(lastFour: nil, balance: "10,000.00", secondBalance: "") == nil)
+        #expect(AccountFormView.problem(lastFour: "12", balance: "", secondBalance: "") == .incompleteLastFour)
+        #expect(AccountFormView.problem(lastFour: "1234", balance: "1.2.3", secondBalance: "") == .invalidAmount)
+        #expect(AccountFormView.problem(lastFour: nil, balance: "", secondBalance: "abc") == .invalidSecondAmount)
+    }
+
+    @Test
+    func eachProblemBelongsToItsField() {
+        #expect(AccountFormView.Problem.incompleteLastFour.field == .lastFour)
+        #expect(AccountFormView.Problem.invalidAmount.field == .balance)
+        #expect(AccountFormView.Problem.invalidSecondAmount.field == .secondBalance)
+    }
 }

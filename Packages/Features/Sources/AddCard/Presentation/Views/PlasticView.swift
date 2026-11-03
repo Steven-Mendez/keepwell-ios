@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import Domain
 import SharedPresentation
@@ -7,6 +8,12 @@ import SwiftUI
 public struct PlasticView: View {
     @Bindable private var viewModel: AddCardViewModel
     private let onBack: () -> Void
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case bank
+        case lastFour
+    }
 
     public init(viewModel: AddCardViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -18,30 +25,19 @@ public struct PlasticView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                form
-                    .padding(.horizontal, KWLayout.gutter)
-                    .padding(.top, KWLayout.safeTop)
-                    .padding(.bottom, KWSpacing.md)
-            }
-            .scrollIndicators(.hidden)
-            .scrollDismissesKeyboard(.interactively)
+        KWFormScreen {
+            form
+        } footer: {
             Button {
-                KWKeyboard.dismiss()
+                focus = nil
                 Task { await viewModel.continueFromPlastic() }
             } label: {
                 Text(viewModel.kind == .credit ? "Continue" : "Add card", bundle: #bundle)
             }
             .buttonStyle(.kw())
             .disabled(!viewModel.canContinueFromPlastic || viewModel.isSaving)
-            .padding(.horizontal, KWLayout.gutter)
-            .padding(.top, KWSpacing.sm)
-            .padding(.bottom, 34)
         }
-        .ignoresSafeArea(.container, edges: [.top, .bottom])
-        .background(KWColor.Surface.bg)
-        .foregroundStyle(KWColor.Text.primary)
+        .kwKeyboardToolbar($focus, order: [.bank, .lastFour])
     }
 
     private var form: some View {
@@ -61,18 +57,22 @@ public struct PlasticView: View {
                 if viewModel.kind == .debit {
                     accountPicker
                 }
-                FormTextRow(
-                    label: String(localized: "Bank", bundle: #bundle),
+                KWTextFieldRow(
+                    String(localized: "Bank", bundle: #bundle),
                     placeholder: String(localized: "Bank name", bundle: #bundle),
                     text: $viewModel.bank,
                 )
-                FormTextRow(
-                    label: String(localized: "Last 4 digits", bundle: #bundle),
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .kwFocused($focus, equals: .bank)
+                KWTextFieldRow(
+                    String(localized: "Last 4 digits", bundle: #bundle),
                     placeholder: "0000",
-                    text: lastFourBinding,
-                    width: 90,
-                    numeric: true,
+                    text: $viewModel.lastFour,
+                    digitLimit: 4,
+                    width: 110,
                 )
+                .kwFocused($focus, equals: .lastFour)
                 networkPicker
             }
             Text("We never ask for the full number or the CVV.", bundle: #bundle)
@@ -89,10 +89,6 @@ public struct PlasticView: View {
         return viewModel.kind == .debit
             ? viewModel.context?.depositAccounts.first { $0.id == viewModel.linkedAccountID }?.bank ?? fallback
             : fallback
-    }
-
-    private var lastFourBinding: Binding<String> {
-        Binding(get: { viewModel.lastFour }, set: { viewModel.lastFour = String($0.filter(\.isNumber).prefix(4)) })
     }
 
     private var swatches: some View {

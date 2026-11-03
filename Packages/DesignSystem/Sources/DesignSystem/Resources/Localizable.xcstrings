@@ -51,6 +51,16 @@
         }
       }
     },
+    "Done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        }
+      }
+    },
     "Gold" : {
       "localizations" : {
         "es" : {
@@ -91,6 +101,16 @@
         }
       }
     },
+    "Next field" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campo siguiente"
+          }
+        }
+      }
+    },
     "Off" : {
       "localizations" : {
         "es" : {
@@ -107,6 +127,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activado"
+          }
+        }
+      }
+    },
+    "Previous field" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campo anterior"
           }
         }
       }

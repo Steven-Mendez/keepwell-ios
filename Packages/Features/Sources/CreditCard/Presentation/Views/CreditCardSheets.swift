@@ -1,3 +1,4 @@
+import Core
 import CreditCardDomain
 import DesignSystem
 import Domain
@@ -27,13 +28,14 @@ struct TermsSheet: View {
     }
 
     var body: some View {
-        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+        KWFormScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close, action: onClose)
                 Text("sheet.cardDetails", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
                 KWGroupedCard {
-                    SheetAmountField(
-                        label: String(localized: "Credit limit (\(detail.limitCurrency))", bundle: #bundle),
+                    KWAmountFieldRow(
+                        String(localized: "Credit limit (\(detail.limitCurrency))", bundle: #bundle),
+                        symbol: CurrencyFormatter.symbol(for: detail.limitCurrency),
                         placeholder: String(localized: "Optional", bundle: #bundle),
                         text: $limitText,
                     )
@@ -44,20 +46,20 @@ struct TermsSheet: View {
                     .font(KWTextStyle.captionSm.font.weight(.regular))
                     .foregroundStyle(KWColor.Text.muted)
                 SheetError(message: viewModel.errorMessage)
-                Spacer(minLength: 0)
-                Button {
-                    KWKeyboard.dismiss()
-                    Task {
-                        if await viewModel.saveTerms(limitText: limitText, cutoffDay: cutoffDay, dueDay: dueDay) {
-                            onClose()
-                        }
-                    }
-                } label: {
-                    Text("Save", bundle: #bundle)
-                }
-                .buttonStyle(.kw())
-                .disabled(viewModel.isSaving)
             }
+        } footer: {
+            Button {
+                KWKeyboard.dismiss()
+                Task {
+                    if await viewModel.saveTerms(limitText: limitText, cutoffDay: cutoffDay, dueDay: dueDay) {
+                        onClose()
+                    }
+                }
+            } label: {
+                Text("Save", bundle: #bundle)
+            }
+            .buttonStyle(.kw())
+            .disabled(viewModel.isSaving)
         }
     }
 
@@ -91,11 +93,18 @@ struct NewAdditionalSheet: View {
     @State private var lastFour = ""
     @State private var color = CardColor.lima
     @State private var capText = ""
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case holder
+        case lastFour
+        case cap
+    }
 
     private static let colors: [CardColor] = [.lima, .azul, .verde, .violeta, .coral, .oro, .grafito]
 
     var body: some View {
-        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+        KWFormScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.close) { onFinish(nil) }
                 Text("New additional card", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
@@ -103,46 +112,53 @@ struct NewAdditionalSheet: View {
                 colorPicker
                 fields
                 SheetError(message: viewModel.errorMessage)
-                Spacer(minLength: 0)
-                Button {
-                    KWKeyboard.dismiss()
-                    Task {
-                        if let id = await viewModel.createAdditional(
-                            holderName: holderName,
-                            lastFour: lastFour,
-                            color: color,
-                            capText: capText,
-                        ) {
-                            onFinish(id)
-                        }
-                    }
-                } label: {
-                    Text("Add card", bundle: #bundle)
-                }
-                .buttonStyle(.kw())
-                .disabled(viewModel.isSaving || holderName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
+        } footer: {
+            Button {
+                focus = nil
+                Task {
+                    if let id = await viewModel.createAdditional(
+                        holderName: holderName,
+                        lastFour: lastFour,
+                        color: color,
+                        capText: capText,
+                    ) {
+                        onFinish(id)
+                    }
+                }
+            } label: {
+                Text("Add card", bundle: #bundle)
+            }
+            .buttonStyle(.kw())
+            .disabled(viewModel.isSaving || holderName.trimmingCharacters(in: .whitespaces).isEmpty)
         }
+        .kwKeyboardToolbar($focus, order: [.holder, .lastFour, .cap])
     }
 
     private var fields: some View {
         KWGroupedCard {
-            SheetTextField(
-                label: String(localized: "Who carries it", bundle: #bundle),
+            KWTextFieldRow(
+                String(localized: "Who carries it", bundle: #bundle),
                 placeholder: String(localized: "Family", bundle: #bundle),
                 text: $holderName,
             )
-            SheetTextField(
-                label: String(localized: "Last 4 digits", bundle: #bundle),
+            .textInputAutocapitalization(.words)
+            .kwFocused($focus, equals: .holder)
+            KWTextFieldRow(
+                String(localized: "Last 4 digits", bundle: #bundle),
                 placeholder: String(localized: "Optional", bundle: #bundle),
                 text: $lastFour,
-                isNumeric: true,
+                digitLimit: 4,
+                width: 110,
             )
-            SheetAmountField(
-                label: String(localized: "Cap per cycle (\(viewModel.detail?.capCurrency ?? ""))", bundle: #bundle),
+            .kwFocused($focus, equals: .lastFour)
+            KWAmountFieldRow(
+                String(localized: "Cap per cycle (\(viewModel.detail?.capCurrency ?? ""))", bundle: #bundle),
+                symbol: viewModel.detail.map { CurrencyFormatter.symbol(for: $0.capCurrency) },
                 placeholder: String(localized: "No cap", bundle: #bundle),
                 text: $capText,
             )
+            .kwFocused($focus, equals: .cap)
         }
     }
 
@@ -180,49 +196,6 @@ struct NewAdditionalSheet: View {
 }
 
 // MARK: - Form rows
-
-struct SheetTextField: View {
-    let label: String
-    let placeholder: String
-    @Binding var text: String
-    var isNumeric = false
-
-    var body: some View {
-        HStack(spacing: KWSpacing.sm) {
-            Text(label).foregroundStyle(KWColor.Text.secondary)
-            TextField(placeholder, text: $text)
-                .multilineTextAlignment(.trailing)
-                .font(.kw(15, weight: 600))
-                .keyboardType(isNumeric ? .numberPad : .default)
-        }
-        .font(KWTextStyle.body.font)
-        .padding(.vertical, KWSpacing.sm)
-    }
-}
-
-struct SheetAmountField: View {
-    let label: String
-    let placeholder: String
-    @Binding var text: String
-
-    var body: some View {
-        HStack(spacing: KWSpacing.sm) {
-            Text(label).foregroundStyle(KWColor.Text.secondary)
-            Spacer(minLength: KWSpacing.xs)
-            TextField(label, text: $text, prompt: Text(placeholder))
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .font(.kw(15, weight: 600))
-                .monospacedDigit()
-                .padding(.vertical, KWSpacing.xs)
-                .padding(.horizontal, 10)
-                .frame(width: 120)
-                .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: 10))
-        }
-        .font(KWTextStyle.body.font)
-        .padding(.vertical, KWSpacing.sm)
-    }
-}
 
 struct SheetError: View {
     let message: String?

@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import SharedPresentation
 import SwiftUI
@@ -7,6 +8,13 @@ public struct ReviewView: View {
     @Bindable private var viewModel: CreateTransactionViewModel
     private let onBack: () -> Void
     @State private var isPickingDate = false
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case description
+        case debited
+        case note
+    }
 
     public init(viewModel: CreateTransactionViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -14,29 +22,18 @@ public struct ReviewView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                form
-                    .padding(.horizontal, KWLayout.gutter)
-                    .padding(.top, KWLayout.safeTop)
-                    .padding(.bottom, KWSpacing.md)
-            }
-            .scrollIndicators(.hidden)
-            .scrollDismissesKeyboard(.interactively)
+        KWFormScreen {
+            form
+        } footer: {
             Button(viewModel.saveTitle) {
-                KWKeyboard.dismiss()
+                focus = nil
                 Task { await viewModel.save() }
             }
             .buttonStyle(.kw())
             .disabled(!viewModel.canSave)
-            .padding(.horizontal, KWLayout.gutter)
-            .padding(.top, KWSpacing.sm)
-            .padding(.bottom, 34)
         }
-        .ignoresSafeArea(.container, edges: [.top, .bottom])
+        .kwKeyboardToolbar($focus, order: viewModel.showsDebitedField ? [.description, .debited, .note] : [.description, .note])
         .onAppear { viewModel.prefillDescription() }
-        .background(KWColor.Surface.bg)
-        .foregroundStyle(KWColor.Text.primary)
         .sheet(isPresented: $isPickingDate) {
             DatePicker(selection: $viewModel.date, displayedComponents: [.date]) {
                 Text("Date", bundle: #bundle)
@@ -58,6 +55,7 @@ public struct ReviewView: View {
                 placeholder: viewModel.descriptionPlaceholder,
                 font: .kw(17, weight: 600),
             )
+            .kwFocused($focus, equals: .description)
             KWGroupedCard {
                 details
             }
@@ -67,6 +65,7 @@ public struct ReviewView: View {
                 placeholder: String(localized: "Add a detail", bundle: #bundle),
                 font: KWTextStyle.body.font,
             )
+            .kwFocused($focus, equals: .note)
             if let error = viewModel.errorMessage {
                 Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
             }
@@ -131,20 +130,15 @@ public struct ReviewView: View {
     }
 
     private var debitedRow: some View {
-        HStack(spacing: KWSpacing.sm) {
-            hint(debitedTitle, String(localized: "Optional · if a different rate was used", bundle: #bundle))
-            Spacer()
-            TextField(viewModel.suggestedDebit, text: $viewModel.debitedText)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .font(.kw(15, weight: 600))
-                .monospacedDigit()
-                .padding(.vertical, KWSpacing.xs)
-                .padding(.horizontal, 10)
-                .frame(width: 84)
-                .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: 10))
-        }
-        .padding(.vertical, 11)
+        KWAmountFieldRow(
+            debitedTitle,
+            hint: String(localized: "Optional · if a different rate was used", bundle: #bundle),
+            symbol: CurrencyFormatter.symbol(for: viewModel.context?.currencies.principal ?? "USD"),
+            placeholder: viewModel.suggestedDebit,
+            text: $viewModel.debitedText,
+            width: 110,
+        )
+        .kwFocused($focus, equals: .debited)
     }
 
     private func hint(_ title: String, _ subtitle: String) -> some View {

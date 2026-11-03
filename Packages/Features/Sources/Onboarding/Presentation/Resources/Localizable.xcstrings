@@ -231,6 +231,26 @@
         }
       }
     },
+    "Enter all 4 digits or leave it empty." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe los 4 dígitos o déjalo vacío."
+          }
+        }
+      }
+    },
+    "Enter an amount like 1,250.50." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe un monto como 1,250.50."
+          }
+        }
+      }
+    },
     "Euro" : {
       "localizations" : {
         "es" : {
@@ -651,12 +671,12 @@
         }
       }
     },
-    "Today's balance (%@)" : {
+    "Today's balance" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saldo de hoy (%@)"
+            "value" : "Saldo de hoy"
           }
         }
       }

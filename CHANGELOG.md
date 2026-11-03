@@ -60,6 +60,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Forms keep their main button ("Add", "Save", "Reconcile", "Continue") just above the keyboard
+  instead of hidden behind the number pad, in onboarding accounts, new accounts and cards, debt,
+  review, cash, card terms and additional cards. Forms with several fields show previous / next
+  and "Done" on top of the keyboard, return moves to the next field, and tapping outside or
+  dragging the form hides the keyboard.
+- Account and card forms: every editable value sits on a filled field, amounts show their currency
+  symbol, card endings accept only four digits (also when pasted) and a new account starts typing
+  in its first field. In onboarding's account form, amounts are tidied to "10,000.00" when you
+  leave them, a half-typed ending or an amount that is not a number is explained under the form,
+  and "Remove account" moved out of the footer, away from "Save".
 - Builds signed without iCloud (free developer accounts) open with on-device storage instead of
   closing at launch.
 - Siri's prompts and messages appear in Spanish on Spanish iPhones.
