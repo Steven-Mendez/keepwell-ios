@@ -60,6 +60,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Accounts shows every bank account through its debit cards, stacked like the credit cards, and
+  cash as a banknote. The "Transfers" row is gone from the accounts list; a bank account without a
+  card shows an empty card slot to add one.
 - Builds signed without iCloud (free developer accounts) open with on-device storage instead of
   closing at launch.
 - Siri's prompts and messages appear in Spanish on Spanish iPhones.
