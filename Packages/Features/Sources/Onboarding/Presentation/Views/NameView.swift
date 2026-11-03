@@ -19,9 +19,9 @@ public struct NameView: View {
             VStack(alignment: .leading, spacing: 18) {
                 KWFlowHeader(.back, progress: (5, 1), action: onBack)
                 OnboardingHeading(
-                    title: String(localized: "What should we call you?", bundle: #bundle),
+                    title: String(localized: "What's your name?", bundle: #bundle),
                     message: String(
-                        localized: "We'll greet you by name and print it on your cards. It stays on this iPhone.",
+                        localized: "We'll use it to greet you and show it on your cards. It's only stored on this iPhone.",
                         bundle: #bundle,
                     ),
                 )
