@@ -14,39 +14,57 @@ public struct PlasticView: View {
     }
 
     public var body: some View {
-        KWScreen(bottom: 34) {
-            VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWFlowHeader(.back, progress: viewModel.kind == .credit ? (2, 1) : (1, 1), action: onBack)
-                Text(viewModel.plasticTitle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
-                KWCardArt(
-                    palette: CardDisplay.palette(for: viewModel.color),
-                    bank: viewModel.bank.isEmpty ? bankPlaceholder : viewModel.bank,
-                    badge: .tag(viewModel.kind == .credit ? "Crédito" : "Débito"),
-                    showsContactless: false,
-                    lastFour: viewModel.lastFour.isEmpty ? "0000" : viewModel.lastFour,
-                    network: CardDisplay.wordmark(for: viewModel.network),
-                )
-                swatches
-                KWGroupedCard {
-                    if viewModel.kind == .debit {
-                        accountPicker
-                    }
-                    FormTextRow(label: "Banco", placeholder: "Nombre del banco", text: $viewModel.bank)
-                    FormTextRow(label: "Últimos 4 dígitos", placeholder: "0000", text: lastFourBinding, width: 90, numeric: true)
-                    networkPicker
+        VStack(spacing: 0) {
+            ScrollView {
+                form
+                    .padding(.horizontal, KWLayout.gutter)
+                    .padding(.top, KWLayout.safeTop)
+                    .padding(.bottom, KWSpacing.md)
+            }
+            .scrollIndicators(.hidden)
+            .scrollDismissesKeyboard(.interactively)
+            Button(viewModel.kind == .credit ? "Continuar" : "Agregar tarjeta") {
+                KWKeyboard.dismiss()
+                Task { await viewModel.continueFromPlastic() }
+            }
+            .buttonStyle(.kw())
+            .disabled(!viewModel.canContinueFromPlastic || viewModel.isSaving)
+            .padding(.horizontal, KWLayout.gutter)
+            .padding(.top, KWSpacing.sm)
+            .padding(.bottom, 34)
+        }
+        .ignoresSafeArea(.container, edges: [.top, .bottom])
+        .background(KWColor.Surface.bg)
+        .foregroundStyle(KWColor.Text.primary)
+        .kwKeyboardDoneButton()
+    }
+
+    private var form: some View {
+        VStack(alignment: .leading, spacing: KWSpacing.md) {
+            KWFlowHeader(.back, progress: viewModel.kind == .credit ? (2, 1) : (1, 1), action: onBack)
+            Text(viewModel.plasticTitle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
+            KWCardArt(
+                palette: CardDisplay.palette(for: viewModel.color),
+                bank: viewModel.bank.isEmpty ? bankPlaceholder : viewModel.bank,
+                badge: .tag(viewModel.kind == .credit ? "Crédito" : "Débito"),
+                showsContactless: false,
+                lastFour: viewModel.lastFour.isEmpty ? "0000" : viewModel.lastFour,
+                network: CardDisplay.wordmark(for: viewModel.network),
+            )
+            swatches
+            KWGroupedCard {
+                if viewModel.kind == .debit {
+                    accountPicker
                 }
-                Text("Nunca pedimos el número completo ni el CVV.")
-                    .font(KWTextStyle.captionSm.font)
-                    .foregroundStyle(KWColor.Text.muted)
-                if let error = viewModel.errorMessage {
-                    Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
-                }
-                Spacer(minLength: 0)
-                Button(viewModel.kind == .credit ? "Continuar" : "Agregar tarjeta") {
-                    Task { await viewModel.continueFromPlastic() }
-                }
-                .buttonStyle(.kw())
-                .disabled(!viewModel.canContinueFromPlastic || viewModel.isSaving)
+                FormTextRow(label: "Banco", placeholder: "Nombre del banco", text: $viewModel.bank)
+                FormTextRow(label: "Últimos 4 dígitos", placeholder: "0000", text: lastFourBinding, width: 90, numeric: true)
+                networkPicker
+            }
+            Text("Nunca pedimos el número completo ni el CVV.")
+                .font(KWTextStyle.captionSm.font)
+                .foregroundStyle(KWColor.Text.muted)
+            if let error = viewModel.errorMessage {
+                Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
             }
         }
     }
