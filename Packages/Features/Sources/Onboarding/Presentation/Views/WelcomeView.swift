@@ -6,11 +6,19 @@ public struct WelcomeView: View {
     private let restoreState: OnboardingViewModel.RestoreState
     private let onStart: () -> Void
     private let onRestore: () -> Void
+    private let onRestoreFile: () -> Void
 
-    public init(restoreState: OnboardingViewModel.RestoreState, onStart: @escaping () -> Void, onRestore: @escaping () -> Void) {
+    /// `onRestoreFile` picks a Keepwell backup file (.json) from Files.
+    public init(
+        restoreState: OnboardingViewModel.RestoreState,
+        onStart: @escaping () -> Void,
+        onRestore: @escaping () -> Void,
+        onRestoreFile: @escaping () -> Void = {},
+    ) {
         self.restoreState = restoreState
         self.onStart = onStart
         self.onRestore = onRestore
+        self.onRestoreFile = onRestoreFile
     }
 
     public var body: some View {
@@ -41,6 +49,13 @@ public struct WelcomeView: View {
                 Button(action: onStart) { Text("Start", bundle: #bundle) }
                     .buttonStyle(.kw())
                 restoreButton
+                Button(action: onRestoreFile) {
+                    HStack(spacing: KWSpacing.xs) {
+                        KWIconView(.download, size: 18)
+                        Text("Restore from a backup file (.json)", bundle: #bundle)
+                    }
+                }
+                .buttonStyle(KWButtonStyle(.plain, size: .text, height: 48))
                 if restoreState == .notFound {
                     Text("We couldn't find a backup in your iCloud.", bundle: #bundle)
                         .font(KWTextStyle.caption.font)

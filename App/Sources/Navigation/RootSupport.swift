@@ -83,6 +83,7 @@ struct OnboardingRoute: View {
     let container: AppContainer
     let viewModel: OnboardingViewModel
     let onImportCSV: () -> Void
+    let onRestoreFile: () -> Void
     let onFinish: (OnboardingFlowView.Exit) -> Void
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
 
@@ -90,6 +91,7 @@ struct OnboardingRoute: View {
         OnboardingFlowView(
             viewModel: viewModel,
             onImportCSV: onImportCSV,
+            onRestoreFile: onRestoreFile,
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onFinish: onFinish,
         )

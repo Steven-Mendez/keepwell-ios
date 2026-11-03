@@ -300,6 +300,26 @@
           }
         }
       }
+    },
+    "That file isn't a Keepwell backup." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese archivo no es un respaldo de Keepwell."
+          }
+        }
+      }
+    },
+    "Restored %lld accounts and %lld movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se restauraron %1$lld cuentas y %2$lld movimientos"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

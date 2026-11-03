@@ -169,9 +169,7 @@ final class AppContainer {
                 categories: store,
                 transactions: store,
             ),
-            restoreBackup: DefaultRestoreBackupUseCase(
-                eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store,
-            ),
+            restoreBackup: makeRestoreBackup(),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store, cloud: makeCloudCopyEraser()),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
@@ -190,6 +188,10 @@ final class AppContainer {
 
     func makePasscodeSetupViewModel() -> PasscodeSetupViewModel {
         PasscodeSetupViewModel(setPasscode: DefaultSetPasscodeUseCase(passcodes: passcodes))
+    }
+
+    func makeRestoreBackup() -> any RestoreBackupUseCase {
+        DefaultRestoreBackupUseCase(eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store)
     }
 
     func makePaymentMethodsViewModel() -> PaymentMethodsViewModel {

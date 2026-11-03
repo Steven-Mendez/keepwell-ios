@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Onboarding: "Restore from a backup file (.json)" on the welcome screen brings a Keepwell
+  backup (accounts, cards and movements) and goes straight home. The accounts step's CSV button now
+  reads "Import movements only (.csv)", since a CSV adds movements to existing accounts.
 - Settings › Currency: "Make NIO the main currency" swaps the main and second currencies and
   turns the rate around; net worth, summaries and new movements follow the new main currency, and
   past movements keep the rate they were logged with.

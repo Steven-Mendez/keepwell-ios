@@ -371,12 +371,12 @@
         }
       }
     },
-    "Import transactions from CSV" : {
+    "Import movements only (.csv)" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importar movimientos desde CSV"
+            "value" : "Importar solo movimientos (.csv)"
           }
         }
       }
@@ -627,6 +627,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los reportes y el patrimonio se calculan en la moneda principal."
+          }
+        }
+      }
+    },
+    "Restore from a backup file (.json)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar desde un archivo de respaldo (.json)"
           }
         }
       }

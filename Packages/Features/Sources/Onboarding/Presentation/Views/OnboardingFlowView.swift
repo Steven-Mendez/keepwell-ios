@@ -11,6 +11,7 @@ public struct OnboardingFlowView: View {
 
     @Bindable private var viewModel: OnboardingViewModel
     private let onImportCSV: () -> Void
+    private let onRestoreFile: () -> Void
     private let onSetUpPasscode: () -> Void
     private let onFinish: (Exit) -> Void
 
@@ -19,11 +20,13 @@ public struct OnboardingFlowView: View {
     public init(
         viewModel: OnboardingViewModel,
         onImportCSV: @escaping () -> Void,
+        onRestoreFile: @escaping () -> Void = {},
         onSetUpPasscode: @escaping () -> Void,
         onFinish: @escaping (Exit) -> Void,
     ) {
         self.viewModel = viewModel
         self.onImportCSV = onImportCSV
+        self.onRestoreFile = onRestoreFile
         self.onSetUpPasscode = onSetUpPasscode
         self.onFinish = onFinish
     }
@@ -38,6 +41,8 @@ public struct OnboardingFlowView: View {
                         onFinish(.home)
                     }
                 }
+            } onRestoreFile: {
+                onRestoreFile()
             }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: OnboardingViewModel.Step.self) { step in
