@@ -105,6 +105,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Accounts: the add button opens "What do you want to add?" again. The cards' decoration reached
+  past the plastic, so a credit card in the stack caught taps meant for the button and for the
+  space above it.
 - Widgets show your month, net worth and quick-log categories instead of always asking to open
   Keepwell. Development builds signed with a personal team kept the App Group out of the signature,
   so the widgets never saw what the app wrote; `APP_ENTITLEMENTS` now keeps it while dropping iCloud

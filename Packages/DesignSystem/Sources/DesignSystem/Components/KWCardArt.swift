@@ -99,6 +99,10 @@ public struct KWCardArt: View {
                         .scaleEffect(proxy.size.width / Self.designWidth, anchor: .topLeading)
                 }
             }
+            // The face's decoration bleeds far past the plastic; without bounding it, a card in a
+            // stack swallowed taps meant for the header's add button above it.
+            .clipShape(RoundedRectangle(cornerRadius: KWRadius.card, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: KWRadius.card, style: .continuous))
             .kwShadow(showsShadow && !isFrozen ? palette.glow : KWShadow(color: .clear, radius: 0, x: 0, y: 0))
             .accessibilityElement(children: .combine)
     }

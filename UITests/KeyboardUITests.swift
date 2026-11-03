@@ -28,12 +28,12 @@ final class KeyboardUITests: XCTestCase {
         app.typeText("12345")
         XCTAssertEqual(app.textFields["Debit, last 4"].value as? String, "1234")
         app.buttons["Next field"].tap()
-        // Tapping the pad's keys keeps it on screen; typed text can hide it in the simulator.
-        // The pad swaps from the number pad first, so let it settle before tapping keys.
-        _ = XCTWaiter.wait(for: [expectation(description: "decimal pad settles")], timeout: 1)
-        for key in ["1", "0", "0", "0", "0"] {
-            app.keys[key].tap()
-        }
+        // Typing into the focused field rather than tapping the pad's keys: once text has been typed
+        // the simulator may tuck the pad away and leave only the keyboard toolbar, so its keys can be
+        // off screen. The checks below hold either way, since they compare against the keyboard's frame.
+        let balance = app.textFields.element(matching: NSPredicate(format: "hasKeyboardFocus == true"))
+        XCTAssertTrue(balance.waitForExistence(timeout: 5))
+        balance.typeText("10000")
         _ = XCTWaiter.wait(for: [expectation(description: "scroll settles")], timeout: 1)
         attach("bank-account-typing")
 
