@@ -6,19 +6,21 @@ final class AccountsUITests: XCTestCase {
     }
 
     @MainActor
-    func testAccountsTabShowsCreditCardsDebitCardsAndCash() {
+    func testAccountsTabShowsEveryCardInOneWalletWithFilters() {
         let app = XCUIApplication()
         app.launchArguments = ["-sample-data", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         XCTAssertTrue(app.buttons["Accounts"].waitForExistence(timeout: 10))
         app.buttons["Accounts"].tap()
-        // Each bank account is shown as its one debit card; there is no separate deposits list.
-        XCTAssertTrue(app.staticTexts["Credit cards"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Bank accounts"].exists)
-        XCTAssertFalse(app.buttons["Link another card"].exists)
-        XCTAssertTrue(app.staticTexts["Cash"].exists)
-        XCTAssertTrue(app.buttons["Reconcile"].exists)
+        // Debit, credit and cash share one wallet, with a chip per kind.
+        XCTAssertTrue(app.buttons["All"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Debit"].exists)
+        XCTAssertTrue(app.buttons["Credit"].exists)
+        XCTAssertTrue(app.buttons["Cash"].exists)
+        XCTAssertFalse(app.buttons["Reconcile"].exists)
+        app.buttons["Credit"].tap()
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "debit card")).firstMatch.exists)
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "accounts"
         attachment.lifetime = .keepAlways
@@ -35,7 +37,8 @@ final class AccountsUITests: XCTestCase {
         app.buttons["Accounts"].tap()
         let savings = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Bank One Savings debit card")).firstMatch
         XCTAssertTrue(savings.waitForExistence(timeout: 5))
-        savings.tap()
+        // The card sits behind others in the wallet; only its top strip shows.
+        savings.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
 
         XCTAssertTrue(app.staticTexts["Bank account"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Manage account"].exists)

@@ -5,28 +5,15 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// Accounts, shown through what the person carries: credit cards stacked like Wallet, each bank
-/// account as its one debit card, and cash as a banknote.
+/// Accounts as a wallet: every card the person carries (debit, credit and cash) in one stack,
+/// with chips to show one kind. Tapping a card opens it.
 public struct AccountsView: View {
-    private let viewModel: AccountsViewModel
+    @Bindable private var viewModel: AccountsViewModel
     private let onAdd: () -> Void
     private let onOpenCreditCard: (UUID) -> Void
     private let onOpenBankAccount: (UUID) -> Void
     private let onOpenAccountMovements: (UUID) -> Void
-    @State private var cashAction: CashAction?
     private let formatter = CurrencyFormatter()
-
-    enum CashAction: Identifiable {
-        case reconcile(AccountsOverview.Cash)
-        case withdraw(AccountsOverview.Cash)
-
-        var id: String {
-            switch self {
-            case let .reconcile(cash): "reconcile-\(cash.id)"
-            case let .withdraw(cash): "withdraw-\(cash.id)"
-            }
-        }
-    }
 
     public init(
         viewModel: AccountsViewModel,
@@ -46,28 +33,10 @@ public struct AccountsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 header
-                if let overview = viewModel.overview {
-                    if !overview.creditCards.isEmpty {
-                        KWSectionHeader(String(localized: "Credit cards", bundle: #bundle), style: .large) {
-                            Text("Tap to see details", bundle: #bundle)
-                                .font(KWTextStyle.label.font.weight(.regular))
-                                .foregroundStyle(KWColor.Text.muted)
-                        }
+                if viewModel.overview != nil {
+                    filters
+                    WalletStack(cards: viewModel.cards, formatter: formatter, ownerName: viewModel.ownerName, onOpen: open)
                         .padding(.top, 6)
-                        CreditCardStack(
-                            cards: overview.creditCards, formatter: formatter, ownerName: viewModel.ownerName, onOpen: onOpenCreditCard,
-                        )
-                    }
-                    if !overview.deposits.isEmpty {
-                        KWSectionHeader(String(localized: "Bank accounts", bundle: #bundle), style: .large)
-                            .padding(.top, 10)
-                        ForEach(overview.deposits) { deposit in
-                            DepositCard(deposit: deposit, formatter: formatter, ownerName: viewModel.ownerName) {
-                                onOpenBankAccount(deposit.id)
-                            }
-                        }
-                    }
-                    cashSection(overview.cash)
                 }
             }
             .padding(.horizontal, KWLayout.gutter)
@@ -79,38 +48,35 @@ public struct AccountsView: View {
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
         .task { await viewModel.load() }
-        .sheet(item: $cashAction) { action in
-            Group {
-                switch action {
-                case let .reconcile(cash):
-                    ReconcileCashSheet(viewModel: viewModel, cash: cash, formatter: formatter) { cashAction = nil }
-                case let .withdraw(cash):
-                    WithdrawCashSheet(
-                        viewModel: viewModel,
-                        cash: cash,
-                        sources: viewModel.overview?.deposits ?? [],
-                        principal: viewModel.overview?.settings.principal ?? "USD",
-                    ) { cashAction = nil }
-                }
-            }
-            .presentationDetents([.medium])
-            .presentationBackground(KWColor.Surface.bg)
-        }
     }
 
     @ViewBuilder
-    private func cashSection(_ notes: [AccountsOverview.Cash]) -> some View {
-        if !notes.isEmpty {
-            KWSectionHeader(String(localized: "Cash", bundle: #bundle), style: .large).padding(.top, 10)
-            ForEach(notes) { cash in
-                CashNote(cash: cash, formatter: formatter) {
-                    cashAction = .reconcile(cash)
-                } onWithdraw: {
-                    cashAction = .withdraw(cash)
-                } onOpen: {
-                    onOpenAccountMovements(cash.id)
+    private var filters: some View {
+        let options = viewModel.filters
+        if !options.isEmpty {
+            ScrollView(.horizontal) {
+                HStack(spacing: KWSpacing.xs) {
+                    ForEach(options, id: \.self) { option in
+                        KWChip(viewModel.title(of: option), isSelected: viewModel.filter == option) {
+                            // The cards deal in again, as if the deck were reshuffled.
+                            withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
+                                viewModel.filter = option
+                            }
+                        }
+                    }
                 }
+                .padding(.horizontal, KWLayout.gutter)
             }
+            .scrollIndicators(.hidden)
+            .padding(.horizontal, -KWLayout.gutter)
+        }
+    }
+
+    private func open(_ card: WalletCard) {
+        switch card {
+        case let .credit(credit): onOpenCreditCard(credit.id)
+        case let .debit(deposit): onOpenBankAccount(deposit.id)
+        case let .cash(cash): onOpenAccountMovements(cash.id)
         }
     }
 
@@ -142,50 +108,6 @@ public struct AccountsView: View {
             )
         }
     }
-}
-
-/// Credit cards in a Wallet stack; the first account (the oldest) sits in front.
-struct CreditCardStack: View {
-    let cards: [AccountsOverview.CreditCard]
-    let formatter: CurrencyFormatter
-    let ownerName: String?
-    let onOpen: (UUID) -> Void
-
-    var body: some View {
-        CardStack(
-            cards,
-            label: { CardDisplay.shortName(of: $0.holder ?? Self.placeholderCard(for: $0)) },
-            onTap: { onOpen($0.id) },
-            art: { card, isFront in art(card, isFront: isFront) },
-        )
-    }
-
-    private func art(_ card: AccountsOverview.CreditCard, isFront: Bool) -> KWCardArt {
-        CardDisplay.art(
-            of: card.holder,
-            kind: .creditHolder,
-            bank: card.account.bank ?? card.account.name,
-            ownerName: ownerName,
-            badge: .amount(formatter.joined(card.balances)),
-            caption: caption(card),
-            showsFace: isFront,
-        )
-    }
-
-    /// The account's own name when the bank heads the card.
-    private func caption(_ card: AccountsOverview.CreditCard) -> String? {
-        card.account.bank == nil ? nil : card.account.name
-    }
-
-    private static func placeholderCard(for card: AccountsOverview.CreditCard) -> Card {
-        // Accounts created without a plastic still need an accessible name.
-        (try? Card(accountID: card.account.id, kind: .creditHolder)) ?? fallbackCard
-    }
-
-    private static let fallbackCard: Card = {
-        guard let card = try? Card(accountID: UUID(), kind: .creditHolder) else { preconditionFailure("valid card") }
-        return card
-    }()
 }
 
 #Preview {

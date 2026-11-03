@@ -145,6 +145,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Accounts is one wallet: debit cards, credit cards and cash share a single Wallet-style stack,
+  with chips to show all or one kind. Scrolling folds the cards into a deck at the top, and any
+  card opens with a tap. "Reconcile" and "ATM withdrawal" are gone from Accounts; cash opens its
+  movements.
 - Keepwell tracks cards, it doesn't run them: additional cards (their screen, caps, allowed
   categories, cap reminders and setting), "Holder", "Plastics" and freezing a card are gone. Cards
   already saved as additional are skipped and older backups with them still restore; their

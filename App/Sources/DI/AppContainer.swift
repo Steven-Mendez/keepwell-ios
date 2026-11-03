@@ -94,8 +94,6 @@ final class AppContainer {
     func makeAccountsViewModel() -> AccountsViewModel {
         AccountsViewModel(
             getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
-            reconcileCash: DefaultReconcileCashUseCase(transactions: store, settings: store),
-            withdrawCash: DefaultWithdrawCashUseCase(transactions: store, cards: store, settings: store),
             getPreferredName: makeGetPreferredName(),
         )
     }

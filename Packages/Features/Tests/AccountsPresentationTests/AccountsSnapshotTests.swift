@@ -37,20 +37,4 @@ struct AccountsSnapshotTests {
             height: 1500,
         )
     }
-
-    @Test
-    func cashSheets() async throws {
-        let viewModel = await AccountsFactory.loaded()
-        let cash = try #require(viewModel.overview?.cash.first)
-        assertScreenSnapshot(
-            of: ReconcileCashSheet(viewModel: viewModel, cash: cash, formatter: .init()) {},
-            height: 420,
-            named: "reconcile",
-        )
-        assertScreenSnapshot(
-            of: WithdrawCashSheet(viewModel: viewModel, cash: cash, sources: viewModel.overview?.deposits ?? [], principal: "USD") {},
-            height: 420,
-            named: "withdraw",
-        )
-    }
 }

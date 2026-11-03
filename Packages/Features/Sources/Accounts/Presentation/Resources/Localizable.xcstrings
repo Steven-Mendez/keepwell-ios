@@ -17,26 +17,6 @@
         }
       }
     },
-    "%@ the bank charged you" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ que te cobró el banco"
-          }
-        }
-      }
-    },
-    "According to the app" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Según la app"
-          }
-        }
-      }
-    },
     "Accounts" : {
       "localizations" : {
         "es" : {
@@ -53,16 +33,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Agregar cuenta o tarjeta"
-          }
-        }
-      }
-    },
-    "ATM withdrawal" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retiro de cajero"
           }
         }
       }
@@ -97,26 +67,6 @@
         }
       }
     },
-    "Cash adjustment" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajuste de efectivo"
-          }
-        }
-      }
-    },
-    "Check the amount the bank charged you." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Revisa el monto que te cobró el banco."
-          }
-        }
-      }
-    },
     "Color" : {
       "localizations" : {
         "es" : {
@@ -127,52 +77,12 @@
         }
       }
     },
-    "Credit cards" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tarjetas de crédito"
-          }
-        }
-      }
-    },
     "Edit name" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar nombre"
-          }
-        }
-      }
-    },
-    "Enter how much cash you have." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Escribe cuánto efectivo tienes."
-          }
-        }
-      }
-    },
-    "Enter the amount you withdrew." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Escribe el monto que retiraste."
-          }
-        }
-      }
-    },
-    "If there's a difference, we record it as an adjustment so the balance matches." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Si hay diferencia, la anotamos como un ajuste para que el saldo cuadre."
           }
         }
       }
@@ -207,76 +117,6 @@
         }
       }
     },
-    "Optional · if it used another rate" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opcional · si usó otra tasa"
-          }
-        }
-      }
-    },
-    "Reconcile" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuadrar"
-          }
-        }
-      }
-    },
-    "Reconcile cash" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuadrar efectivo"
-          }
-        }
-      }
-    },
-    "Save withdrawal" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar retiro"
-          }
-        }
-      }
-    },
-    "See movements" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ver movimientos"
-          }
-        }
-      }
-    },
-    "Shows its movements" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muestra sus movimientos"
-          }
-        }
-      }
-    },
-    "Tap to see details" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toca para ver detalle"
-          }
-        }
-      }
-    },
     "We couldn't save the change. Try again." : {
       "localizations" : {
         "es" : {
@@ -287,42 +127,12 @@
         }
       }
     },
-    "We couldn't save. Try again." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudimos guardar. Intenta de nuevo."
-          }
-        }
-      }
-    },
-    "What you have (%@)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lo que tienes (%@)"
-          }
-        }
-      }
-    },
     "Write a name for the account." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escribe un nombre para la cuenta."
-          }
-        }
-      }
-    },
-    "You withdrew (%@)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retiraste (%@)"
           }
         }
       }
@@ -339,16 +149,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tarjeta de débito %1$@, %2$@"
-          }
-        }
-      }
-    },
-    "Bank accounts" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuentas de banco"
           }
         }
       }
@@ -469,6 +269,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Producto y vencimiento"
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas"
+          }
+        }
+      }
+    },
+    "Debit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débito"
+          }
+        }
+      }
+    },
+    "Credit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito"
+          }
+        }
+      }
+    },
+    "%@ credit card, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de crédito %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@ cash, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ en efectivo, %2$@"
           }
         }
       }

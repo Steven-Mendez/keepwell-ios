@@ -4,6 +4,30 @@ import Domain
 import Foundation
 import Observation
 
+/// One card in the wallet: a credit card, a bank account's debit card or cash, which the person
+/// also carries and reads as one more card.
+public enum WalletCard: Identifiable, Hashable, Sendable {
+    case credit(AccountsOverview.CreditCard)
+    case debit(AccountsOverview.Deposit)
+    case cash(AccountsOverview.Cash)
+
+    public var id: UUID {
+        switch self {
+        case let .credit(card): card.id
+        case let .debit(deposit): deposit.id
+        case let .cash(cash): cash.id
+        }
+    }
+
+    var kind: AccountsViewModel.WalletFilter {
+        switch self {
+        case .credit: .credit
+        case .debit: .debit
+        case .cash: .cash
+        }
+    }
+}
+
 @MainActor
 @Observable
 public final class AccountsViewModel {
@@ -13,27 +37,25 @@ public final class AccountsViewModel {
         case failed
     }
 
+    /// The chips over the wallet; `all` shows every card.
+    public enum WalletFilter: Hashable, Sendable, CaseIterable {
+        case all
+        case debit
+        case credit
+        case cash
+    }
+
     public private(set) var state = State.loading
-    /// Shown inside the cash sheets when saving fails.
-    public private(set) var actionError: String?
     /// The person's own name, printed on their main cards.
     public private(set) var ownerName: String?
+    public var filter = WalletFilter.all
 
     private let getOverview: any GetAccountsOverviewUseCase
-    private let reconcileCash: any ReconcileCashUseCase
-    private let withdrawCash: any WithdrawCashUseCase
     private let getPreferredName: any GetPreferredNameUseCase
 
-    public init(
-        getOverview: any GetAccountsOverviewUseCase,
-        reconcileCash: any ReconcileCashUseCase,
-        withdrawCash: any WithdrawCashUseCase,
-        getPreferredName: any GetPreferredNameUseCase,
-    ) {
+    public init(getOverview: any GetAccountsOverviewUseCase, getPreferredName: any GetPreferredNameUseCase) {
         self.getPreferredName = getPreferredName
         self.getOverview = getOverview
-        self.reconcileCash = reconcileCash
-        self.withdrawCash = withdrawCash
     }
 
     public var overview: AccountsOverview? {
@@ -53,55 +75,30 @@ public final class AccountsViewModel {
         }
     }
 
-    /// Returns whether the sheet can close.
-    public func reconcile(_ cash: AccountsOverview.Cash, countedText: String) async -> Bool {
-        guard let counted = AmountInput.decimal(from: countedText) else {
-            actionError = String(localized: "Enter how much cash you have.", bundle: #bundle)
-            return false
-        }
-        let description = String(localized: "Cash adjustment", bundle: #bundle)
-        return await perform { () async throws(DomainError) in
-            try await reconcileCash.execute(cash: cash, counted: counted, description: description)
-        }
+    /// Every card back to front: debit, then credit, then cash in front, where the hand reaches it.
+    var allCards: [WalletCard] {
+        guard let overview else { return [] }
+        return overview.deposits.map(WalletCard.debit) + overview.creditCards.map(WalletCard.credit) + overview.cash.map(WalletCard.cash)
     }
 
-    /// `debitedText` is optional: empty means the bank used the app's rate.
-    public func withdraw(into cash: AccountsOverview.Cash, from sourceID: UUID, amountText: String, debitedText: String) async -> Bool {
-        guard let amount = AmountInput.decimal(from: amountText), amount > 0 else {
-            actionError = String(localized: "Enter the amount you withdrew.", bundle: #bundle)
-            return false
-        }
-        let trimmed = debitedText.trimmingCharacters(in: .whitespaces)
-        let debited = trimmed.isEmpty ? nil : AmountInput.decimal(from: trimmed)
-        if !trimmed.isEmpty, debited == nil {
-            actionError = String(localized: "Check the amount the bank charged you.", bundle: #bundle)
-            return false
-        }
-        let withdrawal = CashWithdrawal(
-            sourceAccountID: sourceID,
-            cashAccountID: cash.account.id,
-            amount: Money(amount, cash.balance.currency),
-            debitedPrincipal: debited,
-            description: String(localized: "ATM withdrawal", bundle: #bundle),
-        )
-        return await perform { () async throws(DomainError) in
-            try await withdrawCash.execute(withdrawal)
-        }
+    /// The cards the chosen chip shows.
+    var cards: [WalletCard] {
+        filter == .all ? allCards : allCards.filter { $0.kind == filter }
     }
 
-    public func clearActionError() {
-        actionError = nil
+    /// Only the kinds the person has, so there's never a chip that empties the wallet. No chips at
+    /// all with a single kind.
+    var filters: [WalletFilter] {
+        let kinds = WalletFilter.allCases.filter { kind in allCards.contains { $0.kind == kind } }
+        return kinds.count > 1 ? [.all] + kinds : []
     }
 
-    private func perform(_ action: () async throws(DomainError) -> some Any) async -> Bool {
-        do {
-            _ = try await action()
-            actionError = nil
-            await load()
-            return true
-        } catch {
-            actionError = String(localized: "We couldn't save. Try again.", bundle: #bundle)
-            return false
+    func title(of filter: WalletFilter) -> String {
+        switch filter {
+        case .all: String(localized: "All", bundle: #bundle)
+        case .debit: String(localized: "Debit", bundle: #bundle)
+        case .credit: String(localized: "Credit", bundle: #bundle)
+        case .cash: String(localized: "Cash", bundle: #bundle)
         }
     }
 }

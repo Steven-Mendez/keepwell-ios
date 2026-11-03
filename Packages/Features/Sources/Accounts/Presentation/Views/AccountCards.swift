@@ -5,51 +5,124 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// Cards fanned like Wallet: each card shows its top 76pt above the next, and the first item sits
-/// in front, fully visible. Credit cards only: a bank account is a single card and needs no stack.
-struct CardStack<Item: Identifiable, Art: View>: View {
-    private let items: [Item]
-    private let art: (Item, Bool) -> Art
-    private let label: (Item) -> String
-    private let onTap: ((Item) -> Void)?
+/// Every card in one Wallet-style stack: each shows its top strip above the next and the last sits
+/// in front, whole. Scrolling past the top piles the cards up like a deck being shuffled, and any
+/// strip opens its card.
+struct WalletStack: View {
+    let cards: [WalletCard]
+    let formatter: CurrencyFormatter
+    let ownerName: String?
+    let onOpen: (WalletCard) -> Void
     @State private var width: CGFloat = 358
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// How much of each card shows above the next, as in Wallet.
     private let reveal: CGFloat = 76
-
-    init(
-        _ items: [Item],
-        label: @escaping (Item) -> String,
-        onTap: ((Item) -> Void)? = nil,
-        @ViewBuilder art: @escaping (_ item: Item, _ isFront: Bool) -> Art,
-    ) {
-        // Drawn back to front, so the front item goes last.
-        self.items = items.reversed()
-        self.label = label
-        self.onTap = onTap
-        self.art = art
-    }
 
     var body: some View {
         let cardHeight = width / KWComponentMetrics.cardArtRatio
-        ZStack(alignment: .top) {
-            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                let isFront = index == items.count - 1
-                Group {
-                    if let onTap {
-                        Button { onTap(item) } label: { art(item, isFront) }
-                            .buttonStyle(.plain)
-                    } else {
-                        art(item, isFront)
+        VStack(spacing: reveal - cardHeight) {
+            ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
+                Button { onOpen(card) } label: { art(card) }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(accessibilityLabel(card))
+                    // Only the top strip of a card behind another is visible, so it's where VoiceOver taps.
+                    .accessibilityActivationPoint(UnitPoint(x: 0.5, y: 0.1))
+                    .zIndex(Double(index))
+                    .shadow(color: index > 0 ? .black.opacity(0.55) : .clear, radius: 12, y: -8)
+                    .visualEffect { [reduceMotion] content, proxy in
+                        Self.shuffle(
+                            content,
+                            proxy: proxy,
+                            cardHeight: cardHeight,
+                            tilt: index.isMultiple(of: 2) ? 2.5 : -2.5,
+                            reduceMotion: reduceMotion,
+                        )
                     }
-                }
-                .shadow(color: index > 0 ? .black.opacity(0.55) : .clear, radius: 12, y: -8)
-                .offset(y: CGFloat(index) * reveal)
-                .accessibilityLabel(label(item))
+                    .transition(.asymmetric(
+                        insertion: .offset(y: 120).combined(with: .opacity),
+                        removal: .opacity.combined(with: .scale(scale: 0.94, anchor: .top)),
+                    ))
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: cardHeight + reveal * CGFloat(max(items.count - 1, 0)), alignment: .top)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+    }
+
+    /// A card that scrolls past the top stays pinned there, shrinking and tipping back as the next
+    /// one slides over it, so the stack folds into a deck instead of leaving the screen.
+    private nonisolated static func shuffle(
+        _ content: EmptyVisualEffect,
+        proxy: GeometryProxy,
+        cardHeight: CGFloat,
+        tilt: Double,
+        reduceMotion: Bool,
+    ) -> some VisualEffect {
+        let minY: CGFloat = proxy.frame(in: .scrollView(axis: .vertical)).minY
+        let overshoot: CGFloat = reduceMotion ? 0 : max(0, -minY)
+        let progress: CGFloat = min(overshoot / cardHeight, 1)
+        let pinned: CGFloat = overshoot * 0.92
+        let scale: CGFloat = 1 - progress * 0.12
+        let tipBack = Angle.degrees(Double(progress) * 24)
+        let twist = Angle.degrees(tilt * Double(progress))
+        let opacity = Double(1 - progress * 0.55)
+        return content
+            .offset(y: pinned)
+            .scaleEffect(scale, anchor: .top)
+            .rotation3DEffect(tipBack, axis: (x: 1, y: 0, z: 0), anchor: .top, perspective: 0.5)
+            .rotationEffect(twist, anchor: .top)
+            .opacity(opacity)
+    }
+
+    private func art(_ card: WalletCard) -> some View {
+        switch card {
+        case let .credit(credit):
+            CardDisplay.art(
+                of: credit.holder,
+                kind: .creditHolder,
+                bank: credit.account.bank ?? credit.account.name,
+                ownerName: ownerName,
+                badge: .amount(formatter.joined(credit.balances)),
+                caption: credit.account.bank == nil ? nil : credit.account.name,
+            )
+        case let .debit(deposit):
+            CardDisplay.art(
+                of: deposit.debitCard,
+                kind: .debit,
+                bank: deposit.account.bank ?? deposit.account.name,
+                ownerName: ownerName,
+                badge: .amount(formatter.string(deposit.balance)),
+                // The account's own name when the bank already heads the card, so it isn't lost.
+                caption: deposit.account.bank == nil ? nil : deposit.account.name,
+            )
+        case let .cash(cash):
+            KWCardArt(
+                palette: .lima,
+                bank: cash.account.name,
+                badge: .amount(formatter.string(cash.balance)),
+                showsChip: false,
+                showsContactless: false,
+                caption: cash.principalEquivalent.map { "≈ \(formatter.string($0))" },
+                kindLabel: String(localized: "Cash", bundle: #bundle),
+            )
+        }
+    }
+
+    private func accessibilityLabel(_ card: WalletCard) -> String {
+        switch card {
+        case let .credit(credit):
+            let name = credit.holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: credit.account)
+            return String(localized: "\(name) credit card, \(formatter.joined(credit.balances))", bundle: #bundle)
+        case let .debit(deposit):
+            let name = CardDisplay.name(of: deposit.account)
+            let balance = formatter.string(deposit.balance)
+            guard let digits = deposit.debitCard?.lastFour else {
+                return String(localized: "\(name) debit card, \(balance)", bundle: #bundle)
+            }
+            return String(localized: "\(name) debit card •••• \(digits), \(balance)", bundle: #bundle)
+        case let .cash(cash):
+            return String(localized: "\(cash.account.name) cash, \(formatter.string(cash.balance))", bundle: #bundle)
+        }
     }
 }
 
@@ -62,71 +135,6 @@ struct DepositCard: View {
     let onOpen: () -> Void
 
     var body: some View {
-        Button(action: onOpen) {
-            CardDisplay.art(
-                of: deposit.debitCard,
-                kind: .debit,
-                bank: deposit.account.bank ?? deposit.account.name,
-                ownerName: ownerName,
-                badge: .amount(formatter.string(deposit.balance)),
-                // The account's own name when the bank already heads the card, so it isn't lost.
-                caption: deposit.account.bank == nil ? nil : deposit.account.name,
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(accessibilityLabel)
-    }
-
-    private var accessibilityLabel: String {
-        let name = CardDisplay.name(of: deposit.account)
-        let balance = formatter.string(deposit.balance)
-        guard let digits = deposit.debitCard?.lastFour else {
-            return String(localized: "\(name) debit card, \(balance)", bundle: #bundle)
-        }
-        return String(localized: "\(name) debit card •••• \(digits), \(balance)", bundle: #bundle)
-    }
-}
-
-/// Cash as a banknote, with the two things a person does with it. Tapping the note opens its
-/// movements, as tapping a card opens the card.
-struct CashNote: View {
-    let cash: AccountsOverview.Cash
-    let formatter: CurrencyFormatter
-    let onReconcile: () -> Void
-    let onWithdraw: () -> Void
-    let onOpen: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: KWSpacing.sm) {
-            Button(action: onOpen) { note }
-                .buttonStyle(.plain)
-                .accessibilityHint(Text("Shows its movements", bundle: #bundle))
-            HStack(spacing: KWSpacing.xs) {
-                Button(action: onReconcile) { Text("Reconcile", bundle: #bundle) }
-                    .buttonStyle(.kw(.primary, size: .medium))
-                Button(action: onWithdraw) { Text("ATM withdrawal", bundle: #bundle) }
-                    .buttonStyle(.kw(.secondary, size: .medium))
-            }
-            Button(action: onOpen) {
-                HStack(spacing: KWSpacing.xs) {
-                    KWIconView(.list, size: 20)
-                    Text("See movements", bundle: #bundle)
-                        .font(.kw(14, weight: 600, relativeTo: .subheadline))
-                }
-                .foregroundStyle(KWColor.Brand.link)
-                .frame(minHeight: KWLayout.minTouch)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private var note: some View {
-        KWBanknote(
-            title: cash.account.name,
-            amount: formatter.string(cash.balance, fractionDigits: 0),
-            footnote: cash.principalEquivalent.map { "≈ \(formatter.string($0))" },
-            currency: cash.balance.currency,
-        )
+        WalletStack(cards: [.debit(deposit)], formatter: formatter, ownerName: ownerName) { _ in onOpen() }
     }
 }
