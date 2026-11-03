@@ -161,12 +161,32 @@
         }
       }
     },
+    "Categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        }
+      }
+    },
     "Change passcode" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar código"
+          }
+        }
+      }
+    },
+    "Create categories for what you track, with your own name, icon and color." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea categorías para lo que quieras seguir, con tu propio nombre, ícono y color."
           }
         }
       }
@@ -251,6 +271,16 @@
         }
       }
     },
+    "Expenses" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastos"
+          }
+        }
+      }
+    },
     "Export CSV" : {
       "localizations" : {
         "es" : {
@@ -317,6 +347,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En tu propio iCloud, cifrado. Nosotros no vemos nada."
+          }
+        }
+      }
+    },
+    "Included" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incluidas"
+          }
+        }
+      }
+    },
+    "Income" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresos"
           }
         }
       }
@@ -397,6 +447,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual · por defecto 1"
+          }
+        }
+      }
+    },
+    "New category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva categoría"
           }
         }
       }
@@ -721,6 +781,16 @@
         }
       }
     },
+    "We couldn't load your categories." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus categorías."
+          }
+        }
+      }
+    },
     "We couldn't read that file." : {
       "localizations" : {
         "es" : {
@@ -797,6 +867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nombre"
+          }
+        }
+      }
+    },
+    "Yours" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuyas"
           }
         }
       }

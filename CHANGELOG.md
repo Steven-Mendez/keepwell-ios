@@ -23,6 +23,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home: an eye button next to the balance hides every amount on the screen; the choice stays on
   this device.
 - Home: the three latest movements, with "See all" opening Transactions.
+- New movement flow in the style of a bank's "send to my own account": a "What are you recording?"
+  sheet (expense, income, between my accounts, ATM withdrawal, card payment), a large amount with
+  the app's own keypad, what the source has available and a note pill, a review card with what is
+  left in each account and a pencil to change the amount, "Slide to save" to confirm (VoiceOver:
+  double tap), and a ticket-style receipt with a reference and "Share receipt".
+- Transfers, withdrawals and card payments start by choosing the accounts: the source as a card
+  and the destination from the accounts that can receive it. When the destination keeps another
+  currency, the amount, review and receipt say what arrives and at which rate.
+- Categories: every category has its own icon, and there are new ones for pets, gifts, insurance,
+  taxes, savings and donations, and for freelance, investments, rental and gifts received income.
+- Create your own categories with a name, icon and color from "New category" when logging a
+  movement (it starts from what you searched for), and rename, recolor or delete them in Settings ›
+  Expense or Income categories. Deleting one moves its movements to "Other".
 - Settings › Language shows the app's language and opens the iPhone's Settings to pick another
   one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.
@@ -95,6 +108,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   in its first field. In onboarding's account form, amounts are tidied to "10,000.00" when you
   leave them, a half-typed ending or an amount that is not a number is explained under the form,
   and "Remove account" moved out of the footer, away from "Save".
+- Accounts shows every bank account through its debit cards, stacked like the credit cards, and
+  cash as a banknote. The "Transfers" row is gone from the accounts list; a bank account without a
+  card shows an empty card slot to add one.
+- "How did you pay?" explains paying from a bank account without a card: the bare "Transfer" row is
+  now "Bank transfer · Charged directly to the account" with a transfer icon, after the account's
+  cards. Accounts beyond the two most used are grouped as bank accounts, cash and credit cards
+  instead of "Other"; credit cards show their bank instead of "Credit · holder" and cash shows its
+  name and what's available.
+- Movements name the card or account that paid them ("Visa •••• 3141", "LAFISE · Bank transfer")
+  instead of "Holder" or "Transfers LAFISE".
 - Builds signed without iCloud (free developer accounts) open with on-device storage instead of
   closing at launch.
 - Siri's prompts and messages appear in Spanish on Spanish iPhones.

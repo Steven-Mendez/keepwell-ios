@@ -173,6 +173,15 @@ final class AppContainer {
         PasscodeSetupViewModel(setPasscode: DefaultSetPasscodeUseCase(passcodes: passcodes))
     }
 
+    func makeCategoriesViewModel(kind: TransactionKind) -> CategoriesViewModel {
+        CategoriesViewModel(
+            kind: kind,
+            getCategories: DefaultGetCategoriesUseCase(categories: store),
+            save: DefaultSaveCategoryUseCase(categories: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+        )
+    }
+
     let authenticator: any DeviceAuthenticator = LocalDeviceAuthenticator()
     let reminders = ReminderScheduler()
     let widgetSnapshots = WidgetSnapshotStore()
@@ -232,14 +241,21 @@ final class AppContainer {
 
     // MARK: - Create transaction
 
-    func makeCreateTransactionViewModel(kind: TransactionKind = .expense) -> CreateTransactionViewModel {
-        let context = DefaultGetTransactionContextUseCase(
-            settings: store, categories: store, accounts: store, cards: store, transactions: store,
-        )
+    func makeCreateTransactionViewModel(type: MovementType = .expense) -> CreateTransactionViewModel {
+        let context = makeGetTransactionContext()
         return CreateTransactionViewModel(
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
-            kind: kind,
+            saveCategory: DefaultSaveCategoryUseCase(categories: store),
+            type: type,
         )
+    }
+
+    func makeNewMovementMenuViewModel() -> NewMovementMenuViewModel {
+        NewMovementMenuViewModel(getContext: makeGetTransactionContext())
+    }
+
+    private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
+        DefaultGetTransactionContextUseCase(settings: store, categories: store, accounts: store, cards: store, transactions: store)
     }
 }

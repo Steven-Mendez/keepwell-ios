@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import SharedPresentation
 import SwiftUI
 
 /// Monthly summary: six months of spending (or income) as bars with the average, what came in
@@ -227,10 +228,9 @@ public struct SummaryView: View {
     }
 
     private func categoryRow(_ row: SummaryViewModel.CategoryRow) -> some View {
-        let color = KWColor.category(id: row.colorID)
+        let color = CategoryDisplay.color(for: row.category)
         return HStack(spacing: KWSpacing.sm) {
-            Text(String(row.name.prefix(1)).uppercased())
-                .font(.kw(15, weight: 800))
+            CategorySymbol(row.category, size: 20)
                 .foregroundStyle(color)
                 .frame(width: 38, height: 38)
                 .background(color.opacity(0.15), in: Circle())

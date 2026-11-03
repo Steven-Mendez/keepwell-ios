@@ -136,12 +136,8 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
 
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
         let note = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cardID: UUID? = if case let .card(id) = source {
-            id
-        } else {
-            nil
-        }
         return Transaction(
+            id: draft.id,
             date: draft.date,
             status: draft.isPlanned ? .planned : .confirmed,
             // Safety net only: the view model fills a localized description before saving.
@@ -151,7 +147,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             amount: draft.amount,
             currency: draft.currency,
             accountID: accountID,
-            cardID: cardID,
+            cardID: source.cardID,
             destinationAccountID: draft.kind == .transfer ? draft.destinationAccountID : nil,
             actualDebitedPrincipal: draft.currency == currencies.principal ? nil : draft.actualDebitedPrincipal,
             // The rate in force now travels with the movement, so later rate edits don't rewrite it.

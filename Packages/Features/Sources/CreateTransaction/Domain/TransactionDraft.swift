@@ -7,8 +7,19 @@ public enum PaymentSource: Hashable, Sendable {
     case account(UUID)
 }
 
+extension PaymentSource {
+    var cardID: UUID? {
+        if case let .card(id) = self {
+            return id
+        }
+        return nil
+    }
+}
+
 /// A movement as the five steps build it.
 public struct TransactionDraft: Sendable {
+    /// Chosen when the flow starts, so the receipt can show its reference before anything reloads.
+    public var id: UUID
     public var kind: TransactionKind
     public var amount: Decimal
     public var currency: String
@@ -25,6 +36,7 @@ public struct TransactionDraft: Sendable {
     public var note: String
 
     public init(
+        id: UUID = UUID(),
         kind: TransactionKind = .expense,
         amount: Decimal = 0,
         currency: String,
@@ -38,6 +50,7 @@ public struct TransactionDraft: Sendable {
         actualDebitedPrincipal: Decimal? = nil,
         note: String = "",
     ) {
+        self.id = id
         self.kind = kind
         self.amount = amount
         self.currency = currency
@@ -101,6 +114,21 @@ public struct TransactionContext: Sendable {
         case let .card(id): card(id)?.accountID
         case let .account(id): id
         }
+    }
+
+    /// The same context with a category the person just created, so the flow can pick it without
+    /// reloading and losing the currency and payment method already chosen.
+    public func adding(_ category: TransactionCategory) -> Self {
+        Self(
+            currencies: currencies,
+            categories: categories.filter { $0.id != category.id } + [category],
+            accounts: accounts,
+            cards: cards,
+            balances: balances,
+            lastUsed: lastUsed,
+            categoryUsage: categoryUsage,
+            additionalUsage: additionalUsage,
+        )
     }
 
     /// The most recently used source, the flow's default.

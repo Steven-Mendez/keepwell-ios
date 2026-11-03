@@ -115,15 +115,25 @@ extension SwiftDataStore: TransactionRepository {
 extension SwiftDataStore: CategoryRepository {
     public func fetchCategories() throws(DomainError) -> [TransactionCategory] {
         try perform { context in
-            var records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
-            if records.isEmpty {
-                for (index, category) in TransactionCategory.defaults.enumerated() {
-                    CategoryRecord(id: category.id).inserted(into: context).update(from: category, sortIndex: index)
-                }
-                try context.save()
-                records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
+            let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
+            // Two devices can each write the same default before syncing; the first row wins.
+            var byID: [String: CategoryRecord] = [:]
+            var unique: [CategoryRecord] = []
+            for record in records where byID[record.id] == nil {
+                byID[record.id] = record
+                unique.append(record)
             }
-            return try records.map { try $0.toDomain() }
+            // A first launch, and an update that ships new defaults, both get the missing ones.
+            let missing = TransactionCategory.defaults.enumerated().filter { byID[$0.element.id] == nil }
+            for (index, category) in missing {
+                let record = CategoryRecord(id: category.id).inserted(into: context)
+                record.update(from: category, sortIndex: index)
+                unique.append(record)
+            }
+            if !missing.isEmpty {
+                try context.save()
+            }
+            return try TransactionCategory.ordered(unique.map { try $0.toDomain() })
         }
     }
 
@@ -131,9 +141,18 @@ extension SwiftDataStore: CategoryRepository {
         try perform { context in
             let id = category.id
             let existing = try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id })).first
-            let count = try context.fetchCount(FetchDescriptor<CategoryRecord>())
+            let last = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])).first
             let record = existing ?? CategoryRecord(id: id).inserted(into: context)
-            record.update(from: category, sortIndex: existing?.sortIndex ?? count)
+            record.update(from: category, sortIndex: existing?.sortIndex ?? (last.map { $0.sortIndex + 1 } ?? 0))
+            try context.save()
+        }
+    }
+
+    public func deleteCategory(id: String) throws(DomainError) {
+        try perform { context in
+            for record in try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id })) {
+                context.delete(record)
+            }
             try context.save()
         }
     }

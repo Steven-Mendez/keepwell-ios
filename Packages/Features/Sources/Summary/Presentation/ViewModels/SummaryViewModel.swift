@@ -35,7 +35,8 @@ public final class SummaryViewModel {
         public let amount: String
         public let percent: String
         public let share: Double
-        public let colorID: String
+        /// `nil` for an id no category has any more (an old import); the row then shows the fallback.
+        public let category: TransactionCategory?
     }
 
     public private(set) var state = State.loading
@@ -181,7 +182,7 @@ public final class SummaryViewModel {
                 amount: money(total.amount),
                 percent: "\(formatter.number(total.share * 100, fractionDigits: 0))%",
                 share: total.share.doubleValue,
-                colorID: total.categoryID,
+                category: category,
             )
         }
     }

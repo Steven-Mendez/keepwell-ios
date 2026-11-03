@@ -11,6 +11,7 @@ public struct SettingsView: View {
     private let onBack: () -> Void
     private let onErased: () -> Void
     private let onSetUpPasscode: () -> Void
+    private let onOpenCategories: (TransactionKind) -> Void
     @State private var isConfirmingErase = false
     @FocusState private var isEditingRate: Bool
     @Environment(\.openURL) private var openURL
@@ -21,11 +22,13 @@ public struct SettingsView: View {
         onBack: @escaping () -> Void,
         onErased: @escaping () -> Void,
         onSetUpPasscode: @escaping () -> Void = {},
+        onOpenCategories: @escaping (TransactionKind) -> Void = { _ in },
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onErased = onErased
         self.onSetUpPasscode = onSetUpPasscode
+        self.onOpenCategories = onOpenCategories
     }
 
     public var body: some View {
@@ -199,18 +202,12 @@ public struct SettingsView: View {
     private func organization(_ overview: SettingsOverview) -> some View {
         SettingsSection(title: String(localized: "Organization", bundle: #bundle)) {
             KWGroupedCard {
-                KWValueRow(
+                categoriesRow(
                     String(localized: "Expense categories", bundle: #bundle),
-                    value: "\(overview.expenseCategoryCount)",
-                    style: .navigation,
-                    verticalPadding: 14,
+                    count: overview.expenseCategoryCount,
+                    kind: .expense,
                 )
-                KWValueRow(
-                    String(localized: "Income categories", bundle: #bundle),
-                    value: "\(overview.incomeCategoryCount)",
-                    style: .navigation,
-                    verticalPadding: 14,
-                )
+                categoriesRow(String(localized: "Income categories", bundle: #bundle), count: overview.incomeCategoryCount, kind: .income)
                 KWValueRow(
                     String(localized: "Payment methods", bundle: #bundle),
                     value: "\(overview.paymentMethodCount)",
@@ -219,6 +216,14 @@ public struct SettingsView: View {
                 )
             }
         }
+    }
+
+    private func categoriesRow(_ label: String, count: Int, kind: TransactionKind) -> some View {
+        Button { onOpenCategories(kind) } label: {
+            KWValueRow(label, value: "\(count) ›", style: .navigation, verticalPadding: 14)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var erase: some View {

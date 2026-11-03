@@ -4,10 +4,10 @@ import Foundation
 /// Values the flow fills in for the person (a transfer's destination when paying a card, a widget's
 /// category, the suggested description) and which payment methods it offers.
 extension CreateTransactionViewModel {
-    /// Starts a transfer already pointed at an account ("Pay" on a credit card): after the amount
-    /// it goes straight to the method, and going back still offers every destination.
+    /// Starts a card payment already pointed at the card ("Pay" on a credit card): the accounts
+    /// step opens with it chosen, and still offers the other cards.
     public func presetTransfer(to accountID: UUID) {
-        setKind(.transfer)
+        type = .cardPayment
         presetDestinationID = accountID
     }
 

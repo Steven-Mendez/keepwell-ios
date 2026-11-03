@@ -1,6 +1,7 @@
 import AccountsPresentation
 import AddCardPresentation
 import Core
+import CreateTransactionDomain
 import CreateTransactionPresentation
 import CreditCardPresentation
 import DesignSystem
@@ -34,6 +35,9 @@ struct RootView: View {
     @State private var screens: MainScreens?
     @State private var addCard: PresentedFlow<AddCardViewModel>?
     @State private var newMovement: PresentedFlow<CreateTransactionViewModel>?
+    @State private var movementMenu: PresentedFlow<NewMovementMenuViewModel>?
+    /// Chosen in the menu sheet; the flow opens once the sheet has finished closing.
+    @State private var chosenMovement: MovementType?
     @State private var lock = LockState()
     /// A CSV picked during onboarding; it's imported once onboarding has saved the accounts.
     @State private var pendingImport: String?
@@ -138,6 +142,19 @@ struct RootView: View {
         .fullScreenCover(item: $newMovement, onDismiss: reloadScreens) { flow in
             CreateTransactionFlowView(viewModel: flow.viewModel) { newMovement = nil }
         }
+        .sheet(item: $movementMenu, onDismiss: openChosenMovement) { menu in
+            NewMovementSheet(
+                viewModel: menu.viewModel,
+                onSelect: { type in
+                    chosenMovement = type
+                    movementMenu = nil
+                },
+                onClose: { movementMenu = nil },
+            )
+            .presentationDetents([.height(480), .large])
+            .presentationDragIndicator(.visible)
+            .presentationBackground(KWColor.Surface.bg)
+        }
     }
 
     @ViewBuilder
@@ -146,7 +163,7 @@ struct RootView: View {
         case .home:
             HomeView(viewModel: screens.home, actions: homeActions(screens))
         case .transactions:
-            TransactionsView(viewModel: screens.transactions) { presentNewMovement() }
+            TransactionsView(viewModel: screens.transactions) { presentMovementMenu() }
         case .accounts:
             AccountsView(
                 viewModel: screens.accounts,
@@ -155,7 +172,7 @@ struct RootView: View {
                 onLinkCard: { presentAddCard(linkingTo: $0) },
             )
         case .summary:
-            SummaryView(viewModel: screens.summary) { presentNewMovement() }
+            SummaryView(viewModel: screens.summary) { presentMovementMenu() }
         }
     }
 
@@ -169,11 +186,11 @@ struct RootView: View {
             summary: { tab = .summary },
             settings: { router.push(.settings) },
             accounts: { tab = .accounts },
-            newMovement: { presentNewMovement($0) },
+            newMovement: { presentNewMovement(MovementType($0)) },
             payCard: {
                 // With a single card there's nothing to choose; otherwise the flow asks which one.
                 let cards = screens.home.overview?.accounts.filter { $0.kind == .credit } ?? []
-                presentNewMovement(.transfer, payingCard: cards.count == 1 ? cards.first?.id : nil)
+                presentNewMovement(.cardPayment, payingCard: cards.count == 1 ? cards.first?.id : nil)
             },
             allPlanned: {
                 screens.transactions.query = ""
@@ -193,65 +210,26 @@ struct RootView: View {
     private func destination(_ route: AppRoute) -> some View {
         switch route {
         case .settings:
-            SettingsRoute(container: container, onBack: settingsClosed, onErased: returnToOnboarding)
+            SettingsRoute(
+                container: container,
+                onBack: settingsClosed,
+                onErased: returnToOnboarding,
+                onOpenCategories: { router.push(.categories(showsIncome: $0 == .income)) },
+            )
+        case let .categories(showsIncome):
+            CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: router.pop)
         case let .creditCard(accountID, addsAdditional):
             CreditCardRoute(
                 container: container,
                 accountID: accountID,
                 addsAdditional: addsAdditional,
                 onBack: router.pop,
-                onPay: { presentNewMovement(.transfer, payingCard: accountID) },
+                onPay: { presentNewMovement(.cardPayment, payingCard: accountID) },
                 onOpenAdditional: { router.push(.additionalCard(accountID: accountID, cardID: $0)) },
             )
         case let .additionalCard(accountID, cardID):
             AdditionalCardRoute(container: container, accountID: accountID, cardID: cardID, onBack: router.pop)
         }
-    }
-
-    // MARK: - Flows
-
-    private func presentNewMovement(
-        _ kind: TransactionKind = .expense,
-        payingCard cardAccountID: UUID? = nil,
-        category categoryID: String? = nil,
-    ) {
-        let viewModel = container.makeCreateTransactionViewModel(kind: kind)
-        if let cardAccountID {
-            viewModel.presetTransfer(to: cardAccountID)
-        }
-        if let categoryID {
-            viewModel.presetCategory(categoryID)
-        }
-        newMovement = PresentedFlow(viewModel: viewModel)
-    }
-
-    private func presentAddCard(linkingTo accountID: UUID? = nil) {
-        let viewModel = container.makeAddCardViewModel()
-        if let accountID {
-            viewModel.choose(.debit, linkingTo: accountID)
-        }
-        addCard = PresentedFlow(viewModel: viewModel)
-    }
-
-    private func exitAddCard(_ exit: AddCardViewModel.Exit) {
-        addCard = nil
-        switch exit {
-        case .close:
-            break
-        case let .viewCreditCard(accountID):
-            router.push(.creditCard(accountID: accountID))
-        case let .addAdditional(accountID):
-            router.push(.creditCard(accountID: accountID, addsAdditional: true))
-        }
-    }
-
-    private func reloadScreens() {
-        Task { await screens?.reload() }
-    }
-
-    private func settingsClosed() {
-        router.pop()
-        Task { await refreshLockSettings() }
     }
 }
 
@@ -394,5 +372,64 @@ extension RootView {
         default:
             break
         }
+    }
+}
+
+extension RootView {
+    // MARK: - Flows
+
+    /// "What are you recording?", for entries that don't already say which kind.
+    private func presentMovementMenu() {
+        movementMenu = PresentedFlow(viewModel: container.makeNewMovementMenuViewModel())
+    }
+
+    private func openChosenMovement() {
+        guard let type = chosenMovement else { return }
+        chosenMovement = nil
+        presentNewMovement(type)
+    }
+
+    private func presentNewMovement(
+        _ type: MovementType = .expense,
+        payingCard cardAccountID: UUID? = nil,
+        category categoryID: String? = nil,
+    ) {
+        let viewModel = container.makeCreateTransactionViewModel(type: type)
+        if let cardAccountID {
+            viewModel.presetTransfer(to: cardAccountID)
+        }
+        if let categoryID {
+            viewModel.presetCategory(categoryID)
+        }
+        newMovement = PresentedFlow(viewModel: viewModel)
+    }
+
+    private func presentAddCard(linkingTo accountID: UUID? = nil) {
+        let viewModel = container.makeAddCardViewModel()
+        if let accountID {
+            viewModel.choose(.debit, linkingTo: accountID)
+        }
+        addCard = PresentedFlow(viewModel: viewModel)
+    }
+
+    private func exitAddCard(_ exit: AddCardViewModel.Exit) {
+        addCard = nil
+        switch exit {
+        case .close:
+            break
+        case let .viewCreditCard(accountID):
+            router.push(.creditCard(accountID: accountID))
+        case let .addAdditional(accountID):
+            router.push(.creditCard(accountID: accountID, addsAdditional: true))
+        }
+    }
+
+    private func reloadScreens() {
+        Task { await screens?.reload() }
+    }
+
+    private func settingsClosed() {
+        router.pop()
+        Task { await refreshLockSettings() }
     }
 }

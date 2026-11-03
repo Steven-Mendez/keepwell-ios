@@ -81,6 +81,16 @@
         }
       }
     },
+    "Double tap to confirm." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para confirmar."
+          }
+        }
+      }
+    },
     "Gold" : {
       "localizations" : {
         "es" : {

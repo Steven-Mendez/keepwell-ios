@@ -33,9 +33,23 @@ struct AccountsOverviewTests {
     }
 
     @Test
-    func depositListsDebitBeforeTransfer() async throws {
+    func depositShowsItsDebitCardsWithoutTheTransferChannel() async throws {
         let deposit = try #require(try await overview().deposits.first { $0.account.id == SampleData.IDs.savings })
-        #expect(deposit.methods.map(\.kind) == [.debit, .transfer])
+        #expect(deposit.debitCards.map(\.kind) == [.debit])
+        #expect(deposit.debitCards.allSatisfy { $0.accountID == SampleData.IDs.savings })
+    }
+
+    @Test
+    func depositWithOnlyATransferChannelHasNoCards() throws {
+        let account = Account(name: "Savings", bank: "Bank", kind: .deposit, openingBalances: [Money(10, "USD")], openingDate: .now)
+        let result = try DefaultGetAccountsOverviewUseCase.overview(
+            accounts: [account],
+            cards: [Card(accountID: account.id, kind: .transfer)],
+            transactions: [],
+            currencies: sample.settings.currencies,
+            calendar: .current,
+        )
+        #expect(result.deposits.first?.debitCards.isEmpty == true)
     }
 
     @Test

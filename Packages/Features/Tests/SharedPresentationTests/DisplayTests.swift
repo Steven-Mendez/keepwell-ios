@@ -1,7 +1,9 @@
 import Core
+import DesignSystem
 import Domain
 import Foundation
 import Testing
+import UIKit
 @testable import SharedPresentation
 
 @Suite("Display mappings")
@@ -13,11 +15,21 @@ struct DisplayTests {
         let transfer = try Card(accountID: account.id, kind: .transfer)
         #expect(CardDisplay.name(of: account) == "Bank One Savings")
         #expect(CardDisplay.methodTitle(debit, account: account) == "Debit •••• 1234")
-        #expect(CardDisplay.methodTitle(transfer, account: account) == "Transfers Bank One")
+        #expect(CardDisplay.methodTitle(transfer, account: account) == "Bank One · Bank transfer")
         #expect(CardDisplay.shortName(of: debit) == "Visa ··1234")
         #expect(CardDisplay.wordmark(for: .mastercard) == "mastercard")
         #expect(CardDisplay.palette(for: .lima) == .lima)
         #expect(CardDisplay.cardColor(for: .oro) == .oro)
+    }
+
+    @Test
+    func creditCardsReadAsTheirNumberNotTheirRole() throws {
+        let account = Account(name: "Visa", bank: "Bank One", kind: .credit, openingBalances: [Money(0, "USD")], openingDate: .now)
+        let holder = try Card(accountID: account.id, kind: .creditHolder, network: .visa, lastFour: "3141")
+        let unnamedBank = Account(name: " ", kind: .deposit, openingBalances: [Money(0, "USD")], openingDate: .now)
+        let transfer = try Card(accountID: unnamedBank.id, kind: .transfer)
+        #expect(CardDisplay.methodTitle(holder, account: account) == "Visa •••• 3141")
+        #expect(CardDisplay.methodTitle(transfer, account: unnamedBank) == "Bank transfer")
     }
 
     @Test
@@ -31,9 +43,35 @@ struct DisplayTests {
     func defaultCategoriesTranslateByIDAndCustomOnesKeepTheirName() {
         let groceries = TransactionCategory(id: "groceries", name: "Groceries", kind: .expense)
         let renamed = TransactionCategory(id: "groceries", name: "Market", kind: .expense)
-        let custom = TransactionCategory(id: "pets", name: "Pets", kind: .expense)
+        let custom = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
         #expect(CategoryDisplay.name(of: groceries) == "Groceries")
         #expect(CategoryDisplay.name(of: renamed) == "Market")
-        #expect(CategoryDisplay.name(of: custom) == "Pets")
+        #expect(CategoryDisplay.name(of: custom) == "Boat")
+    }
+
+    @Test
+    func everyDefaultHasItsOwnIconWithinItsKind() {
+        for kind in [TransactionKind.expense, .income] {
+            let symbols = TransactionCategory.defaults.filter { $0.kind == kind }.map(CategoryDisplay.symbol(for:))
+            #expect(Set(symbols).count == symbols.count)
+        }
+        #expect(TransactionCategory.defaults.allSatisfy { CategoryDisplay.defaultSymbol(for: $0.id) != nil })
+    }
+
+    @Test
+    func everyIconExistsInSFSymbols() {
+        let symbols = Set(TransactionCategory.defaults.map(CategoryDisplay.symbol(for:)) + CategoryDisplay.symbolChoices)
+        let missing = symbols.filter { UIImage(systemName: $0) == nil }
+        #expect(missing.isEmpty)
+        #expect(Set(CategoryDisplay.symbolChoices).count == CategoryDisplay.symbolChoices.count)
+    }
+
+    @Test
+    func createdCategoriesUseTheirOwnIconAndColor() {
+        let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense, icon: "sailboat", color: "blue")
+        #expect(CategoryDisplay.symbol(for: boat) == "sailboat")
+        #expect(CategoryDisplay.symbol(for: nil) == CategoryDisplay.fallbackSymbol)
+        #expect(CategoryDisplay.color(for: boat) == KWColor.categoryPalette(key: "blue"))
+        #expect(CategoryDisplay.colorChoices.count == KWColor.categoryPalette.count)
     }
 }

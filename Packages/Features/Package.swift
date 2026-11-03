@@ -61,7 +61,13 @@ let package = Package(
         ),
         .testTarget(
             name: "SharedPresentationTests",
-            dependencies: ["SharedPresentation", .product(name: "Domain", package: "Domain"), .product(name: "Core", package: "Core")],
+            dependencies: [
+                "SharedPresentation",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+            ],
         ),
 
         // MARK: Onboarding
@@ -335,6 +341,14 @@ let package = Package(
             ],
             path: "Sources/Settings/Presentation",
             resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "SettingsPresentationTests",
+            dependencies: [
+                "SettingsPresentation",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
         .testTarget(
             name: "SettingsDomainTests",

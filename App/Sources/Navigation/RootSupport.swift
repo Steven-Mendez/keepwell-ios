@@ -83,12 +83,19 @@ struct SettingsRoute: View {
     private let container: AppContainer
     let onBack: () -> Void
     let onErased: () -> Void
+    let onOpenCategories: (TransactionKind) -> Void
 
-    init(container: AppContainer, onBack: @escaping () -> Void, onErased: @escaping () -> Void) {
+    init(
+        container: AppContainer,
+        onBack: @escaping () -> Void,
+        onErased: @escaping () -> Void,
+        onOpenCategories: @escaping (TransactionKind) -> Void,
+    ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         self.container = container
         self.onBack = onBack
         self.onErased = onErased
+        self.onOpenCategories = onOpenCategories
     }
 
     var body: some View {
@@ -97,6 +104,7 @@ struct SettingsRoute: View {
             onBack: onBack,
             onErased: onErased,
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
+            onOpenCategories: onOpenCategories,
         )
         .navigationBarBackButtonHidden()
         .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in
@@ -108,6 +116,21 @@ struct SettingsRoute: View {
 
     private func reload() {
         Task { await viewModel.load() }
+    }
+}
+
+struct CategoriesRoute: View {
+    @State private var viewModel: CategoriesViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, kind: TransactionKind, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeCategoriesViewModel(kind: kind))
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        CategoriesView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
     }
 }
 

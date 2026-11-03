@@ -25,9 +25,11 @@ public protocol TransactionRepository: Sendable {
 }
 
 public protocol CategoryRepository: Sendable {
-    /// Seeded with `TransactionCategory.defaults` the first time.
+    /// Includes every `TransactionCategory.defaults` entry, adding the ones a newer version ships.
     func fetchCategories() async throws(DomainError) -> [TransactionCategory]
     func save(_ category: TransactionCategory) async throws(DomainError)
+    /// A missing id succeeds: the same delete may already have arrived from another device.
+    func deleteCategory(id: String) async throws(DomainError)
 }
 
 public protocol SettingsRepository: Sendable {

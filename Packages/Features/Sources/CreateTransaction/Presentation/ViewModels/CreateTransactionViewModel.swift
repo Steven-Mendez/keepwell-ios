@@ -5,12 +5,15 @@ import Foundation
 import Observation
 import SharedPresentation
 
-/// Drives "Create movement": amount and type → category (or destination for transfers) →
-/// payment method → review → saved.
+/// Drives "Create movement". Expenses and income go amount → category → payment method → review;
+/// movements between the person's accounts go accounts → amount → review, as a bank's "send to
+/// my own account" does. Both end on the saved receipt.
 @MainActor
 @Observable
 public final class CreateTransactionViewModel {
     public enum Step: Hashable, Sendable {
+        case accounts
+        case amount
         case category
         case method
         case review
@@ -23,20 +26,23 @@ public final class CreateTransactionViewModel {
         case delete
     }
 
+    /// The steps pushed on top of `rootStep`.
     public var path: [Step] = []
-    public private(set) var kind: TransactionKind
+    public internal(set) var type: MovementType
     public private(set) var amountText = "0"
     public var currency = "USD"
-    public private(set) var context: TransactionContext?
+    public internal(set) var context: TransactionContext?
     public private(set) var categoryID: String?
-    public private(set) var source: PaymentSource?
-    public private(set) var destinationAccountID: UUID?
+    public internal(set) var source: PaymentSource?
+    public internal(set) var destinationAccountID: UUID?
     /// Set by `presetTransfer(to:)`.
     var presetDestinationID: UUID?
     /// Set by `presetCategory(_:)`.
     var presetCategoryID: String?
     public var categoryQuery = ""
     public var showsAllCategories = false
+    /// The open "New category" sheet.
+    public var categoryEditor: CategoryEditorViewModel?
     public var description = ""
     /// The suggestion last written into `description`, so a later category change can replace it.
     var prefilledDescription: String?
@@ -48,27 +54,47 @@ public final class CreateTransactionViewModel {
     public private(set) var saved: SavedTransaction?
     public private(set) var isSaving = false
     public private(set) var errorMessage: String?
+    /// The id the next saved movement gets.
+    private var movementID: UUID
 
     let formatter = CurrencyFormatter()
     let calendar: Calendar
     let now: () -> Date
     private let getContext: any GetTransactionContextUseCase
     private let saveTransaction: any SaveTransactionUseCase
+    private let makeID: () -> UUID
+    let saveCategory: (any SaveCategoryUseCase)?
     static let maxAmountLength = 9
+    /// Four rows of three tiles fit above the fold; past that the grid collapses behind "See all".
+    static let categorySlots = 12
 
     public init(
         getContext: any GetTransactionContextUseCase,
         save: any SaveTransactionUseCase,
-        kind: TransactionKind = .expense,
+        saveCategory: (any SaveCategoryUseCase)? = nil,
+        type: MovementType = .expense,
         calendar: Calendar = .current,
         now: @escaping () -> Date = { .now },
+        makeID: @escaping () -> UUID = UUID.init,
     ) {
         self.getContext = getContext
         saveTransaction = save
-        self.kind = kind
+        self.saveCategory = saveCategory
+        self.type = type
         self.calendar = calendar
         self.now = now
+        self.makeID = makeID
         date = now()
+        movementID = makeID()
+    }
+
+    public var kind: TransactionKind {
+        type.kind
+    }
+
+    /// The first screen: transfers start by choosing the accounts, the rest by the amount.
+    public var rootStep: Step {
+        type.movesBetweenAccounts ? .accounts : .amount
     }
 
     public func load() async {
@@ -79,17 +105,14 @@ public final class CreateTransactionViewModel {
         context = loaded
         // The second currency is the everyday one in the design ("C$" by default).
         currency = loaded.currencies.second ?? loaded.currencies.principal
-        source = source ?? loaded.lastUsedSource
+        if type.movesBetweenAccounts {
+            chooseDefaultAccounts()
+        } else {
+            source = source ?? loaded.lastUsedSource
+        }
     }
 
-    // MARK: Step 1 · Amount and type
-
-    public func setKind(_ newKind: TransactionKind) {
-        guard newKind != kind else { return }
-        kind = newKind
-        categoryID = nil
-        destinationAccountID = nil
-    }
+    // MARK: Amount
 
     /// The design's keypad: one dot, at most nine characters, a lone zero is replaced, and
     /// deleting the last digit leaves "0". Cents stop at two decimals since money has no more.
@@ -118,7 +141,7 @@ public final class CreateTransactionViewModel {
     }
 
     public var canContinueFromAmount: Bool {
-        amount > 0
+        amount > 0 && (!type.movesBetweenAccounts || canContinueFromAccounts)
     }
 
     public var currencyOptions: [String] {
@@ -139,51 +162,19 @@ public final class CreateTransactionViewModel {
         }
     }
 
-    /// "≈ $24.00 · 1 USD = 36.6243 NIO".
-    public var conversionLine: String? {
-        guard let currencies = context?.currencies, let second = currencies.second else { return nil }
-        let rate = currencies.exchangeRate
-        let other = currency == second ? currencies.principal : second
-        guard let converted = try? rate.convert(Money(amount, currency), to: other) else { return nil }
-        return "≈ \(formatter.string(converted)) · \(formatter.rate(rate))"
-    }
-
     public func continueFromAmount() {
         guard canContinueFromAmount else { return }
+        if type.movesBetweenAccounts {
+            path = [.amount, .review]
+            return
+        }
         path = [.category]
-        if kind == .transfer, let presetDestinationID {
-            selectDestination(presetDestinationID)
-        } else if kind != .transfer, let presetCategoryID, categories.contains(where: { $0.id == presetCategoryID }) {
+        if let presetCategoryID, categories.contains(where: { $0.id == presetCategoryID }) {
             selectCategory(presetCategoryID)
         }
     }
 
-    // MARK: Step 2 · Category (or destination)
-
-    public var categories: [TransactionCategory] {
-        context?.categories.filter { $0.kind == kind } ?? []
-    }
-
-    /// The grid: search results, everything after "See all N", or the eight most used.
-    public var visibleCategories: [TransactionCategory] {
-        let query = categoryQuery.trimmingCharacters(in: .whitespaces)
-        if !query.isEmpty {
-            return categories.filter { CategoryDisplay.name(of: $0).localizedStandardContains(query) }
-        }
-        let usage = context?.categoryUsage ?? [:]
-        let ranked = categories.enumerated()
-            .sorted { lhs, rhs in
-                let left = usage[lhs.element.id] ?? 0
-                let right = usage[rhs.element.id] ?? 0
-                return left == right ? lhs.offset < rhs.offset : left > right
-            }
-            .map(\.element)
-        return showsAllCategories ? ranked : Array(ranked.prefix(8))
-    }
-
-    public var hasMoreCategories: Bool {
-        categoryQuery.isEmpty && !showsAllCategories && categories.count > 8
-    }
+    // MARK: Category
 
     public func selectCategory(_ id: String) {
         categoryID = id
@@ -193,23 +184,11 @@ public final class CreateTransactionViewModel {
         path.append(.method)
     }
 
-    public var destinationOptions: [Account] {
-        context?.accounts ?? []
-    }
-
-    public func selectDestination(_ id: UUID) {
-        destinationAccountID = id
-        if let source, context?.accountID(for: source) == id {
-            self.source = nil
-        }
-        path.append(.method)
-    }
-
     public var category: TransactionCategory? {
         context?.categories.first { $0.id == categoryID }
     }
 
-    // MARK: Step 3 · Payment method
+    // MARK: Payment method
 
     public func selectSource(_ newSource: PaymentSource) {
         source = newSource
@@ -217,7 +196,7 @@ public final class CreateTransactionViewModel {
         path.append(.review)
     }
 
-    // MARK: Step 4 · Review
+    // MARK: Review
 
     public var sourceAccount: Account? {
         source.flatMap { context?.accountID(for: $0) }.flatMap { context?.account($0) }
@@ -242,17 +221,15 @@ public final class CreateTransactionViewModel {
         source != nil && (debitedText.isEmpty || !showsDebitedField || debited.map { $0 > 0 } == true) && !isSaving
     }
 
-    public func save() async {
-        guard canSave, let context else { return }
-        isSaving = true
-        defer { isSaving = false }
-        let draft = TransactionDraft(
+    var draft: TransactionDraft {
+        TransactionDraft(
+            id: movementID,
             kind: kind,
             amount: amount,
             currency: currency,
             categoryID: categoryID,
             source: source,
-            destinationAccountID: destinationAccountID,
+            destinationAccountID: type.movesBetweenAccounts ? destinationAccountID : nil,
             description: resolvedDescription,
             date: date,
             isPlanned: isPlanned,
@@ -260,11 +237,16 @@ public final class CreateTransactionViewModel {
             actualDebitedPrincipal: debited,
             note: note,
         )
+    }
+
+    public func save() async {
+        guard canSave, context != nil else { return }
+        isSaving = true
+        defer { isSaving = false }
         do {
             saved = try await saveTransaction.execute(draft)
             errorMessage = nil
             path.append(.saved)
-            _ = context
         } catch {
             errorMessage = Self.message(for: error)
         }
@@ -282,9 +264,11 @@ public final class CreateTransactionViewModel {
         isPlanned = false
         isShared = false
         date = now()
+        movementID = makeID()
         saved = nil
         categoryQuery = ""
         showsAllCategories = false
+        categoryEditor = nil
         path = []
         await load()
     }
@@ -292,7 +276,13 @@ public final class CreateTransactionViewModel {
     /// What gets stored when the person leaves the description empty. Resolved here, not in the use
     /// case, so the persisted text is in the language they were using at creation time.
     var descriptionPlaceholder: String {
-        category.map(CategoryDisplay.name(of:)) ?? String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle)
+        switch type {
+        case .expense, .income:
+            category.map(CategoryDisplay.name(of:)) ?? String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle)
+        case .transfer: String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle)
+        case .withdrawal: String(localized: "ATM withdrawal", bundle: #bundle)
+        case .cardPayment: String(localized: "Card payment", bundle: #bundle)
+        }
     }
 
     private var resolvedDescription: String {

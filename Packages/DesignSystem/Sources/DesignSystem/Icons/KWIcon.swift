@@ -5,6 +5,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     case addCard
     case arrowDown
     case arrowDownLeft
+    case arrowRight
     case arrowUp
     case arrowUpRight
     case bank
@@ -32,6 +33,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     case list
     case more
     case moreFilled
+    case pencil
     case person
     case personOff
     case phone
@@ -39,6 +41,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     case restaurant
     case search
     case settings
+    case share
     case subscription
     case tabAccounts
     case tools
@@ -55,8 +58,9 @@ public enum KWIcon: String, CaseIterable, Sendable {
     /// The SVG `stroke-linejoin` each icon was drawn with; the rest use the SVG default (miter).
     var roundJoins: Bool {
         switch self {
-        case .arrowDown, .arrowDownLeft, .arrowUp, .arrowUpRight, .bank, .bolt, .bus, .cart, .cash, .check,
-             .cloud, .creditCard, .faceID, .health, .heart, .home, .phone, .settings, .subscription, .tools, .transfer, .wallet:
+        case .arrowDown, .arrowDownLeft, .arrowRight, .arrowUp, .arrowUpRight, .bank, .bolt, .bus, .cart, .cash, .check,
+             .cloud, .creditCard, .faceID, .health, .heart, .home, .pencil, .phone, .settings, .share, .subscription, .tools, .transfer,
+             .wallet:
             true
         default:
             false
@@ -68,6 +72,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
         case .addCard: [.rect(x: 3, y: 7, width: 14, height: 10, radius: 2), .path("M20 10v6M17 13h6")]
         case .arrowDown: [.path("M12 4v14M6 12l6 6 6-6")]
         case .arrowDownLeft: [.path("M17 7 7 17M16 17H7V8")]
+        case .arrowRight: [.path("M5 12h14M13 6l6 6-6 6")]
         case .arrowUp: [.path("M12 19V5M6 11l6-6 6 6")]
         case .arrowUpRight: [.path("M7 17 17 7M8 7h9v9")]
         case .bank: [.path("M3 10 12 4l9 6M5 10v8M19 10v8M9 10v8M15 10v8M3 20h18")]
@@ -114,6 +119,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
         case .more: [.path("M5 12h.01M12 12h.01M19 12h.01")]
         case .moreFilled:
             [.circle(cx: 5, cy: 12, radius: 1.5), .circle(cx: 12, cy: 12, radius: 1.5), .circle(cx: 19, cy: 12, radius: 1.5)]
+        case .pencil: [.path("M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16zM13.5 6.5l4 4")]
         case .person: [.circle(cx: 12, cy: 8, radius: 4), .path("M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6")]
         case .personOff: [.circle(cx: 12, cy: 8, radius: 4), .path("M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6M3 3l18 18")]
         case .phone: [.rect(x: 6, y: 2, width: 12, height: 20, radius: 3), .path("M11 18h2")]
@@ -133,6 +139,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
                 ),
                 .circle(cx: 12, cy: 12, radius: 3),
             ]
+        case .share: [.path("M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6")]
         case .subscription: [.path("M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4")]
         case .tabAccounts: [.rect(x: 3, y: 6, width: 18, height: 14, radius: 2), .path("M3 10h18M16 15h2")]
         case .tools: [.path("M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z")]

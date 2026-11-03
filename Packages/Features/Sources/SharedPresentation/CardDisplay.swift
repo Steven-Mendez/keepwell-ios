@@ -51,16 +51,29 @@ public enum CardDisplay {
         [networkName(card.network), card.lastFour.map { "··\($0)" }].compactMap(\.self).joined(separator: " ")
     }
 
-    /// Title of a payment method row ("Debit •••• 3922", "Transfers Bank One").
+    /// How a movement names what paid it: "Debit •••• 3922", "Bank One · Bank transfer",
+    /// "Visa •••• 3141". Credit cards show their network and digits rather than the "holder" role,
+    /// which only means something next to the card's additionals.
     public static func methodTitle(_ card: Card, account: Account?) -> String {
         let lastFour = card.lastFour ?? ""
-        let owner = account?.bank ?? account?.name ?? ""
         return switch card.kind {
         case .debit: String(localized: "Debit •••• \(lastFour)", bundle: #bundle)
-        case .transfer: String(localized: "Transfers \(owner)", bundle: #bundle).trimmingCharacters(in: .whitespaces)
-        case .creditHolder: String(localized: "Holder", bundle: #bundle)
+        case .transfer: bankTransferTitle(account: account)
+        case .creditHolder: cardNumber(card)
         case .creditAdditional: card.additional?.holderName ?? String(localized: "Additional", bundle: #bundle)
         }
+    }
+
+    /// "Visa •••• 3141", or just the network when the digits are unknown.
+    public static func cardNumber(_ card: Card) -> String {
+        [networkName(card.network), card.lastFour.map { "•••• \($0)" }].compactMap(\.self).joined(separator: " ")
+    }
+
+    /// "Bank One · Bank transfer": a payment charged straight to the account, with no card.
+    public static func bankTransferTitle(account: Account?) -> String {
+        let method = String(localized: "Bank transfer", bundle: #bundle)
+        let owner = (account?.bank ?? account?.name)?.trimmingCharacters(in: .whitespaces) ?? ""
+        return owner.isEmpty ? method : "\(owner) · \(method)"
     }
 
     public static func miniCard(for card: Card) -> KWMiniCard.Style {

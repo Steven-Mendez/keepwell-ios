@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ available" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ disponible"
+          }
+        }
+      }
+    },
     "%@ charged by the bank" : {
       "localizations" : {
         "es" : {
@@ -31,6 +41,16 @@
         }
       }
     },
+    "%@ · more than what's there" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · más de lo que hay"
+          }
+        }
+      }
+    },
     "%@ •••• %@ · credit" : {
       "localizations" : {
         "es" : {
@@ -41,12 +61,32 @@
         }
       }
     },
-    "Add a detail" : {
+    "A purchase, a bill, a subscription" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agrega un detalle"
+            "value" : "Una compra, una factura, una suscripción"
+          }
+        }
+      }
+    },
+    "Add a note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar una nota"
+          }
+        }
+      }
+    },
+    "Add ›" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar ›"
           }
         }
       }
@@ -81,12 +121,122 @@
         }
       }
     },
+    "Arrived in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llegó a %@"
+          }
+        }
+      }
+    },
+    "Arrives as %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llega como %@"
+          }
+        }
+      }
+    },
+    "ATM withdrawal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retiro en cajero"
+          }
+        }
+      }
+    },
+    "Available %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible %@"
+          }
+        }
+      }
+    },
+    "Balance %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo %@"
+          }
+        }
+      }
+    },
+    "Balance after %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo después %@"
+          }
+        }
+      }
+    },
+    "Bank accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuentas bancarias"
+          }
+        }
+      }
+    },
     "Bank rate" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tasa del banco"
+          }
+        }
+      }
+    },
+    "Bank transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
+    "Between my accounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre mis cuentas"
+          }
+        }
+      }
+    },
+    "Card balance %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo de la tarjeta %@"
+          }
+        }
+      }
+    },
+    "Card payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pago de tarjeta"
           }
         }
       }
@@ -111,12 +261,22 @@
         }
       }
     },
-    "Charged to" : {
+    "Charged directly to %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se descuenta de"
+            "value" : "Se cobra directo de %@"
+          }
+        }
+      }
+    },
+    "Charged directly to the account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cobra directo de la cuenta"
           }
         }
       }
@@ -141,6 +301,16 @@
         }
       }
     },
+    "Choose another account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir otra cuenta"
+          }
+        }
+      }
+    },
     "Close" : {
       "localizations" : {
         "es" : {
@@ -161,12 +331,22 @@
         }
       }
     },
-    "Credit · holder" : {
+    "Continue" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crédito · titular"
+            "value" : "Continuar"
+          }
+        }
+      }
+    },
+    "Credit cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjetas de crédito"
           }
         }
       }
@@ -251,6 +431,16 @@
         }
       }
     },
+    "Edit amount" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar monto"
+          }
+        }
+      }
+    },
     "Expense" : {
       "localizations" : {
         "es" : {
@@ -261,22 +451,12 @@
         }
       }
     },
-    "Goes into" : {
+    "From" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entra a"
-          }
-        }
-      }
-    },
-    "Holder" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titular"
+            "value" : "Desde"
           }
         }
       }
@@ -291,12 +471,72 @@
         }
       }
     },
+    "How much are you moving?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuánto vas a mover?"
+          }
+        }
+      }
+    },
+    "How much are you paying?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuánto vas a pagar?"
+          }
+        }
+      }
+    },
+    "How much did you receive?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuánto recibiste?"
+          }
+        }
+      }
+    },
+    "How much did you spend?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuánto gastaste?"
+          }
+        }
+      }
+    },
+    "How much did you withdraw?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuánto retiraste?"
+          }
+        }
+      }
+    },
     "Income" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ingreso"
+          }
+        }
+      }
+    },
+    "Into" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacia"
           }
         }
       }
@@ -331,12 +571,12 @@
         }
       }
     },
-    "Leaves from" : {
+    "Leaves as %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sale de"
+            "value" : "Sale como %@"
           }
         }
       }
@@ -351,12 +591,42 @@
         }
       }
     },
+    "Main card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta principal"
+          }
+        }
+      }
+    },
     "Method" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medio"
+          }
+        }
+      }
+    },
+    "Move money between your accounts and cash" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mueve dinero entre tus cuentas y el efectivo"
+          }
+        }
+      }
+    },
+    "Moving from" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sale de"
           }
         }
       }
@@ -371,12 +641,32 @@
         }
       }
     },
+    "New category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva categoría"
+          }
+        }
+      }
+    },
     "Next" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Siguiente"
+          }
+        }
+      }
+    },
+    "No account can receive it from this one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna cuenta puede recibirlo desde esta."
           }
         }
       }
@@ -401,22 +691,42 @@
         }
       }
     },
-    "Other" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otras"
-          }
-        }
-      }
-    },
     "Others owe you a share" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otros te deben una parte"
+          }
+        }
+      }
+    },
+    "Paid with" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagado con"
+          }
+        }
+      }
+    },
+    "Pay what you owe on a credit card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paga lo que debes en una tarjeta de crédito"
+          }
+        }
+      }
+    },
+    "Paying from" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagas desde"
           }
         }
       }
@@ -451,12 +761,52 @@
         }
       }
     },
+    "Reference" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Referencia"
+          }
+        }
+      }
+    },
+    "Review" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar"
+          }
+        }
+      }
+    },
+    "Salary, a refund, money you received" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salario, un reembolso, dinero que recibiste"
+          }
+        }
+      }
+    },
     "Save as planned" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar como previsto"
+          }
+        }
+      }
+    },
+    "Save card payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar pago de tarjeta"
           }
         }
       }
@@ -491,6 +841,26 @@
         }
       }
     },
+    "Save withdrawal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar retiro"
+          }
+        }
+      }
+    },
+    "Saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado"
+          }
+        }
+      }
+    },
     "Search category" : {
       "localizations" : {
         "es" : {
@@ -521,6 +891,16 @@
         }
       }
     },
+    "Share receipt" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir comprobante"
+          }
+        }
+      }
+    },
     "Shared" : {
       "localizations" : {
         "es" : {
@@ -531,12 +911,72 @@
         }
       }
     },
-    "Status" : {
+    "Slide to move" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estado"
+            "value" : "Desliza para mover"
+          }
+        }
+      }
+    },
+    "Slide to pay" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza para pagar"
+          }
+        }
+      }
+    },
+    "Slide to save as planned" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza para guardar como planificado"
+          }
+        }
+      }
+    },
+    "Slide to save expense" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza para guardar el gasto"
+          }
+        }
+      }
+    },
+    "Slide to save income" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza para guardar el ingreso"
+          }
+        }
+      }
+    },
+    "Slide to withdraw" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza para retirar"
+          }
+        }
+      }
+    },
+    "Take cash out of a bank account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saca efectivo de una cuenta bancaria"
           }
         }
       }
@@ -567,6 +1007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El medio decide qué cuenta se descuenta."
+          }
+        }
+      }
+    },
+    "To" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacia"
           }
         }
       }
@@ -697,12 +1147,42 @@
         }
       }
     },
+    "What are you recording?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué vas a registrar?"
+          }
+        }
+      }
+    },
+    "What was it about?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿De qué se trató?"
+          }
+        }
+      }
+    },
     "What was it for?" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿En qué fue?"
+          }
+        }
+      }
+    },
+    "Where did it come from?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿De dónde vino?"
           }
         }
       }
@@ -717,16 +1197,6 @@
         }
       }
     },
-    "Where is it going?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿A dónde va?"
-          }
-        }
-      }
-    },
     "Where is it leaving from?" : {
       "localizations" : {
         "es" : {
@@ -737,12 +1207,142 @@
         }
       }
     },
+    "Which account is it going to?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿A qué cuenta va?"
+          }
+        }
+      }
+    },
+    "Which card are you paying?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué tarjeta vas a pagar?"
+          }
+        }
+      }
+    },
+    "Which cash is it going into?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿A qué efectivo va?"
+          }
+        }
+      }
+    },
+    "Withdrawing from" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retiras de"
+          }
+        }
+      }
+    },
     "Yesterday, %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ayer, %@"
+          }
+        }
+      }
+    },
+    "You moved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moviste"
+          }
+        }
+      }
+    },
+    "You paid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagaste"
+          }
+        }
+      }
+    },
+    "You received" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recibiste"
+          }
+        }
+      }
+    },
+    "You spent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastaste"
+          }
+        }
+      }
+    },
+    "You withdrew" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retiraste"
+          }
+        }
+      }
+    },
+    "You're about to log" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estás a punto de registrar"
+          }
+        }
+      }
+    },
+    "You're about to move" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estás a punto de mover"
+          }
+        }
+      }
+    },
+    "You're about to pay" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estás a punto de pagar"
+          }
+        }
+      }
+    },
+    "You're about to withdraw" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estás a punto de retirar"
           }
         }
       }

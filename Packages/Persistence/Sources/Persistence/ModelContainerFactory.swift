@@ -17,7 +17,7 @@ public enum ModelContainerFactory {
 
     /// Creates the `ModelContainer` for the current schema.
     public static func make(store: PersistenceStore) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KeepwellSchemaV1.self)
+        let schema = Schema(versionedSchema: KeepwellSchemaV2.self)
         let configuration = switch store {
         case .inMemory:
             ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)

@@ -21,12 +21,132 @@
         }
       }
     },
+    "Amber" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ámbar"
+          }
+        }
+      }
+    },
+    "Bank transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
+    "Blue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul"
+          }
+        }
+      }
+    },
+    "Category name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de la categoría"
+          }
+        }
+      }
+    },
+    "Color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        }
+      }
+    },
+    "Create category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear categoría"
+          }
+        }
+      }
+    },
+    "Cyan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cian"
+          }
+        }
+      }
+    },
     "Debit •••• %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Débito •••• %@"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        }
+      }
+    },
+    "Delete category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar categoría"
+          }
+        }
+      }
+    },
+    "Delete this category?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar esta categoría?"
+          }
+        }
+      }
+    },
+    "Donations" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donaciones"
+          }
+        }
+      }
+    },
+    "Edit category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar categoría"
           }
         }
       }
@@ -71,6 +191,66 @@
         }
       }
     },
+    "Freelance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trabajo independiente"
+          }
+        }
+      }
+    },
+    "Gifts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regalos"
+          }
+        }
+      }
+    },
+    "Gifts received" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regalos recibidos"
+          }
+        }
+      }
+    },
+    "Give the category a name." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponle un nombre a la categoría."
+          }
+        }
+      }
+    },
+    "Gray" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gris"
+          }
+        }
+      }
+    },
+    "Green" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verde"
+          }
+        }
+      }
+    },
     "Groceries" : {
       "localizations" : {
         "es" : {
@@ -91,22 +271,32 @@
         }
       }
     },
-    "Holder" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titular"
-          }
-        }
-      }
-    },
     "Housing" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vivienda"
+          }
+        }
+      }
+    },
+    "Icon" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ícono"
+          }
+        }
+      }
+    },
+    "Insurance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguros"
           }
         }
       }
@@ -121,6 +311,26 @@
         }
       }
     },
+    "Investments" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inversiones"
+          }
+        }
+      }
+    },
+    "Its movements move to “%@”." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sus movimientos pasan a “%@”."
+          }
+        }
+      }
+    },
     "Leisure" : {
       "localizations" : {
         "es" : {
@@ -131,18 +341,42 @@
         }
       }
     },
-    "network.other" : {
+    "Lime" : {
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
-          }
-        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otra"
+            "value" : "Lima"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        }
+      }
+    },
+    "New category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva categoría"
+          }
+        }
+      }
+    },
+    "Orange" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naranja"
           }
         }
       }
@@ -177,12 +411,52 @@
         }
       }
     },
+    "Pets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mascotas"
+          }
+        }
+      }
+    },
+    "Pink" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosa"
+          }
+        }
+      }
+    },
+    "Purple" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morado"
+          }
+        }
+      }
+    },
     "Refunds" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reembolsos"
+          }
+        }
+      }
+    },
+    "Rental" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alquiler"
           }
         }
       }
@@ -207,6 +481,26 @@
         }
       }
     },
+    "Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        }
+      }
+    },
+    "Savings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorro"
+          }
+        }
+      }
+    },
     "Shopping" : {
       "localizations" : {
         "es" : {
@@ -227,22 +521,22 @@
         }
       }
     },
+    "Taxes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impuestos"
+          }
+        }
+      }
+    },
     "Tools" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Herramientas"
-          }
-        }
-      }
-    },
-    "Transfers %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transferencias %@"
           }
         }
       }
@@ -273,6 +567,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Servicios"
+          }
+        }
+      }
+    },
+    "We couldn't delete the category. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos eliminar la categoría. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't save the category. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar la categoría. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Yellow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amarillo"
+          }
+        }
+      }
+    },
+    "You already have a category with that name." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya tienes una categoría con ese nombre."
+          }
+        }
+      }
+    },
+    "network.other" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otra"
           }
         }
       }
