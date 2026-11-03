@@ -1,0 +1,45 @@
+# SwiftFormat — code formatting. SwiftLint owns quality rules, and the overlapping
+# style rules are disabled in .swiftlint.yml.
+
+--swift-version 6.2
+--language-mode 6
+--exclude build,.build,**/.build,Keepwell.xcodeproj,design,DerivedData
+
+# Indentation and width
+--indent 4
+--indent-case false
+--max-width 140
+--trim-whitespace always
+--linebreaks lf
+
+# Wrapping
+--wrap-arguments before-first
+--wrap-parameters before-first
+--wrap-collections before-first
+--wrap-conditions after-first
+--wrap-return-type preserve
+--closing-paren balanced
+--call-site-paren balanced
+
+# Style
+--self remove
+--trailing-commas always
+--semicolons never
+--import-grouping testable-last
+--header strip
+--ifdef no-indent
+--strip-unused-args closure-only
+--extension-acl on-declarations
+--type-attributes prev-line
+--func-attributes prev-line
+--computed-var-attributes prev-line
+--stored-var-attributes preserve
+--sort-swiftui-properties none
+
+--enable isEmpty
+--enable wrapEnumCases
+--enable docComments
+--disable redundantSendable
+--disable wrapPropertyBodies
+--test-case-name-format preserve
+--suite-name-format preserve

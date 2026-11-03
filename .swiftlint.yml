@@ -1,0 +1,167 @@
+# SwiftLint — quality rules. Formatting is owned by SwiftFormat (.swiftformat);
+# style rules that overlap with it are disabled here to avoid conflicts.
+
+included:
+  - App
+  - Widgets
+  - UITests
+  - Packages
+
+excluded:
+  - build
+  - .build
+  - Packages/*/.build
+  - Keepwell.xcodeproj
+  - design
+
+# Rules SwiftFormat already handles (or that contradict its output).
+disabled_rules:
+  - trailing_comma
+  - opening_brace
+  - closing_brace
+  - colon
+  - comma
+  - statement_position
+  - vertical_whitespace
+  - trailing_whitespace
+  - leading_whitespace
+  - void_return
+  - redundant_discardable_let
+  - switch_case_alignment
+  - modifier_order        # SwiftFormat's modifierOrder owns it; the two disagree on `nonisolated public`.
+  - vertical_parameter_alignment
+  - todo   # Allowed; track follow-ups in issues.
+
+opt_in_rules:
+  - array_init
+  - closure_body_length
+  - collection_alignment
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - convenience_type
+  - discouraged_none_name
+  - discouraged_object_literal
+  - empty_collection_literal
+  - empty_count
+  - empty_string
+  - empty_xctest_method
+  - explicit_init
+  - fallthrough
+  - fatal_error_message
+  - file_name_no_space
+  - first_where
+  - flatmap_over_map_reduce
+  - force_unwrapping
+  - identical_operands
+  - implicitly_unwrapped_optional
+  - joined_default_parameter
+  - last_where
+  - legacy_multiple
+  - local_doc_comment
+  - lower_acl_than_parent
+  - multiline_parameters
+  - nimble_operator
+  - no_extension_access_modifier
+  - operator_usage_whitespace
+  - overridden_super_call
+  - pattern_matching_keywords
+  - prefer_self_in_static_references
+  - prefer_self_type_over_type_of_self
+  - prefer_zero_over_explicit_init
+  - private_swiftui_state
+  - prohibited_super_call
+  - reduce_into
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - return_value_from_void_function
+  - shorthand_optional_binding
+  - sorted_first_last
+  - static_operator
+  - strong_iboutlet
+  - test_case_accessibility
+  - toggle_bool
+  - unavailable_function
+  - unneeded_parentheses_in_closure_argument
+  - unowned_variable_capture
+  - untyped_error_in_catch
+  - weak_delegate
+  - xct_specific_matcher
+  - yoda_condition
+
+analyzer_rules:
+  - unused_declaration
+  - unused_import
+
+line_length:
+  warning: 140
+  error: 160
+  ignores_urls: true
+  ignores_comments: true
+  ignores_interpolated_strings: true
+
+file_length:
+  warning: 400
+  error: 600
+  ignore_comment_only_lines: true
+
+type_body_length:
+  warning: 250
+  error: 400
+
+function_body_length:
+  warning: 50
+  error: 80
+
+closure_body_length:
+  warning: 40
+  error: 60
+
+cyclomatic_complexity:
+  warning: 10
+  error: 15
+  ignores_case_statements: true
+
+nesting:
+  type_level: 2
+
+identifier_name:
+  min_length: 2
+  excluded: [x, y, id, ui]
+
+type_name:
+  min_length: 3
+  max_length: 50
+
+large_tuple:
+  warning: 3
+  error: 4
+
+force_cast: error
+force_try: error
+force_unwrapping: error
+
+# Layer boundaries from CLAUDE.md, enforced at lint time (the build fails in Staging/Release and CI).
+custom_rules:
+  domain_imports_foundation_only:
+    name: "Domain imports"
+    included: ".*(/Packages/Domain/Sources/|/Sources/[^/]+/Domain/).*\\.swift$"
+    regex: "^import (?!(Foundation|Domain)$)\\w+"
+    message: "Domain code may only import Foundation and the shared Domain kernel."
+    severity: error
+  domain_no_floating_point:
+    name: "No floating point in Domain"
+    included: ".*(/Packages/Domain/Sources/|/Sources/[^/]+/Domain/).*\\.swift$"
+    regex: "\\b(Double|Float|CGFloat)\\b"
+    match_kinds: [typeidentifier, identifier]
+    message: "Money is Decimal + ISO 4217 code. Never Double or Float."
+    severity: error
+  viewmodel_no_data_or_ui_imports:
+    name: "ViewModel imports"
+    included: ".*/Presentation/ViewModels/.*\\.swift$"
+    regex: "^import (SwiftUI|SwiftData|Persistence|\\w+Data)$"
+    message: "ViewModels talk to use cases only: no SwiftUI, SwiftData or Data-layer imports."
+    severity: error
+
+reporter: xcode

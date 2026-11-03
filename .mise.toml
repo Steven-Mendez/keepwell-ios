@@ -1,0 +1,10 @@
+# Pinned development tool versions, installed by `make bootstrap`.
+# Bump them deliberately (in a chore PR) — never use "latest".
+[tools]
+xcodegen = "2.46.0"
+swiftlint = "0.65.1"
+swiftformat = "0.63.1"
+lefthook = "2.2.2"
+
+[settings]
+experimental = false

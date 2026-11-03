@@ -1,0 +1,173 @@
+# XcodeGen spec — the project's source of truth. Keepwell.xcodeproj is generated
+# with `make generate` and is NOT committed.
+name: Keepwell
+
+options:
+  bundleIdPrefix: com.stevenmendez
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "27.1"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  generateEmptyDirectories: true
+  defaultConfig: Debug
+  localPackagesGroup: Packages
+
+configs:
+  Debug: debug
+  Staging: release
+  Release: release
+
+configFiles:
+  Debug: Configs/Debug.xcconfig
+  Staging: Configs/Staging.xcconfig
+  Release: Configs/Release.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+
+packages:
+  Core:
+    path: Packages/Core
+  DesignSystem:
+    path: Packages/DesignSystem
+  Domain:
+    path: Packages/Domain
+  Persistence:
+    path: Packages/Persistence
+  Features:
+    path: Packages/Features
+
+targets:
+  Keepwell:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
+        PRODUCT_NAME: Keepwell
+        INFOPLIST_FILE: App/Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UIUserInterfaceStyle: Dark
+        INFOPLIST_KEY_NSFaceIDUsageDescription: Keepwell usa Face ID para proteger tus datos financieros.
+        CODE_SIGN_ENTITLEMENTS: App/Resources/Keepwell.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        SWIFT_APPROACHABLE_CONCURRENCY: YES
+        # The SwiftLint phase reads the whole repo, so this target opts out of script sandboxing.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    dependencies:
+      - target: KeepwellWidgets
+        embed: true
+        codeSign: true
+      - package: DesignSystem
+      - package: Domain
+      - package: Persistence
+      - package: Core
+      - package: Features
+        product: TransactionsDomain
+      - package: Features
+        product: TransactionsData
+      - package: Features
+        product: TransactionsPresentation
+    preBuildScripts:
+      - name: SwiftLint
+        basedOnDependencyAnalysis: false
+        script: scripts/xcode-swiftlint.sh
+
+  KeepwellWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widgets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(WIDGETS_BUNDLE_ID)
+        PRODUCT_NAME: KeepwellWidgets
+        INFOPLIST_FILE: Widgets/Info.plist
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        SKIP_INSTALL: YES
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        SWIFT_APPROACHABLE_CONCURRENCY: YES
+    dependencies:
+      - package: DesignSystem
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+
+  KeepwellUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Keepwell
+    dependencies:
+      - target: Keepwell
+
+schemes:
+  Keepwell:
+    build:
+      targets:
+        Keepwell: all
+        KeepwellWidgets: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      coverageTargets:
+        - Keepwell
+        - package: Core/Core
+        - package: DesignSystem/DesignSystem
+        - package: Domain/Domain
+        - package: Persistence/Persistence
+        - package: Features/TransactionsDomain
+        - package: Features/TransactionsData
+        - package: Features/TransactionsPresentation
+      targets:
+        - package: Core/CoreTests
+        - package: DesignSystem/DesignSystemTests
+        - package: Domain/DomainTests
+        - package: Persistence/PersistenceTests
+        - package: Features/TransactionsDomainTests
+        - package: Features/TransactionsDataTests
+        - package: Features/TransactionsPresentationTests
+        - name: KeepwellUITests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
+  Keepwell Staging:
+    build:
+      targets:
+        Keepwell: all
+        KeepwellWidgets: all
+    run:
+      config: Staging
+    test:
+      config: Staging
+    profile:
+      config: Staging
+    analyze:
+      config: Staging
+    archive:
+      config: Staging

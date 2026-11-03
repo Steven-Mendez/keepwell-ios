@@ -1,0 +1,22 @@
+# Git hooks, installed by `make bootstrap` (or `make hooks`).
+# Skip them with --no-verify only in emergencies; CI validates everything again.
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: swiftformat
+      glob: "*.swift"
+      run: mise exec -- swiftformat --lint {staged_files}
+    - name: swiftlint
+      glob: "*.swift"
+      run: mise exec -- swiftlint lint --strict --quiet --force-exclude {staged_files}
+
+commit-msg:
+  jobs:
+    - name: conventional-commits
+      run: scripts/validate-commit-msg.sh {1}
+
+pre-push:
+  jobs:
+    - name: build-and-unit-tests
+      run: make test-unit

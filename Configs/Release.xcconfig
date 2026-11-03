@@ -1,0 +1,6 @@
+// Release — App Store.
+#include "Base.xcconfig"
+
+BUNDLE_ID_SUFFIX =
+APP_NAME_SUFFIX =
+APS_ENVIRONMENT = production

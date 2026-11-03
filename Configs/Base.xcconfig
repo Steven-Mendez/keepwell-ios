@@ -1,0 +1,39 @@
+// Base.xcconfig — settings shared by every configuration.
+// Each environment (Debug/Staging/Release) includes this file and overrides what it needs.
+
+// Helper: xcconfig trims leading whitespace, so use $(SPACE) to prepend one.
+EMPTY =
+SPACE = $(EMPTY) $(EMPTY)
+
+// Identity
+BASE_BUNDLE_ID = com.stevenmendez.keepwell
+APP_BUNDLE_ID = $(BASE_BUNDLE_ID)$(BUNDLE_ID_SUFFIX)
+WIDGETS_BUNDLE_ID = $(APP_BUNDLE_ID).widgets
+APP_DISPLAY_NAME = Keepwell$(APP_NAME_SUFFIX)
+
+// Versioning (MARKETING_VERSION = user-visible version; CURRENT_PROJECT_VERSION = build)
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+
+// CloudKit: a single container for every environment. CloudKit keeps Development data
+// (development-signed builds) apart from Production (TestFlight/App Store).
+CLOUDKIT_CONTAINER_ID = iCloud.$(BASE_BUNDLE_ID)
+
+// Platform and language
+IPHONEOS_DEPLOYMENT_TARGET = 26.0
+TARGETED_DEVICE_FAMILY = 1
+SWIFT_VERSION = 6.0
+SWIFT_STRICT_CONCURRENCY = complete
+SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES
+SWIFT_TREAT_WARNINGS_AS_ERRORS = NO
+ENABLE_USER_SCRIPT_SANDBOXING = YES
+ENABLE_MODULE_VERIFIER = NO
+LOCALIZATION_PREFERS_STRING_CATALOGS = YES
+SWIFT_EMIT_LOC_STRINGS = YES
+
+// Signing: keep DEVELOPMENT_TEAM empty in the repo. Each developer sets their own in
+// Configs/Local.xcconfig (git-ignored), e.g. `DEVELOPMENT_TEAM = ABCDE12345`.
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"

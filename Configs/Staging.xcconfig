@@ -1,0 +1,7 @@
+// Staging — QA / TestFlight. Optimized like Release, with its own bundle ID and name.
+#include "Base.xcconfig"
+
+BUNDLE_ID_SUFFIX = .staging
+APP_NAME_SUFFIX = $(SPACE)Staging
+APS_ENVIRONMENT = production
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = STAGING $(inherited)
