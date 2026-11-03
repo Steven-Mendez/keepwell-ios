@@ -101,6 +101,16 @@
         }
       }
     },
+    "Allow access to Photos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso a Fotos"
+          }
+        }
+      }
+    },
     "Already happened: counts in balances" : {
       "localizations" : {
         "es" : {
@@ -571,6 +581,16 @@
         }
       }
     },
+    "Keepwell needs permission to add photos to save your receipt. You can turn it on in Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell necesita permiso para agregar fotos y guardar tu comprobante. Puedes activarlo en Ajustes."
+          }
+        }
+      }
+    },
     "Leaves as %@" : {
       "localizations" : {
         "es" : {
@@ -671,12 +691,42 @@
         }
       }
     },
+    "Not now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        }
+      }
+    },
     "Note" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nota"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceptar"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Ajustes"
           }
         }
       }
@@ -821,6 +871,16 @@
         }
       }
     },
+    "Save image" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar imagen"
+          }
+        }
+      }
+    },
     "Save income" : {
       "localizations" : {
         "es" : {
@@ -861,6 +921,16 @@
         }
       }
     },
+    "Saved to Photos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado en Fotos"
+          }
+        }
+      }
+    },
     "Search category" : {
       "localizations" : {
         "es" : {
@@ -887,6 +957,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seleccionado"
+          }
+        }
+      }
+    },
+    "Share" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir"
           }
         }
       }
@@ -1067,6 +1147,16 @@
         }
       }
     },
+    "Try again, or share the receipt instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inténtalo de nuevo o comparte el comprobante."
+          }
+        }
+      }
+    },
     "Used %lld days ago" : {
       "localizations" : {
         "en" : {
@@ -1133,6 +1223,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos cargar tus cuentas."
+          }
+        }
+      }
+    },
+    "We couldn't save the image" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar la imagen"
           }
         }
       }

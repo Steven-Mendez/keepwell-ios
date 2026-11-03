@@ -36,3 +36,27 @@ public func assertScreenSnapshot(
         column: column,
     )
 }
+
+/// Compares an image the app itself renders (a shared receipt) pixel for pixel, at its own size
+/// and scale, rather than laying a view out in a snapshot window.
+@MainActor
+public func assertRenderedImageSnapshot(
+    of image: UIImage,
+    named name: String? = nil,
+    fileID: StaticString = #file,
+    filePath: StaticString = #filePath,
+    testName: String = #function,
+    line: UInt = #line,
+    column: UInt = #column,
+) {
+    assertSnapshot(
+        of: image,
+        as: .image(precision: 0.99, perceptualPrecision: 0.98, scale: image.scale),
+        named: name,
+        fileID: fileID,
+        file: filePath,
+        testName: testName,
+        line: line,
+        column: column,
+    )
+}

@@ -14,6 +14,7 @@ enum CreateTransactionFactory {
     static func make(
         type: MovementType = .expense,
         store: InMemoryStore = InMemoryStore(sample: .standard),
+        receiptSaver: (any ReceiptImageSaving)? = nil,
     ) -> CreateTransactionViewModel {
         let context = DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: store, now: { now },
@@ -22,6 +23,7 @@ enum CreateTransactionFactory {
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
+            receiptSaver: receiptSaver,
             type: type,
             now: { now },
             makeID: { movementID },

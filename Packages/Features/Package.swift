@@ -216,6 +216,7 @@ let package = Package(
                 "CreateTransactionPresentation",
                 "CreateTransactionDomain",
                 "FeatureTestSupport",
+                .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],

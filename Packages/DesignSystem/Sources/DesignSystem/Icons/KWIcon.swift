@@ -23,6 +23,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     case cloud
     case contactless
     case creditCard
+    case download
     case droplet
     case eye
     case eyeOff
@@ -61,7 +62,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     var roundJoins: Bool {
         switch self {
         case .arrowDown, .arrowDownLeft, .arrowRight, .arrowUp, .arrowUpRight, .bank, .bolt, .bus, .cart, .cash, .check,
-             .cloud, .creditCard, .droplet, .faceID, .health, .heart, .home, .pencil, .phone, .settings, .share, .subscription,
+             .cloud, .creditCard, .download, .droplet, .faceID, .health, .heart, .home, .pencil, .phone, .settings, .share, .subscription,
              .tools, .transfer, .trash, .wallet:
             true
         default:
@@ -97,6 +98,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
         case .cloud: [.path("M7 18a5 5 0 0 1-.6-10A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z")]
         case .contactless: [.path("M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17")]
         case .creditCard: [.rect(x: 3, y: 6, width: 18, height: 13, radius: 2), .path("M3 10h18M7 15h4")]
+        case .download: [.path("M12 3v12M7 10l5 5 5-5M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4")]
         case .droplet: [.path("M12 21a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12.5 4.5 12 2c-.5 2.5-2 4.9-4 6.5S5 12 5 14a7 7 0 0 0 7 7z")]
         case .eye:
             [
