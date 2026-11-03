@@ -6,9 +6,16 @@ import Foundation
 public enum DomainError: Error, Equatable, Sendable {
     case invalidAmount
     case invalidCurrency(String)
+    /// Two amounts in different currencies were combined without a conversion.
+    case currencyMismatch(String, String)
+    /// Rates are "1 principal = X second" and must be positive.
+    case invalidExchangeRate
+    case invalidLastFour(String)
+    case invalidDayOfMonth(Int)
     case categoryKindMismatch(expected: TransactionKind, actual: TransactionKind)
-    /// Transfers need source and destination accounts, which this model doesn't have yet.
     case unsupportedTransactionKind(TransactionKind)
+    /// A transfer needs a destination account different from its source.
+    case invalidTransferDestination
     case invalidPeriod
     case notFound(UUID)
     case corruptedData(String)
