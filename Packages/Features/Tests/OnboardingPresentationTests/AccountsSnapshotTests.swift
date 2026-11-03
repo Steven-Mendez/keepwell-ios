@@ -8,7 +8,7 @@ import Testing
 @MainActor
 struct AccountsSnapshotTests {
     private func viewModelWithAccounts() -> OnboardingViewModel {
-        let viewModel = OnboardingFactory.make()
+        let viewModel = OnboardingFactory.usdAndNIO()
         var cash = viewModel.newAccount(.cash)
         cash.balance = 560
         viewModel.save(cash)
@@ -31,7 +31,7 @@ struct AccountsSnapshotTests {
 
     @Test
     func creditCardForm() {
-        let viewModel = OnboardingFactory.make()
+        let viewModel = OnboardingFactory.usdAndNIO()
         let form = AccountFormView(
             draft: viewModel.newAccount(.credit), principal: "USD", second: "NIO", isNew: true,
             onSave: { _ in }, onRemove: {}, onClose: {},
