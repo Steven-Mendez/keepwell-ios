@@ -14,6 +14,7 @@ let package = Package(
         .library(name: "AccountsDomain", targets: ["AccountsDomain"]),
         .library(name: "AccountsPresentation", targets: ["AccountsPresentation"]),
         .library(name: "AddCardDomain", targets: ["AddCardDomain"]),
+        .library(name: "AddCardPresentation", targets: ["AddCardPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -131,6 +132,29 @@ let package = Package(
             name: "AddCardDomain",
             dependencies: [.product(name: "Domain", package: "Domain")],
             path: "Sources/AddCard/Domain",
+        ),
+        .target(
+            name: "AddCardPresentation",
+            dependencies: [
+                "AddCardDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/AddCard/Presentation",
+        ),
+        .testTarget(
+            name: "AddCardPresentationTests",
+            dependencies: [
+                "AddCardPresentation",
+                "AddCardDomain",
+                "FeatureTestSupport",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            exclude: ["__Snapshots__"],
         ),
         .testTarget(
             name: "AddCardDomainTests",
