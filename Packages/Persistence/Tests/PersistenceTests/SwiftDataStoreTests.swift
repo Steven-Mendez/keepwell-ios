@@ -84,6 +84,36 @@ struct SwiftDataStoreTests {
     }
 
     @Test
+    func createdCategoriesKeepIconAndColorAndComeBeforeOther() async throws {
+        let store = try makeStore()
+        _ = try await store.fetchCategories()
+        let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense, icon: "sailboat", color: "blue")
+        try await store.save(boat)
+        let fetched = try await store.fetchCategories().filter { $0.kind == .expense }
+        #expect(fetched.last?.id == TransactionCategory.otherExpenseID)
+        #expect(fetched.dropLast().last == boat)
+    }
+
+    @Test
+    func defaultsAddedInANewVersionAppearForExistingData() async throws {
+        let store = try makeStore()
+        for category in TransactionCategory.defaults.prefix(5) {
+            try await store.save(category)
+        }
+        let fetched = try await store.fetchCategories()
+        #expect(fetched == TransactionCategory.defaults)
+    }
+
+    @Test
+    func deletingACategoryRemovesItAndToleratesMissingIDs() async throws {
+        let store = try makeStore()
+        try await store.save(TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense))
+        try await store.deleteCategory(id: "custom-boat")
+        try await store.deleteCategory(id: "custom-boat")
+        #expect(try await store.fetchCategories() == TransactionCategory.defaults)
+    }
+
+    @Test
     func settingsKeepASingleRow() async throws {
         let store = try makeStore()
         #expect(try await store.load() == nil)

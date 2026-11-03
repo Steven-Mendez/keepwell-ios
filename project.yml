@@ -218,6 +218,7 @@ schemes:
         - package: Features/TransactionsDomainTests
         - package: Features/SummaryDomainTests
         - package: Features/SettingsDomainTests
+        - package: Features/SettingsPresentationTests
         - package: Features/CreditCardDomainTests
         - name: KeepwellUITests
     profile:

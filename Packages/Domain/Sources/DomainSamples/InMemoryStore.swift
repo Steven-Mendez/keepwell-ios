@@ -81,6 +81,10 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         upsert(category, into: &categories)
     }
 
+    public func deleteCategory(id: String) {
+        categories.removeAll { $0.id == id }
+    }
+
     public func load() -> Settings? {
         settings
     }

@@ -97,6 +97,25 @@ public enum KWColor {
         Color(hex: category[id] ?? Hex.Text.faint)
     }
 
+    /// The colors a person can give a category they create, by key so the stored value stays a
+    /// name rather than a UI color. Same hues as `category`, so their rows sit with the defaults.
+    public static let categoryPalette: [(key: String, hex: UInt32)] = [
+        ("blue", 0x5B7CFF),
+        ("purple", 0xC77DFF),
+        ("pink", 0xFF7A90),
+        ("orange", 0xFF8A50),
+        ("amber", 0xFFB547),
+        ("yellow", 0xF2D16B),
+        ("lime", 0xA3E635),
+        ("green", 0x3FD69A),
+        ("cyan", 0x4FD1E8),
+        ("gray", 0x8A8A96),
+    ]
+
+    public static func categoryPalette(key: String) -> Color? {
+        categoryPalette.first { $0.key == key }.map { Color(hex: $0.hex) }
+    }
+
     enum Hex {
         enum Surface {
             static let bg: UInt32 = 0x000000

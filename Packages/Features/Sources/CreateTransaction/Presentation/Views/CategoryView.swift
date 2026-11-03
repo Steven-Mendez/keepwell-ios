@@ -33,6 +33,11 @@ public struct CategoryView: View {
                 }
             }
         }
+        .sheet(item: $viewModel.categoryEditor) { editor in
+            CategoryEditorView(viewModel: editor, onSaved: viewModel.categoryCreated) { viewModel.categoryEditor = nil }
+                .presentationDetents([.large])
+                .presentationBackground(KWColor.Surface.bg)
+        }
     }
 
     private var title: String {
@@ -62,13 +67,23 @@ public struct CategoryView: View {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                     ForEach(viewModel.visibleCategories) { category in
                         let isSelected = category.id == viewModel.categoryID
-                        tile(CategoryDisplay.icon(for: category.id), CategoryDisplay.name(of: category), isSelected: isSelected) {
+                        tile(CategorySymbol(category, size: 26), CategoryDisplay.name(of: category), isSelected: isSelected) {
                             viewModel.selectCategory(category.id)
                         }
                     }
                     if viewModel.hasMoreCategories {
-                        tile(.moreFilled, seeAllTitle, isSelected: false) {
+                        tile(KWIconView(.moreFilled, size: 26), seeAllTitle, isSelected: false) {
                             viewModel.showsAllCategories = true
+                        }
+                    }
+                    if viewModel.canCreateCategory {
+                        tile(
+                            KWIconView(.plus, size: 26),
+                            String(localized: "New category", bundle: #bundle),
+                            isSelected: false,
+                            isDashed: true,
+                        ) {
+                            viewModel.startNewCategory()
                         }
                     }
                 }
@@ -97,10 +112,17 @@ public struct CategoryView: View {
         }
     }
 
-    private func tile(_ icon: KWIcon, _ title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    /// `isDashed` sets apart the tile that adds a category from the ones that pick one.
+    private func tile(
+        _ icon: some View,
+        _ title: String,
+        isSelected: Bool,
+        isDashed: Bool = false,
+        action: @escaping () -> Void,
+    ) -> some View {
         Button(action: action) {
             VStack(spacing: KWSpacing.xs) {
-                KWIconView(icon, size: 26)
+                icon
                 Text(title)
                     .font(.kw(13, weight: isSelected ? 700 : 600, relativeTo: .footnote))
                     .lineLimit(1)
@@ -110,6 +132,12 @@ public struct CategoryView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 96)
             .background(isSelected ? Color.white : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.card))
+            .overlay {
+                if isDashed {
+                    RoundedRectangle(cornerRadius: KWRadius.card)
+                        .strokeBorder(KWColor.Surface.controlOff, style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                }
+            }
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

@@ -6,8 +6,8 @@ import Testing
 struct EntityTests {
     @Test
     func defaultCategoriesMatchHandoff() {
-        #expect(TransactionCategory.defaultExpense.count == 16)
-        #expect(TransactionCategory.defaultIncome.count == 5)
+        #expect(TransactionCategory.defaultExpense.count == 22)
+        #expect(TransactionCategory.defaultIncome.count == 9)
         #expect(TransactionCategory.defaultExpense.allSatisfy { $0.kind == .expense })
         #expect(TransactionCategory.defaultIncome.allSatisfy { $0.kind == .income })
         #expect(Set(TransactionCategory.defaults.map(\.id)).count == TransactionCategory.defaults.count)

@@ -3,28 +3,96 @@ import Domain
 import Foundation
 import SwiftUI
 
-/// Name, icon and color of a category. Icons follow the category grid in the create-transaction flow;
-/// colors come from the `category` tokens, falling back to `faint` where the tokens define none.
+/// Name, icon and color of a category. Icons are SF Symbols: defaults map theirs by id, and a
+/// category the person created keeps the one they picked. Colors come from the `category` tokens,
+/// or the palette color the person picked, falling back to `faint`.
 public enum CategoryDisplay {
-    public static func icon(for categoryID: String?) -> KWIcon {
-        switch categoryID {
-        case "restaurants": .restaurant
-        case "groceries": .cart
-        case "transport": .bus
-        case "utilities": .bolt
-        case "subscriptions": .subscription
-        case "tools": .tools
-        case "family": .heart
-        case "health": .health
-        case "housing": .home
-        case "fees", "shopping": .creditCard
-        case "salary", "extra", "interest", "refunds", "other-income": .arrowDownLeft
-        default: .moreFilled
+    /// Shown when a category has no symbol of its own, and for unknown ids from an import.
+    public static let fallbackSymbol = "square.grid.2x2"
+
+    public static func symbol(for category: TransactionCategory?) -> String {
+        guard let category else { return fallbackSymbol }
+        return category.icon ?? defaultSymbol(for: category.id) ?? fallbackSymbol
+    }
+
+    static func defaultSymbol(for id: String) -> String? {
+        switch id {
+        case "groceries": "cart"
+        case "restaurants": "fork.knife"
+        case "transport": "bus"
+        case "housing": "house"
+        case "utilities": "bolt"
+        case "health": "cross.case"
+        case "education": "graduationcap"
+        case "leisure": "theatermasks"
+        case "shopping": "bag"
+        case "subscriptions": "arrow.triangle.2.circlepath"
+        case "personal-care": "scissors"
+        case "family": "figure.2.and.child.holdinghands"
+        case "travel": "airplane"
+        case "fees": "building.columns"
+        case "tools": "wrench.and.screwdriver"
+        case "pets": "pawprint"
+        case "gifts": "gift"
+        case "insurance": "umbrella"
+        case "taxes": "doc.text"
+        case "savings": "banknote"
+        case "donations": "heart.circle"
+        case TransactionCategory.otherExpenseID: fallbackSymbol
+        case "salary": "briefcase"
+        case "freelance": "laptopcomputer"
+        case "extra": "star"
+        case "interest": "percent"
+        case "investments": "chart.line.uptrend.xyaxis"
+        case "rental": "key"
+        case "gifts-received": "giftcard"
+        case "refunds": "arrow.uturn.backward"
+        case TransactionCategory.otherIncomeID: "tray.and.arrow.down"
+        default: nil
+        }
+    }
+
+    /// The icons offered when creating a category, grouped loosely by what people track.
+    public static let symbolChoices: [String] = [
+        "cart", "basket", "fork.knife", "cup.and.saucer", "wineglass", "birthday.cake",
+        "bus", "car", "fuelpump", "tram", "bicycle", "parkingsign",
+        "house", "sofa", "bolt", "drop", "wifi", "phone",
+        "cross.case", "pills", "heart", "dumbbell", "figure.run", "scissors",
+        "bag", "tshirt", "gift", "tag", "sparkles", "cart.badge.plus",
+        "graduationcap", "book", "theatermasks", "film", "music.note", "gamecontroller",
+        "airplane", "suitcase", "beach.umbrella", "globe", "tent", "map",
+        "pawprint", "leaf", "figure.2.and.child.holdinghands", "stroller", "umbrella", "heart.circle",
+        "briefcase", "laptopcomputer", "wrench.and.screwdriver", "hammer", "paintbrush", "camera",
+        "banknote", "creditcard", "building.columns", "chart.line.uptrend.xyaxis", "percent", "doc.text",
+        "key", "star", "arrow.uturn.backward", "tray.and.arrow.down", "bell", "square.grid.2x2",
+    ]
+
+    /// Keys of `KWColor.categoryPalette`, in the order the editor shows them.
+    public static var colorChoices: [String] {
+        KWColor.categoryPalette.map(\.key)
+    }
+
+    /// Read by VoiceOver on the color choices.
+    public static func colorName(_ key: String) -> String {
+        switch key {
+        case "blue": String(localized: "Blue", bundle: #bundle)
+        case "purple": String(localized: "Purple", bundle: #bundle)
+        case "pink": String(localized: "Pink", bundle: #bundle)
+        case "orange": String(localized: "Orange", bundle: #bundle)
+        case "amber": String(localized: "Amber", bundle: #bundle)
+        case "yellow": String(localized: "Yellow", bundle: #bundle)
+        case "lime": String(localized: "Lime", bundle: #bundle)
+        case "green": String(localized: "Green", bundle: #bundle)
+        case "cyan": String(localized: "Cyan", bundle: #bundle)
+        default: String(localized: "Gray", bundle: #bundle)
         }
     }
 
     public static func color(for category: TransactionCategory?) -> Color {
-        KWColor.category(id: category?.id ?? TransactionCategory.otherExpenseID)
+        if let key = category?.color, let picked = KWColor.categoryPalette(key: key) {
+            return picked
+        }
+        return KWColor.category(id: category?.id ?? TransactionCategory.otherExpenseID)
     }
 
     /// The name a person reads. Default categories are stored with their English name, so they
@@ -51,13 +119,47 @@ public enum CategoryDisplay {
         case "travel": String(localized: "Travel", bundle: #bundle)
         case "fees": String(localized: "Fees", bundle: #bundle)
         case "tools": String(localized: "Tools", bundle: #bundle)
+        case "pets": String(localized: "Pets", bundle: #bundle)
+        case "gifts": String(localized: "Gifts", bundle: #bundle)
+        case "insurance": String(localized: "Insurance", bundle: #bundle)
+        case "taxes": String(localized: "Taxes", bundle: #bundle)
+        case "savings": String(localized: "Savings", bundle: #bundle)
+        case "donations": String(localized: "Donations", bundle: #bundle)
         case TransactionCategory.otherExpenseID: String(localized: "Other", bundle: #bundle)
         case "salary": String(localized: "Salary", bundle: #bundle)
+        case "freelance": String(localized: "Freelance", bundle: #bundle)
         case "extra": String(localized: "Extra", bundle: #bundle)
         case "interest": String(localized: "Interest", bundle: #bundle)
+        case "investments": String(localized: "Investments", bundle: #bundle)
+        case "rental": String(localized: "Rental", bundle: #bundle)
+        case "gifts-received": String(localized: "Gifts received", bundle: #bundle)
         case "refunds": String(localized: "Refunds", bundle: #bundle)
         case TransactionCategory.otherIncomeID: String(localized: "Other income", bundle: #bundle)
         default: nil
         }
+    }
+}
+
+/// A category's SF Symbol at the size and stroke weight of the design's line icons.
+public struct CategorySymbol: View {
+    private let name: String
+    private let size: CGFloat
+
+    public init(_ category: TransactionCategory?, size: CGFloat = 20) {
+        name = CategoryDisplay.symbol(for: category)
+        self.size = size
+    }
+
+    public init(symbol: String, size: CGFloat = 20) {
+        name = symbol
+        self.size = size
+    }
+
+    public var body: some View {
+        Image(systemName: name)
+            .font(.system(size: size * 0.8, weight: .medium))
+            .symbolRenderingMode(.monochrome)
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }

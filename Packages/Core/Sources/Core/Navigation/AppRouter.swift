@@ -5,6 +5,8 @@ import SwiftUI
 /// store and can later be encoded for state restoration.
 public enum AppRoute: Hashable, Sendable {
     case settings
+    /// Settings › Categories, opened on the income tab or the expense one.
+    case categories(showsIncome: Bool)
     /// A credit card's detail, by its account.
     case creditCard(accountID: UUID, addsAdditional: Bool = false)
     /// The controls of one additional card on that account.

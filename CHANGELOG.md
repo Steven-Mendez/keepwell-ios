@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Categories: every category has its own icon, and there are new ones for pets, gifts, insurance,
+  taxes, savings and donations, and for freelance, investments, rental and gifts received income.
+- Create your own categories with a name, icon and color from "New category" when logging a
+  movement (it starts from what you searched for), and rename, recolor or delete them in Settings ›
+  Expense or Income categories. Deleting one moves its movements to "Other".
 - Settings › Language shows the app's language and opens the iPhone's Settings to pick another
   one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.

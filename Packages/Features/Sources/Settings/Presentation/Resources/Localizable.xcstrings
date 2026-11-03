@@ -161,6 +161,26 @@
         }
       }
     },
+    "Categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        }
+      }
+    },
+    "Create categories for what you track, with your own name, icon and color." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea categorías para lo que quieras seguir, con tu propio nombre, ícono y color."
+          }
+        }
+      }
+    },
     "Credit cards" : {
       "localizations" : {
         "es" : {
@@ -241,6 +261,16 @@
         }
       }
     },
+    "Expenses" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastos"
+          }
+        }
+      }
+    },
     "Export CSV" : {
       "localizations" : {
         "es" : {
@@ -301,6 +331,26 @@
         }
       }
     },
+    "Included" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incluidas"
+          }
+        }
+      }
+    },
+    "Income" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresos"
+          }
+        }
+      }
+    },
     "Income categories" : {
       "localizations" : {
         "es" : {
@@ -357,6 +407,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual · por defecto 1"
+          }
+        }
+      }
+    },
+    "New category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva categoría"
           }
         }
       }
@@ -621,6 +681,16 @@
         }
       }
     },
+    "We couldn't load your categories." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus categorías."
+          }
+        }
+      }
+    },
     "We couldn't read that file." : {
       "localizations" : {
         "es" : {
@@ -687,6 +757,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tus cuentas, tarjetas y movimientos se borran de este iPhone y de iCloud. No se puede deshacer."
+          }
+        }
+      }
+    },
+    "Yours" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuyas"
           }
         }
       }

@@ -103,6 +103,21 @@ public struct TransactionContext: Sendable {
         }
     }
 
+    /// The same context with a category the person just created, so the flow can pick it without
+    /// reloading and losing the currency and payment method already chosen.
+    public func adding(_ category: TransactionCategory) -> Self {
+        Self(
+            currencies: currencies,
+            categories: categories.filter { $0.id != category.id } + [category],
+            accounts: accounts,
+            cards: cards,
+            balances: balances,
+            lastUsed: lastUsed,
+            categoryUsage: categoryUsage,
+            additionalUsage: additionalUsage,
+        )
+    }
+
     /// The most recently used source, the flow's default.
     public var lastUsedSource: PaymentSource? {
         lastUsed.max { $0.value < $1.value }?.key

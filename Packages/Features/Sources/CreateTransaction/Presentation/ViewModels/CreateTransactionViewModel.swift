@@ -27,7 +27,7 @@ public final class CreateTransactionViewModel {
     public private(set) var kind: TransactionKind
     public private(set) var amountText = "0"
     public var currency = "USD"
-    public private(set) var context: TransactionContext?
+    public internal(set) var context: TransactionContext?
     public private(set) var categoryID: String?
     public private(set) var source: PaymentSource?
     public private(set) var destinationAccountID: UUID?
@@ -37,6 +37,8 @@ public final class CreateTransactionViewModel {
     var presetCategoryID: String?
     public var categoryQuery = ""
     public var showsAllCategories = false
+    /// The open "New category" sheet.
+    public var categoryEditor: CategoryEditorViewModel?
     public var description = ""
     /// The suggestion last written into `description`, so a later category change can replace it.
     var prefilledDescription: String?
@@ -54,17 +56,22 @@ public final class CreateTransactionViewModel {
     let now: () -> Date
     private let getContext: any GetTransactionContextUseCase
     private let saveTransaction: any SaveTransactionUseCase
+    let saveCategory: (any SaveCategoryUseCase)?
     static let maxAmountLength = 9
+    /// Four rows of three tiles fit above the fold; past that the grid collapses behind "See all".
+    static let categorySlots = 12
 
     public init(
         getContext: any GetTransactionContextUseCase,
         save: any SaveTransactionUseCase,
+        saveCategory: (any SaveCategoryUseCase)? = nil,
         kind: TransactionKind = .expense,
         calendar: Calendar = .current,
         now: @escaping () -> Date = { .now },
     ) {
         self.getContext = getContext
         saveTransaction = save
+        self.saveCategory = saveCategory
         self.kind = kind
         self.calendar = calendar
         self.now = now
@@ -159,31 +166,6 @@ public final class CreateTransactionViewModel {
     }
 
     // MARK: Step 2 · Category (or destination)
-
-    public var categories: [TransactionCategory] {
-        context?.categories.filter { $0.kind == kind } ?? []
-    }
-
-    /// The grid: search results, everything after "See all N", or the eight most used.
-    public var visibleCategories: [TransactionCategory] {
-        let query = categoryQuery.trimmingCharacters(in: .whitespaces)
-        if !query.isEmpty {
-            return categories.filter { CategoryDisplay.name(of: $0).localizedStandardContains(query) }
-        }
-        let usage = context?.categoryUsage ?? [:]
-        let ranked = categories.enumerated()
-            .sorted { lhs, rhs in
-                let left = usage[lhs.element.id] ?? 0
-                let right = usage[rhs.element.id] ?? 0
-                return left == right ? lhs.offset < rhs.offset : left > right
-            }
-            .map(\.element)
-        return showsAllCategories ? ranked : Array(ranked.prefix(8))
-    }
-
-    public var hasMoreCategories: Bool {
-        categoryQuery.isEmpty && !showsAllCategories && categories.count > 8
-    }
 
     public func selectCategory(_ id: String) {
         categoryID = id
@@ -285,6 +267,7 @@ public final class CreateTransactionViewModel {
         saved = nil
         categoryQuery = ""
         showsAllCategories = false
+        categoryEditor = nil
         path = []
         await load()
     }

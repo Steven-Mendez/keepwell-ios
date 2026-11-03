@@ -173,7 +173,14 @@ struct RootView: View {
     private func destination(_ route: AppRoute) -> some View {
         switch route {
         case .settings:
-            SettingsRoute(container: container, onBack: settingsClosed, onErased: returnToOnboarding)
+            SettingsRoute(
+                container: container,
+                onBack: settingsClosed,
+                onErased: returnToOnboarding,
+                onOpenCategories: { router.push(.categories(showsIncome: $0 == .income)) },
+            )
+        case let .categories(showsIncome):
+            CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: router.pop)
         case let .creditCard(accountID, addsAdditional):
             CreditCardRoute(
                 container: container,

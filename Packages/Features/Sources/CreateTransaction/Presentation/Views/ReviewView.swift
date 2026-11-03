@@ -75,9 +75,15 @@ public struct ReviewView: View {
 
     private var summary: some View {
         VStack(spacing: 6) {
-            KWIconView(viewModel.kind == .transfer ? .transfer : CategoryDisplay.icon(for: viewModel.categoryID), size: 26)
-                .frame(width: 56, height: 56)
-                .background(KWColor.Surface.surface2, in: Circle())
+            Group {
+                if viewModel.kind == .transfer {
+                    KWIconView(.transfer, size: 26)
+                } else {
+                    CategorySymbol(viewModel.category, size: 26)
+                }
+            }
+            .frame(width: 56, height: 56)
+            .background(KWColor.Surface.surface2, in: Circle())
             Text(viewModel.reviewAmount)
                 .font(.kw(40, weight: 800, relativeTo: .largeTitle))
                 .tracking(-1.2)

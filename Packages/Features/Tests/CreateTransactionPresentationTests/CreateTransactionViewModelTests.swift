@@ -19,6 +19,7 @@ enum CreateTransactionFactory {
         return CreateTransactionViewModel(
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
+            saveCategory: DefaultSaveCategoryUseCase(categories: store),
             kind: kind,
             now: { now },
         )
@@ -83,14 +84,51 @@ struct CreateTransactionViewModelTests {
     }
 
     @Test
-    func categoriesShowEightMostUsedThenAllOrSearch() async {
+    func categoriesShowTheMostUsedThenAllOrSearch() async {
         let viewModel = await CreateTransactionFactory.loaded()
-        #expect(viewModel.visibleCategories.count == 8)
+        // Ten categories, then "See all" and "New category" fill four rows of three.
+        #expect(viewModel.visibleCategories.count == 10)
         #expect(viewModel.hasMoreCategories)
+        #expect(viewModel.canCreateCategory)
         viewModel.showsAllCategories = true
-        #expect(viewModel.visibleCategories.count == 16)
+        #expect(viewModel.visibleCategories.count == TransactionCategory.defaultExpense.count)
         viewModel.categoryQuery = "groc"
         #expect(viewModel.visibleCategories.map(\.id) == ["groceries"])
+    }
+
+    @Test
+    func aShortListShowsEverythingWithoutSeeAll() async {
+        let viewModel = await CreateTransactionFactory.loaded(kind: .income)
+        #expect(!viewModel.hasMoreCategories)
+        #expect(viewModel.visibleCategories.count == TransactionCategory.defaultIncome.count)
+    }
+
+    @Test
+    func aNewCategoryStartsFromTheSearchAndIsChosenOnceCreated() async throws {
+        let viewModel = await CreateTransactionFactory.loaded()
+        type(viewModel, "12")
+        viewModel.continueFromAmount()
+        viewModel.categoryQuery = "Boat"
+        #expect(viewModel.visibleCategories.isEmpty)
+        viewModel.startNewCategory()
+        let editor = try #require(viewModel.categoryEditor)
+        #expect(editor.name == "Boat")
+        #expect(editor.kind == .expense)
+        let created = try #require(await editor.save())
+        viewModel.categoryCreated(created)
+        #expect(viewModel.categoryEditor == nil)
+        #expect(viewModel.categoryQuery.isEmpty)
+        #expect(viewModel.categoryID == created.id)
+        #expect(viewModel.categories.contains(created))
+        #expect(viewModel.path == [.category, .method])
+    }
+
+    @Test
+    func transfersCantCreateCategories() async {
+        let viewModel = await CreateTransactionFactory.loaded(kind: .transfer)
+        #expect(!viewModel.canCreateCategory)
+        viewModel.startNewCategory()
+        #expect(viewModel.categoryEditor == nil)
     }
 
     @Test

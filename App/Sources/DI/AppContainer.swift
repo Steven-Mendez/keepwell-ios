@@ -153,6 +153,15 @@ final class AppContainer {
         )
     }
 
+    func makeCategoriesViewModel(kind: TransactionKind) -> CategoriesViewModel {
+        CategoriesViewModel(
+            kind: kind,
+            getCategories: DefaultGetCategoriesUseCase(categories: store),
+            save: DefaultSaveCategoryUseCase(categories: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+        )
+    }
+
     let authenticator: any DeviceAuthenticator = LocalDeviceAuthenticator()
     let reminders = ReminderScheduler()
     let widgetSnapshots = WidgetSnapshotStore()
@@ -213,6 +222,7 @@ final class AppContainer {
         return CreateTransactionViewModel(
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
+            saveCategory: DefaultSaveCategoryUseCase(categories: store),
             kind: kind,
         )
     }
