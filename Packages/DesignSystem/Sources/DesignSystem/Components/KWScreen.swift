@@ -38,7 +38,12 @@ public struct KWScreen<Content: View, Background: View>: View {
                 )
                 .ignoresSafeArea(.container)
         }
-        .background { background.ignoresSafeArea() }
+        .background {
+            // Empty space is transparent to hits, so taps there reach the background.
+            background
+                .ignoresSafeArea()
+                .onTapGesture { KWKeyboard.dismiss() }
+        }
         .foregroundStyle(KWColor.Text.primary)
         // The design lays screens out for the full height; the keyboard covers the lower part
         // instead of squeezing the layout, and screens offer a way to dismiss it.
@@ -57,22 +62,11 @@ extension KWScreen where Background == Color {
     }
 }
 
-/// Hides the keyboard from anywhere, for "Listo" toolbar buttons and primary actions.
+/// Hides the keyboard from anywhere: primary actions and taps on empty space call it, since
+/// number pads have no return key.
 @MainActor
 public enum KWKeyboard {
     public static func dismiss() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-}
-
-extension View {
-    /// Adds the "Listo" button above number pads, which have no return key.
-    public func kwKeyboardDoneButton() -> some View {
-        toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Listo") { KWKeyboard.dismiss() }
-            }
-        }
     }
 }
