@@ -1,3 +1,4 @@
+import Core
 import Domain
 import Foundation
 import Observation
@@ -77,11 +78,9 @@ public final class OnboardingViewModel {
         "\(principal) · \(Self.fullName(for: principal))"
     }
 
-    /// The rate the person typed, accepting a comma as decimal separator.
+    /// The rate the person typed; must be positive.
     public var rate: Decimal? {
-        let normalized = rateText.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: ".")
-        guard let value = Decimal(string: normalized, locale: Locale(identifier: "en_US_POSIX")), value > 0 else { return nil }
-        return value
+        AmountInput.decimal(from: rateText).flatMap { $0 > 0 ? $0 : nil }
     }
 
     public var canContinueFromCurrencies: Bool {
