@@ -12,6 +12,7 @@ public struct SettingsView: View {
     private let onErased: () -> Void
     @State private var isConfirmingErase = false
     @FocusState private var isEditingRate: Bool
+    @Environment(\.openURL) private var openURL
 
     public init(viewModel: SettingsViewModel, onBack: @escaping () -> Void, onErased: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -116,22 +117,30 @@ public struct SettingsView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// Keepwell follows the iPhone's language. iOS also lets each app use its own, from the app's
+    /// page in the iPhone's Settings, and reopens the app in it; the row leads there.
     private var languageSection: some View {
         SettingsSection(title: String(localized: "Language", bundle: #bundle)) {
             KWGroupedCard {
-                SettingsMenuRow(
-                    label: String(localized: "App language", bundle: #bundle),
-                    value: viewModel.chosenLanguage.nativeName,
-                    options: AppLanguage.allCases,
-                    title: \.nativeName,
-                ) { language in viewModel.chooseLanguage(language) }
-                if viewModel.languageNeedsReopen {
-                    Text("Close Keepwell and open it again to see it in the new language.", bundle: #bundle)
-                        .font(KWTextStyle.captionSm.font.weight(.regular))
-                        .foregroundStyle(KWColor.Text.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.vertical, KWSpacing.sm)
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        openURL(url)
+                    }
+                } label: {
+                    KWValueRow(
+                        String(localized: "App language", bundle: #bundle),
+                        value: "\(viewModel.languageName) ›",
+                        style: .setting,
+                        verticalPadding: 14,
+                    )
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                Text("Keepwell uses your iPhone's language. To use another one only here, choose it in iPhone Settings.", bundle: #bundle)
+                    .font(KWTextStyle.captionSm.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.vertical, KWSpacing.sm)
             }
         }
     }

@@ -9,8 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
-- Onboarding starts by asking the language (Español / English); picking the one the iPhone isn't
-  in asks to reopen Keepwell, which then continues in it. Settings › Language changes it later.
+- Settings › Language shows the app's language and opens the iPhone's Settings to pick another
+  one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.
 - Home: net worth with its second-currency equivalent, quick actions (expense, income, move, pay
   card), the month's spending and savings, planned movements to confirm, additional cards against

@@ -12,7 +12,6 @@ final class OnboardingUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.chooseEnglishIfAsked()
 
         XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
         attachScreenshot("1-welcome")

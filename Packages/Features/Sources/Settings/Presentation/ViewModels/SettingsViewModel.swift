@@ -27,9 +27,6 @@ public final class SettingsViewModel {
     public var exportedFile: ExportedFile?
     /// The outcome of the last CSV import, shown under the data card.
     public private(set) var importMessage: String?
-    /// The language picked in this session; it shows once Keepwell is opened again.
-    public private(set) var chosenLanguage: AppLanguage
-    public private(set) var languageNeedsReopen = false
     /// The outcome of the last backup or restore, shown under the iCloud status.
     public private(set) var backupMessage: String?
     public private(set) var isWorking = false
@@ -45,7 +42,6 @@ public final class SettingsViewModel {
     private let importTransactions: any ImportTransactionsUseCase
     private let createBackup: any CreateBackupUseCase
     private let restoreBackup: any RestoreBackupUseCase
-    private let languagePreference: any LanguagePreference
     private let eraseAllData: any EraseAllDataUseCase
     private let now: () -> Date
     let formatter = CurrencyFormatter()
@@ -58,7 +54,6 @@ public final class SettingsViewModel {
         importTransactions: any ImportTransactionsUseCase,
         createBackup: any CreateBackupUseCase,
         restoreBackup: any RestoreBackupUseCase,
-        language: any LanguagePreference,
         eraseAllData: any EraseAllDataUseCase,
         now: @escaping () -> Date = { .now },
     ) {
@@ -69,8 +64,6 @@ public final class SettingsViewModel {
         self.importTransactions = importTransactions
         self.createBackup = createBackup
         self.restoreBackup = restoreBackup
-        languagePreference = language
-        chosenLanguage = language.current
         self.eraseAllData = eraseAllData
         self.now = now
     }
@@ -206,11 +199,6 @@ public final class SettingsViewModel {
         let done = String(localized: "\(imported) transactions imported", bundle: #bundle)
         guard skipped > 0 else { return done }
         return done + " · " + String(localized: "\(skipped) rows skipped", bundle: #bundle)
-    }
-
-    public func chooseLanguage(_ language: AppLanguage) {
-        chosenLanguage = language
-        languageNeedsReopen = languagePreference.choose(language)
     }
 
     /// Writes a full backup file and offers it to share or save (iCloud Drive, Files).

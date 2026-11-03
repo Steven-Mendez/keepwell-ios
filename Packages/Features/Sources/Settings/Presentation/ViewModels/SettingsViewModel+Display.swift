@@ -11,6 +11,14 @@ extension SettingsViewModel {
         )
     }
 
+    /// The language the app is showing, named in that language ("Español").
+    var languageName: String {
+        let code = Bundle.main.preferredLocalizations.first ?? "en"
+        let locale = Locale(identifier: code)
+        let name = locale.localizedString(forLanguageCode: code) ?? code
+        return name.capitalized(with: locale)
+    }
+
     /// "USD · US dollar", in the person's language.
     func currencyName(_ code: String) -> String {
         guard let name = Locale.current.localizedString(forCurrencyCode: code) else { return code }

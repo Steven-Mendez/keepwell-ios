@@ -36,7 +36,6 @@ final class AppContainer {
     let currencyFormatter = CurrencyFormatter()
     let store: SwiftDataStore
     let preferences = StorePreferences()
-    let languageStore = LanguageStore()
     /// Started with the container so it hears CloudKit uploads from launch on.
     let backupStatus = BackupStatusTracker()
 
@@ -72,7 +71,6 @@ final class AppContainer {
             completeOnboarding: DefaultCompleteOnboardingUseCase(settings: store, accounts: store, cards: store, backup: preferences),
             restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store, backup: preferences),
             notifications: UserNotificationAuthorizer(),
-            language: languageStore,
         )
     }
 
@@ -151,7 +149,6 @@ final class AppContainer {
             restoreBackup: DefaultRestoreBackupUseCase(
                 eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store,
             ),
-            language: languageStore,
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
         )
     }

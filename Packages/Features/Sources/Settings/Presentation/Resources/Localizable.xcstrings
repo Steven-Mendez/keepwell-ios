@@ -1,36 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Language" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Idioma"
-          }
-        }
-      }
-    },
-    "App language" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Idioma de la app"
-          }
-        }
-      }
-    },
-    "Close Keepwell and open it again to see it in the new language." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cierra Keepwell y vuelve a abrirla para verla en el nuevo idioma."
-          }
-        }
-      }
-    },
     "%lld days" : {
       "localizations" : {
         "en" : {
@@ -147,6 +117,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "App language" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma de la app"
           }
         }
       }
@@ -327,6 +307,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Categorías de ingreso"
+          }
+        }
+      }
+    },
+    "Keepwell uses your iPhone's language. To use another one only here, choose it in iPhone Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell usa el idioma de tu iPhone. Para usar otro solo aquí, elígelo en Ajustes del iPhone."
+          }
+        }
+      }
+    },
+    "Language" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
           }
         }
       }

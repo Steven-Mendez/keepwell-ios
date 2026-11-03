@@ -1,36 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Choose your language" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige tu idioma"
-          }
-        }
-      }
-    },
-    "You can change it later in Settings." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puedes cambiarlo después en Ajustes."
-          }
-        }
-      }
-    },
-    "Close Keepwell and open it again to continue in %@." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cierra Keepwell y vuelve a abrirla para continuar en %@."
-          }
-        }
-      }
-    },
     "%@ · already included" : {
       "localizations" : {
         "es" : {
