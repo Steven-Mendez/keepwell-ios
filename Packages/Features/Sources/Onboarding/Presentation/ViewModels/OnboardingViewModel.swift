@@ -42,11 +42,17 @@ public final class OnboardingViewModel {
     public private(set) var isSaving = false
     public private(set) var errorMessage: String?
     public private(set) var completedSettings: Settings?
+    /// The language step shows first, once, until a language is picked.
+    public private(set) var asksLanguage: Bool
+    public var selectedLanguage: AppLanguage
+    /// Set when the chosen language differs from the one on screen: iOS applies it on reopening.
+    public private(set) var languageNeedingReopen: AppLanguage?
     private var searchedCurrencies: [String] = []
 
     private let completeOnboarding: any CompleteOnboardingUseCase
     private let restoreFromBackup: any RestoreFromBackupUseCase
     private let notifications: any NotificationAuthorizing
+    private let language: any LanguagePreference
 
     static let defaultRateText = "1.0000"
     static let featuredSecondCurrencies = [
@@ -60,10 +66,14 @@ public final class OnboardingViewModel {
         completeOnboarding: any CompleteOnboardingUseCase,
         restoreFromBackup: any RestoreFromBackupUseCase,
         notifications: any NotificationAuthorizing,
+        language: any LanguagePreference,
     ) {
         self.completeOnboarding = completeOnboarding
         self.restoreFromBackup = restoreFromBackup
         self.notifications = notifications
+        self.language = language
+        selectedLanguage = language.current
+        asksLanguage = !language.hasChosen
         accounts = [OnboardingAccountDraft(kind: .cash, name: String(localized: "Cash", bundle: #bundle), currency: "NIO")]
     }
 
@@ -147,6 +157,20 @@ public final class OnboardingViewModel {
 
     public func removeAccount(id: UUID) {
         accounts.removeAll { $0.id == id && $0.kind != .cash }
+    }
+
+    // MARK: Language
+
+    public var languages: [AppLanguage] {
+        AppLanguage.allCases
+    }
+
+    public func confirmLanguage() {
+        if language.choose(selectedLanguage) {
+            languageNeedingReopen = selectedLanguage
+        } else {
+            asksLanguage = false
+        }
     }
 
     // MARK: Navigation

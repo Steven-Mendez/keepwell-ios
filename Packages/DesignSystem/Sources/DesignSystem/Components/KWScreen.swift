@@ -27,7 +27,9 @@ public struct KWScreen<Content: View, Background: View>: View {
 
     public var body: some View {
         GeometryReader { proxy in
-            content
+            // A GeometryReader overlaps its children, so several top-level views passed in
+            // would draw on top of each other; stacking them keeps the screen's reading order.
+            VStack(alignment: .leading, spacing: 0) { content }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(.top, max(top, proxy.safeAreaInsets.top))
                 .padding(.bottom, max(bottom, proxy.safeAreaInsets.bottom))

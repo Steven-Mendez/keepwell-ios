@@ -39,7 +39,7 @@ public final class CardRecord {
         defaultCategoryID = controls?.defaultCategoryID
         alertEachPurchase = controls?.alertEachPurchase ?? true
         alertNearCap = controls?.alertNearCap ?? true
-        isFrozen = controls?.isFrozen ?? false
+        isFrozen = card.isFrozen
     }
 
     func toDomain() throws(DomainCorruption) -> Card {
@@ -69,6 +69,7 @@ public final class CardRecord {
                 lastFour: lastFour,
                 color: colorRaw.flatMap(CardColor.init(rawValue:)),
                 additional: controls,
+                isFrozen: isFrozen,
             )
         } catch {
             throw DomainCorruption("Card: \(error)")

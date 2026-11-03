@@ -31,11 +31,15 @@ public final class CreateTransactionViewModel {
     public private(set) var categoryID: String?
     public private(set) var source: PaymentSource?
     public private(set) var destinationAccountID: UUID?
+    /// Set by `presetTransfer(to:)`.
+    var presetDestinationID: UUID?
+    /// Set by `presetCategory(_:)`.
+    var presetCategoryID: String?
     public var categoryQuery = ""
     public var showsAllCategories = false
     public var description = ""
     /// The suggestion last written into `description`, so a later category change can replace it.
-    private var prefilledDescription: String?
+    var prefilledDescription: String?
     public var date: Date
     public var isPlanned = false
     public var isShared = false
@@ -147,6 +151,11 @@ public final class CreateTransactionViewModel {
     public func continueFromAmount() {
         guard canContinueFromAmount else { return }
         path = [.category]
+        if kind == .transfer, let presetDestinationID {
+            selectDestination(presetDestinationID)
+        } else if kind != .transfer, let presetCategoryID, categories.contains(where: { $0.id == presetCategoryID }) {
+            selectCategory(presetCategoryID)
+        }
     }
 
     // MARK: Step 2 · Category (or destination)
@@ -206,16 +215,6 @@ public final class CreateTransactionViewModel {
         source = newSource
         debitedText = ""
         path.append(.review)
-    }
-
-    /// Additional cards that are frozen or don't allow the category can't pay; transfers can't
-    /// leave from their own destination.
-    public func isUsable(_ candidate: PaymentSource) -> Bool {
-        guard let context else { return false }
-        if case let .card(id) = candidate, let controls = context.card(id)?.additional {
-            guard controls.allows(categoryID: categoryID ?? "") else { return false }
-        }
-        return kind != .transfer || context.accountID(for: candidate) != destinationAccountID
     }
 
     // MARK: Step 4 · Review
@@ -294,15 +293,6 @@ public final class CreateTransactionViewModel {
     /// case, so the persisted text is in the language they were using at creation time.
     var descriptionPlaceholder: String {
         category.map(CategoryDisplay.name(of:)) ?? String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle)
-    }
-
-    /// Shows the suggested description as real, editable text on the review step, as the design
-    /// does. It follows the category while the person hasn't typed anything of their own.
-    func prefillDescription() {
-        let current = description.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard current.isEmpty || current == prefilledDescription else { return }
-        description = descriptionPlaceholder
-        prefilledDescription = description
     }
 
     private var resolvedDescription: String {

@@ -74,6 +74,9 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
     public let color: CardColor?
     /// Present only for `creditAdditional`.
     public let additional: AdditionalCardControls?
+    /// The person's own freeze on a holder or debit plastic; additional cards keep theirs in
+    /// `additional`, where the holder sets it.
+    private let isPlasticFrozen: Bool
 
     public init(
         id: UUID = UUID(),
@@ -83,6 +86,7 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
         lastFour: String? = nil,
         color: CardColor? = nil,
         additional: AdditionalCardControls? = nil,
+        isFrozen: Bool = false,
     ) throws(DomainError) {
         if let lastFour {
             guard lastFour.count == 4, lastFour.allSatisfy(\.isASCIIDigit) else { throw .invalidLastFour(lastFour) }
@@ -94,6 +98,37 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
         self.lastFour = lastFour
         self.color = color
         self.additional = kind == .creditAdditional ? additional : nil
+        isPlasticFrozen = kind == .creditAdditional ? false : isFrozen
+    }
+
+    /// A frozen card can't be chosen to pay, so nothing gets logged on a card the person locked.
+    public var isFrozen: Bool {
+        additional?.isFrozen ?? isPlasticFrozen
+    }
+
+    /// The same card frozen or unfrozen; an additional card changes its controls.
+    public func with(isFrozen: Bool) -> Self {
+        guard let copy = try? Self(
+            id: id,
+            accountID: accountID,
+            kind: kind,
+            network: network,
+            lastFour: lastFour,
+            color: color,
+            additional: additional.map { controls in
+                AdditionalCardControls(
+                    holderName: controls.holderName,
+                    cycleCap: controls.cycleCap,
+                    allowedCategoryIDs: controls.allowedCategoryIDs,
+                    defaultCategoryID: controls.defaultCategoryID,
+                    alertEachPurchase: controls.alertEachPurchase,
+                    alertNearCap: controls.alertNearCap,
+                    isFrozen: isFrozen,
+                )
+            },
+            isFrozen: isFrozen,
+        ) else { return self }
+        return copy
     }
 }
 

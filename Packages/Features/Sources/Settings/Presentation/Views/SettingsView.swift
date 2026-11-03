@@ -1,0 +1,233 @@
+import DesignSystem
+import Domain
+import SettingsDomain
+import SwiftUI
+import UIKit
+
+/// Settings: currency and rate, card reminders, organization counts, lock and privacy, iCloud
+/// backup, CSV export and deleting everything.
+public struct SettingsView: View {
+    @Bindable private var viewModel: SettingsViewModel
+    private let onBack: () -> Void
+    private let onErased: () -> Void
+    @State private var isConfirmingErase = false
+    @FocusState private var isEditingRate: Bool
+
+    public init(viewModel: SettingsViewModel, onBack: @escaping () -> Void, onErased: @escaping () -> Void) {
+        self.viewModel = viewModel
+        self.onBack = onBack
+        self.onErased = onErased
+    }
+
+    public var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                KWNavigationHeader(String(localized: "Settings", bundle: #bundle), style: .large, onBack: onBack)
+                    .padding(.bottom, KWSpacing.xs)
+                if let overview = viewModel.overview {
+                    currency(overview.settings)
+                    cards(overview.settings)
+                    organization(overview)
+                    languageSection
+                    SecuritySection(viewModel: viewModel, settings: overview.settings)
+                    DataSection(viewModel: viewModel, overview: overview)
+                    erase
+                }
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.State.negative)
+                }
+            }
+            .padding(.horizontal, KWLayout.gutter)
+            .padding(.top, KWLayout.safeTop)
+            .padding(.bottom, KWSpacing.xxl)
+        }
+        .scrollIndicators(.hidden)
+        .scrollDismissesKeyboard(.immediately)
+        .ignoresSafeArea(edges: .top)
+        .background(KWColor.Surface.bg)
+        .foregroundStyle(KWColor.Text.primary)
+        .toolbar(.hidden, for: .navigationBar)
+        .task { await viewModel.load() }
+        .onChange(of: isEditingRate) { _, editing in
+            if !editing {
+                Task { await viewModel.commitRate() }
+            }
+        }
+        .sheet(item: $viewModel.exportedFile) { file in
+            ShareSheet(items: [file.url])
+                .presentationDetents([.medium, .large])
+        }
+        .confirmationDialog(
+            String(localized: "Delete all your data?", bundle: #bundle),
+            isPresented: $isConfirmingErase,
+            titleVisibility: .visible,
+        ) {
+            Button(role: .destructive) {
+                Task {
+                    if await viewModel.eraseAll() {
+                        onErased()
+                    }
+                }
+            } label: {
+                Text("Delete everything", bundle: #bundle)
+            }
+        } message: {
+            Text(
+                "Your accounts, cards and transactions are deleted from this iPhone and from iCloud. This can't be undone.",
+                bundle: #bundle,
+            )
+        }
+    }
+
+    // MARK: - Sections
+
+    private func currency(_ settings: Settings) -> some View {
+        SettingsSection(title: String(localized: "Currency", bundle: #bundle)) {
+            KWGroupedCard {
+                currencyRow(String(localized: "Main currency", bundle: #bundle), code: settings.currencies.principal)
+                if let second = settings.currencies.second {
+                    currencyRow(String(localized: "Second currency", bundle: #bundle), code: second)
+                    rateRow(settings.currencies)
+                    Text(viewModel.rateFootnote)
+                        .font(KWTextStyle.captionSm.font.weight(.regular))
+                        .foregroundStyle(KWColor.Text.muted)
+                        .lineSpacing(3)
+                        .padding(.top, KWSpacing.sm)
+                        .padding(.bottom, 14)
+                }
+            }
+        }
+    }
+
+    /// One line, as in the design: long currency names shrink a little instead of wrapping.
+    private func currencyRow(_ label: String, code: String) -> some View {
+        HStack(spacing: KWSpacing.sm) {
+            Text(label)
+            Spacer(minLength: KWSpacing.xs)
+            Text(viewModel.currencyName(code))
+                .font(.kw(15, weight: 600))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .font(KWTextStyle.body.font)
+        .padding(.vertical, 14)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var languageSection: some View {
+        SettingsSection(title: String(localized: "Language", bundle: #bundle)) {
+            KWGroupedCard {
+                SettingsMenuRow(
+                    label: String(localized: "App language", bundle: #bundle),
+                    value: viewModel.chosenLanguage.nativeName,
+                    options: AppLanguage.allCases,
+                    title: \.nativeName,
+                ) { language in viewModel.chooseLanguage(language) }
+                if viewModel.languageNeedsReopen {
+                    Text("Close Keepwell and open it again to see it in the new language.", bundle: #bundle)
+                        .font(KWTextStyle.captionSm.font.weight(.regular))
+                        .foregroundStyle(KWColor.Text.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.vertical, KWSpacing.sm)
+                }
+            }
+        }
+    }
+
+    private func rateRow(_ currencies: CurrencySettings) -> some View {
+        HStack(spacing: KWSpacing.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: "1 \(currencies.principal) =").font(KWTextStyle.body.font)
+                Text("Manual · default 1", bundle: #bundle)
+                    .font(KWTextStyle.captionSm.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.muted)
+            }
+            Spacer(minLength: KWSpacing.xs)
+            TextField(String(localized: "Rate", bundle: #bundle), text: $viewModel.rateText)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.kw(15, weight: 600))
+                .monospacedDigit()
+                .focused($isEditingRate)
+                .padding(.vertical, KWSpacing.xs)
+                .padding(.horizontal, 10)
+                .frame(width: 100)
+                .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: 10))
+            Text(currencies.second ?? "").font(.kw(15, weight: 600))
+        }
+        .padding(.vertical, 14)
+    }
+
+    private func cards(_ settings: Settings) -> some View {
+        SettingsSection(title: String(localized: "Credit cards", bundle: #bundle)) {
+            KWGroupedCard {
+                SettingsMenuRow(
+                    label: String(localized: "Remind me to pay", bundle: #bundle),
+                    value: viewModel.reminderTitle(settings.paymentReminderDaysBefore),
+                    options: SettingsViewModel.reminderOptions,
+                    title: viewModel.reminderTitle,
+                ) { days in Task { await viewModel.setReminderDays(days) } }
+                SettingsMenuRow(
+                    label: String(localized: "Warn about additional cards at", bundle: #bundle),
+                    value: viewModel.thresholdTitle(settings.additionalCapAlertThreshold),
+                    options: SettingsViewModel.capThresholdOptions,
+                    title: viewModel.thresholdTitle,
+                ) { threshold in Task { await viewModel.setCapThreshold(threshold) } }
+            }
+        }
+    }
+
+    private func organization(_ overview: SettingsOverview) -> some View {
+        SettingsSection(title: String(localized: "Organization", bundle: #bundle)) {
+            KWGroupedCard {
+                KWValueRow(
+                    String(localized: "Expense categories", bundle: #bundle),
+                    value: "\(overview.expenseCategoryCount)",
+                    style: .navigation,
+                    verticalPadding: 14,
+                )
+                KWValueRow(
+                    String(localized: "Income categories", bundle: #bundle),
+                    value: "\(overview.incomeCategoryCount)",
+                    style: .navigation,
+                    verticalPadding: 14,
+                )
+                KWValueRow(
+                    String(localized: "Payment methods", bundle: #bundle),
+                    value: "\(overview.paymentMethodCount)",
+                    style: .navigation,
+                    verticalPadding: 14,
+                )
+            }
+        }
+    }
+
+    private var erase: some View {
+        VStack(spacing: KWSpacing.sm) {
+            Button { isConfirmingErase = true } label: {
+                Text("Delete all my data", bundle: #bundle)
+            }
+            .buttonStyle(.kw(.destructive, size: .row))
+            .disabled(viewModel.isWorking)
+            Text("Deletes the data on this iPhone and the iCloud backup.", bundle: #bundle)
+                .font(KWTextStyle.captionSm.font.weight(.regular))
+                .foregroundStyle(KWColor.Text.muted)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.top, KWSpacing.sm)
+    }
+}
+
+/// The system share sheet, for the exported file.
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
+}

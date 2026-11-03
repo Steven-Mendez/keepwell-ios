@@ -127,8 +127,11 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             category = found
         }
 
-        if case let .card(cardID) = source, let controls = context.card(cardID)?.additional {
-            guard controls.allows(categoryID: draft.categoryID ?? "") else { throw .paymentMethodUnavailable(cardID) }
+        if case let .card(cardID) = source, let card = context.card(cardID) {
+            guard !card.isFrozen else { throw .paymentMethodUnavailable(cardID) }
+            if let controls = card.additional, !controls.allows(categoryID: draft.categoryID ?? "") {
+                throw .paymentMethodUnavailable(cardID)
+            }
         }
 
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)

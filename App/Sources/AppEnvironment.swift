@@ -12,6 +12,12 @@ struct AppEnvironment {
     /// `-open-new-movement`: opens the create-movement flow at launch (Debug builds only), so UI
     /// tests can reach it directly.
     let opensNewMovement: Bool
+    /// `-force-lock`: shows the lock screen even with sample data (Debug builds only), to check it
+    /// on the simulator.
+    let forcesLock: Bool
+    /// `-reminders-soon`: asks for notification permission and moves every reminder a few seconds
+    /// ahead (Debug builds only), to see them arrive on the simulator.
+    let remindsSoon: Bool
 
     static let current: AppEnvironment = {
         let info = Bundle.main.infoDictionary ?? [:]
@@ -22,6 +28,8 @@ struct AppEnvironment {
             isUITesting: arguments.contains("-ui-testing"),
             usesSampleData: arguments.contains("-sample-data"),
             opensNewMovement: arguments.contains("-open-new-movement"),
+            forcesLock: arguments.contains("-force-lock"),
+            remindsSoon: arguments.contains("-reminders-soon"),
         )
     }()
 }

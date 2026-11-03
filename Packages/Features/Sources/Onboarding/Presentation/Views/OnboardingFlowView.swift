@@ -20,6 +20,14 @@ public struct OnboardingFlowView: View {
     }
 
     public var body: some View {
+        if viewModel.asksLanguage {
+            LanguageView(viewModel: viewModel)
+        } else {
+            steps
+        }
+    }
+
+    private var steps: some View {
         NavigationStack(path: $viewModel.path) {
             WelcomeView(restoreState: viewModel.restoreState) {
                 viewModel.start()

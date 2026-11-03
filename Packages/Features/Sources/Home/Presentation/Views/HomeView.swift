@@ -1,0 +1,264 @@
+import DesignSystem
+import Domain
+import HomeDomain
+import SharedPresentation
+import SwiftUI
+
+/// Home: net worth on the brand hero, quick actions, the month so far, planned movements waiting
+/// for confirmation, additional cards against their cap and the balance of each account.
+public struct HomeView: View {
+    /// Where home leads. The root decides how each one is shown.
+    public struct Actions {
+        public var search: () -> Void
+        public var summary: () -> Void
+        public var settings: () -> Void
+        public var accounts: () -> Void
+        public var newMovement: (TransactionKind) -> Void
+        public var payCard: () -> Void
+        public var allPlanned: () -> Void
+        /// Credit account and additional card.
+        public var additionalCard: (UUID, UUID) -> Void
+
+        public init(
+            search: @escaping () -> Void,
+            summary: @escaping () -> Void,
+            settings: @escaping () -> Void,
+            accounts: @escaping () -> Void,
+            newMovement: @escaping (TransactionKind) -> Void,
+            payCard: @escaping () -> Void,
+            allPlanned: @escaping () -> Void,
+            additionalCard: @escaping (UUID, UUID) -> Void,
+        ) {
+            self.search = search
+            self.summary = summary
+            self.settings = settings
+            self.accounts = accounts
+            self.newMovement = newMovement
+            self.payCard = payCard
+            self.allPlanned = allPlanned
+            self.additionalCard = additionalCard
+        }
+    }
+
+    private let viewModel: HomeViewModel
+    private let actions: Actions
+
+    public init(viewModel: HomeViewModel, actions: Actions) {
+        self.viewModel = viewModel
+        self.actions = actions
+    }
+
+    /// The planned rows home lists before "See all".
+    private let plannedPreviewCount = 2
+
+    public var body: some View {
+        ScrollView {
+            VStack(spacing: KWSpacing.sm) {
+                HomeHero(viewModel: viewModel, actions: actions)
+                if let overview = viewModel.overview {
+                    content(overview)
+                        .padding(.horizontal, KWLayout.gutter)
+                }
+            }
+            .padding(.bottom, KWSpacing.md)
+        }
+        .scrollIndicators(.hidden)
+        .ignoresSafeArea(edges: .top)
+        .background(KWColor.Surface.bg)
+        .foregroundStyle(KWColor.Text.primary)
+        .task { await viewModel.load() }
+    }
+
+    // MARK: - Cards
+
+    @ViewBuilder
+    private func content(_ overview: HomeOverview) -> some View {
+        if overview.hasTransactions {
+            monthCard(overview)
+        } else {
+            KWEmptyState(
+                icon: .home,
+                title: String(localized: "No transactions yet", bundle: #bundle),
+                message: String(
+                    localized: "Log your first expense, income or transfer and you will see your month here.",
+                    bundle: #bundle,
+                ),
+                actionTitle: String(localized: "Log transaction", bundle: #bundle),
+            ) { actions.newMovement(.expense) }
+                .padding(.vertical, KWSpacing.xl)
+        }
+        if !overview.planned.isEmpty {
+            plannedCard(overview)
+        }
+        ForEach(overview.additionalCards) { status in
+            additionalRow(status)
+        }
+        balancesCard(overview)
+    }
+
+    private func monthCard(_ overview: HomeOverview) -> some View {
+        let month = overview.month
+        let largest = max(month.income, month.expense)
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+                    Text(viewModel.spentTitle(overview))
+                        .font(KWTextStyle.label.font.weight(.regular))
+                        .foregroundStyle(KWColor.Text.muted)
+                    Text(viewModel.money(month.expense, overview))
+                        .font(.kw(26, weight: 800, relativeTo: .title2))
+                        .tracking(-0.5)
+                        .monospacedDigit()
+                }
+                Spacer(minLength: KWSpacing.xs)
+                if let badge = viewModel.savedBadge(overview) {
+                    Text(badge)
+                        .font(.kw(13, weight: 700, relativeTo: .footnote))
+                        .foregroundStyle(KWColor.State.positive)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(KWColor.Tint.positive, in: Capsule())
+                }
+            }
+            VStack(spacing: KWSpacing.xs) {
+                comparisonRow(
+                    String(localized: "Income", bundle: #bundle),
+                    month.income,
+                    of: largest,
+                    fill: KWColor.State.positive,
+                    overview,
+                )
+                comparisonRow(
+                    String(localized: "Expenses", bundle: #bundle),
+                    month.expense,
+                    of: largest,
+                    fill: KWColor.Brand.accent,
+                    overview,
+                )
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
+    }
+
+    private func comparisonRow(
+        _ label: String,
+        _ amount: Decimal,
+        of largest: Decimal,
+        fill: Color,
+        _ overview: HomeOverview,
+    ) -> some View {
+        HStack(spacing: 10) {
+            Text(label).frame(width: 64, alignment: .leading)
+            KWProgressBar(largest > 0 ? NSDecimalNumber(decimal: amount / largest).doubleValue : 0, fill: fill, height: 8)
+            Text(viewModel.money(amount, overview))
+                .monospacedDigit()
+                .frame(minWidth: 76, alignment: .trailing)
+        }
+        .font(KWTextStyle.caption.font.weight(.regular))
+        .foregroundStyle(KWColor.Text.secondary)
+        .lineLimit(1)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func plannedCard(_ overview: HomeOverview) -> some View {
+        VStack(alignment: .leading, spacing: KWSpacing.sm) {
+            HStack {
+                Text(viewModel.plannedTitle(overview))
+                    .font(KWTextStyle.heading.font)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button(action: actions.allPlanned) {
+                    Text("See all", bundle: #bundle)
+                        .font(KWTextStyle.label.font)
+                        .foregroundStyle(KWColor.Brand.link)
+                        .frame(minHeight: KWLayout.minTouch)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.vertical, -KWSpacing.sm)
+            Text(viewModel.plannedCaption(overview))
+                .font(KWTextStyle.caption.font.weight(.regular))
+                .foregroundStyle(KWColor.Text.muted)
+                .fixedSize(horizontal: false, vertical: true)
+            if let display = viewModel.display {
+                ForEach(overview.planned.prefix(plannedPreviewCount)) { transaction in
+                    KWTransactionRow(.planned, title: transaction.description, subtitle: display.subtitle(of: transaction)) {
+                        Button {
+                            Task { await viewModel.confirm(transaction.id) }
+                        } label: {
+                            Text("Confirm", bundle: #bundle)
+                        }
+                        .buttonStyle(.kw(.primary, size: .mini))
+                        .disabled(viewModel.confirming.contains(transaction.id))
+                    }
+                    .padding(.vertical, -KWSpacing.sm)
+                }
+            }
+            if let error = viewModel.actionError {
+                Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
+    }
+
+    private func additionalRow(_ status: HomeOverview.AdditionalCardStatus) -> some View {
+        Button { actions.additionalCard(status.account.id, status.card.id) } label: {
+            HStack(spacing: KWSpacing.sm) {
+                KWIconView(.creditCard, size: 20)
+                    .foregroundStyle(KWColor.Brand.link)
+                    .frame(width: 40, height: 40)
+                    .background(KWColor.Tint.accent, in: Circle())
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(viewModel.additionalTitle(status))
+                        .font(.kw(15, weight: 600))
+                        .lineLimit(1)
+                    KWProgressBar(NSDecimalNumber(decimal: status.usage.fraction ?? 0).doubleValue, fill: KWColor.Brand.link)
+                    Text(viewModel.additionalCaption(status))
+                        .font(KWTextStyle.caption.font.weight(.regular))
+                        .foregroundStyle(KWColor.Text.muted)
+                        .monospacedDigit()
+                }
+                KWIconView(.chevronRight, size: 18)
+                    .foregroundStyle(KWColor.Text.muted)
+            }
+            .padding(.vertical, KWSpacing.md)
+            .padding(.horizontal, 18)
+            .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func balancesCard(_ overview: HomeOverview) -> some View {
+        KWGroupedCard(horizontalPadding: 18, verticalPadding: 6) {
+            ForEach(overview.balances) { line in
+                balanceRow(CardDisplay.name(of: line.account), viewModel.formatter.string(line.balance))
+            }
+            if let debt = overview.cardDebt {
+                balanceRow(
+                    String(localized: "Cards (debt)", bundle: #bundle),
+                    viewModel.formatter.string(debt),
+                    color: debt.amount < 0 ? KWColor.State.negative : nil,
+                )
+            }
+        }
+    }
+
+    private func balanceRow(_ title: String, _ value: String, color: Color? = nil) -> some View {
+        HStack {
+            Text(title).lineLimit(1)
+            Spacer(minLength: KWSpacing.xs)
+            Text(value)
+                .font(.kw(15, weight: 600))
+                .monospacedDigit()
+                .foregroundStyle(color ?? KWColor.Text.primary)
+        }
+        .font(KWTextStyle.body.font)
+        .padding(.vertical, KWSpacing.sm)
+        .accessibilityElement(children: .combine)
+    }
+}

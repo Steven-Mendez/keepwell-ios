@@ -9,6 +9,8 @@ SPACE = $(EMPTY) $(EMPTY)
 BASE_BUNDLE_ID = com.stevenmendez.keepwell
 APP_BUNDLE_ID = $(BASE_BUNDLE_ID)$(BUNDLE_ID_SUFFIX)
 WIDGETS_BUNDLE_ID = $(APP_BUNDLE_ID).widgets
+// Shared by the app and its widgets; per configuration so Debug never shows Release data.
+APP_GROUP_ID = group.$(APP_BUNDLE_ID)
 APP_DISPLAY_NAME = Keepwell$(APP_NAME_SUFFIX)
 
 // Versioning (MARKETING_VERSION = user-visible version; CURRENT_PROJECT_VERSION = build)

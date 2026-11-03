@@ -11,6 +11,8 @@ public enum DomainError: Error, Equatable, Sendable {
     /// Rates are "1 principal = X second" and must be positive.
     case invalidExchangeRate
     case invalidLastFour(String)
+    /// A name the person must give (an additional card's holder) is empty.
+    case missingName
     case invalidDayOfMonth(Int)
     case categoryKindMismatch(expected: TransactionKind, actual: TransactionKind)
     case unsupportedTransactionKind(TransactionKind)

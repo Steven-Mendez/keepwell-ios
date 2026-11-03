@@ -36,14 +36,32 @@ final class NotificationsSpy: NotificationAuthorizing, @unchecked Sendable {
     }
 }
 
+final class LanguageStub: LanguagePreference, @unchecked Sendable {
+    let current: AppLanguage
+    private(set) var hasChosen: Bool
+    private(set) var saved: AppLanguage?
+
+    init(current: AppLanguage = .english, hasChosen: Bool = true) {
+        self.current = current
+        self.hasChosen = hasChosen
+    }
+
+    func choose(_ language: AppLanguage) -> Bool {
+        saved = language
+        hasChosen = true
+        return language != current
+    }
+}
+
 @MainActor
 enum OnboardingFactory {
     static func make(
         complete: CompleteOnboardingStub = CompleteOnboardingStub(),
         restore: RestoreStub = RestoreStub(),
         notifications: NotificationsSpy = NotificationsSpy(),
+        language: LanguageStub = LanguageStub(),
     ) -> OnboardingViewModel {
-        OnboardingViewModel(completeOnboarding: complete, restoreFromBackup: restore, notifications: notifications)
+        OnboardingViewModel(completeOnboarding: complete, restoreFromBackup: restore, notifications: notifications, language: language)
     }
 }
 

@@ -17,6 +17,7 @@ let package = Package(
         .library(name: "AddCardPresentation", targets: ["AddCardPresentation"]),
         .library(name: "CreateTransactionDomain", targets: ["CreateTransactionDomain"]),
         .library(name: "CreateTransactionPresentation", targets: ["CreateTransactionPresentation"]),
+        .library(name: "SharedPresentation", targets: ["SharedPresentation"]),
         .library(name: "HomeDomain", targets: ["HomeDomain"]),
         .library(name: "HomePresentation", targets: ["HomePresentation"]),
         .library(name: "TransactionsDomain", targets: ["TransactionsDomain"]),
@@ -241,6 +242,15 @@ let package = Package(
             ],
             path: "Sources/Home/Presentation",
             resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "HomePresentationTests",
+            dependencies: [
+                "HomePresentation",
+                "HomeDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
         .testTarget(
             name: "HomeDomainTests",

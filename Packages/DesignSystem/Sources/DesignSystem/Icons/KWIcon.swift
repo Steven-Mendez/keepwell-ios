@@ -55,7 +55,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     var roundJoins: Bool {
         switch self {
         case .arrowDown, .arrowDownLeft, .arrowUp, .arrowUpRight, .bank, .bolt, .bus, .cart, .cash, .check,
-             .cloud, .creditCard, .faceID, .health, .heart, .home, .phone, .subscription, .tools, .transfer, .wallet:
+             .cloud, .creditCard, .faceID, .health, .heart, .home, .phone, .settings, .subscription, .tools, .transfer, .wallet:
             true
         default:
             false
@@ -114,10 +114,18 @@ public enum KWIcon: String, CaseIterable, Sendable {
         case .plus: [.path("M12 5v14M5 12h14")]
         case .restaurant: [.path("M6 3v8a2 2 0 0 0 4 0V3M8 11v10M17 3c-2 0-3 2-3 5s1 4 3 4v9")]
         case .search: [.circle(cx: 11, cy: 11, radius: 7), .path("m20 20-3.5-3.5")]
+        // A gear rather than the design's rays, which read as a sun (brightness) on iOS.
         case .settings:
             [
+                .path(
+                    "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38"
+                        + "a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38"
+                        + "a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2"
+                        + "v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73"
+                        + "l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73"
+                        + "l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
+                ),
                 .circle(cx: 12, cy: 12, radius: 3),
-                .path("M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"),
             ]
         case .subscription: [.path("M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4")]
         case .tabAccounts: [.rect(x: 3, y: 6, width: 18, height: 14, radius: 2), .path("M3 10h18M16 15h2")]
