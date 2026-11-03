@@ -74,6 +74,9 @@ targets:
         codeSign: true
       - package: DesignSystem
       - package: Domain
+        product: Domain
+      - package: Domain
+        product: DomainSamples
       - package: Persistence
       - package: Core
     preBuildScripts:
