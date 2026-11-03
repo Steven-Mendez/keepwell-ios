@@ -17,6 +17,6 @@ struct CardAddedSnapshotTests {
     @Test
     func added() async {
         let viewModel = await creditViewModel()
-        assertScreenSnapshot(of: CardAddedView(viewModel: viewModel, onViewCard: {}, onAddAdditional: {}, onAddAnother: {}))
+        assertScreenSnapshot(of: CardAddedView(viewModel: viewModel, onViewCard: {}, onAddAnother: {}))
     }
 }

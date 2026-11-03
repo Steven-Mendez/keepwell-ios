@@ -402,8 +402,6 @@ extension RootView {
             router.push(.creditCard(accountID: accountID))
         case let .viewBankAccount(accountID):
             router.push(.bankAccount(accountID: accountID))
-        case let .addAdditional(accountID):
-            router.push(.creditCard(accountID: accountID, addsAdditional: true))
         }
     }
 

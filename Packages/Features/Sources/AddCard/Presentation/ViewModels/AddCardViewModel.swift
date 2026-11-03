@@ -26,7 +26,6 @@ public final class AddCardViewModel {
         case close
         case viewCreditCard(UUID)
         case viewBankAccount(UUID)
-        case addAdditional(UUID)
     }
 
     public var path: [Step] = []
