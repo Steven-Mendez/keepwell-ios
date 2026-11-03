@@ -16,6 +16,7 @@ let package = Package(
         .library(name: "AddCardDomain", targets: ["AddCardDomain"]),
         .library(name: "AddCardPresentation", targets: ["AddCardPresentation"]),
         .library(name: "CreateTransactionDomain", targets: ["CreateTransactionDomain"]),
+        .library(name: "CreateTransactionPresentation", targets: ["CreateTransactionPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -172,6 +173,29 @@ let package = Package(
             name: "CreateTransactionDomain",
             dependencies: [.product(name: "Domain", package: "Domain")],
             path: "Sources/CreateTransaction/Domain",
+        ),
+        .target(
+            name: "CreateTransactionPresentation",
+            dependencies: [
+                "CreateTransactionDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/CreateTransaction/Presentation",
+        ),
+        .testTarget(
+            name: "CreateTransactionPresentationTests",
+            dependencies: [
+                "CreateTransactionPresentation",
+                "CreateTransactionDomain",
+                "FeatureTestSupport",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            exclude: ["__Snapshots__"],
         ),
         .testTarget(
             name: "CreateTransactionDomainTests",
