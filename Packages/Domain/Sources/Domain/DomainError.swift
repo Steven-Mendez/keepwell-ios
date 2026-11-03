@@ -16,6 +16,8 @@ public enum DomainError: Error, Equatable, Sendable {
     case unsupportedTransactionKind(TransactionKind)
     /// A transfer needs a destination account different from its source.
     case invalidTransferDestination
+    /// The payment method can't be used: a frozen additional card, or a category it doesn't allow.
+    case paymentMethodUnavailable(UUID)
     case invalidPeriod
     case notFound(UUID)
     case corruptedData(String)

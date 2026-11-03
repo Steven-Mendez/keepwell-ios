@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Create movement: amount and type with the app's keypad, category, payment method, review (real
+  bank debit, planned, shared, note) and a saved summary with the rate used and the new balance.
 - Add card: credit cards (plastic, debt in one or two currencies, billing cycle), debit cards linked
   to a bank account, new bank accounts and wallets.
 - Accounts: credit cards stacked like Wallet, deposit accounts with their linked cards, and cash

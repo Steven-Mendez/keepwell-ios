@@ -1,6 +1,7 @@
 import AccountsPresentation
 import AddCardPresentation
 import Core
+import CreateTransactionPresentation
 import DesignSystem
 import OnboardingPresentation
 import SwiftUI
@@ -20,6 +21,7 @@ struct RootView: View {
     @State private var tab = MainTab.home
     @State private var accounts: AccountsViewModel?
     @State private var addCard: PresentedFlow<AddCardViewModel>?
+    @State private var newMovement: PresentedFlow<CreateTransactionViewModel>?
 
     init(container: AppContainer) {
         self.container = container
@@ -62,6 +64,13 @@ struct RootView: View {
         .fullScreenCover(item: $addCard, onDismiss: reloadAccounts) { flow in
             AddCardFlowView(viewModel: flow.viewModel) { _ in addCard = nil }
         }
+        .fullScreenCover(item: $newMovement, onDismiss: reloadAccounts) { flow in
+            CreateTransactionFlowView(viewModel: flow.viewModel) { newMovement = nil }
+        }
+    }
+
+    private func presentNewMovement() {
+        newMovement = PresentedFlow(viewModel: container.makeCreateTransactionViewModel())
     }
 
     private func presentAddCard(linkingTo accountID: UUID? = nil) {
@@ -81,10 +90,18 @@ struct RootView: View {
         let settings = try? await container.makeGetSettings().execute()
         accounts = container.makeAccountsViewModel()
         phase = settings?.hasCompletedOnboarding == true ? .main : .onboarding(container.makeOnboardingViewModel())
+        #if DEBUG
+        if AppEnvironment.current.opensNewMovement, case .main = phase {
+            presentNewMovement()
+        }
+        #endif
     }
 
-    private func finishOnboarding(_: OnboardingFlowView.Exit) {
+    private func finishOnboarding(_ exit: OnboardingFlowView.Exit) {
         phase = .main
+        if exit == .logFirstExpense {
+            presentNewMovement()
+        }
     }
 }
 
