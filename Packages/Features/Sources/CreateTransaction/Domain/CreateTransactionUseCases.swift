@@ -97,7 +97,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     }
 
     static func validated(_ draft: TransactionDraft, context: TransactionContext) throws(DomainError) -> Transaction {
-        guard draft.amount > 0, (draft.actualDebitedPrincipal ?? 1) > 0 else { throw .invalidAmount }
+        try Transaction.checkAmounts(draft.amount, actualDebitedPrincipal: draft.actualDebitedPrincipal)
         let currencies = context.currencies
         guard draft.currency == currencies.principal || draft.currency == currencies.second else {
             throw .invalidCurrency(draft.currency)

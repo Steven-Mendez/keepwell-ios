@@ -89,7 +89,7 @@ public struct DefaultWithdrawCashUseCase: WithdrawCashUseCase {
 
     @discardableResult
     public func execute(_ withdrawal: CashWithdrawal) async throws(DomainError) -> Transaction {
-        guard withdrawal.amount.amount > 0, (withdrawal.debitedPrincipal ?? 1) > 0 else { throw .invalidAmount }
+        try Transaction.checkAmounts(withdrawal.amount.amount, actualDebitedPrincipal: withdrawal.debitedPrincipal)
         guard withdrawal.sourceAccountID != withdrawal.cashAccountID else { throw .invalidTransferDestination }
         let rate = try await settings.load()?.currencies.exchangeRate ?? CurrencySettings.fallback.exchangeRate
         let transferMethod = try await cards.fetchCards().first { $0.accountID == withdrawal.sourceAccountID && $0.kind == .transfer }

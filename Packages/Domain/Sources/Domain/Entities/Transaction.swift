@@ -60,6 +60,13 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         self.note = note
     }
 
+    /// The rule behind "`amount` is always positive", kept here so every path that records a
+    /// movement (the create flow, Siri, ATM withdrawals, CSV imports) enforces the same one. A known
+    /// bank charge must be positive too, or the principal balance would move the wrong way.
+    public static func checkAmounts(_ amount: Decimal, actualDebitedPrincipal: Decimal? = nil) throws(DomainError) {
+        guard amount > 0, (actualDebitedPrincipal ?? 1) > 0 else { throw .invalidAmount }
+    }
+
     public var isConfirmed: Bool {
         status == .confirmed
     }
