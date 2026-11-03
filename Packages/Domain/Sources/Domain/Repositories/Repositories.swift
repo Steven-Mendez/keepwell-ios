@@ -1,0 +1,42 @@
+import Foundation
+
+// Storage contracts shared by every feature. Data targets implement them; use cases receive
+// them as protocols, so features never see SwiftData.
+
+public protocol AccountRepository: Sendable {
+    func fetchAccounts() async throws(DomainError) -> [Account]
+    /// Inserts or replaces the account with the same id.
+    func save(_ account: Account) async throws(DomainError)
+    /// Throws `.notFound` instead of succeeding silently, so the UI can't show a stale row as deleted.
+    func deleteAccount(id: UUID) async throws(DomainError)
+}
+
+public protocol CardRepository: Sendable {
+    func fetchCards() async throws(DomainError) -> [Card]
+    func save(_ card: Card) async throws(DomainError)
+    func deleteCard(id: UUID) async throws(DomainError)
+}
+
+public protocol TransactionRepository: Sendable {
+    /// Newest first. `period` is half-open (`start` included, `end` excluded); `nil` returns everything.
+    func fetchTransactions(in period: DateInterval?) async throws(DomainError) -> [Transaction]
+    func save(_ transaction: Transaction) async throws(DomainError)
+    func deleteTransaction(id: UUID) async throws(DomainError)
+}
+
+public protocol CategoryRepository: Sendable {
+    /// Seeded with `Category.defaults` the first time.
+    func fetchCategories() async throws(DomainError) -> [Category]
+    func save(_ category: Category) async throws(DomainError)
+}
+
+public protocol SettingsRepository: Sendable {
+    /// `nil` before onboarding saves the first settings.
+    func load() async throws(DomainError) -> Settings?
+    func save(_ settings: Settings) async throws(DomainError)
+}
+
+/// "Eliminar todos mis datos": wipes this device and the iCloud copy (App Store guideline 5.1.1).
+public protocol DataEraser: Sendable {
+    func eraseAll() async throws(DomainError)
+}
