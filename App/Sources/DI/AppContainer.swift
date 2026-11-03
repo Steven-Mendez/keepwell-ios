@@ -9,6 +9,7 @@ import Domain
 import Foundation
 import OnboardingDomain
 import OnboardingPresentation
+import OSLog
 import Persistence
 import SwiftData
 #if DEBUG
@@ -30,13 +31,17 @@ final class AppContainer {
     #if DEBUG
     func seedSampleData() async {
         let sample = SampleData(referenceDate: .now)
-        try? await store.seed(
-            settings: sample.settings,
-            accounts: sample.accounts,
-            cards: sample.cards,
-            transactions: sample.transactions,
-            categories: sample.categories,
-        )
+        do {
+            try await store.seed(
+                settings: sample.settings,
+                accounts: sample.accounts,
+                cards: sample.cards,
+                transactions: sample.transactions,
+                categories: sample.categories,
+            )
+        } catch {
+            Logger.app.error("Sample data could not be seeded: \(String(describing: error), privacy: .public)")
+        }
     }
     #endif
 

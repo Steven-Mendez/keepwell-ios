@@ -8,6 +8,8 @@ import SwiftUI
 @main
 struct KeepwellApp: App {
     @State private var container: AppContainer?
+    /// Set before the first await so a second run of `.task` can't open a second store.
+    @State private var isBootstrapping = false
 
     init() {
         KWFonts.register()
@@ -30,7 +32,8 @@ struct KeepwellApp: App {
     /// Opens the store while the splash shows. The splash stays at least briefly so it reads as
     /// a deliberate screen rather than a flash.
     private func bootstrap() async {
-        guard container == nil else { return }
+        guard container == nil, !isBootstrapping else { return }
+        isBootstrapping = true
         let environment = AppEnvironment.current
         async let minimumSplash: Void = (try? Task.sleep(for: .milliseconds(800))) ?? ()
         let store = await StoreSelector.store(for: environment)
