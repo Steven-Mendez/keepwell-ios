@@ -30,7 +30,6 @@ final class CreateTransactionUITests: XCTestCase {
         let debit = app.textFields.element(boundBy: 1)
         debit.tap()
         debit.typeText("24.28")
-        app.buttons["Listo"].tap()
         attach("4-review")
         app.buttons["Guardar gasto"].tap()
 

@@ -36,7 +36,6 @@ public struct PlasticView: View {
         .ignoresSafeArea(.container, edges: [.top, .bottom])
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
-        .kwKeyboardDoneButton()
     }
 
     private var form: some View {

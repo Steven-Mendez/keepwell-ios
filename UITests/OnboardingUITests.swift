@@ -18,6 +18,12 @@ final class OnboardingUITests: XCTestCase {
         app.buttons["Empezar"].tap()
 
         XCTAssertTrue(app.staticTexts["¿Con qué monedas trabajas?"].waitForExistence(timeout: 5))
+        let rate = app.textFields["Tasa de cambio"]
+        rate.tap()
+        attachScreenshot("2-currencies-editing")
+        XCTAssertFalse(app.buttons["Listo"].exists, "The design has no keyboard toolbar button")
+        app.staticTexts["Segunda moneda"].tap()
+        XCTAssertEqual(app.keyboards.count, 0)
         app.buttons["Ejemplo Nicaragua: 1 USD = 36.6243 NIO"].tap()
         attachScreenshot("2-currencies")
         app.buttons["Continuar"].tap()

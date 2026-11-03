@@ -36,7 +36,6 @@ public struct ReviewView: View {
         .ignoresSafeArea(.container, edges: [.top, .bottom])
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
-        .kwKeyboardDoneButton()
         .sheet(isPresented: $isPickingDate) {
             DatePicker("Fecha", selection: $viewModel.date, displayedComponents: [.date])
                 .datePickerStyle(.graphical)

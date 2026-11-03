@@ -33,7 +33,6 @@ public struct CategoryView: View {
                 }
             }
         }
-        .kwKeyboardDoneButton()
     }
 
     private var categories: some View {
