@@ -1,12 +1,52 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@%% of what came in" : {
+    "%@ less than %@ by the same day" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@%% de lo que entró"
+            "value" : "%1$@ menos que en %2$@ al mismo día"
+          }
+        }
+      }
+    },
+    "%@ more than %@ by the same day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ más que en %2$@ al mismo día"
+          }
+        }
+      }
+    },
+    "%@ total: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total de %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@, came in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, entró"
+          }
+        }
+      }
+    },
+    "%@, went out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, salió"
           }
         }
       }
@@ -51,12 +91,52 @@
         }
       }
     },
-    "Average %@ / month" : {
+    "%lld more categories" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more category"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more categories"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld categoría más"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld categorías más"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Amount" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Promedio %@ / mes"
+            "value" : "Monto"
           }
         }
       }
@@ -71,12 +151,62 @@
         }
       }
     },
+    "By day %lld, %@ spent in %@ against %@ in %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al día %1$lld, gastaste %2$@ en %3$@ frente a %4$@ en %5$@."
+          }
+        }
+      }
+    },
     "Came in" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entró"
+          }
+        }
+      }
+    },
+    "Cash flow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flujo"
+          }
+        }
+      }
+    },
+    "Categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        }
+      }
+    },
+    "Day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día"
+          }
+        }
+      }
+    },
+    "Direction" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección"
           }
         }
       }
@@ -101,12 +231,72 @@
         }
       }
     },
+    "Last %lld months" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last month"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last %lld months"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Último mes"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Últimos %lld meses"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Log transaction" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anotar movimiento"
+          }
+        }
+      }
+    },
+    "Month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes"
+          }
+        }
+      }
+    },
+    "Next month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes siguiente"
           }
         }
       }
@@ -131,6 +321,56 @@
         }
       }
     },
+    "Nothing came in during %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No entró nada en %@."
+          }
+        }
+      }
+    },
+    "Nothing came in, so all of it came from your savings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No entró nada, así que todo salió de tus ahorros."
+          }
+        }
+      }
+    },
+    "Nothing moved in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin movimientos en %@"
+          }
+        }
+      }
+    },
+    "Nothing spent in %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No gastaste nada en %@."
+          }
+        }
+      }
+    },
+    "Nothing was spent in %@ to compare with." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hubo gastos en %@ para comparar."
+          }
+        }
+      }
+    },
     "Once you log expenses and income, you will see what came in, what went out and what you spent it on." : {
       "localizations" : {
         "es" : {
@@ -141,22 +381,52 @@
         }
       }
     },
-    "Received in %@" : {
+    "Pace" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recibido en %@"
+            "value" : "Ritmo"
           }
         }
       }
     },
-    "Saved this month" : {
+    "Previous month" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ahorro del mes"
+            "value" : "Mes anterior"
+          }
+        }
+      }
+    },
+    "Result" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resultado"
+          }
+        }
+      }
+    },
+    "Result per month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resultado por mes"
+          }
+        }
+      }
+    },
+    "Same as %@ by the same day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Igual que en %@ al mismo día"
           }
         }
       }
@@ -167,6 +437,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gastado en %@"
+          }
+        }
+      }
+    },
+    "Spent so far in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastado hasta hoy en %@"
           }
         }
       }
@@ -191,12 +471,142 @@
         }
       }
     },
+    "You broke even in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quedaste a mano en %@"
+          }
+        }
+      }
+    },
+    "You kept %@ of what came in." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardaste el %@ de lo que entró."
+          }
+        }
+      }
+    },
+    "You overspent in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastaste de más en %@"
+          }
+        }
+      }
+    },
+    "You saved in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorraste en %@"
+          }
+        }
+      }
+    },
+    "You saved in %lld of %lld months" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorraste en %1$lld de %2$lld meses"
+          }
+        }
+      }
+    },
+    "You spent %@ more than came in." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastaste %@ más de lo que entró."
+          }
+        }
+      }
+    },
+    "You spent exactly what came in." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastaste exactamente lo que entró."
+          }
+        }
+      }
+    },
     "Your summary starts with one transaction" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu resumen empieza con un movimiento"
+          }
+        }
+      }
+    },
+    "broke even" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "quedó a mano"
+          }
+        }
+      }
+    },
+    "no movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sin movimientos"
+          }
+        }
+      }
+    },
+    "overspent %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gastó %@ de más"
+          }
+        }
+      }
+    },
+    "received" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "recibido"
+          }
+        }
+      }
+    },
+    "saved %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ahorró %@"
+          }
+        }
+      }
+    },
+    "spent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gastado"
           }
         }
       }
