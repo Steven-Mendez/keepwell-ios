@@ -74,3 +74,15 @@ struct AddCardUseCasesTests {
         }
     }
 }
+
+@Suite("Add card context")
+struct AddCardContextTests {
+    @Test
+    func listsBankAccountsAndSettings() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let context = try await DefaultGetAddCardContextUseCase(settings: store, accounts: store).execute()
+        #expect(context.depositAccounts.map(\.id) == [SampleData.IDs.savings, SampleData.IDs.payroll])
+        #expect(context.currencies.second == "NIO")
+        #expect(context.paymentReminderDaysBefore == 3)
+    }
+}
