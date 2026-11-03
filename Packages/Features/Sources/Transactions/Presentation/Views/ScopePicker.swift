@@ -4,7 +4,7 @@ import SharedPresentation
 import SwiftUI
 import TransactionsDomain
 
-/// The first chip of the list: which account or card it shows. Filled white while narrowed, with
+/// The first chip of the list: which account it shows. Filled white while narrowed, with
 /// its own ✕, so a list opened from a card always says so and clears in one tap.
 struct ScopeChip: View {
     let title: String
@@ -29,7 +29,7 @@ struct ScopeChip: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text("Accounts: \(title)", bundle: #bundle))
-            .accessibilityHint(Text("Choose which account or card to show", bundle: #bundle))
+            .accessibilityHint(Text("Choose which account to show", bundle: #bundle))
             if isFiltered {
                 Button(action: onClear) {
                     Image(systemName: "xmark")
@@ -47,8 +47,8 @@ struct ScopeChip: View {
     }
 }
 
-/// Picks the account or card the list shows, Revolut-style: "All accounts" first, then each
-/// account followed by its plastics, in the Accounts tab's order.
+/// Picks the account the list shows, Revolut-style: "All accounts" first, then one row per account,
+/// each with its card, in the Accounts tab's order.
 struct ScopePickerSheet: View {
     let viewModel: TransactionsViewModel
     let onClose: () -> Void
@@ -67,16 +67,12 @@ struct ScopePickerSheet: View {
                         scope: .all,
                     ) { leadingIcon(.wallet) }
                 }
-                ForEach(viewModel.scopeGroups) { group in
+                if !viewModel.scopeOptions.isEmpty {
                     KWGroupedCard(verticalPadding: KWSpacing.xxs) {
-                        row(CardDisplay.name(of: group.account), subtitle: kindTitle(group.account.kind), scope: .account(group.id)) {
-                            leadingIcon(icon(for: group.account.kind))
-                        }
-                        ForEach(group.cards) { card in
-                            row(viewModel.cardTitle(card, in: group), subtitle: nil, scope: .card(card.id)) {
-                                KWMiniCard(CardDisplay.miniCard(for: card), size: .tiny)
+                        ForEach(viewModel.scopeOptions) { option in
+                            row(CardDisplay.name(of: option.account), subtitle: subtitle(option), scope: .account(option.id)) {
+                                leading(option)
                             }
-                            .padding(.leading, KWSpacing.lg)
                         }
                     }
                 }
@@ -118,12 +114,21 @@ struct ScopePickerSheet: View {
             .frame(width: 40)
     }
 
-    private func icon(for kind: AccountKind) -> KWIcon {
-        switch kind {
-        case .deposit: .bank
-        case .cash: .cash
-        case .credit: .creditCard
+    /// The account's card, as on the Accounts tab; cash keeps its banknote icon.
+    @ViewBuilder
+    private func leading(_ option: TransactionScopeOption) -> some View {
+        if let card = option.card {
+            KWMiniCard(CardDisplay.miniCard(for: card), size: .tiny).frame(width: 40)
+        } else {
+            leadingIcon(option.account.kind == .cash ? .cash : .bank)
         }
+    }
+
+    /// "Bank account · •••• 1234": the kind, and the digits that tell two cards of a bank apart.
+    private func subtitle(_ option: TransactionScopeOption) -> String {
+        let kind = kindTitle(option.account.kind)
+        guard let digits = option.card?.lastFour else { return kind }
+        return "\(kind) · •••• \(digits)"
     }
 
     private func kindTitle(_ kind: AccountKind) -> String {

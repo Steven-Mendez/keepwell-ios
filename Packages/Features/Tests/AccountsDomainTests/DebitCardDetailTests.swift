@@ -4,7 +4,7 @@ import Foundation
 import Testing
 @testable import AccountsDomain
 
-@Suite("Debit card detail")
+@Suite("Bank account detail")
 struct DebitCardDetailTests {
     private typealias IDs = SampleData.IDs
 
@@ -21,38 +21,38 @@ struct DebitCardDetailTests {
     func showsTheCardWithItsAccountsBalance() async throws {
         let store = InMemoryStore(sample: .standard)
         let (detail, overview) = useCases(store)
-        let card = try await detail.execute(cardID: IDs.savingsDebit)
+        let card = try await detail.execute(accountID: IDs.savings)
         let deposit = try #require(try await overview.execute().deposits.first { $0.id == IDs.savings })
         #expect(card.card.id == IDs.savingsDebit)
         #expect(card.account.id == IDs.savings)
         // The same balance the accounts stack prints on the card.
         #expect(card.balance == deposit.balance)
-        #expect(card.cardCount == 1)
     }
 
     @Test
-    func countsEveryPlasticOnTheAccount() async throws {
+    func countsEveryMovementThatDeletingWouldRemove() async throws {
         let store = InMemoryStore(sample: .standard)
-        try await store.save(Card(accountID: IDs.savings, kind: .debit, network: .mastercard, lastFour: "4444"))
-        let card = try await useCases(store).0.execute(cardID: IDs.savingsDebit)
-        #expect(card.cardCount == 2)
+        let card = try await useCases(store).0.execute(accountID: IDs.savings)
+        let touching = await store.fetchTransactions(in: nil).count { TransactionScope.account(IDs.savings).includes($0) }
+        #expect(card.movementCount == touching)
+        #expect(touching > 0)
     }
 
     @Test
-    func onlyOpensDebitCards() async {
+    func onlyOpensBankAccounts() async {
         let store = InMemoryStore(sample: .standard)
-        await #expect(throws: DomainError.notFound(IDs.mastercardHolder)) {
-            try await useCases(store).0.execute(cardID: IDs.mastercardHolder)
+        await #expect(throws: DomainError.notFound(IDs.mastercard)) {
+            try await useCases(store).0.execute(accountID: IDs.mastercard)
         }
-        await #expect(throws: DomainError.notFound(IDs.savingsTransfer)) {
-            try await useCases(store).0.execute(cardID: IDs.savingsTransfer)
+        await #expect(throws: DomainError.notFound(IDs.cash)) {
+            try await useCases(store).0.execute(accountID: IDs.cash)
         }
     }
 
     @Test
     func listsTheAccountsLatestConfirmedMovementsNewestFirst() async throws {
         let store = InMemoryStore(sample: .standard)
-        let card = try await useCases(store).0.execute(cardID: IDs.savingsDebit)
+        let card = try await useCases(store).0.execute(accountID: IDs.savings)
         let latest = card.latestTransactions
         #expect(!latest.isEmpty)
         #expect(latest.count <= DebitCardDetail.latestCount)

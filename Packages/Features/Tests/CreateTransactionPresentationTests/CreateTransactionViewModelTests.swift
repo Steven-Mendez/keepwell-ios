@@ -150,19 +150,29 @@ struct CreateTransactionViewModelTests {
     }
 
     @Test
-    func bankTransferReadsAsAChargeToTheAccountAfterItsCards() async throws {
+    func theAccountsCardlessMethodSitsUnderItsCardWordedForAnExpense() async throws {
         let viewModel = await CreateTransactionFactory.loaded()
         viewModel.selectCategory("restaurants")
         let rows = viewModel.methodGroups.flatMap(\.rows)
         let transfer = try #require(rows.first { $0.source == .card(SampleData.IDs.savingsTransfer) })
-        #expect(transfer.title == "Bank transfer")
+        #expect(transfer.title == "Transfer or direct debit")
         #expect(transfer.thumbnail == .transfer)
-        #expect(["Charged directly to the account", "Charged directly to Bank One Savings"].contains(transfer.subtitle ?? ""))
+        #expect(["Without the card, straight from the account", "Without the card, from Bank One Savings"]
+            .contains(transfer.subtitle ?? ""))
         let savingsRows = rows.filter { [.card(SampleData.IDs.savingsDebit), .card(SampleData.IDs.savingsTransfer)].contains($0.source) }
         #expect(savingsRows.map(\.source) == [.card(SampleData.IDs.savingsDebit), .card(SampleData.IDs.savingsTransfer)])
         #expect(!rows.contains { ["Holder", "Transfer"].contains($0.title) || $0.subtitle == "Credit · holder" })
         viewModel.selectSource(.card(SampleData.IDs.savingsTransfer))
         #expect(viewModel.sourceTitle == "Bank One · Bank transfer")
+    }
+
+    @Test
+    func incomeIntoTheAccountIsNotWordedAsACharge() async throws {
+        let viewModel = await CreateTransactionFactory.loaded(.income)
+        let rows = viewModel.methodGroups.flatMap(\.rows)
+        let transfer = try #require(rows.first { $0.source == .card(SampleData.IDs.savingsTransfer) })
+        #expect(transfer.title == "Transfer or deposit")
+        #expect(["Straight into the account", "Straight into Bank One Savings"].contains(transfer.subtitle ?? ""))
     }
 
     @Test

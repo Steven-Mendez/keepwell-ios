@@ -23,12 +23,4 @@ struct TransactionScopeTests {
         #expect(TransactionScope.account(cash).includes(withdrawal))
         #expect(!TransactionScope.account(checking).includes(elsewhere))
     }
-
-    @Test
-    func cardIncludesOnlyWhatItPaid() {
-        let paidByCard = Fixtures.transaction(amount: "5", account: checking, card: card)
-        let sameAccountNoCard = Fixtures.transaction(amount: "5", account: checking)
-        #expect(TransactionScope.card(card).includes(paidByCard))
-        #expect(!TransactionScope.card(card).includes(sameAccountNoCard))
-    }
 }

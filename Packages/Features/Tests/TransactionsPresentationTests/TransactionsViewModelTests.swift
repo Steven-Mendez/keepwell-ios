@@ -42,11 +42,8 @@ struct TransactionsViewModelTests {
     }
 
     @Test
-    func aCardFilterReadsAsTheCard() async {
+    func aCreditCardFilterShowsWhatIsOwed() async {
         let viewModel = await loaded()
-        viewModel.scope = .card(IDs.savingsDebit)
-        #expect(viewModel.scopeTitle == "Debit •••• 1234")
-        #expect(rows(viewModel).allSatisfy { $0.cardID == IDs.savingsDebit })
         viewModel.scope = .account(IDs.mastercard)
         #expect(viewModel.scopeBalance?.label == "Current debt")
         // Owed reads positive, with each currency of the dual card under the total.

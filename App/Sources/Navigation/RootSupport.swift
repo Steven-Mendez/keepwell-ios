@@ -192,29 +192,26 @@ struct AdditionalCardRoute: View {
 struct DebitCardRoute: View {
     @State private var viewModel: DebitCardViewModel
     let onBack: () -> Void
-    let onLinkCard: (UUID) -> Void
     let onSeeAllMovements: (UUID) -> Void
 
     init(
         container: AppContainer,
-        cardID: UUID,
+        accountID: UUID,
         onBack: @escaping () -> Void,
-        onLinkCard: @escaping (UUID) -> Void,
         onSeeAllMovements: @escaping (UUID) -> Void,
     ) {
-        _viewModel = State(initialValue: container.makeDebitCardViewModel(cardID: cardID))
+        _viewModel = State(initialValue: container.makeDebitCardViewModel(accountID: accountID))
         self.onBack = onBack
-        self.onLinkCard = onLinkCard
         self.onSeeAllMovements = onSeeAllMovements
     }
 
     var body: some View {
-        DebitCardView(viewModel: viewModel, onBack: onBack, onLinkCard: onLinkCard, onSeeAllMovements: onSeeAllMovements)
+        DebitCardView(viewModel: viewModel, onBack: onBack, onSeeAllMovements: onSeeAllMovements)
             .navigationBarBackButtonHidden()
     }
 }
 
-/// The movement list pushed from an account or card. It has its own view model so filtering it
+/// The movement list pushed from an account. It has its own view model so filtering it
 /// leaves the Transactions tab as the person left it.
 struct TransactionsRoute: View {
     @State private var viewModel: TransactionsViewModel

@@ -59,6 +59,15 @@ struct CompleteOnboardingUseCaseTests {
     }
 
     @Test
+    func bankAccountWithoutDigitsStillGetsItsCard() async throws {
+        let bank = OnboardingAccountDraft(kind: .bank, name: "Savings", bank: "Bank One", currency: "USD", balance: 10)
+        let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [bank]))
+        let cards = await store.fetchCards()
+        #expect(cards.map(\.kind) == [.debit, .transfer])
+        #expect(cards.first?.lastFour == nil)
+    }
+
+    @Test
     func creditCardDebtStartsNegativeInBothCurrencies() async throws {
         let card = OnboardingAccountDraft(
             kind: .credit, name: "Mastercard", bank: "Bank One", currency: "USD",

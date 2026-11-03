@@ -6,8 +6,7 @@ import SharedPresentation
 import SwiftUI
 
 /// Cards fanned like Wallet: each card shows its top 76pt above the next, and the first item sits
-/// in front, fully visible. Shared by credit cards and by each bank account's debit cards so both
-/// read as the same physical object.
+/// in front, fully visible. Credit cards only: a bank account is a single card and needs no stack.
 struct CardStack<Item: Identifiable, Art: View>: View {
     private let items: [Item]
     private let art: (Item, Bool) -> Art
@@ -54,105 +53,35 @@ struct CardStack<Item: Identifiable, Art: View>: View {
     }
 }
 
-/// A bank account shown through its debit cards. An account with no card yet still appears, as
-/// an empty card slot that adds one, because the person thinks of the account as its card.
-struct DepositCards: View {
+/// A bank account shown as its one debit card, with the balance on the face. The person thinks
+/// of the account as its card, so there is nothing else to tap or link.
+struct DepositCard: View {
     let deposit: AccountsOverview.Deposit
     let formatter: CurrencyFormatter
-    var onOpen: ((Card) -> Void)?
-    let onLink: () -> Void
-
-    private var bank: String {
-        deposit.account.bank ?? deposit.account.name
-    }
-
-    /// The account's own name when the bank already heads the card, so it isn't lost.
-    private var caption: String? {
-        deposit.account.bank == nil ? nil : deposit.account.name
-    }
+    let onOpen: () -> Void
 
     var body: some View {
-        if deposit.debitCards.isEmpty {
-            EmptyCardSlot(
-                title: CardDisplay.name(of: deposit.account),
-                amount: formatter.string(deposit.balance),
-                action: onLink,
+        Button(action: onOpen) {
+            CardDisplay.art(
+                of: deposit.debitCard,
+                kind: .debit,
+                bank: deposit.account.bank ?? deposit.account.name,
+                badge: .amount(formatter.string(deposit.balance)),
+                // The account's own name when the bank already heads the card, so it isn't lost.
+                caption: deposit.account.bank == nil ? nil : deposit.account.name,
             )
-        } else {
-            VStack(alignment: .leading, spacing: KWSpacing.sm) {
-                CardStack(deposit.debitCards, label: accessibilityLabel, onTap: onOpen, art: { card, isFront in
-                    CardDisplay.art(
-                        of: card,
-                        kind: .debit,
-                        bank: bank,
-                        badge: isFront ? .amount(formatter.string(deposit.balance)) : card.lastFour.map { .tag("•••• \($0)") },
-                        caption: caption,
-                        showsFace: isFront,
-                    )
-                })
-                Button(action: onLink) {
-                    HStack(spacing: KWSpacing.xs) {
-                        KWIconView(.addCard, size: 20)
-                        Text("Link another card", bundle: #bundle)
-                            .font(.kw(14, weight: 600, relativeTo: .subheadline))
-                    }
-                    .foregroundStyle(KWColor.Brand.link)
-                    .frame(minHeight: KWLayout.minTouch)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
-
-    private func accessibilityLabel(_ card: Card) -> String {
-        let name = CardDisplay.name(of: deposit.account)
-        let digits = card.lastFour ?? ""
-        let balance = formatter.string(deposit.balance)
-        return String(localized: "\(name) debit card •••• \(digits), \(balance)", bundle: #bundle)
-    }
-}
-
-/// A card-shaped dashed slot for a bank account that has no card linked yet.
-struct EmptyCardSlot: View {
-    let title: String
-    let amount: String
-    let action: () -> Void
-
-    var body: some View {
-        let shape = RoundedRectangle(cornerRadius: KWRadius.card, style: .continuous)
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Text(title)
-                        .font(.kw(17, weight: 800))
-                        .tracking(-0.3)
-                    Spacer(minLength: KWSpacing.xs)
-                    Text(amount)
-                        .font(.kw(14, weight: 700, relativeTo: .subheadline))
-                        .monospacedDigit()
-                }
-                .lineLimit(1)
-                .foregroundStyle(KWColor.Text.primary)
-                Spacer(minLength: 0)
-                VStack(spacing: KWSpacing.xs) {
-                    KWIconView(.addCard, size: 28)
-                    Text("Add a debit card", bundle: #bundle)
-                        .font(.kw(15, weight: 600, relativeTo: .subheadline))
-                }
-                .foregroundStyle(KWColor.Brand.link)
-                .frame(maxWidth: .infinity)
-                Spacer(minLength: 0)
-            }
-            .padding(KWSpacing.lg)
-            .aspectRatio(KWComponentMetrics.cardArtRatio, contentMode: .fit)
-            .frame(maxWidth: .infinity)
-            .background(KWColor.Surface.surface, in: shape)
-            .overlay(shape.strokeBorder(KWColor.Surface.border, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5])))
-            .contentShape(shape)
         }
         .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        let name = CardDisplay.name(of: deposit.account)
+        let balance = formatter.string(deposit.balance)
+        guard let digits = deposit.debitCard?.lastFour else {
+            return String(localized: "\(name) debit card, \(balance)", bundle: #bundle)
+        }
+        return String(localized: "\(name) debit card •••• \(digits), \(balance)", bundle: #bundle)
     }
 }
 

@@ -171,8 +171,7 @@ struct RootView: View {
                 viewModel: screens.accounts,
                 onAdd: { presentAddCard() },
                 onOpenCreditCard: { router.push(.creditCard(accountID: $0)) },
-                onOpenDebitCard: { router.push(.debitCard(cardID: $0)) },
-                onLinkCard: { presentAddCard(linkingTo: $0) },
+                onOpenBankAccount: { router.push(.bankAccount(accountID: $0)) },
                 onOpenAccountMovements: { router.push(.transactions(accountID: $0)) },
             )
         case .summary:
@@ -385,12 +384,8 @@ extension RootView {
         newMovement = PresentedFlow(viewModel: viewModel)
     }
 
-    func presentAddCard(linkingTo accountID: UUID? = nil) {
-        let viewModel = container.makeAddCardViewModel()
-        if let accountID {
-            viewModel.choose(.debit, linkingTo: accountID)
-        }
-        addCard = PresentedFlow(viewModel: viewModel)
+    func presentAddCard() {
+        addCard = PresentedFlow(viewModel: container.makeAddCardViewModel())
     }
 
     private func exitAddCard(_ exit: AddCardViewModel.Exit) {
@@ -400,6 +395,8 @@ extension RootView {
             break
         case let .viewCreditCard(accountID):
             router.push(.creditCard(accountID: accountID))
+        case let .viewBankAccount(accountID):
+            router.push(.bankAccount(accountID: accountID))
         case let .addAdditional(accountID):
             router.push(.creditCard(accountID: accountID, addsAdditional: true))
         }

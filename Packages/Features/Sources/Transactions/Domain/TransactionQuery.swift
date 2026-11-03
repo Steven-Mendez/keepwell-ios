@@ -1,8 +1,8 @@
 import Domain
 import Foundation
 
-/// Everything that narrows the movement list at once: the kind chip, the account or card, and
-/// the search text.
+/// Everything that narrows the movement list at once: the kind chip, the account, and the search
+/// text.
 public struct TransactionQuery: Hashable, Sendable {
     public var kind: TransactionFilter
     public var scope: TransactionScope
@@ -51,44 +51,40 @@ public struct DefaultFilterTransactionsUseCase: FilterTransactionsUseCase {
     }
 }
 
-/// One account in the list's account picker, with the plastics that can narrow it further.
-public struct TransactionScopeGroup: Identifiable, Hashable, Sendable {
+/// One account in the list's account picker, shown as its card: a bank account's debit card, a
+/// credit card's main plastic. Cash has none and shows as cash.
+public struct TransactionScopeOption: Identifiable, Hashable, Sendable {
     public let account: Account
-    /// Holder first, then additionals; debit cards in the order they were added. Transfer
-    /// channels are left out: the account itself already covers what moved through them.
-    public let cards: [Card]
+    public let card: Card?
     public var id: UUID { account.id }
 
-    public init(account: Account, cards: [Card]) {
+    public init(account: Account, card: Card?) {
         self.account = account
-        self.cards = cards
+        self.card = card
     }
 }
 
 extension TransactionList {
-    /// Accounts in the order the Accounts tab shows them: credit cards, bank accounts, cash.
-    public var scopeGroups: [TransactionScopeGroup] {
+    /// Accounts in the order the Accounts tab shows them: credit cards, bank accounts, cash. One
+    /// row each; a credit card's additionals live on its own screen, not in this filter.
+    public var scopeOptions: [TransactionScopeOption] {
         let order: [AccountKind] = [.credit, .deposit, .cash]
         return order.flatMap { kind in
             accounts.filter { $0.kind == kind }.map { account in
-                let plastics = cards.filter { $0.accountID == account.id && $0.kind != .transfer }
-                let ordered = plastics.filter { $0.kind == .creditHolder } + plastics.filter { $0.kind != .creditHolder }
-                return TransactionScopeGroup(account: account, cards: ordered)
+                let face: CardKind? = switch kind {
+                case .deposit: .debit
+                case .credit: .creditHolder
+                case .cash: nil
+                }
+                return TransactionScopeOption(account: account, card: cards.first { $0.accountID == account.id && $0.kind == face })
             }
         }
     }
 
-    public func card(in scope: TransactionScope) -> Card? {
-        guard case let .card(id) = scope else { return nil }
-        return cards.first { $0.id == id }
-    }
-
-    /// The account a scope looks at; a card's is the account it draws from.
     public func account(in scope: TransactionScope) -> Account? {
         switch scope {
         case .all: nil
         case let .account(id): accounts.first { $0.id == id }
-        case .card: card(in: scope).flatMap { card in accounts.first { $0.id == card.accountID } }
         }
     }
 

@@ -3,8 +3,11 @@ import Core
 import Domain
 import Foundation
 import Observation
+import SharedPresentation
 
-/// Drives "Add card": type → plastic → debt and cycle (credit only) → added.
+/// Drives "Add card": type → plastic → debt and cycle (credit only) → added. A debit card is a
+/// bank account seen as its card, so the debit plastic step also asks for the account's name and
+/// balance and creates both at once.
 @MainActor
 @Observable
 public final class AddCardViewModel {
@@ -22,6 +25,7 @@ public final class AddCardViewModel {
     public enum Exit: Sendable {
         case close
         case viewCreditCard(UUID)
+        case viewBankAccount(UUID)
         case addAdditional(UUID)
     }
 
@@ -37,7 +41,10 @@ public final class AddCardViewModel {
     public var limitText = ""
     public private(set) var cutoffDay = 28
     public private(set) var dueDay = 15
-    public var linkedAccountID: UUID?
+    /// Debit only: the bank account the card is.
+    public var accountName = ""
+    public var accountCurrency = ""
+    public var balanceText = ""
     public private(set) var context: AddCardContext?
     public private(set) var createdAccount: Account?
     public private(set) var createdCard: Card?
@@ -46,18 +53,15 @@ public final class AddCardViewModel {
 
     private let getContext: any GetAddCardContextUseCase
     private let addCredit: any AddCreditCardUseCase
-    private let addDebit: any AddDebitCardUseCase
     private let addAccount: any AddAccountUseCase
 
     public init(
         getContext: any GetAddCardContextUseCase,
         addCredit: any AddCreditCardUseCase,
-        addDebit: any AddDebitCardUseCase,
         addAccount: any AddAccountUseCase,
     ) {
         self.getContext = getContext
         self.addCredit = addCredit
-        self.addDebit = addDebit
         self.addAccount = addAccount
     }
 
@@ -78,13 +82,10 @@ public final class AddCardViewModel {
 
     // MARK: Steps
 
-    /// Starts the plastic step; `accountID` preselects the bank account when linking a debit card
-    /// from an account's "Link another card".
-    public func choose(_ kind: Kind, linkingTo accountID: UUID? = nil) {
+    public func choose(_ kind: Kind) {
         self.kind = kind
         network = kind == .credit ? .mastercard : .visa
         color = kind == .credit ? .azul : .coral
-        linkedAccountID = accountID ?? linkedAccountID ?? context?.depositAccounts.first?.id
         errorMessage = nil
         path = [.plastic]
     }
@@ -94,7 +95,13 @@ public final class AddCardViewModel {
     }
 
     public var canContinueFromPlastic: Bool {
-        isLastFourValid && (kind == .credit || linkedAccountID != nil)
+        isLastFourValid &&
+            (kind == .credit || (!accountName.trimmingCharacters(in: .whitespaces).isEmpty && Self.amount(balanceText) != nil))
+    }
+
+    /// The bank account's currency: the one picked, or the principal one.
+    public var accountCurrencyCode: String {
+        accountCurrency.isEmpty ? principal : accountCurrency
     }
 
     /// Credit cards go on to debt and cycle; debit cards are saved right away.
@@ -147,18 +154,22 @@ public final class AddCardViewModel {
         principalDebtText = "0.00"
         secondDebtText = "0.00"
         limitText = ""
+        accountName = ""
+        accountCurrency = ""
+        balanceText = ""
         createdAccount = nil
         createdCard = nil
         path = []
     }
 
-    public func createAccount(kind: AccountKind, name: String, bank: String?, currency: String, balanceText: String) async -> Bool {
+    /// "Other wallet": cash and the like, which have no card.
+    public func createWallet(name: String, currency: String, balanceText: String) async -> Bool {
         guard let balance = Self.amount(balanceText) else {
             errorMessage = String(localized: "Check the balance.", bundle: #bundle)
             return false
         }
         do {
-            _ = try await addAccount.execute(kind: kind, name: name, bank: bank, balance: Money(balance, currency))
+            _ = try await addAccount.execute(kind: .cash, name: name, bank: nil, balance: Money(balance, currency))
             errorMessage = nil
             await load()
             return true
@@ -206,9 +217,8 @@ public final class AddCardViewModel {
     /// The sentence under "Card added".
     public var summary: String {
         if kind == .debit {
-            let account = context?.depositAccounts.first { $0.id == createdCard?.accountID }
-            let accountName = [account?.bank, account?.name].compactMap(\.self).joined(separator: " ")
-            return String(localized: "Linked to \(accountName).", bundle: #bundle)
+            let name = createdAccount.map(CardDisplay.name(of:)) ?? accountName
+            return String(localized: "\(name) is ready: this card is the account, with its balance and movements.", bundle: #bundle)
         }
         let first = principal
         let other = second ?? first
@@ -227,11 +237,18 @@ public final class AddCardViewModel {
     // MARK: Private
 
     private func saveDebit() async {
-        guard let accountID = linkedAccountID else { return }
-        let (lastFour, network, color) = (lastFour, network, color)
+        guard let balance = Self.amount(balanceText) else { return }
+        let card = DebitCardDraft(lastFour: lastFour, network: network, color: color)
+        let (name, bank, currency) = (accountName, bank, accountCurrencyCode)
         await save { () async throws(DomainError) in
-            createdCard = try await addDebit.execute(accountID: accountID, lastFour: lastFour, network: network, color: color)
-            createdAccount = nil
+            createdAccount = try await addAccount.execute(
+                kind: .deposit,
+                name: name,
+                bank: bank.isEmpty ? nil : bank,
+                balance: Money(balance, currency),
+                debitCard: card,
+            )
+            createdCard = nil
         }
     }
 

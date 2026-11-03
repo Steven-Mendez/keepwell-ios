@@ -46,6 +46,16 @@ final class AppContainer {
         store = SwiftDataStore(modelContainer: modelContainer)
     }
 
+    /// Gives every bank account exactly one card before any screen reads them: older versions
+    /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
+    func normalizeBankCards() async {
+        do {
+            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store).execute()
+        } catch {
+            Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
+        }
+    }
+
     #if DEBUG
     func seedSampleData() async {
         let sample = SampleData(referenceDate: .now)
@@ -91,9 +101,8 @@ final class AppContainer {
 
     func makeAddCardViewModel() -> AddCardViewModel {
         AddCardViewModel(
-            getContext: DefaultGetAddCardContextUseCase(settings: store, accounts: store),
+            getContext: DefaultGetAddCardContextUseCase(settings: store),
             addCredit: DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store),
-            addDebit: DefaultAddDebitCardUseCase(accounts: store, cards: store),
             addAccount: DefaultAddAccountUseCase(accounts: store, cards: store),
         )
     }
@@ -243,18 +252,18 @@ final class AppContainer {
         )
     }
 
-    // MARK: - Debit card
+    // MARK: - Bank account and its card
 
-    func makeDebitCardViewModel(cardID: UUID) -> DebitCardViewModel {
+    func makeDebitCardViewModel(accountID: UUID) -> DebitCardViewModel {
         DebitCardViewModel(
-            cardID: cardID,
+            accountID: accountID,
             getDetail: DefaultGetDebitCardDetailUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
             setFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            removeCard: DefaultRemoveCardUseCase(cards: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
         )
     }
 

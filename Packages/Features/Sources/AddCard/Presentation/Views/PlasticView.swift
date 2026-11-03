@@ -12,7 +12,9 @@ public struct PlasticView: View {
 
     private enum Field: Hashable {
         case bank
+        case accountName
         case lastFour
+        case balance
     }
 
     public init(viewModel: AddCardViewModel, onBack: @escaping () -> Void) {
@@ -37,7 +39,7 @@ public struct PlasticView: View {
             .buttonStyle(.kw())
             .disabled(!viewModel.canContinueFromPlastic || viewModel.isSaving)
         }
-        .kwKeyboardToolbar($focus, order: [.bank, .lastFour])
+        .kwKeyboardToolbar($focus, order: viewModel.kind == .debit ? [.bank, .accountName, .lastFour, .balance] : [.bank, .lastFour])
     }
 
     private var form: some View {
@@ -54,27 +56,9 @@ public struct PlasticView: View {
                 kindLabel: kindBadge,
             )
             swatches
-            KWGroupedCard {
-                if viewModel.kind == .debit {
-                    accountPicker
-                }
-                KWTextFieldRow(
-                    String(localized: "Bank", bundle: #bundle),
-                    placeholder: String(localized: "Bank name", bundle: #bundle),
-                    text: $viewModel.bank,
-                )
-                .textInputAutocapitalization(.words)
-                .autocorrectionDisabled()
-                .kwFocused($focus, equals: .bank)
-                KWTextFieldRow(
-                    String(localized: "Last 4 digits", bundle: #bundle),
-                    placeholder: "0000",
-                    text: $viewModel.lastFour,
-                    digitLimit: 4,
-                    width: 110,
-                )
-                .kwFocused($focus, equals: .lastFour)
-                networkPicker
+            plasticFields
+            if viewModel.kind == .debit {
+                balanceFields
             }
             Text("We never ask for the full number or the CVV.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font)
@@ -85,11 +69,39 @@ public struct PlasticView: View {
         }
     }
 
+    private var plasticFields: some View {
+        KWGroupedCard {
+            KWTextFieldRow(
+                String(localized: "Bank", bundle: #bundle),
+                placeholder: String(localized: "Bank name", bundle: #bundle),
+                text: $viewModel.bank,
+            )
+            .textInputAutocapitalization(.words)
+            .autocorrectionDisabled()
+            .kwFocused($focus, equals: .bank)
+            if viewModel.kind == .debit {
+                KWTextFieldRow(
+                    String(localized: "Account", bundle: #bundle),
+                    placeholder: String(localized: "Savings", bundle: #bundle),
+                    text: $viewModel.accountName,
+                )
+                .textInputAutocapitalization(.words)
+                .kwFocused($focus, equals: .accountName)
+            }
+            KWTextFieldRow(
+                String(localized: "Last 4 digits", bundle: #bundle),
+                placeholder: "0000",
+                text: $viewModel.lastFour,
+                digitLimit: 4,
+                width: 110,
+            )
+            .kwFocused($focus, equals: .lastFour)
+            networkPicker
+        }
+    }
+
     private var bankPlaceholder: String {
-        let fallback = String(localized: "Bank", bundle: #bundle)
-        return viewModel.kind == .debit
-            ? viewModel.context?.depositAccounts.first { $0.id == viewModel.linkedAccountID }?.bank ?? fallback
-            : fallback
+        String(localized: "Bank", bundle: #bundle)
     }
 
     private var swatches: some View {
@@ -136,17 +148,28 @@ public struct PlasticView: View {
         .padding(.vertical, KWSpacing.sm)
     }
 
-    private var accountPicker: some View {
-        VStack(alignment: .leading, spacing: KWSpacing.xs) {
-            Text("Account", bundle: #bundle).foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
-            KWFlowLayout(spacing: 6) {
-                ForEach(viewModel.context?.depositAccounts ?? []) { account in
-                    KWChip(CardDisplay.name(of: account), isSelected: account.id == viewModel.linkedAccountID) {
-                        viewModel.linkedAccountID = account.id
-                    }
+    /// The debit card is the bank account, so its balance is asked here rather than in a second form.
+    private var balanceFields: some View {
+        KWGroupedCard {
+            if let second = viewModel.second {
+                HStack {
+                    Text("Currency", bundle: #bundle).foregroundStyle(KWColor.Text.secondary)
+                    Spacer()
+                    KWSegmentedControl(
+                        [(value: viewModel.principal, title: viewModel.principal), (value: second, title: second)],
+                        selection: Binding(get: { viewModel.accountCurrencyCode }, set: { viewModel.accountCurrency = $0 }),
+                        style: .accent,
+                    )
                 }
+                .font(KWTextStyle.body.font)
+                .padding(.vertical, 10)
             }
+            KWAmountFieldRow(
+                String(localized: "Today's balance", bundle: #bundle),
+                symbol: CurrencyFormatter.symbol(for: viewModel.accountCurrencyCode),
+                text: $viewModel.balanceText,
+            )
+            .kwFocused($focus, equals: .balance)
         }
-        .padding(.vertical, KWSpacing.sm)
     }
 }

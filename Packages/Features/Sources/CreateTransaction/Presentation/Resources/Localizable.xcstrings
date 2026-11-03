@@ -271,26 +271,6 @@
         }
       }
     },
-    "Charged directly to %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se cobra directo de %@"
-          }
-        }
-      }
-    },
-    "Charged directly to the account" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se cobra directo de la cuenta"
-          }
-        }
-      }
-    },
     "Check the amount." : {
       "localizations" : {
         "es" : {
@@ -377,16 +357,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fecha"
-          }
-        }
-      }
-    },
-    "Debit •••• %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Débito •••• %@"
           }
         }
       }
@@ -1443,6 +1413,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estás a punto de retirar"
+          }
+        }
+      }
+    },
+    "Transfer or direct debit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia o débito automático"
+          }
+        }
+      }
+    },
+    "Without the card, straight from the account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin tarjeta, directo de la cuenta"
+          }
+        }
+      }
+    },
+    "Without the card, from %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin tarjeta, desde %@"
+          }
+        }
+      }
+    },
+    "Transfer or deposit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia o depósito"
+          }
+        }
+      }
+    },
+    "Straight into the account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Directo a la cuenta"
+          }
+        }
+      }
+    },
+    "Straight into %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Directo a %@"
+          }
+        }
+      }
+    },
+    "Straight from the account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Directo desde la cuenta"
+          }
+        }
+      }
+    },
+    "Straight from %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Directo desde %@"
           }
         }
       }

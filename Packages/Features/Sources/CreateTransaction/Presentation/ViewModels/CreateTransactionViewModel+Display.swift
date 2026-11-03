@@ -189,27 +189,14 @@ extension CreateTransactionViewModel {
         case let .card(id):
             guard let card = context.card(id) else { return MethodRow(source: source, title: "", subtitle: nil, thumbnail: .transfer) }
             let account = context.account(card.accountID)
-            let lastFour = card.lastFour ?? ""
             switch card.kind {
             case .debit:
                 let subtitle = grouped
                     ? usedLabel(context.lastUsed[source])
                     : account.map { "\(CardDisplay.name(of: $0)) · \(currencyList($0))" }
-                return MethodRow(
-                    source: source,
-                    title: String(localized: "Debit •••• \(lastFour)", bundle: #bundle),
-                    subtitle: subtitle,
-                    thumbnail: .card(card.color),
-                )
+                return MethodRow(source: source, title: CardDisplay.debitTitle(card), subtitle: subtitle, thumbnail: .card(card.color))
             case .transfer:
-                // Rent paid by transfer or a direct debit: money leaves the account with no card.
-                let subtitle = grouped
-                    ? String(localized: "Charged directly to the account", bundle: #bundle)
-                    : account.map { String(localized: "Charged directly to \(CardDisplay.name(of: $0))", bundle: #bundle) }
-                return MethodRow(
-                    source: source, title: String(localized: "Bank transfer", bundle: #bundle),
-                    subtitle: subtitle, thumbnail: .transfer,
-                )
+                return accountMethodRow(source: source, account: account, grouped: grouped)
             case .creditHolder:
                 // Inside its own section the card sits next to its additionals, so it reads as the main one.
                 return grouped
@@ -225,6 +212,34 @@ extension CreateTransactionViewModel {
                 return additionalRow(source: source, card: card, context: context)
             }
         }
+    }
+
+    /// The bank account's other way to move money, next to its card: rent paid by transfer, a
+    /// direct debit, a salary deposit. Worded by what the movement does, since "charged" only fits
+    /// money that leaves.
+    private func accountMethodRow(source: PaymentSource, account: Account?, grouped: Bool) -> MethodRow {
+        let name = account.map(CardDisplay.name(of:)) ?? ""
+        let (title, subtitle): (String, String) = switch kind {
+        case .expense: (
+                String(localized: "Transfer or direct debit", bundle: #bundle),
+                grouped
+                    ? String(localized: "Without the card, straight from the account", bundle: #bundle)
+                    : String(localized: "Without the card, from \(name)", bundle: #bundle),
+            )
+        case .income: (
+                String(localized: "Transfer or deposit", bundle: #bundle),
+                grouped
+                    ? String(localized: "Straight into the account", bundle: #bundle)
+                    : String(localized: "Straight into \(name)", bundle: #bundle),
+            )
+        case .transfer: (
+                String(localized: "Bank transfer", bundle: #bundle),
+                grouped
+                    ? String(localized: "Straight from the account", bundle: #bundle)
+                    : String(localized: "Straight from \(name)", bundle: #bundle),
+            )
+        }
+        return MethodRow(source: source, title: title, subtitle: subtitle, thumbnail: .transfer)
     }
 
     /// "Purchase in NIO → debt in NIO" on dual cards, where the currency picks the debt.

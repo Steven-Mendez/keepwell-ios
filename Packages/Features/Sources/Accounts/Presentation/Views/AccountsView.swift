@@ -5,14 +5,13 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// Accounts, shown through what the person carries: credit cards and each bank account's debit
-/// cards stacked like Wallet, and cash as a banknote.
+/// Accounts, shown through what the person carries: credit cards stacked like Wallet, each bank
+/// account as its one debit card, and cash as a banknote.
 public struct AccountsView: View {
     private let viewModel: AccountsViewModel
     private let onAdd: () -> Void
     private let onOpenCreditCard: (UUID) -> Void
-    private let onOpenDebitCard: (UUID) -> Void
-    private let onLinkCard: (UUID) -> Void
+    private let onOpenBankAccount: (UUID) -> Void
     private let onOpenAccountMovements: (UUID) -> Void
     @State private var cashAction: CashAction?
     private let formatter = CurrencyFormatter()
@@ -33,15 +32,13 @@ public struct AccountsView: View {
         viewModel: AccountsViewModel,
         onAdd: @escaping () -> Void,
         onOpenCreditCard: @escaping (UUID) -> Void,
-        onOpenDebitCard: @escaping (UUID) -> Void,
-        onLinkCard: @escaping (UUID) -> Void,
+        onOpenBankAccount: @escaping (UUID) -> Void,
         onOpenAccountMovements: @escaping (UUID) -> Void,
     ) {
         self.viewModel = viewModel
         self.onAdd = onAdd
         self.onOpenCreditCard = onOpenCreditCard
-        self.onOpenDebitCard = onOpenDebitCard
-        self.onLinkCard = onLinkCard
+        self.onOpenBankAccount = onOpenBankAccount
         self.onOpenAccountMovements = onOpenAccountMovements
     }
 
@@ -60,15 +57,10 @@ public struct AccountsView: View {
                         CreditCardStack(cards: overview.creditCards, formatter: formatter, onOpen: onOpenCreditCard)
                     }
                     if !overview.deposits.isEmpty {
-                        KWSectionHeader(String(localized: "Debit cards", bundle: #bundle), style: .large)
+                        KWSectionHeader(String(localized: "Bank accounts", bundle: #bundle), style: .large)
                             .padding(.top, 10)
                         ForEach(overview.deposits) { deposit in
-                            DepositCards(
-                                deposit: deposit,
-                                formatter: formatter,
-                                onOpen: { onOpenDebitCard($0.id) },
-                                onLink: { onLinkCard(deposit.id) },
-                            )
+                            DepositCard(deposit: deposit, formatter: formatter) { onOpenBankAccount(deposit.id) }
                         }
                     }
                     cashSection(overview.cash)
@@ -206,8 +198,7 @@ private struct AccountsPreview: View {
             viewModel: viewModel,
             onAdd: {},
             onOpenCreditCard: { _ in },
-            onOpenDebitCard: { _ in },
-            onLinkCard: { _ in },
+            onOpenBankAccount: { _ in },
             onOpenAccountMovements: { _ in },
         )
         .onAppear { KWFonts.register() }

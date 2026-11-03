@@ -1,19 +1,17 @@
 import Domain
 import Foundation
 
-/// One debit card and the bank account it draws from.
+/// A bank account and its one debit card, which the person sees as the same thing.
 public struct DebitCardDetail: Hashable, Sendable {
     public static let latestCount = 5
 
     public let card: Card
     public let account: Account
-    /// What the account holds; every card on it spends from this one balance.
     public let balance: Money
-    /// How many plastics draw from the account, this one included.
-    public let cardCount: Int
-    /// The account's latest confirmed movements, newest first. The account's rather than the
-    /// card's, because the balance above is the account's and has to add up with what's listed;
-    /// each row names the card or channel that moved the money.
+    /// Every movement that touches the account, planned ones included: what deleting it removes.
+    public let movementCount: Int
+    /// The account's latest confirmed movements, newest first, so they add up with the balance
+    /// above; each row names whether the card or a transfer moved the money.
     public let latestTransactions: [Transaction]
     /// For row subtitles.
     public let accounts: [Account]
@@ -24,7 +22,7 @@ public struct DebitCardDetail: Hashable, Sendable {
         card: Card,
         account: Account,
         balance: Money,
-        cardCount: Int,
+        movementCount: Int = 0,
         latestTransactions: [Transaction] = [],
         accounts: [Account] = [],
         cards: [Card] = [],
@@ -33,7 +31,7 @@ public struct DebitCardDetail: Hashable, Sendable {
         self.card = card
         self.account = account
         self.balance = balance
-        self.cardCount = cardCount
+        self.movementCount = movementCount
         self.latestTransactions = latestTransactions
         self.accounts = accounts
         self.cards = cards
