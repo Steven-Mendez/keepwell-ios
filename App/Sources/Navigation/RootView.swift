@@ -1,3 +1,4 @@
+import AccountsPresentation
 import Core
 import DesignSystem
 import OnboardingPresentation
@@ -16,6 +17,7 @@ struct RootView: View {
     @State private var phase = Phase.loading
     @State private var router = AppRouter()
     @State private var tab = MainTab.home
+    @State private var accounts: AccountsViewModel?
 
     init(container: AppContainer) {
         self.container = container
@@ -37,8 +39,15 @@ struct RootView: View {
 
     private var main: some View {
         NavigationStack(path: $router.path) {
-            MainTabView(selection: $tab) { _ in
-                KWColor.Surface.bg
+            MainTabView(selection: $tab) { tab in
+                switch tab {
+                case .accounts:
+                    if let accounts {
+                        AccountsView(viewModel: accounts, onAdd: {}, onOpenCreditCard: { _ in }, onLinkCard: { _ in })
+                    }
+                case .home, .transactions, .summary:
+                    KWColor.Surface.bg
+                }
             }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: AppRoute.self) { _ in EmptyView() }
@@ -48,6 +57,7 @@ struct RootView: View {
     private func load() async {
         guard case .loading = phase else { return }
         let settings = try? await container.makeGetSettings().execute()
+        accounts = container.makeAccountsViewModel()
         phase = settings?.hasCompletedOnboarding == true ? .main : .onboarding(container.makeOnboardingViewModel())
     }
 

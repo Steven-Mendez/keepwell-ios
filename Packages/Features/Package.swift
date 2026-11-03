@@ -11,6 +11,8 @@ let package = Package(
     products: [
         .library(name: "OnboardingDomain", targets: ["OnboardingDomain"]),
         .library(name: "OnboardingPresentation", targets: ["OnboardingPresentation"]),
+        .library(name: "AccountsDomain", targets: ["AccountsDomain"]),
+        .library(name: "AccountsPresentation", targets: ["AccountsPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -28,6 +30,20 @@ let package = Package(
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ],
             path: "Tests/FeatureTestSupport",
+        ),
+
+        // Display mappings (cards, money, categories) shared by the Presentation targets.
+        .target(
+            name: "SharedPresentation",
+            dependencies: [
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "SharedPresentationTests",
+            dependencies: ["SharedPresentation", .product(name: "Domain", package: "Domain"), .product(name: "Core", package: "Core")],
         ),
 
         // MARK: Onboarding
@@ -67,6 +83,45 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
             exclude: ["__Snapshots__"],
+        ),
+
+        // MARK: Accounts
+
+        .target(
+            name: "AccountsDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Accounts/Domain",
+        ),
+        .target(
+            name: "AccountsPresentation",
+            dependencies: [
+                "AccountsDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/Accounts/Presentation",
+        ),
+        .testTarget(
+            name: "AccountsPresentationTests",
+            dependencies: [
+                "AccountsPresentation",
+                "AccountsDomain",
+                "FeatureTestSupport",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            exclude: ["__Snapshots__"],
+        ),
+        .testTarget(
+            name: "AccountsDomainTests",
+            dependencies: [
+                "AccountsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
     ],
     swiftLanguageModes: [.v6],

@@ -104,17 +104,25 @@ public struct KWFlowHeader: View {
 /// Tab screen header: 30pt title, optional subtitle content and a trailing action.
 public struct KWLargeTitleHeader<Subtitle: View, Trailing: View>: View {
     private let title: String
+    private let alignment: VerticalAlignment
     private let subtitle: Subtitle
     private let trailing: Trailing
 
-    public init(_ title: String, @ViewBuilder subtitle: () -> Subtitle, @ViewBuilder trailing: () -> Trailing) {
+    /// `alignment` is `.top` when a subtitle sits under the title, as on "Cuentas".
+    public init(
+        _ title: String,
+        alignment: VerticalAlignment = .center,
+        @ViewBuilder subtitle: () -> Subtitle,
+        @ViewBuilder trailing: () -> Trailing,
+    ) {
         self.title = title
+        self.alignment = alignment
         self.subtitle = subtitle()
         self.trailing = trailing()
     }
 
     public var body: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: alignment) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .kwTextStyle(.title)
