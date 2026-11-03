@@ -64,12 +64,13 @@ public struct NewMovementSheet: View {
         }
     }
 
-    /// The colors movements already wear in lists: spending red, income green, transfers blue.
+    /// The colors movements already wear in lists: spending red, income green, moves between
+    /// the person's own accounts neutral grey.
     static func tint(of type: MovementType) -> Color {
         switch type {
         case .expense: KWColor.State.negative
         case .income: KWColor.State.positive
-        case .transfer, .cardPayment: KWColor.State.transfer
+        case .transfer, .cardPayment: KWColor.State.neutral
         case .withdrawal: KWColor.State.extra
         }
     }

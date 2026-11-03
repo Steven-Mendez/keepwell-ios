@@ -41,7 +41,9 @@ public enum KWColor {
         public static let positive = Color(hex: Hex.State.positive)
         public static let pending = Color(hex: Hex.State.pending)
         public static let negative = Color(hex: Hex.State.negative)
-        public static let transfer = Color(hex: Hex.State.transfer)
+        /// Movements that don't change what the person has, like a transfer between their own
+        /// accounts, so they carry no gain or loss color.
+        public static let neutral = KWColor.Text.secondary
         public static let extra = Color(hex: Hex.State.extra)
     }
 
@@ -152,7 +154,6 @@ public enum KWColor {
             static let positive: UInt32 = 0x3FD69A
             static let pending: UInt32 = 0xFFB547
             static let negative: UInt32 = 0xFF8A7F
-            static let transfer: UInt32 = 0x8FA8FF
             static let extra: UInt32 = 0xC8F560
         }
     }

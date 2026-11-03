@@ -102,6 +102,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Expenses read as expenses: their amounts and arrow icon are coral red in Transactions, Home's
   recent movements, a card's cycle and the month's totals ("−$8.18" red, "+$817.79" green);
   Summary's "Went out" and Home's expense bar use the same color. The "−" sign stays.
+- Transfers between your own accounts, ATM withdrawals and card payments are neutral: their amount
+  is white and their icon grey instead of blue, because moving money between your accounts
+  doesn't change what you have. Planned movements stay amber.
+- Headline amounts stay white: Home's balance carousel shows what the cards owe in white like
+  every other page, matching "Spent in …" and the net worth. Color marks single movements.
 
 ### Fixed
 
