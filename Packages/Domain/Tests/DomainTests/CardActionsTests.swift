@@ -8,22 +8,12 @@ struct CardActionsTests {
     private typealias IDs = SampleData.IDs
 
     @Test
-    func freezingAndUnfreezingAPlastic() async throws {
-        let store = InMemoryStore(sample: .standard)
-        let freeze = DefaultSetCardFrozenUseCase(cards: store)
-        try await freeze.execute(cardID: IDs.savingsDebit, isFrozen: true)
-        #expect(try await card(IDs.savingsDebit, in: store).isFrozen)
-        try await freeze.execute(cardID: IDs.savingsDebit, isFrozen: false)
-        #expect(try await !card(IDs.savingsDebit, in: store).isFrozen)
-    }
-
-    @Test
     func repaintingKeepsEverythingElse() async throws {
         let store = InMemoryStore(sample: .standard)
         let before = try await card(IDs.savingsDebit, in: store)
-        try await DefaultSetCardColorUseCase(cards: store).execute(cardID: IDs.savingsDebit, color: .verde)
+        try await DefaultSetCardColorUseCase(cards: store).execute(cardID: IDs.savingsDebit, color: .rojo)
         let after = try await card(IDs.savingsDebit, in: store)
-        #expect(after.color == .verde)
+        #expect(after.color == .rojo)
         #expect(after.lastFour == before.lastFour)
         #expect(after.network == before.network)
         #expect(after.accountID == before.accountID)

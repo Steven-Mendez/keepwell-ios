@@ -116,8 +116,7 @@ public struct DebitCardView: View {
     /// The card's color bleeds into the top of the screen, so each card's page feels like its own.
     private var glow: some View {
         let palette = CardDisplay.palette(for: viewModel.detail?.card.color)
-        let tint = viewModel.detail?.card.isFrozen == true ? KWColor.Surface.surface2 : Color(hex: palette.hexStops.end)
-        return LinearGradient(colors: [tint.opacity(0.55), .black], startPoint: .top, endPoint: .bottom)
+        return LinearGradient(colors: [Color(hex: palette.hexStops.end).opacity(0.55), .black], startPoint: .top, endPoint: .bottom)
             .frame(height: 460)
             .animation(.snappy, value: viewModel.detail?.card)
     }
@@ -129,7 +128,6 @@ public struct DebitCardView: View {
             kind: .debit,
             bank: viewModel.bank(detail),
             ownerName: viewModel.ownerName,
-            badge: detail.card.isFrozen ? .tag(String(localized: "Frozen", bundle: #bundle)) : nil,
             caption: caption(detail),
         )
     }
@@ -139,33 +137,19 @@ public struct DebitCardView: View {
     }
 
     private func actions(_ detail: DebitCardDetail) -> some View {
-        let isFrozen = detail.card.isFrozen
-        return VStack(spacing: KWSpacing.sm) {
+        VStack(spacing: KWSpacing.sm) {
             HStack(spacing: KWSpacing.xs) {
                 KWActionButton(String(localized: "Edit name", bundle: #bundle), icon: .pencil) { sheet = .name }
                 KWActionButton(String(localized: "Color", bundle: #bundle), icon: .droplet) { sheet = .color }
-                KWActionButton(
-                    isFrozen ? String(localized: "Unfreeze", bundle: #bundle) : String(localized: "Freeze", bundle: #bundle),
-                    icon: .freeze,
-                    style: isFrozen ? .active : .neutral,
-                ) {
-                    Task { await viewModel.toggleFrozen() }
-                }
             }
-            if isFrozen {
-                Text("A frozen card can't be picked to pay a movement.", bundle: #bundle)
-                    .font(KWTextStyle.captionSm.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.muted)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            }
+            .frame(maxWidth: KWComponentMetrics.actionPairWidth)
             if let error = viewModel.errorMessage, sheet == nil {
                 Text(error)
                     .font(KWTextStyle.caption.font)
                     .foregroundStyle(KWColor.State.negative)
             }
         }
-        .animation(.snappy, value: isFrozen)
+        .frame(maxWidth: .infinity)
     }
 
     private func manage(_ detail: DebitCardDetail) -> some View {

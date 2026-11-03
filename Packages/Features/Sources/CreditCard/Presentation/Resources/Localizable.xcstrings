@@ -141,26 +141,6 @@
         }
       }
     },
-    "Freeze" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Congelar"
-          }
-        }
-      }
-    },
-    "Frozen" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Congelada"
-          }
-        }
-      }
-    },
     "Manage card" : {
       "localizations" : {
         "es" : {
@@ -273,16 +253,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este ciclo"
-          }
-        }
-      }
-    },
-    "Unfreeze" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descongelar"
           }
         }
       }

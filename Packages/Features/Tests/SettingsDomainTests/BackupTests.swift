@@ -69,15 +69,4 @@ struct BackupTests {
 
         #expect(await Set(restored.fetchCards()) == Set(sample.cards))
     }
-
-    @Test
-    func aFrozenCardStaysFrozenThroughABackup() async throws {
-        let store = InMemoryStore(sample: sample)
-        let holder = try #require(sample.cards.first { $0.id == SampleData.IDs.mastercardHolder })
-        await store.save(holder.with(isFrozen: true))
-        let backup = try await create(store)
-        let restored = InMemoryStore(sample: sample)
-        _ = try await restore(backup, into: restored)
-        #expect(await restored.fetchCards().first { $0.id == holder.id }?.isFrozen == true)
-    }
 }

@@ -23,7 +23,6 @@ enum AccountsPreviewData {
             getDetail: DefaultGetDebitCardDetailUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
-            setFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),

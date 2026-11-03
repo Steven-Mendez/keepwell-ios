@@ -5,8 +5,8 @@ import Foundation
 import Observation
 import SharedPresentation
 
-/// Drives a bank account's screen, which is also its card's: one name, one color, one freeze and
-/// one delete, because the person sees the account and its card as the same thing.
+/// Drives a bank account's screen, which is also its card's: one name, one color and one delete,
+/// because the person sees the account and its card as the same thing.
 @MainActor
 @Observable
 public final class DebitCardViewModel {
@@ -26,7 +26,6 @@ public final class DebitCardViewModel {
     public private(set) var ownerName: String?
 
     private let getDetail: any GetDebitCardDetailUseCase
-    private let setFrozen: any SetCardFrozenUseCase
     private let setColor: any SetCardColorUseCase
     private let renameAccount: any RenameAccountUseCase
     private let deleteAccount: any DeleteAccountUseCase
@@ -36,7 +35,6 @@ public final class DebitCardViewModel {
     public init(
         accountID: UUID,
         getDetail: any GetDebitCardDetailUseCase,
-        setFrozen: any SetCardFrozenUseCase,
         setColor: any SetCardColorUseCase,
         renameAccount: any RenameAccountUseCase,
         deleteAccount: any DeleteAccountUseCase,
@@ -45,7 +43,6 @@ public final class DebitCardViewModel {
         self.getPreferredName = getPreferredName
         self.accountID = accountID
         self.getDetail = getDetail
-        self.setFrozen = setFrozen
         self.setColor = setColor
         self.renameAccount = renameAccount
         self.deleteAccount = deleteAccount
@@ -74,13 +71,6 @@ public final class DebitCardViewModel {
     }
 
     // MARK: - Edits
-
-    public func toggleFrozen() async {
-        guard let detail else { return }
-        _ = await perform { () async throws(DomainError) in
-            try await setFrozen.execute(cardID: detail.card.id, isFrozen: !detail.card.isFrozen)
-        }
-    }
 
     /// Returns whether the sheet can close.
     public func setColor(_ color: CardColor) async -> Bool {

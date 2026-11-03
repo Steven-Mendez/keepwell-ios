@@ -1011,16 +1011,6 @@
         }
       }
     },
-    "That card can't be used for this category." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esa tarjeta no se puede usar para esta categoría."
-          }
-        }
-      }
-    },
     "The method decides which account increases." : {
       "localizations" : {
         "es" : {

@@ -13,7 +13,6 @@ enum DebitCardFactory {
             getDetail: DefaultGetDebitCardDetailUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
-            setFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
@@ -41,15 +40,6 @@ struct DebitCardViewModelTests {
         #expect(viewModel.subtitle(detail) == "Bank account · USD")
         #expect(viewModel.deleteTitle(detail) == "Delete Bank One Savings?")
         #expect(viewModel.deleteMessage(detail).contains("its \(detail.movementCount) movements"))
-    }
-
-    @Test
-    func freezingTogglesAndReloads() async {
-        let viewModel = await DebitCardFactory.loaded()
-        await viewModel.toggleFrozen()
-        #expect(viewModel.detail?.card.isFrozen == true)
-        await viewModel.toggleFrozen()
-        #expect(viewModel.detail?.card.isFrozen == false)
     }
 
     @Test

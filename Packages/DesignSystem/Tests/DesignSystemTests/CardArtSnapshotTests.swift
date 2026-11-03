@@ -11,7 +11,7 @@ struct CardArtSnapshotTests {
             palette: .azul,
             bank: "Bank One",
             badge: .amount("−C$197.02 · −$16.79"),
-            caption: "Credit · 2 cards",
+            caption: "Travel",
             lastFour: "1234",
             network: .mastercard,
             kindLabel: "Credit",
@@ -31,16 +31,6 @@ struct CardArtSnapshotTests {
                 network: .mastercard,
                 kindLabel: "Credit",
             )
-            KWCardArt(
-                palette: .lima,
-                bank: "Bank One",
-                badge: .tag("Frozen"),
-                holder: "Family",
-                lastFour: "5678",
-                network: .mastercard,
-                kindLabel: "Credit",
-                isFrozen: true,
-            )
             KWCardArt(palette: .grafito, bank: "Bank Two", badge: .amount("−C$941.30"), showsChip: false)
             KWCardArt(
                 palette: .violeta,
@@ -53,7 +43,7 @@ struct CardArtSnapshotTests {
             )
         }
         .padding(KWLayout.gutter)
-        assertComponentSnapshot(of: view, height: 1060)
+        assertComponentSnapshot(of: view, height: 800)
     }
 
     @Test

@@ -26,12 +26,9 @@ extension CreateTransactionViewModel {
         prefilledDescription = description
     }
 
-    /// Frozen cards can't pay; transfers can't leave from their own destination.
+    /// Transfers can't leave from their own destination.
     public func isUsable(_ candidate: PaymentSource) -> Bool {
         guard let context else { return false }
-        if case let .card(id) = candidate, let card = context.card(id) {
-            guard !card.isFrozen else { return false }
-        }
         return kind != .transfer || context.accountID(for: candidate) != destinationAccountID
     }
 }

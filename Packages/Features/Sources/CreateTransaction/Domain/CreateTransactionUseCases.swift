@@ -120,10 +120,6 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             category = found
         }
 
-        if case let .card(cardID) = source, let card = context.card(cardID) {
-            guard !card.isFrozen else { throw .paymentMethodUnavailable(cardID) }
-        }
-
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
         let note = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
         return Transaction(

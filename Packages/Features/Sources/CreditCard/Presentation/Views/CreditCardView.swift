@@ -38,7 +38,6 @@ public struct CreditCardView: View {
                 if let detail = viewModel.detail {
                     KWNavigationHeader(String(localized: "Credit card", bundle: #bundle), buttonStyle: .translucent, onBack: onBack)
                     CardHero(art: art(detail), name: detail.account.name)
-                        .animation(.snappy, value: isHolderFrozen)
                     debt(detail)
                     actions
                     terms(detail)
@@ -106,17 +105,12 @@ public struct CreditCardView: View {
             kind: .creditHolder,
             bank: viewModel.bank(detail),
             ownerName: viewModel.ownerName,
-            badge: isHolderFrozen ? .tag(String(localized: "Frozen", bundle: #bundle)) : nil,
             caption: detail.account.bank == nil ? nil : detail.account.name,
         )
     }
 
     private func colorPreview(_ holder: Card, _ detail: CreditCardDetail) -> KWCardArt {
         CardDisplay.art(of: holder, kind: .creditHolder, bank: viewModel.bank(detail), ownerName: viewModel.ownerName)
-    }
-
-    private var isHolderFrozen: Bool {
-        viewModel.detail?.holder?.isFrozen == true
     }
 
     private func debt(_ detail: CreditCardDetail) -> some View {
@@ -166,20 +160,14 @@ public struct CreditCardView: View {
 // MARK: - Actions and billing data
 
 extension CreditCardView {
+    /// Two actions, kept close together under the card rather than pushed to the screen's edges.
     private var actions: some View {
         HStack(spacing: KWSpacing.xs) {
             KWActionButton(String(localized: "Pay", bundle: #bundle), icon: .arrowUp, style: .prominent, action: onPay)
-            if viewModel.detail?.holder != nil {
-                KWActionButton(
-                    isHolderFrozen ? String(localized: "Unfreeze", bundle: #bundle) : String(localized: "Freeze", bundle: #bundle),
-                    icon: .freeze,
-                    style: isHolderFrozen ? .active : .neutral,
-                ) {
-                    Task { await viewModel.setHolderFrozen(!isHolderFrozen) }
-                }
-            }
             KWActionButton(String(localized: "Edit name", bundle: #bundle), icon: .pencil) { sheet = .name }
         }
+        .frame(maxWidth: KWComponentMetrics.actionPairWidth)
+        .frame(maxWidth: .infinity)
     }
 
     /// What can be changed about the card itself, LAFISE-style, after what it shows.

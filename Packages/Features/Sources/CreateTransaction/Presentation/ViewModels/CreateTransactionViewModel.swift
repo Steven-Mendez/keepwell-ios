@@ -299,7 +299,6 @@ public final class CreateTransactionViewModel {
     static func message(for error: DomainError) -> String {
         switch error {
         case .invalidAmount: String(localized: "Check the amount.", bundle: #bundle)
-        case .paymentMethodUnavailable: String(localized: "That card can't be used for this category.", bundle: #bundle)
         case .invalidTransferDestination: String(localized: "Choose a different destination account.", bundle: #bundle)
         default: String(localized: "We couldn't save the movement. Try again.", bundle: #bundle)
         }

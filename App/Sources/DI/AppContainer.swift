@@ -253,7 +253,6 @@ final class AppContainer {
                 settings: store,
             ),
             updateTerms: DefaultUpdateCreditTermsUseCase(accounts: store),
-            setCardFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setCardColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             getPreferredName: makeGetPreferredName(),
@@ -268,7 +267,6 @@ final class AppContainer {
             getDetail: DefaultGetDebitCardDetailUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
-            setFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),

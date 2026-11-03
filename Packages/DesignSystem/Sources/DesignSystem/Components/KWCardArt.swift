@@ -17,7 +17,7 @@ public enum KWCardNetwork: Sendable, Equatable {
 /// and the hero card on a detail screen keep the same proportions.
 public struct KWCardArt: View {
     public enum Badge: Sendable, Equatable {
-        /// Pill such as "Credit" or "Frozen".
+        /// Pill such as "Credit".
         case tag(String)
         /// Balance in the top-right corner, as on the accounts stack.
         case amount(String)
@@ -34,7 +34,6 @@ public struct KWCardArt: View {
     private let numberGroups: [Int]
     private let network: KWCardNetwork?
     private let kindLabel: String?
-    private let isFrozen: Bool
     private let showsShadow: Bool
 
     static let designWidth: CGFloat = 358
@@ -57,7 +56,6 @@ public struct KWCardArt: View {
         numberGroups: [Int] = [4, 4, 4, 4],
         network: KWCardNetwork? = nil,
         kindLabel: String? = nil,
-        isFrozen: Bool = false,
         showsShadow: Bool = true,
     ) {
         self.palette = palette
@@ -71,7 +69,6 @@ public struct KWCardArt: View {
         self.numberGroups = numberGroups
         self.network = network
         self.kindLabel = kindLabel
-        self.isFrozen = isFrozen
         self.showsShadow = showsShadow
     }
 
@@ -103,7 +100,7 @@ public struct KWCardArt: View {
             // stack swallowed taps meant for the header's add button above it.
             .clipShape(RoundedRectangle(cornerRadius: KWRadius.card, style: .continuous))
             .contentShape(RoundedRectangle(cornerRadius: KWRadius.card, style: .continuous))
-            .kwShadow(showsShadow && !isFrozen ? palette.glow : KWShadow(color: .clear, radius: 0, x: 0, y: 0))
+            .kwShadow(showsShadow ? palette.glow : KWShadow(color: .clear, radius: 0, x: 0, y: 0))
             .accessibilityElement(children: .combine)
     }
 
@@ -116,36 +113,13 @@ public struct KWCardArt: View {
             .frame(width: Self.designWidth, height: Self.designHeight)
             .background {
                 ZStack {
-                    background
-                    CardOrbs(opacity: isFrozen ? 0.05 : palette.orbOpacity)
-                    if isFrozen {
-                        KWIconView(.freeze, size: 100, lineWidth: 1.2)
-                            .foregroundStyle(.white.opacity(0.07))
-                            .offset(x: 100, y: -16)
-                            .accessibilityHidden(true)
-                    }
+                    palette.largeGradient
+                    CardOrbs(opacity: palette.orbOpacity)
                 }
             }
-            .foregroundStyle(foreground)
+            .foregroundStyle(palette.foreground)
             .clipShape(shape)
             .overlay { TopHighlight(shape: shape, opacity: palette.isLight ? 0.5 : 0.3) }
-    }
-
-    private var foreground: Color {
-        isFrozen ? KWColor.Text.secondary : palette.foreground
-    }
-
-    @ViewBuilder
-    private var background: some View {
-        if isFrozen {
-            LinearGradient(
-                colors: [KWColor.Surface.controlOff, Color(hex: 0x1E1E24)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing,
-            )
-        } else {
-            palette.largeGradient
-        }
     }
 
     private var content: some View {
@@ -156,7 +130,7 @@ public struct KWCardArt: View {
                     KWCardChip(width: 44, height: 33, cornerRadius: 7)
                     if showsContactless {
                         KWIconView(.contactless, size: 22)
-                            .foregroundStyle(palette.isLight || isFrozen ? AnyShapeStyle(foreground) : AnyShapeStyle(.white.opacity(0.85)))
+                            .foregroundStyle(palette.isLight ? AnyShapeStyle(palette.foreground) : AnyShapeStyle(.white.opacity(0.85)))
                     }
                 }
                 .padding(.top, 18)
@@ -174,19 +148,14 @@ public struct KWCardArt: View {
             Spacer(minLength: KWSpacing.xs)
             switch badge {
             case let .tag(text):
-                HStack(spacing: 4) {
-                    if isFrozen {
-                        KWIconView(.freeze, size: 12, lineWidth: 2.2)
-                    }
-                    Text(text)
-                }
-                .font(.kw(12, weight: 700))
-                .padding(.vertical, KWSpacing.xxs)
-                .padding(.horizontal, KWSpacing.xs)
-                .background(
-                    palette.isLight && !isFrozen ? KWColor.Overlay.black12 : KWColor.Overlay.white18,
-                    in: RoundedRectangle(cornerRadius: 8),
-                )
+                Text(text)
+                    .font(.kw(12, weight: 700))
+                    .padding(.vertical, KWSpacing.xxs)
+                    .padding(.horizontal, KWSpacing.xs)
+                    .background(
+                        palette.isLight ? KWColor.Overlay.black12 : KWColor.Overlay.white18,
+                        in: RoundedRectangle(cornerRadius: 8),
+                    )
             case let .amount(text):
                 Text(text)
                     .font(.kw(15, weight: 700))
@@ -226,7 +195,7 @@ public struct KWCardArt: View {
                 if network != nil || kindLabel != nil {
                     VStack(alignment: .trailing, spacing: 3) {
                         if let network {
-                            KWNetworkMark(network, isMuted: isFrozen)
+                            KWNetworkMark(network)
                         }
                         if let kindLabel {
                             Text(kindLabel)
@@ -244,11 +213,9 @@ public struct KWCardArt: View {
 /// The network's mark as printed on a plastic: the Visa and Amex wordmarks, Mastercard's circles.
 public struct KWNetworkMark: View {
     private let network: KWCardNetwork
-    private let isMuted: Bool
 
-    public init(_ network: KWCardNetwork, isMuted: Bool = false) {
+    public init(_ network: KWCardNetwork) {
         self.network = network
-        self.isMuted = isMuted
     }
 
     public var body: some View {
@@ -258,14 +225,11 @@ public struct KWNetworkMark: View {
         case .amex:
             wordmark("AMEX")
         case .mastercard:
-            // A frozen card keeps the shape of the mark but loses its color, like the rest of the face.
             HStack(spacing: -12) {
                 Circle().fill(Color(hex: 0xEB001B))
                 Circle().fill(Color(hex: 0xF79E1B).opacity(0.9))
             }
             .frame(width: 50, height: 30)
-            .saturation(isMuted ? 0 : 1)
-            .opacity(isMuted ? 0.5 : 1)
             .accessibilityElement()
             .accessibilityLabel(Text(verbatim: "Mastercard"))
         }
@@ -374,14 +338,12 @@ struct TopHighlight<S: InsettableShape>: View {
             kindLabel: "Debit",
         )
         KWCardArt(
-            palette: .azul,
+            palette: .platino,
             bank: "Bank One",
-            badge: .tag("Frozen"),
-            caption: "Credit · 2 cards",
+            caption: "Travel",
             lastFour: "1234",
             network: .mastercard,
             kindLabel: "Credit",
-            isFrozen: true,
         )
     }
     .padding(KWLayout.gutter)

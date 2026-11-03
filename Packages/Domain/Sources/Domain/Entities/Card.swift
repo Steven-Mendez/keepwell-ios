@@ -36,8 +36,6 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
     public let network: CardNetwork?
     public let lastFour: String?
     public let color: CardColor?
-    /// A frozen card can't be chosen to pay, so nothing gets logged on a card the person locked.
-    public let isFrozen: Bool
 
     public init(
         id: UUID = UUID(),
@@ -46,7 +44,6 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
         network: CardNetwork? = nil,
         lastFour: String? = nil,
         color: CardColor? = nil,
-        isFrozen: Bool = false,
     ) throws(DomainError) {
         if let lastFour {
             guard lastFour.count == 4, lastFour.allSatisfy(\.isASCIIDigit) else { throw .invalidLastFour(lastFour) }
@@ -57,21 +54,6 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
         self.network = network
         self.lastFour = lastFour
         self.color = color
-        self.isFrozen = isFrozen
-    }
-
-    /// The same card frozen or unfrozen.
-    public func with(isFrozen: Bool) -> Self {
-        guard let copy = try? Self(
-            id: id,
-            accountID: accountID,
-            kind: kind,
-            network: network,
-            lastFour: lastFour,
-            color: color,
-            isFrozen: isFrozen,
-        ) else { return self }
-        return copy
     }
 }
 

@@ -77,7 +77,6 @@ public enum CardDisplay {
             numberGroups: numberGroups(for: card?.network),
             network: showsFace ? networkMark(for: card?.network) : nil,
             kindLabel: showsFace ? kindLabel(card?.kind ?? kind) : nil,
-            isFrozen: card?.isFrozen ?? false,
             showsShadow: showsShadow,
         )
     }

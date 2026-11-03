@@ -24,7 +24,6 @@ public final class CreditCardViewModel {
 
     private let getDetail: any GetCreditCardDetailUseCase
     private let updateTerms: any UpdateCreditTermsUseCase
-    private let setCardFrozen: any SetCardFrozenUseCase
     private let setCardColor: any SetCardColorUseCase
     private let renameAccount: any RenameAccountUseCase
     private let getPreferredName: any GetPreferredNameUseCase
@@ -34,7 +33,6 @@ public final class CreditCardViewModel {
         accountID: UUID,
         getDetail: any GetCreditCardDetailUseCase,
         updateTerms: any UpdateCreditTermsUseCase,
-        setCardFrozen: any SetCardFrozenUseCase,
         setCardColor: any SetCardColorUseCase,
         renameAccount: any RenameAccountUseCase,
         getPreferredName: any GetPreferredNameUseCase,
@@ -43,7 +41,6 @@ public final class CreditCardViewModel {
         self.accountID = accountID
         self.getDetail = getDetail
         self.updateTerms = updateTerms
-        self.setCardFrozen = setCardFrozen
         self.setCardColor = setCardColor
         self.renameAccount = renameAccount
     }
@@ -83,13 +80,6 @@ public final class CreditCardViewModel {
         }
         return await perform { () async throws(DomainError) in
             try await updateTerms.execute(accountID: accountID, limit: limit, cutoffDay: cutoffDay, dueDay: dueDay)
-        }
-    }
-
-    public func setHolderFrozen(_ isFrozen: Bool) async {
-        guard let holderID = detail?.holder?.id else { return }
-        _ = await perform { () async throws(DomainError) in
-            try await setCardFrozen.execute(cardID: holderID, isFrozen: isFrozen)
         }
     }
 

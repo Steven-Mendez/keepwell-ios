@@ -25,6 +25,7 @@ public final class CardRecord {
     var defaultCategoryID: String?
     var alertEachPurchase = true
     var alertNearCap = true
+    /// From when cards could be frozen; kept because CloudKit can't remove attributes.
     var isFrozen = false
     var createdAt = Date.now
 
@@ -38,7 +39,6 @@ public final class CardRecord {
         networkRaw = card.network?.rawValue
         lastFour = card.lastFour
         colorRaw = card.color?.rawValue
-        isFrozen = card.isFrozen
     }
 
     func toDomain() throws(DomainCorruption) -> Card {
@@ -51,7 +51,6 @@ public final class CardRecord {
                 network: networkRaw.flatMap(CardNetwork.init(rawValue:)),
                 lastFour: lastFour,
                 color: colorRaw.flatMap(CardColor.init(rawValue:)),
-                isFrozen: isFrozen,
             )
         } catch {
             throw DomainCorruption("Card: \(error)")

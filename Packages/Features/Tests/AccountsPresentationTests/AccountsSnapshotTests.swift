@@ -39,16 +39,6 @@ struct AccountsSnapshotTests {
     }
 
     @Test
-    func frozenDebitCardDetail() async {
-        let viewModel = await DebitCardFactory.loaded()
-        await viewModel.toggleFrozen()
-        assertScreenSnapshot(
-            of: DebitCardView(viewModel: viewModel, onBack: {}, onSeeAllMovements: { _ in }),
-            height: 1500,
-        )
-    }
-
-    @Test
     func cashSheets() async throws {
         let viewModel = await AccountsFactory.loaded()
         let cash = try #require(viewModel.overview?.cash.first)
