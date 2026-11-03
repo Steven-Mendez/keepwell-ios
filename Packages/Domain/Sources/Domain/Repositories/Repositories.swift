@@ -25,9 +25,9 @@ public protocol TransactionRepository: Sendable {
 }
 
 public protocol CategoryRepository: Sendable {
-    /// Seeded with `Category.defaults` the first time.
-    func fetchCategories() async throws(DomainError) -> [Category]
-    func save(_ category: Category) async throws(DomainError)
+    /// Seeded with `TransactionCategory.defaults` the first time.
+    func fetchCategories() async throws(DomainError) -> [TransactionCategory]
+    func save(_ category: TransactionCategory) async throws(DomainError)
 }
 
 public protocol SettingsRepository: Sendable {

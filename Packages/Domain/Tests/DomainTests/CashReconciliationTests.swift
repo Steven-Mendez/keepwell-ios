@@ -18,7 +18,7 @@ struct CashReconciliationTests {
         #expect(adjustment.kind == .expense)
         #expect(adjustment.amount == 420)
         #expect(adjustment.currency == "NIO")
-        #expect(adjustment.categoryID == Category.otherExpenseID)
+        #expect(adjustment.categoryID == TransactionCategory.otherExpenseID)
         #expect(adjustment.accountID == cash.id)
     }
 

@@ -1,19 +1,29 @@
 // swift-tools-version: 6.2
 import PackageDescription
 
-/// On-device persistence with SwiftData, synced to the CloudKit private database.
-/// Depends on each feature's Data target because the versioned schema must list every `@Model`.
+/// On-device persistence with SwiftData, synced to the CloudKit private database. Implements the
+/// shared repository protocols from `Domain`.
 let package = Package(
     name: "Persistence",
     platforms: [.iOS(.v26)],
     products: [
         .library(name: "Persistence", targets: ["Persistence"]),
     ],
+    dependencies: [
+        .package(path: "../Domain"),
+    ],
     targets: [
-        .target(name: "Persistence"),
+        .target(
+            name: "Persistence",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+        ),
         .testTarget(
             name: "PersistenceTests",
-            dependencies: ["Persistence"],
+            dependencies: [
+                "Persistence",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
     ],
     swiftLanguageModes: [.v6],

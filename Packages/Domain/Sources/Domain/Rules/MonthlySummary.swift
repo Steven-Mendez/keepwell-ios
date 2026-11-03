@@ -40,7 +40,7 @@ public struct MonthlySummary: Hashable, Sendable {
                 income += transaction.principalAmount
             case .expense:
                 expense += transaction.principalAmount
-                perCategory[transaction.categoryID ?? Category.otherExpenseID, default: 0] += transaction.principalAmount
+                perCategory[transaction.categoryID ?? TransactionCategory.otherExpenseID, default: 0] += transaction.principalAmount
             case .transfer:
                 continue
             }

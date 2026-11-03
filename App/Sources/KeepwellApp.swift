@@ -11,6 +11,11 @@ struct KeepwellApp: App {
     init() {
         KWFonts.register()
         container = AppContainer(modelContainer: Self.makeModelContainer())
+        #if DEBUG
+        if AppEnvironment.current.usesSampleData {
+            container.seedSampleData()
+        }
+        #endif
     }
 
     var body: some Scene {
@@ -20,17 +25,18 @@ struct KeepwellApp: App {
         }
     }
 
-    /// CloudKit in the real app; in-memory for UI tests. Falls back to on-device storage when
-    /// CloudKit is unavailable (e.g. a build without a signing team).
+    /// CloudKit when backup is on, local otherwise; in memory for UI tests and sample runs.
+    /// Falls back to on-device storage when CloudKit is unavailable (e.g. a build without a
+    /// signing team).
     private static func makeModelContainer() -> ModelContainer {
         let environment = AppEnvironment.current
-        let store: PersistenceStore = environment.isUITesting
-            ? .inMemory
-            : .cloudKit(containerIdentifier: environment.cloudKitContainer)
+        let store = environment.isUITesting || environment.usesSampleData
+            ? PersistenceStore.inMemory
+            : StorePreferences().store(cloudKitContainer: environment.cloudKitContainer)
         do {
             return try ModelContainerFactory.make(store: store)
         } catch {
-            Logger.app.error("CloudKit unavailable, falling back to local storage: \(error, privacy: .public)")
+            Logger.app.error("Store \(String(describing: store), privacy: .public) unavailable, using local: \(error, privacy: .public)")
             do {
                 return try ModelContainerFactory.make(store: .local)
             } catch {

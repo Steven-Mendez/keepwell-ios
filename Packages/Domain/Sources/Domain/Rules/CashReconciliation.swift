@@ -20,7 +20,7 @@ public enum CashReconciliation {
             date: date,
             description: "Ajuste de efectivo",
             kind: isShortfall ? .expense : .income,
-            categoryID: isShortfall ? Category.otherExpenseID : Category.otherIncomeID,
+            categoryID: isShortfall ? TransactionCategory.otherExpenseID : TransactionCategory.otherIncomeID,
             amount: abs(difference),
             currency: balance.currency,
             accountID: account.id,
