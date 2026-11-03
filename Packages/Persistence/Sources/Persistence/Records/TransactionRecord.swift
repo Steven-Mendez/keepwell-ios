@@ -1,0 +1,81 @@
+import Domain
+import Foundation
+import SwiftData
+
+@Model
+public final class TransactionRecord {
+    public var id = UUID()
+    /// Indexed: every screen filters movements by date range.
+    var date = Date.distantPast
+    var statusRaw = TransactionStatus.confirmed.rawValue
+    var descriptionText = ""
+    var kindRaw = TransactionKind.expense.rawValue
+    var categoryID: String?
+    var amount = "0"
+    var currency = ""
+    var accountID = UUID()
+    var cardID: UUID?
+    var destinationAccountID: UUID?
+    var actualDebitedPrincipal: String?
+    var ratePrincipal = ""
+    var rateSecond = ""
+    var rate = "1"
+    var isShared = false
+    var note: String?
+
+    #Index<TransactionRecord>([\.date])
+
+    init(id: UUID) {
+        self.id = id
+    }
+
+    func update(from transaction: Transaction) {
+        date = transaction.date
+        statusRaw = transaction.status.rawValue
+        descriptionText = transaction.description
+        kindRaw = transaction.kind.rawValue
+        categoryID = transaction.categoryID
+        amount = DecimalCoding.string(transaction.amount)
+        currency = transaction.currency
+        accountID = transaction.accountID
+        cardID = transaction.cardID
+        destinationAccountID = transaction.destinationAccountID
+        actualDebitedPrincipal = transaction.actualDebitedPrincipal.map(DecimalCoding.string)
+        ratePrincipal = transaction.exchangeRate.principal
+        rateSecond = transaction.exchangeRate.second
+        rate = DecimalCoding.string(transaction.exchangeRate.rate)
+        isShared = transaction.isShared
+        note = transaction.note
+    }
+
+    func toDomain() throws(DomainCorruption) -> Transaction {
+        guard let status = TransactionStatus(rawValue: statusRaw), let kind = TransactionKind(rawValue: kindRaw) else {
+            throw DomainCorruption("Transaction status/kind \(statusRaw)/\(kindRaw)")
+        }
+        let exchangeRate: ExchangeRate
+        do {
+            exchangeRate = try ExchangeRate(principal: ratePrincipal, second: rateSecond, rate: DecimalCoding.decimal(rate))
+        } catch let error as DomainCorruption {
+            throw error
+        } catch {
+            throw DomainCorruption("Exchange rate \(rate)")
+        }
+        return try Transaction(
+            id: id,
+            date: date,
+            status: status,
+            description: descriptionText,
+            kind: kind,
+            categoryID: categoryID,
+            amount: DecimalCoding.decimal(amount),
+            currency: currency,
+            accountID: accountID,
+            cardID: cardID,
+            destinationAccountID: destinationAccountID,
+            actualDebitedPrincipal: actualDebitedPrincipal.map { value throws(DomainCorruption) in try DecimalCoding.decimal(value) },
+            exchangeRate: exchangeRate,
+            isShared: isShared,
+            note: note,
+        )
+    }
+}

@@ -7,7 +7,15 @@ import SwiftData
 /// no `@Attribute(.unique)`, and optional relationships.
 public enum KeepwellSchemaV1: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(1, 0, 0) }
-    public static var models: [any PersistentModel.Type] { [] }
+    public static var models: [any PersistentModel.Type] {
+        [
+            AccountRecord.self,
+            CardRecord.self,
+            TransactionRecord.self,
+            CategoryRecord.self,
+            SettingsRecord.self,
+        ]
+    }
 }
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
