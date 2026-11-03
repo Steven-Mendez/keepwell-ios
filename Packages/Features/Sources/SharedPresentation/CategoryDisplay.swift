@@ -98,8 +98,12 @@ public enum CategoryDisplay {
     /// The name a person reads. Default categories are stored with their English name, so they
     /// translate by id; a category the person renamed or created keeps exactly what they typed.
     public static func name(of category: TransactionCategory) -> String {
-        let isUntouchedDefault = TransactionCategory.defaults.contains { $0.id == category.id && $0.name == category.name }
-        return isUntouchedDefault ? localizedDefaultName(for: category.id) ?? category.name : category.name
+        category.translatesByID ? localizedDefaultName(for: category.id) ?? category.name : category.name
+    }
+
+    /// "Other" (or "Other income") as shipped, for when the stored one isn't at hand.
+    public static func shippedFallbackName(for kind: TransactionKind) -> String {
+        localizedDefaultName(for: TransactionCategory.otherID(for: kind)) ?? ""
     }
 
     private static func localizedDefaultName(for id: String) -> String? {

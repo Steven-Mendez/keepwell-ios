@@ -181,16 +181,6 @@
         }
       }
     },
-    "Create categories for what you track, with your own name, icon and color." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crea categorías para lo que quieras seguir, con tu propio nombre, ícono y color."
-          }
-        }
-      }
-    },
     "Credit cards" : {
       "localizations" : {
         "es" : {
@@ -251,12 +241,42 @@
         }
       }
     },
+    "Deleted defaults come back and edits to them are undone. Your own categories and movements stay." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelven las predeterminadas que eliminaste y se deshacen sus cambios. Tus categorías y movimientos se quedan como están."
+          }
+        }
+      }
+    },
     "Deletes the data on this iPhone and the iCloud backup." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Borra los datos de este iPhone y el respaldo de iCloud."
+          }
+        }
+      }
+    },
+    "Deleting a category moves its movements to “%@”, which stays so they always have a place." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al eliminar una categoría, sus movimientos pasan a “%@”, que no se puede eliminar para que siempre tengan un lugar."
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
           }
         }
       }
@@ -351,16 +371,6 @@
         }
       }
     },
-    "Included" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Incluidas"
-          }
-        }
-      }
-    },
     "Income" : {
       "localizations" : {
         "es" : {
@@ -447,6 +457,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual · por defecto 1"
+          }
+        }
+      }
+    },
+    "Move down" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajar"
+          }
+        }
+      }
+    },
+    "Move up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subir"
           }
         }
       }
@@ -541,6 +571,16 @@
         }
       }
     },
+    "Reorder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reordenar"
+          }
+        }
+      }
+    },
     "Replace your data with this backup?" : {
       "localizations" : {
         "es" : {
@@ -557,6 +597,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restaurar"
+          }
+        }
+      }
+    },
+    "Restore default categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar categorías predeterminadas"
+          }
+        }
+      }
+    },
+    "Restore default categories?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Restaurar las categorías predeterminadas?"
           }
         }
       }
@@ -821,12 +881,32 @@
         }
       }
     },
+    "We couldn't restore the default categories. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos restaurar las categorías predeterminadas. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
     "We couldn't save the change. Try again." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos guardar el cambio. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't save the new order. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar el nuevo orden. Inténtalo de nuevo."
           }
         }
       }
@@ -867,16 +947,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nombre"
-          }
-        }
-      }
-    },
-    "Yours" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tuyas"
           }
         }
       }

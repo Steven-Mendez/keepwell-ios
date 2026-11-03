@@ -52,7 +52,7 @@ struct DisplayTests {
     @Test
     func defaultCategoriesTranslateByIDAndCustomOnesKeepTheirName() {
         let groceries = TransactionCategory(id: "groceries", name: "Groceries", kind: .expense)
-        let renamed = TransactionCategory(id: "groceries", name: "Market", kind: .expense)
+        let renamed = TransactionCategory(id: "groceries", name: "Market", kind: .expense, isRenamed: true)
         let custom = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
         #expect(CategoryDisplay.name(of: groceries) == "Groceries")
         #expect(CategoryDisplay.name(of: renamed) == "Market")

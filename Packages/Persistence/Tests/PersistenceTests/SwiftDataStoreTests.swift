@@ -128,6 +128,47 @@ struct SwiftDataStoreTests {
     }
 
     @Test
+    func aDeletedDefaultStaysDeletedAcrossFetchesAndContexts() async throws {
+        let container = try ModelContainerFactory.make(store: .inMemory)
+        let store = SwiftDataStore(modelContainer: container)
+        _ = try await store.fetchCategories()
+        try await store.deleteCategory(id: "groceries")
+        #expect(try await store.fetchCategories().contains { $0.id == "groceries" } == false)
+        // A fresh actor on the same container re-runs seeding, which must respect the tombstone.
+        let reopened = SwiftDataStore(modelContainer: container)
+        #expect(try await reopened.fetchCategories().contains { $0.id == "groceries" } == false)
+    }
+
+    @Test
+    func aDefaultDeletedBeforeSeedingIsNotSeeded() async throws {
+        let store = try makeStore()
+        try await store.deleteCategory(id: "pets")
+        #expect(try await store.fetchCategories().contains { $0.id == "pets" } == false)
+    }
+
+    @Test
+    func renamedDefaultsKeepTheFlagAndRestoringUndoesEverything() async throws {
+        let store = try makeStore()
+        _ = try await store.fetchCategories()
+        let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
+        try await store.save(boat)
+        let market = TransactionCategory(id: "groceries", name: "Market", kind: .expense, icon: "basket", color: "green", isRenamed: true)
+        try await store.save(market)
+        try await store.deleteCategory(id: "transport")
+        try await store.reorderCategories(ids: ["custom-boat", "taxes"])
+        let edited = try await store.fetchCategories()
+        #expect(edited.first { $0.id == "groceries" } == market)
+        #expect(edited.prefix(2).map(\.id) == ["custom-boat", "taxes"])
+
+        try await store.restoreDefaultCategories()
+        let restored = try await store.fetchCategories()
+        let expense = restored.filter { $0.kind == .expense }
+        #expect(expense.filter(\.isDefault) == TransactionCategory.defaultExpense)
+        #expect(expense.suffix(2).map(\.id) == [boat.id, TransactionCategory.otherExpenseID])
+        #expect(restored.filter { $0.kind == .income } == TransactionCategory.defaultIncome)
+    }
+
+    @Test
     func settingsKeepASingleRow() async throws {
         let store = try makeStore()
         #expect(try await store.load() == nil)

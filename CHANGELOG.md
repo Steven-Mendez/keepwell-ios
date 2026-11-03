@@ -9,6 +9,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Settings › Categories is one editable list per kind: the shipped categories can now be renamed,
+  given another icon and color, reordered ("Reorder") and deleted, like your own. A renamed default
+  shows your name in every language; untouched ones keep translating. Deleted defaults stay deleted
+  (also after restoring a backup), their movements move to "Other" and additional cards stop
+  pointing at them. "Other" and "Other income" can be renamed but not deleted. "Restore default
+  categories" brings deleted defaults back and undoes edits to them, after a confirmation.
 - Lock screen with a Keepwell passcode: a time-of-day greeting ("Good morning, Steven"), six
   passcode dots and a keypad whose corner key is Face ID or Touch ID, asked on its own when the
   screen appears. A wrong passcode shakes the dots with a haptic; after five, the keypad waits

@@ -3,11 +3,13 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// Settings › Categories. The person's own categories come first, since those are the ones to
-/// manage; the defaults follow for reference.
+/// Settings › Categories: one list per kind where every row opens the editor. "Reorder" swaps the
+/// chevrons for up and down arrows, and "Restore default categories" sits at the end, behind a
+/// confirmation, like the "Reset to default" banking apps put under a customizable list.
 public struct CategoriesView: View {
     @Bindable private var viewModel: CategoriesViewModel
     private let onBack: () -> Void
+    @State private var isConfirmingRestore = false
 
     public init(viewModel: CategoriesViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -17,7 +19,17 @@ public struct CategoriesView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWNavigationHeader(String(localized: "Categories", bundle: #bundle), style: .large, onBack: onBack)
+                HStack {
+                    KWNavigationHeader(String(localized: "Categories", bundle: #bundle), style: .large, onBack: onBack)
+                    Button { viewModel.isReordering.toggle() } label: {
+                        Text(viewModel.isReordering ? String(localized: "Done", bundle: #bundle) : String(
+                            localized: "Reorder",
+                            bundle: #bundle,
+                        ))
+                    }
+                    .buttonStyle(.kw(.secondary, size: .small))
+                    .fixedSize()
+                }
                 KWSegmentedControl(
                     [
                         (TransactionKind.expense, String(localized: "Expenses", bundle: #bundle)),
@@ -25,21 +37,23 @@ public struct CategoriesView: View {
                     ],
                     selection: $viewModel.kind,
                 )
-                Button(action: viewModel.startNew) {
-                    Label {
-                        Text("New category", bundle: #bundle)
-                    } icon: {
-                        KWIconView(.plus, size: 18)
+                if !viewModel.isReordering {
+                    Button(action: viewModel.startNew) {
+                        Label {
+                            Text("New category", bundle: #bundle)
+                        } icon: {
+                            KWIconView(.plus, size: 18)
+                        }
                     }
+                    .buttonStyle(.kw(.secondary, size: .row))
                 }
-                .buttonStyle(.kw(.secondary, size: .row))
-                yours
-                included
+                list
                 if let error = viewModel.errorMessage {
                     Text(error)
                         .font(KWTextStyle.caption.font)
                         .foregroundStyle(KWColor.State.negative)
                 }
+                restore
             }
             .padding(.horizontal, KWLayout.gutter)
             .padding(.top, KWLayout.safeTop)
@@ -61,39 +75,66 @@ public struct CategoriesView: View {
             .presentationDetents([.large])
             .presentationBackground(KWColor.Surface.bg)
         }
+        .confirmationDialog(
+            String(localized: "Restore default categories?", bundle: #bundle),
+            isPresented: $isConfirmingRestore,
+            titleVisibility: .visible,
+        ) {
+            Button(role: .destructive) {
+                Task { await viewModel.restore() }
+            } label: {
+                Text("Restore", bundle: #bundle)
+            }
+        } message: {
+            Text("Deleted defaults come back and edits to them are undone. Your own categories and movements stay.", bundle: #bundle)
+        }
     }
 
-    private var yours: some View {
-        SettingsSection(title: String(localized: "Yours", bundle: #bundle)) {
-            if viewModel.custom.isEmpty {
-                Text("Create categories for what you track, with your own name, icon and color.", bundle: #bundle)
-                    .font(KWTextStyle.caption.font)
-                    .foregroundStyle(KWColor.Text.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                KWGroupedCard {
-                    ForEach(viewModel.custom) { category in
-                        Button { viewModel.edit(category) } label: {
-                            row(category, isEditable: true)
+    private var list: some View {
+        KWGroupedCard {
+            ForEach(viewModel.visible) { category in
+                if viewModel.isReordering {
+                    reorderRow(category)
+                } else {
+                    Button { viewModel.edit(category) } label: {
+                        row(category) {
+                            KWIconView(.chevronRight, size: 16)
+                                .foregroundStyle(KWColor.Text.muted)
                         }
-                        .buttonStyle(.plain)
+                        .accessibilityElement(children: .combine)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(.isButton)
                 }
             }
         }
     }
 
-    private var included: some View {
-        SettingsSection(title: String(localized: "Included", bundle: #bundle)) {
-            KWGroupedCard {
-                ForEach(viewModel.defaults) { category in
-                    row(category, isEditable: false)
+    private func reorderRow(_ category: TransactionCategory) -> some View {
+        row(category) {
+            if !category.isFallback {
+                HStack(spacing: KWSpacing.xs) {
+                    arrow(.arrowUp, category, by: -1, label: String(localized: "Move up", bundle: #bundle))
+                    arrow(.arrowDown, category, by: 1, label: String(localized: "Move down", bundle: #bundle))
                 }
             }
         }
     }
 
-    private func row(_ category: TransactionCategory, isEditable: Bool) -> some View {
+    private func arrow(_ icon: KWIcon, _ category: TransactionCategory, by offset: Int, label: String) -> some View {
+        let isEnabled = viewModel.canMove(category, by: offset)
+        return Button { Task { await viewModel.move(category, by: offset) } } label: {
+            KWIconView(icon, size: 16)
+                .foregroundStyle(isEnabled ? KWColor.Text.primary : KWColor.Text.faint)
+                .frame(width: 34, height: 34)
+                .background(KWColor.Surface.surface2, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .accessibilityLabel(label)
+    }
+
+    private func row(_ category: TransactionCategory, @ViewBuilder trailing: () -> some View) -> some View {
         let color = CategoryDisplay.color(for: category)
         return HStack(spacing: KWSpacing.sm) {
             CategorySymbol(category, size: 20)
@@ -104,14 +145,26 @@ public struct CategoriesView: View {
                 .font(KWTextStyle.body.font)
                 .lineLimit(1)
             Spacer(minLength: KWSpacing.xs)
-            if isEditable {
-                KWIconView(.chevronRight, size: 16)
-                    .foregroundStyle(KWColor.Text.muted)
-            }
+            trailing()
         }
         .padding(.vertical, 10)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isEditable ? .isButton : [])
+    }
+
+    private var restore: some View {
+        VStack(alignment: .leading, spacing: KWSpacing.xs) {
+            Text(
+                "Deleting a category moves its movements to “\(viewModel.fallbackName)”, which stays so they always have a place.",
+                bundle: #bundle,
+            )
+            .font(KWTextStyle.caption.font)
+            .foregroundStyle(KWColor.Text.muted)
+            .fixedSize(horizontal: false, vertical: true)
+            Button { isConfirmingRestore = true } label: {
+                Text("Restore default categories", bundle: #bundle)
+            }
+            .buttonStyle(.kw(.surface, size: .row))
+        }
+        .padding(.top, KWSpacing.xs)
     }
 }

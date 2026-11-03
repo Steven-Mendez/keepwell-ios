@@ -25,11 +25,19 @@ public protocol TransactionRepository: Sendable {
 }
 
 public protocol CategoryRepository: Sendable {
-    /// Includes every `TransactionCategory.defaults` entry, adding the ones a newer version ships.
+    /// In the person's order. Includes every `TransactionCategory.defaults` entry, adding the ones
+    /// a newer version ships, except the defaults the person deleted.
     func fetchCategories() async throws(DomainError) -> [TransactionCategory]
+    /// A new id goes after the existing ones; an existing one keeps its place.
     func save(_ category: TransactionCategory) async throws(DomainError)
     /// A missing id succeeds: the same delete may already have arrived from another device.
+    /// A default leaves a tombstone, so the next fetch doesn't add it back.
     func deleteCategory(id: String) async throws(DomainError)
+    /// Stores this order; ids it leaves out keep their relative order after the listed ones.
+    func reorderCategories(ids: [String]) async throws(DomainError)
+    /// Every default back as shipped (name, icon, color and order), deleted ones included. The
+    /// person's own categories stay, after the defaults.
+    func restoreDefaultCategories() async throws(DomainError)
 }
 
 public protocol SettingsRepository: Sendable {

@@ -50,7 +50,7 @@ struct CategoryEditorViewModelTests {
         let viewModel = CategoryEditorViewModel(
             editing: boat,
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
         )
         #expect(!viewModel.isCreating)
         #expect(viewModel.canDelete)
@@ -58,5 +58,44 @@ struct CategoryEditorViewModelTests {
         #expect(viewModel.color == "cyan")
         #expect(await viewModel.delete())
         #expect(await store.fetchCategories().contains(boat) == false)
+    }
+
+    @Test
+    func editingAnUntouchedDefaultKeepsItTranslatingAndItsShippedIcon() async throws {
+        let store = InMemoryStore()
+        let groceries = try #require(await store.fetchCategories().first { $0.id == "groceries" })
+        let viewModel = CategoryEditorViewModel(
+            editing: groceries,
+            save: DefaultSaveCategoryUseCase(categories: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+        )
+        #expect(viewModel.canDelete)
+        #expect(viewModel.color == nil)
+        viewModel.color = "green"
+        let saved = try #require(await viewModel.save())
+        #expect(saved.translatesByID)
+        #expect(saved.icon == nil)
+        #expect(saved.color == "green")
+
+        viewModel.setName("Market")
+        let renamed = try #require(await viewModel.save())
+        #expect(renamed.isRenamed)
+        #expect(renamed.name == "Market")
+    }
+
+    @Test
+    func otherCanBeEditedButNotDeleted() async throws {
+        let store = InMemoryStore()
+        let other = try #require(await store.fetchCategories().first(where: \.isFallback))
+        let viewModel = CategoryEditorViewModel(
+            editing: other,
+            fallbackName: "Misc",
+            save: DefaultSaveCategoryUseCase(categories: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+        )
+        #expect(viewModel.isFallback)
+        #expect(!viewModel.canDelete)
+        #expect(viewModel.fallbackName == "Misc")
+        #expect(await viewModel.delete() == false)
     }
 }

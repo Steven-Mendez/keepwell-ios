@@ -18,14 +18,16 @@ struct CategoryActionsTests {
     }
 
     @Test
-    func orderingPutsCreatedCategoriesBeforeOther() {
+    func orderingKeepsTheStoredOrderWithOtherLast() {
         let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
         let tips = TransactionCategory(id: "custom-tips", name: "Tips", kind: .income)
-        let ordered = TransactionCategory.ordered([tips, boat] + TransactionCategory.defaults.reversed())
+        let stored = [tips] + TransactionCategory.defaults.reversed() + [boat]
+        let ordered = TransactionCategory.ordered(stored)
         let expense = ordered.filter { $0.kind == .expense }.map(\.id)
-        let income = ordered.filter { $0.kind == .income }.map(\.id)
+        #expect(expense.first == "donations")
         #expect(expense.suffix(2) == ["custom-boat", TransactionCategory.otherExpenseID])
-        #expect(income.suffix(2) == ["custom-tips", TransactionCategory.otherIncomeID])
+        #expect(ordered.first(where: { $0.kind == .income }) == tips)
+        #expect(ordered.last(where: { $0.kind == .income })?.id == TransactionCategory.otherIncomeID)
         #expect(TransactionCategory.ordered(TransactionCategory.defaults) == TransactionCategory.defaults)
     }
 
@@ -75,14 +77,121 @@ struct CategoryActionsTests {
     }
 
     @Test
-    func defaultsCantBeEditedOrDeleted() async {
+    func renamingADefaultStopsTranslatingItAndTheShippedNameRestoresIt() async throws {
         let store = InMemoryStore()
-        await #expect(throws: DomainError.defaultCategoryIsReadOnly("groceries")) {
-            try await DefaultSaveCategoryUseCase(categories: store).execute(CategoryDraft(id: "groceries", name: "Market", kind: .expense))
+        let useCase = DefaultSaveCategoryUseCase(categories: store)
+        let untouched = try #require(await store.fetchCategories().first { $0.id == "groceries" })
+        #expect(untouched.translatesByID)
+
+        let renamed = try await useCase.execute(CategoryDraft(
+            id: "groceries",
+            name: "Market",
+            kind: .expense,
+            icon: "basket",
+            color: "green",
+        ))
+        #expect(renamed.isRenamed)
+        #expect(!renamed.translatesByID)
+        #expect(renamed.isDefault)
+        #expect(await store.fetchCategories().first { $0.id == "groceries" } == renamed)
+
+        // Keeping the stored name while changing only the color keeps it translating.
+        let recolored = try await useCase.execute(CategoryDraft(id: "restaurants", name: "Restaurants", kind: .expense, color: "pink"))
+        #expect(recolored.translatesByID)
+
+        let back = try await useCase.execute(CategoryDraft(id: "groceries", name: "Groceries", kind: .expense))
+        #expect(back.translatesByID)
+    }
+
+    @Test
+    func fallbacksCanBeRenamedButNotDeleted() async throws {
+        let store = InMemoryStore()
+        let delete = DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store)
+        for id in [TransactionCategory.otherExpenseID, TransactionCategory.otherIncomeID] {
+            await #expect(throws: DomainError.fallbackCategoryCantBeDeleted(id)) {
+                try await delete.execute(id: id)
+            }
         }
-        await #expect(throws: DomainError.defaultCategoryIsReadOnly("groceries")) {
-            try await DefaultDeleteCategoryUseCase(categories: store, transactions: store).execute(id: "groceries")
-        }
+        let renamed = try await DefaultSaveCategoryUseCase(categories: store)
+            .execute(CategoryDraft(id: TransactionCategory.otherExpenseID, name: "Misc", kind: .expense))
+        #expect(renamed.isFallback)
+        #expect(renamed.isRenamed)
+    }
+
+    @Test
+    func deletingADefaultMovesItsMovementsAndItStaysDeleted() async throws {
+        let expense = try #require(sample.transactions.first { $0.kind == .expense })
+        let store = InMemoryStore(transactions: [expense.with(categoryID: "groceries")])
+        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store).execute(id: "groceries")
+        let listed = try await DefaultGetCategoriesUseCase(categories: store).execute()
+        #expect(!listed.contains { $0.id == "groceries" })
+        #expect(await store.fetchTransactions(in: nil).map(\.categoryID) == [TransactionCategory.otherExpenseID])
+        // The name is free again.
+        _ = try await DefaultSaveCategoryUseCase(categories: store).execute(CategoryDraft(name: "Groceries", kind: .expense))
+    }
+
+    @Test
+    func restoringBringsBackDeletedDefaultsAndUndoesEditsButKeepsYours() async throws {
+        let store = InMemoryStore()
+        let save = DefaultSaveCategoryUseCase(categories: store)
+        let boat = try await save.execute(CategoryDraft(name: "Boat", kind: .expense))
+        _ = try await save.execute(CategoryDraft(id: "transport", name: "Car", kind: .expense, icon: "car", color: "blue"))
+        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store).execute(id: "groceries")
+        try await DefaultReorderCategoriesUseCase(categories: store).execute(ids: [boat.id])
+
+        try await DefaultRestoreDefaultCategoriesUseCase(categories: store).execute()
+
+        let listed = try await DefaultGetCategoriesUseCase(categories: store).execute()
+        let expense = listed.filter { $0.kind == .expense }
+        #expect(expense.filter(\.isDefault) == TransactionCategory.defaultExpense)
+        #expect(expense.suffix(2).map(\.id) == [boat.id, TransactionCategory.otherExpenseID])
+    }
+
+    @Test
+    func reorderingKeepsTheNewOrder() async throws {
+        let store = InMemoryStore()
+        try await DefaultReorderCategoriesUseCase(categories: store).execute(ids: ["taxes", "groceries"])
+        let listed = try await DefaultGetCategoriesUseCase(categories: store).execute()
+        #expect(listed.prefix(2).map(\.id) == ["taxes", "groceries"])
+    }
+
+    @Test
+    func deletingCleansUpAdditionalCards() async throws {
+        let account = try #require(sample.accounts.first)
+        let onlyGroceries = try Card(
+            accountID: account.id, kind: .creditAdditional,
+            additional: AdditionalCardControls(holderName: "Ana", allowedCategoryIDs: ["groceries"], defaultCategoryID: "groceries"),
+        )
+        let mixed = try Card(
+            accountID: account.id, kind: .creditAdditional,
+            additional: AdditionalCardControls(
+                holderName: "Leo",
+                allowedCategoryIDs: ["groceries", "transport"],
+                defaultCategoryID: "transport",
+            ),
+        )
+        let untouched = try Card(
+            accountID: account.id, kind: .creditAdditional,
+            additional: AdditionalCardControls(holderName: "Mia", allowedCategoryIDs: ["health"]),
+        )
+        let store = InMemoryStore(cards: [onlyGroceries, mixed, untouched])
+        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store).execute(id: "groceries")
+        let cards = try await store.fetchCards()
+        let ana = try #require(cards.first { $0.id == onlyGroceries.id }?.additional)
+        let leo = try #require(cards.first { $0.id == mixed.id }?.additional)
+        // Limited to a deleted category only, the card stays limited rather than allowing everything.
+        #expect(ana.allowedCategoryIDs == [TransactionCategory.otherExpenseID])
+        #expect(ana.defaultCategoryID == nil)
+        #expect(leo.allowedCategoryIDs == ["transport"])
+        #expect(leo.defaultCategoryID == "transport")
+        #expect(cards.first { $0.id == untouched.id } == untouched)
+    }
+
+    @Test
+    func oldBackupsDecodeWithoutTheRenamedFlag() throws {
+        let json = Data(#"{"id":"groceries","name":"Groceries","kind":"expense"}"#.utf8)
+        let decoded = try JSONDecoder().decode(TransactionCategory.self, from: json)
+        #expect(decoded == TransactionCategory(id: "groceries", name: "Groceries", kind: .expense))
     }
 
     @Test
@@ -91,7 +200,7 @@ struct CategoryActionsTests {
         let expense = try #require(sample.transactions.first { $0.kind == .expense })
         let moved = expense.with(categoryID: boat.id)
         let store = InMemoryStore(transactions: [moved], categories: TransactionCategory.defaults + [boat])
-        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store).execute(id: boat.id)
+        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store).execute(id: boat.id)
         #expect(await store.fetchCategories().contains(boat) == false)
         #expect(await store.fetchTransactions(in: nil).map(\.categoryID) == [TransactionCategory.otherExpenseID])
     }
@@ -101,6 +210,8 @@ struct CategoryActionsTests {
         let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
         let store = InMemoryStore(categories: [boat] + TransactionCategory.defaults)
         let listed = try await DefaultGetCategoriesUseCase(categories: store).execute()
-        #expect(listed.filter { $0.kind == .expense }.suffix(2).map(\.id) == [boat.id, TransactionCategory.otherExpenseID])
+        let expense = listed.filter { $0.kind == .expense }.map(\.id)
+        #expect(expense.first == boat.id)
+        #expect(expense.last == TransactionCategory.otherExpenseID)
     }
 }

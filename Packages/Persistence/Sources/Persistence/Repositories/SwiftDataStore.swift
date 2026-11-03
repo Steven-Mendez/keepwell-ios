@@ -115,45 +115,106 @@ extension SwiftDataStore: TransactionRepository {
 extension SwiftDataStore: CategoryRepository {
     public func fetchCategories() throws(DomainError) -> [TransactionCategory] {
         try perform { context in
-            let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
-            // Two devices can each write the same default before syncing; the first row wins.
-            var byID: [String: CategoryRecord] = [:]
-            var unique: [CategoryRecord] = []
-            for record in records where byID[record.id] == nil {
-                byID[record.id] = record
-                unique.append(record)
-            }
-            // A first launch, and an update that ships new defaults, both get the missing ones.
-            let missing = TransactionCategory.defaults.enumerated().filter { byID[$0.element.id] == nil }
-            for (index, category) in missing {
+            var rows = try uniqueCategoryRows(in: context)
+            // A first launch, and an update that ships new defaults, both get the missing ones;
+            // a tombstone counts as present, so a deleted default stays deleted.
+            let present = Set(rows.map(\.record.id))
+            let missing = TransactionCategory.defaults.filter { !present.contains($0.id) }
+            var next = (rows.map(\.record.sortIndex).max() ?? -1) + 1
+            for category in missing {
                 let record = CategoryRecord(id: category.id).inserted(into: context)
-                record.update(from: category, sortIndex: index)
-                unique.append(record)
+                record.update(from: category, sortIndex: next)
+                next += 1
+                rows.append((record, false))
             }
             if !missing.isEmpty {
                 try context.save()
             }
-            return try TransactionCategory.ordered(unique.map { try $0.toDomain() })
+            return try TransactionCategory.ordered(rows.filter { !$0.isRemoved }.map { try $0.record.toDomain() })
         }
     }
 
     public func save(_ category: TransactionCategory) throws(DomainError) {
         try perform { context in
             let id = category.id
-            let existing = try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id })).first
+            let existing = try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id }))
             let last = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])).first
-            let record = existing ?? CategoryRecord(id: id).inserted(into: context)
-            record.update(from: category, sortIndex: existing?.sortIndex ?? (last.map { $0.sortIndex + 1 } ?? 0))
+            let record = existing.first ?? CategoryRecord(id: id).inserted(into: context)
+            record.update(from: category, sortIndex: existing.first?.sortIndex ?? (last.map { $0.sortIndex + 1 } ?? 0))
+            // Saving a default that another device deleted brings it back on every row.
+            for duplicate in existing.dropFirst() {
+                duplicate.isRemoved = false
+            }
             try context.save()
         }
     }
 
     public func deleteCategory(id: String) throws(DomainError) {
         try perform { context in
-            for record in try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id })) {
-                context.delete(record)
+            let records = try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id }))
+            guard let shipped = TransactionCategory.shipped(id: id) else {
+                records.forEach(context.delete)
+                try context.save()
+                return
+            }
+            // A default deleted before it was ever seeded (restoring a backup) still needs its tombstone.
+            let tombstones = records.isEmpty ? [CategoryRecord(id: id).inserted(into: context)] : records
+            if records.isEmpty {
+                let last = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])).first
+                tombstones[0].update(from: shipped, sortIndex: last.map { $0.sortIndex + 1 } ?? 0)
+            }
+            for record in tombstones {
+                record.isRemoved = true
             }
             try context.save()
+        }
+    }
+
+    public func reorderCategories(ids: [String]) throws(DomainError) {
+        try perform { context in
+            let rank = Dictionary(ids.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
+            let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
+            let listed = records.filter { rank[$0.id] != nil }.sorted { rank[$0.id] ?? 0 < rank[$1.id] ?? 0 }
+            for (index, record) in (listed + records.filter { rank[$0.id] == nil }).enumerated() {
+                record.sortIndex = index
+            }
+            try context.save()
+        }
+    }
+
+    public func restoreDefaultCategories() throws(DomainError) {
+        try perform { context in
+            let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
+            var byID: [String: [CategoryRecord]] = [:]
+            for record in records {
+                byID[record.id, default: []].append(record)
+            }
+            for (index, category) in TransactionCategory.defaults.enumerated() {
+                let rows = byID[category.id] ?? [CategoryRecord(id: category.id).inserted(into: context)]
+                for record in rows {
+                    record.update(from: category, sortIndex: index)
+                }
+            }
+            let created = records.filter { TransactionCategory.shipped(id: $0.id) == nil }
+            for (offset, record) in created.enumerated() {
+                record.sortIndex = TransactionCategory.defaults.count + offset
+            }
+            try context.save()
+        }
+    }
+
+    /// One row per id. Two devices can each write the same default before syncing: the first
+    /// row wins, and a delete on either device removes it.
+    private func uniqueCategoryRows(in context: ModelContext) throws -> [(record: CategoryRecord, isRemoved: Bool)] {
+        let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
+        var removedIDs = Set<String>()
+        for record in records where record.isRemoved {
+            removedIDs.insert(record.id)
+        }
+        var seen = Set<String>()
+        return records.compactMap { record in
+            guard seen.insert(record.id).inserted else { return nil }
+            return (record, removedIDs.contains(record.id))
         }
     }
 }
