@@ -1,6 +1,36 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ · expired %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · venció %2$@"
+          }
+        }
+      }
+    },
+    "%@ · expires this month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · vence este mes"
+          }
+        }
+      }
+    },
+    "%@ · valid thru %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · vence %2$@"
+          }
+        }
+      }
+    },
     "%lld days" : {
       "localizations" : {
         "en" : {
@@ -121,6 +151,16 @@
         }
       }
     },
+    "Add a bank account or a card from Accounts to see it here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega una cuenta de banco o una tarjeta desde Cuentas para verla aquí."
+          }
+        }
+      }
+    },
     "App language" : {
       "localizations" : {
         "es" : {
@@ -161,6 +201,16 @@
         }
       }
     },
+    "Bank transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
     "Categories" : {
       "localizations" : {
         "es" : {
@@ -177,6 +227,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar código"
+          }
+        }
+      }
+    },
+    "Charged straight to the account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cobra directo de la cuenta"
+          }
+        }
+      }
+    },
+    "Credit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito"
           }
         }
       }
@@ -207,6 +277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datos"
+          }
+        }
+      }
+    },
+    "Debit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débito"
           }
         }
       }
@@ -837,6 +917,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos cargar tus categorías."
+          }
+        }
+      }
+    },
+    "We couldn't load your payment methods." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus medios de pago."
           }
         }
       }

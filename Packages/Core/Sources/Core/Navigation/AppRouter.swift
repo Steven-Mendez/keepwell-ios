@@ -7,6 +7,8 @@ public enum AppRoute: Hashable, Sendable {
     case settings
     /// Settings › Categories, opened on the income tab or the expense one.
     case categories(showsIncome: Bool)
+    /// Settings › Payment methods.
+    case paymentMethods
     /// A credit card's detail, by its account.
     case creditCard(accountID: UUID)
     /// A bank account and its one debit card, which share a screen.

@@ -192,6 +192,10 @@ final class AppContainer {
         PasscodeSetupViewModel(setPasscode: DefaultSetPasscodeUseCase(passcodes: passcodes))
     }
 
+    func makePaymentMethodsViewModel() -> PaymentMethodsViewModel {
+        PaymentMethodsViewModel(getMethods: DefaultGetPaymentMethodsUseCase(accounts: store, cards: store))
+    }
+
     func makeCategoriesViewModel(kind: TransactionKind) -> CategoriesViewModel {
         CategoriesViewModel(
             kind: kind,
