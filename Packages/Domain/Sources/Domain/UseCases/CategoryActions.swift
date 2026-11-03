@@ -83,7 +83,7 @@ public struct DefaultSaveCategoryUseCase: SaveCategoryUseCase {
 }
 
 /// Deletes a category, a default or one the person created. Its movements move to "Other" of the
-/// same kind, so balances and summaries keep adding up, and additional cards stop pointing at it.
+/// same kind, so balances and summaries keep adding up.
 public protocol DeleteCategoryUseCase: Sendable {
     func execute(id: String) async throws(DomainError)
 }
@@ -91,12 +91,10 @@ public protocol DeleteCategoryUseCase: Sendable {
 public struct DefaultDeleteCategoryUseCase: DeleteCategoryUseCase {
     private let categories: any CategoryRepository
     private let transactions: any TransactionRepository
-    private let cards: any CardRepository
 
-    public init(categories: any CategoryRepository, transactions: any TransactionRepository, cards: any CardRepository) {
+    public init(categories: any CategoryRepository, transactions: any TransactionRepository) {
         self.categories = categories
         self.transactions = transactions
-        self.cards = cards
     }
 
     public func execute(id: String) async throws(DomainError) {
@@ -105,11 +103,6 @@ public struct DefaultDeleteCategoryUseCase: DeleteCategoryUseCase {
         let otherID = TransactionCategory.otherID(for: category.kind)
         for movement in try await transactions.fetchTransactions(in: nil) where movement.categoryID == id {
             try await transactions.save(movement.with(categoryID: otherID))
-        }
-        for card in try await cards.fetchCards() {
-            if let controls = card.additional, let cleaned = controls.removing(categoryID: id, fallbackID: otherID) {
-                try await cards.save(card.with(additional: cleaned))
-            }
         }
         try await categories.deleteCategory(id: id)
     }
@@ -147,28 +140,6 @@ public struct DefaultRestoreDefaultCategoriesUseCase: RestoreDefaultCategoriesUs
 
     public func execute() async throws(DomainError) {
         try await categories.restoreDefaultCategories()
-    }
-}
-
-extension AdditionalCardControls {
-    /// These controls without a deleted category, or `nil` when they never mentioned it. A card
-    /// limited to only that category is limited to "Other" instead, because an empty list would
-    /// silently allow everything.
-    func removing(categoryID: String, fallbackID: String) -> Self? {
-        guard allowedCategoryIDs.contains(categoryID) || defaultCategoryID == categoryID else { return nil }
-        var allowed = allowedCategoryIDs.filter { $0 != categoryID }
-        if allowed.isEmpty, !allowedCategoryIDs.isEmpty {
-            allowed = [fallbackID]
-        }
-        return Self(
-            holderName: holderName,
-            cycleCap: cycleCap,
-            allowedCategoryIDs: allowed,
-            defaultCategoryID: defaultCategoryID == categoryID ? nil : defaultCategoryID,
-            alertEachPurchase: alertEachPurchase,
-            alertNearCap: alertNearCap,
-            isFrozen: isFrozen,
-        )
     }
 }
 

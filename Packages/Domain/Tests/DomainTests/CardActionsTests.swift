@@ -30,16 +30,6 @@ struct CardActionsTests {
     }
 
     @Test
-    func repaintingAnAdditionalKeepsItsControls() async throws {
-        let store = InMemoryStore(sample: .standard)
-        let before = try await card(IDs.mastercardAdditional, in: store)
-        try await DefaultSetCardColorUseCase(cards: store).execute(cardID: IDs.mastercardAdditional, color: .oro)
-        let after = try await card(IDs.mastercardAdditional, in: store)
-        #expect(after.color == .oro)
-        #expect(after.additional == before.additional)
-    }
-
-    @Test
     func aTransferChannelHasNoArtToRepaint() async {
         let store = InMemoryStore(sample: .standard)
         await #expect(throws: DomainError.notFound(IDs.savingsTransfer)) {

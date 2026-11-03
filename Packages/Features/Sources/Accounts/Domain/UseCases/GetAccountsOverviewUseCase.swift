@@ -61,7 +61,6 @@ public struct DefaultGetAccountsOverviewUseCase: GetAccountsOverviewUseCase {
                 creditCards.append(AccountsOverview.CreditCard(
                     account: account,
                     holder: accountCards.first { $0.kind == .creditHolder },
-                    plasticCount: accountCards.count { $0.kind == .creditHolder || $0.kind == .creditAdditional },
                     balances: balances.reversed(),
                 ))
             case .deposit:

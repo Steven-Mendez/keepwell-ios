@@ -2,7 +2,7 @@ import Domain
 import Foundation
 
 /// A small, fictional data set (generic banks, made-up amounts and card digits) shaped like the
-/// design: two deposit accounts, cash, a dual-currency credit card with an additional and a
+/// design: two deposit accounts, cash, a dual-currency credit card and a
 /// single-currency card, plus a month of movements. Dates are relative to `referenceDate` so
 /// previews and snapshots stay deterministic.
 public struct SampleData: Sendable {
@@ -23,7 +23,6 @@ public struct SampleData: Sendable {
         public static let payrollDebit = UUID(uuidString: "00000000-0000-0000-0000-00000000C003") ?? UUID()
         public static let payrollTransfer = UUID(uuidString: "00000000-0000-0000-0000-00000000C004") ?? UUID()
         public static let mastercardHolder = UUID(uuidString: "00000000-0000-0000-0000-00000000C005") ?? UUID()
-        public static let mastercardAdditional = UUID(uuidString: "00000000-0000-0000-0000-00000000C006") ?? UUID()
         public static let visaHolder = UUID(uuidString: "00000000-0000-0000-0000-00000000C007") ?? UUID()
     }
 

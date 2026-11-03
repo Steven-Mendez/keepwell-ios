@@ -24,11 +24,10 @@ struct CreateTransactionUseCasesTests {
     }
 
     @Test
-    func contextKnowsBalancesLastUsedAndCaps() async throws {
+    func contextKnowsBalancesAndLastUsed() async throws {
         let context = try await contextUseCase().execute()
         #expect(context.balances[SampleData.IDs.cash]?.first?.currency == "NIO")
         #expect(context.lastUsedSource != nil)
-        #expect(context.additionalUsage[SampleData.IDs.mastercardAdditional]?.cap == Money(4000, "NIO"))
         #expect(context.accountID(for: .card(SampleData.IDs.savingsDebit)) == SampleData.IDs.savings)
     }
 
@@ -73,13 +72,6 @@ struct CreateTransactionUseCasesTests {
         var income = expense(source: .account(SampleData.IDs.cash))
         income.kind = .income
         await #expect(throws: DomainError.categoryKindMismatch(expected: .income, actual: .expense)) { _ = try await save(income) }
-    }
-
-    @Test
-    func additionalCardOnlyAcceptsItsCategories() async {
-        await #expect(throws: DomainError.paymentMethodUnavailable(SampleData.IDs.mastercardAdditional)) {
-            _ = try await save(expense(source: .card(SampleData.IDs.mastercardAdditional)))
-        }
     }
 
     @Test

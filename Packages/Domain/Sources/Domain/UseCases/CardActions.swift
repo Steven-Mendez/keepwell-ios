@@ -75,7 +75,6 @@ extension Card {
             network: network,
             lastFour: lastFour,
             color: color,
-            additional: additional,
             isFrozen: isFrozen,
         ) else { return self }
         return copy

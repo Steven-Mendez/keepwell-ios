@@ -65,7 +65,7 @@ public struct KWActionButton: View {
 #Preview {
     HStack {
         KWActionButton("Pay", icon: .arrowUp, style: .prominent) {}
-        KWActionButton("Additional", icon: .addCard) {}
+        KWActionButton("Edit name", icon: .pencil) {}
         KWActionButton("Unfreeze", icon: .freeze, style: .active) {}
         KWActionButton("More", icon: .more) {}
     }

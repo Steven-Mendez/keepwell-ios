@@ -60,7 +60,7 @@ struct FilterTransactionsTests {
         let options = try await list().scopeOptions
         #expect(options.map(\.account.kind) == [.credit, .credit, .deposit, .deposit, .cash])
         #expect(options.first { $0.id == IDs.savings }?.card?.id == IDs.savingsDebit)
-        // A credit card shows its main plastic; its additionals have their own screen.
+        // A credit card shows as its one plastic.
         #expect(options.first { $0.id == IDs.mastercard }?.card?.id == IDs.mastercardHolder)
         #expect(options.first { $0.id == IDs.cash }?.card == nil)
     }

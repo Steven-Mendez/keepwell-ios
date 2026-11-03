@@ -189,12 +189,6 @@ public struct SettingsView: View {
                     options: SettingsViewModel.reminderOptions,
                     title: viewModel.reminderTitle,
                 ) { days in Task { await viewModel.setReminderDays(days) } }
-                SettingsMenuRow(
-                    label: String(localized: "Warn about additional cards at", bundle: #bundle),
-                    value: viewModel.thresholdTitle(settings.additionalCapAlertThreshold),
-                    options: SettingsViewModel.capThresholdOptions,
-                    title: viewModel.thresholdTitle,
-                ) { threshold in Task { await viewModel.setCapThreshold(threshold) } }
             }
         }
     }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Which movements a list looks at: everything or one account. A bank account is its one card, so
-/// narrowing by card would show the same list; a credit card's additionals have their own screen.
+/// narrowing by card would show the same list.
 public enum TransactionScope: Hashable, Sendable {
     case all
     case account(UUID)

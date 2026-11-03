@@ -54,24 +54,14 @@ extension SampleData {
     }()
 
     static func makeCards() -> [Card] {
-        let additional = AdditionalCardControls(
-            holderName: "Super family",
-            cycleCap: Money(4000, "NIO"),
-            allowedCategoryIDs: ["groceries", "health"],
-            defaultCategoryID: "groceries",
-        )
-        return [
-            try? Card(id: IDs.savingsDebit, accountID: IDs.savings, kind: .debit, network: .visa, lastFour: "1234", color: .coral),
+        [
+            try? Card(id: IDs.savingsDebit, accountID: IDs.savings, kind: .debit, network: .visa, lastFour: "1234", color: .verde),
             try? Card(id: IDs.savingsTransfer, accountID: IDs.savings, kind: .transfer),
-            try? Card(id: IDs.payrollDebit, accountID: IDs.payroll, kind: .debit, network: .visa, lastFour: "5678", color: .violeta),
+            try? Card(id: IDs.payrollDebit, accountID: IDs.payroll, kind: .debit, network: .visa, lastFour: "5678", color: .platino),
             try? Card(id: IDs.payrollTransfer, accountID: IDs.payroll, kind: .transfer),
             try? Card(
                 id: IDs.mastercardHolder, accountID: IDs.mastercard, kind: .creditHolder,
                 network: .mastercard, lastFour: "4321", color: .azul,
-            ),
-            try? Card(
-                id: IDs.mastercardAdditional, accountID: IDs.mastercard, kind: .creditAdditional,
-                network: .mastercard, lastFour: "8765", color: .lima, additional: additional,
             ),
             try? Card(id: IDs.visaHolder, accountID: IDs.visa, kind: .creditHolder, network: .visa, lastFour: "9012", color: .grafito),
         ].compactMap(\.self)

@@ -50,7 +50,7 @@ struct CategoryEditorViewModelTests {
         let viewModel = CategoryEditorViewModel(
             editing: boat,
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
         )
         #expect(!viewModel.isCreating)
         #expect(viewModel.canDelete)
@@ -67,7 +67,7 @@ struct CategoryEditorViewModelTests {
         let viewModel = CategoryEditorViewModel(
             editing: groceries,
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
         )
         #expect(viewModel.canDelete)
         #expect(viewModel.color == nil)
@@ -91,7 +91,7 @@ struct CategoryEditorViewModelTests {
             editing: other,
             fallbackName: "Misc",
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
         )
         #expect(viewModel.isFallback)
         #expect(!viewModel.canDelete)

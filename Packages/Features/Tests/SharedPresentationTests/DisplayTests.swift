@@ -40,7 +40,7 @@ struct DisplayTests {
         #expect(KWCardArt.maskedNumber(lastFour: "6019") == "•••• •••• •••• 6019")
         #expect(KWCardArt.maskedNumber(lastFour: "6019", groups: CardDisplay.numberGroups(for: .amex)) == "•••• •••••• •6019")
         #expect(CardDisplay.kindLabel(.debit) == "Debit")
-        #expect(CardDisplay.kindLabel(.creditAdditional) == "Credit")
+        #expect(CardDisplay.kindLabel(.creditHolder) == "Credit")
     }
 
     @Test

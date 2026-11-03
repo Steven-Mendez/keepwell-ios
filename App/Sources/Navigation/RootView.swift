@@ -212,7 +212,6 @@ struct RootView: View {
                 screens.transactions.filter = .all
                 tab = .transactions
             },
-            additionalCard: { router.push(.additionalCard(accountID: $0, cardID: $1)) },
         )
     }
 }

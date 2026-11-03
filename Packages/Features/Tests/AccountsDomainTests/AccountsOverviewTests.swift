@@ -28,7 +28,6 @@ struct AccountsOverviewTests {
         let card = try #require(try await overview().creditCards.first { $0.account.id == SampleData.IDs.mastercard })
         #expect(card.balances.map(\.currency) == ["NIO", "USD"])
         #expect(card.balances.allSatisfy { $0.amount < 0 })
-        #expect(card.plasticCount == 2)
         #expect(card.holder?.lastFour == "4321")
     }
 

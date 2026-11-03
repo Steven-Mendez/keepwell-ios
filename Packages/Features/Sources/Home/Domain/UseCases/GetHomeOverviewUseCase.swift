@@ -83,12 +83,10 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             recent: Array(recent),
             planned: planned,
             plannedSummary: PlannedSummary(transactions: planned),
-            additionalCards: additionalCards(records, principal: currencies.principal, calendar: calendar, now: now),
             balances: balances,
             cardDebt: accounts.contains { $0.kind == .credit } ? Money(cardDebt, currencies.principal) : nil,
             frequentExpenseCategoryIDs: frequentExpenseCategories(records),
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
-            capAlertThreshold: settings.additionalCapAlertThreshold,
             accounts: accounts,
             cards: cards,
             categories: records.categories,
@@ -107,27 +105,5 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             .sorted { (usage[$0.element] ?? 0, -$0.offset) > (usage[$1.element] ?? 0, -$1.offset) }
             .prefix(3)
             .map(\.element)
-    }
-
-    /// Additional cards with a cap, with what they spent in their card's current cycle.
-    private static func additionalCards(
-        _ records: LedgerRecords,
-        principal: String,
-        calendar: Calendar,
-        now: Date,
-    ) -> [HomeOverview.AdditionalCardStatus] {
-        records.cards
-            .filter { $0.kind == .creditAdditional && $0.additional?.cycleCap != nil }
-            .compactMap { card in
-                guard let account = records.accounts.first(where: { $0.id == card.accountID }),
-                      let cycle = BillingCycle.cycle(containing: now, cutoffDay: account.creditTerms?.cutoffDay, calendar: calendar)
-                else { return nil }
-                return HomeOverview.AdditionalCardStatus(
-                    card: card,
-                    account: account,
-                    holder: records.cards.first { $0.accountID == account.id && $0.kind == .creditHolder },
-                    usage: AdditionalCardUsage(card: card, transactions: records.transactions, cycle: cycle, fallbackCurrency: principal),
-                )
-            }
     }
 }

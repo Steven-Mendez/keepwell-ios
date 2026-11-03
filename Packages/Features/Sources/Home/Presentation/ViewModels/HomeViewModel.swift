@@ -130,20 +130,4 @@ public final class HomeViewModel {
         let count = overview.plannedSummary.count
         return String(localized: "Planned · \(count)", bundle: #bundle)
     }
-
-    /// "Mastercard ··6158 · additional Family".
-    func additionalTitle(_ status: HomeOverview.AdditionalCardStatus) -> String {
-        let card = status.holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: status.account)
-        let holder = status.card.additional?.holderName ?? ""
-        return String(localized: "\(card) · additional \(holder)", bundle: #bundle)
-    }
-
-    /// "C$2,150 of C$4,000 cap this cycle".
-    func additionalCaption(_ status: HomeOverview.AdditionalCardStatus, hidden: Bool = false) -> String {
-        guard !hidden else { return Self.maskedAmount }
-        let spent = formatter.string(status.usage.spent, fractionDigits: 0)
-        guard let cap = status.usage.cap else { return spent }
-        let capText = formatter.string(cap, fractionDigits: 0)
-        return String(localized: "\(spent) of \(capText) cap this cycle", bundle: #bundle)
-    }
 }

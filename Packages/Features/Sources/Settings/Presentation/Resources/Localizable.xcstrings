@@ -791,16 +791,6 @@
         }
       }
     },
-    "Warn about additional cards at" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avisar tope de adicionales al"
-          }
-        }
-      }
-    },
     "We couldn't create the backup. Try again." : {
       "localizations" : {
         "es" : {

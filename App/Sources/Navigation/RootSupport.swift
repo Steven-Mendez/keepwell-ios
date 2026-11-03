@@ -163,55 +163,25 @@ struct CategoriesRoute: View {
 
 struct CreditCardRoute: View {
     @State private var viewModel: CreditCardViewModel
-    let addsAdditional: Bool
     let onBack: () -> Void
     let onPay: () -> Void
-    let onOpenAdditional: (UUID) -> Void
     let onSeeAllMovements: () -> Void
 
     init(
         container: AppContainer,
         accountID: UUID,
-        addsAdditional: Bool,
         onBack: @escaping () -> Void,
         onPay: @escaping () -> Void,
-        onOpenAdditional: @escaping (UUID) -> Void,
         onSeeAllMovements: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeCreditCardViewModel(accountID: accountID))
-        self.addsAdditional = addsAdditional
         self.onBack = onBack
         self.onPay = onPay
-        self.onOpenAdditional = onOpenAdditional
         self.onSeeAllMovements = onSeeAllMovements
     }
 
     var body: some View {
-        CreditCardView(
-            viewModel: viewModel,
-            startsAddingAdditional: addsAdditional,
-            onBack: onBack,
-            onPay: onPay,
-            onOpenAdditional: onOpenAdditional,
-            onSeeAllMovements: onSeeAllMovements,
-        )
-        .navigationBarBackButtonHidden()
-    }
-}
-
-struct AdditionalCardRoute: View {
-    @State private var viewModel: CreditCardViewModel
-    let cardID: UUID
-    let onBack: () -> Void
-
-    init(container: AppContainer, accountID: UUID, cardID: UUID, onBack: @escaping () -> Void) {
-        _viewModel = State(initialValue: container.makeCreditCardViewModel(accountID: accountID))
-        self.cardID = cardID
-        self.onBack = onBack
-    }
-
-    var body: some View {
-        AdditionalCardView(viewModel: viewModel, cardID: cardID, onBack: onBack)
+        CreditCardView(viewModel: viewModel, onBack: onBack, onPay: onPay, onSeeAllMovements: onSeeAllMovements)
             .navigationBarBackButtonHidden()
     }
 }

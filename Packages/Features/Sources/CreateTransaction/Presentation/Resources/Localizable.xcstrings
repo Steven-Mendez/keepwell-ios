@@ -31,16 +31,6 @@
         }
       }
     },
-    "%@ left" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "le quedan %@"
-          }
-        }
-      }
-    },
     "%@ · more than what's there" : {
       "localizations" : {
         "es" : {
@@ -87,16 +77,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Agregar ›"
-          }
-        }
-      }
-    },
-    "Additional" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicional"
           }
         }
       }
@@ -227,6 +207,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entre mis cuentas"
+          }
+        }
+      }
+    },
+    "Card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta"
           }
         }
       }
@@ -577,16 +567,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anotar otro"
-          }
-        }
-      }
-    },
-    "Main card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tarjeta principal"
           }
         }
       }

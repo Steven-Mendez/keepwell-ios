@@ -71,7 +71,6 @@ public struct PrivacyView: View {
             VStack(alignment: .leading, spacing: 10) {
                 bullet(KWColor.State.pending, String(localized: "Expected expenses due today", bundle: #bundle))
                 bullet(KWColor.Brand.accent, String(localized: "Statement and payment dates for your cards", bundle: #bundle))
-                bullet(KWColor.State.extra, String(localized: "Limits on additional cards", bundle: #bundle))
             }
             .font(KWTextStyle.label.font.weight(.regular))
             .foregroundStyle(KWColor.Text.secondary)

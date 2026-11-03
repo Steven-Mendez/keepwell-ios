@@ -36,10 +36,6 @@ extension SettingsViewModel {
         String(localized: "\(days) days", bundle: #bundle)
     }
 
-    func thresholdTitle(_ threshold: Decimal) -> String {
-        "\(formatter.number(threshold * 100, fractionDigits: 0))%"
-    }
-
     func unlockTitle(_ method: UnlockMethod) -> String {
         switch method {
         case .biometrics: String(localized: "Face ID /\nTouch ID", bundle: #bundle)

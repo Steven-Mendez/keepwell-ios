@@ -47,6 +47,30 @@ struct BackupTests {
     }
 
     @Test
+    func anOlderBackupWithAnAdditionalCardStillRestores() async throws {
+        let backup = try await create(InMemoryStore(sample: sample))
+        var json = try #require(JSONSerialization.jsonObject(with: backup) as? [String: Any])
+        var cards = try #require(json["cards"] as? [[String: Any]])
+        cards.append([
+            "id": UUID().uuidString,
+            "accountID": SampleData.IDs.mastercard.uuidString,
+            "kind": "creditAdditional",
+            "network": "mastercard",
+            "lastFour": "8765",
+            "color": "lima",
+            "additional": ["holderName": "Family", "allowedCategoryIDs": [String](), "alertEachPurchase": true],
+            "isPlasticFrozen": false,
+        ])
+        json["cards"] = cards
+        let older = try JSONSerialization.data(withJSONObject: json)
+
+        let restored = InMemoryStore(sample: sample)
+        _ = try await restore(older, into: restored)
+
+        #expect(await Set(restored.fetchCards()) == Set(sample.cards))
+    }
+
+    @Test
     func aFrozenCardStaysFrozenThroughABackup() async throws {
         let store = InMemoryStore(sample: sample)
         let holder = try #require(sample.cards.first { $0.id == SampleData.IDs.mastercardHolder })

@@ -35,12 +35,4 @@ struct FrozenCardTests {
         #expect(frozen.lastFour == holder.lastFour)
         #expect(frozen.with(isFrozen: false) == holder)
     }
-
-    @Test
-    func anAdditionalCardFreezesThroughItsControls() throws {
-        let additional = try #require(SampleData.standard.cards.first { $0.id == SampleData.IDs.mastercardAdditional })
-        let frozen = additional.with(isFrozen: true)
-        #expect(frozen.additional?.isFrozen == true)
-        #expect(frozen.isFrozen)
-    }
 }

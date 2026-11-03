@@ -5,8 +5,7 @@ import SharedPresentation
 import SwiftUI
 
 /// Home: a balance carousel on the brand hero, quick actions, the latest movements, the month so
-/// far, planned movements waiting for confirmation, additional cards against their cap and the
-/// balance of each account.
+/// far, planned movements waiting for confirmation and the balance of each account.
 public struct HomeView: View {
     /// Where home leads. The root decides how each one is shown.
     public struct Actions {
@@ -18,8 +17,6 @@ public struct HomeView: View {
         public var payCard: () -> Void
         public var allPlanned: () -> Void
         public var allTransactions: () -> Void
-        /// Credit account and additional card.
-        public var additionalCard: (UUID, UUID) -> Void
 
         public init(
             search: @escaping () -> Void,
@@ -30,7 +27,6 @@ public struct HomeView: View {
             payCard: @escaping () -> Void,
             allPlanned: @escaping () -> Void,
             allTransactions: @escaping () -> Void,
-            additionalCard: @escaping (UUID, UUID) -> Void,
         ) {
             self.search = search
             self.summary = summary
@@ -40,7 +36,6 @@ public struct HomeView: View {
             self.payCard = payCard
             self.allPlanned = allPlanned
             self.allTransactions = allTransactions
-            self.additionalCard = additionalCard
         }
     }
 
@@ -98,9 +93,6 @@ public struct HomeView: View {
         }
         if !overview.planned.isEmpty {
             plannedCard(overview)
-        }
-        ForEach(overview.additionalCards) { status in
-            additionalRow(status)
         }
         balancesCard(overview)
     }
@@ -212,34 +204,6 @@ public struct HomeView: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
-    }
-
-    private func additionalRow(_ status: HomeOverview.AdditionalCardStatus) -> some View {
-        Button { actions.additionalCard(status.account.id, status.card.id) } label: {
-            HStack(spacing: KWSpacing.sm) {
-                KWIconView(.creditCard, size: 20)
-                    .foregroundStyle(KWColor.Brand.link)
-                    .frame(width: 40, height: 40)
-                    .background(KWColor.Tint.accent, in: Circle())
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(viewModel.additionalTitle(status))
-                        .font(.kw(15, weight: 600))
-                        .lineLimit(1)
-                    KWProgressBar(NSDecimalNumber(decimal: status.usage.fraction ?? 0).doubleValue, fill: KWColor.Brand.link)
-                    Text(viewModel.additionalCaption(status, hidden: hidesBalances))
-                        .font(KWTextStyle.caption.font.weight(.regular))
-                        .foregroundStyle(KWColor.Text.muted)
-                        .monospacedDigit()
-                }
-                KWIconView(.chevronRight, size: 18)
-                    .foregroundStyle(KWColor.Text.muted)
-            }
-            .padding(.vertical, KWSpacing.md)
-            .padding(.horizontal, 18)
-            .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     private func balancesCard(_ overview: HomeOverview) -> some View {

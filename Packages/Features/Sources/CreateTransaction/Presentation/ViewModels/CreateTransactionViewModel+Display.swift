@@ -134,7 +134,7 @@ extension CreateTransactionViewModel {
     private func sources(of account: Account, in context: TransactionContext) -> [PaymentSource] {
         let cards = context.cards.filter { $0.accountID == account.id }
         guard !cards.isEmpty else { return [.account(account.id)] }
-        let order: [CardKind] = [.debit, .creditHolder, .creditAdditional, .transfer]
+        let order: [CardKind] = [.debit, .creditHolder, .transfer]
         return cards.sorted { (order.firstIndex(of: $0.kind) ?? 0) < (order.firstIndex(of: $1.kind) ?? 0) }.map { .card($0.id) }
     }
 
@@ -158,20 +158,6 @@ extension CreateTransactionViewModel {
             return String(localized: "\(network) •••• \(lastFour) · credit", bundle: #bundle)
         }
         return "\(CardDisplay.name(of: account)) · \(currencyList(account))"
-    }
-
-    private func additionalRow(source: PaymentSource, card: Card, context: TransactionContext) -> MethodRow {
-        let additional = String(localized: "Additional", bundle: #bundle)
-        let remaining = context.additionalUsage[card.id]?.remaining.map {
-            let amount = formatter.string($0, fractionDigits: 0)
-            return String(localized: "\(amount) left", bundle: #bundle)
-        }
-        return MethodRow(
-            source: source,
-            title: card.additional?.holderName ?? additional,
-            subtitle: [additional, remaining].compactMap(\.self).joined(separator: " · "),
-            thumbnail: .card(card.color),
-        )
     }
 
     private func row(for source: PaymentSource, in context: TransactionContext, grouped: Bool) -> MethodRow {
@@ -198,18 +184,16 @@ extension CreateTransactionViewModel {
             case .transfer:
                 return accountMethodRow(source: source, account: account, grouped: grouped)
             case .creditHolder:
-                // Inside its own section the card sits next to its additionals, so it reads as the main one.
+                // Inside its own section, under a header that already names the card, it needn't repeat the number.
                 return grouped
                     ? MethodRow(
-                        source: source, title: String(localized: "Main card", bundle: #bundle),
+                        source: source, title: String(localized: "Card", bundle: #bundle),
                         subtitle: holderSubtitle(account) ?? usedLabel(context.lastUsed[source]), thumbnail: .card(card.color),
                     )
                     : MethodRow(
                         source: source, title: CardDisplay.cardNumber(card),
                         subtitle: holderSubtitle(account) ?? account.map(CardDisplay.name(of:)), thumbnail: .card(card.color),
                     )
-            case .creditAdditional:
-                return additionalRow(source: source, card: card, context: context)
             }
         }
     }

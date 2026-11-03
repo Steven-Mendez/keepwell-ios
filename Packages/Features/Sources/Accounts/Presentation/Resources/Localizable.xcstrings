@@ -27,16 +27,6 @@
         }
       }
     },
-    "%lld cards" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld tarjetas"
-          }
-        }
-      }
-    },
     "A frozen card can't be picked to pay a movement." : {
       "localizations" : {
         "es" : {

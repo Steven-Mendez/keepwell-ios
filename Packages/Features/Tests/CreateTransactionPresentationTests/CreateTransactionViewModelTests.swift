@@ -138,15 +138,11 @@ struct CreateTransactionViewModelTests {
     }
 
     @Test
-    func methodGroupsPutRecentAccountsFirstAndHideBlockedAdditionals() async {
+    func methodGroupsPutRecentAccountsFirst() async {
         let viewModel = await CreateTransactionFactory.loaded()
         viewModel.selectCategory("restaurants")
-        let sources = viewModel.methodGroups.flatMap(\.rows).map(\.source)
-        #expect(!sources.contains(.card(SampleData.IDs.mastercardAdditional)))
         #expect(viewModel.methodGroups.dropFirst(2).map(\.title) == ["Cash", "Credit cards"])
-        viewModel.path = [.category]
-        viewModel.selectCategory("groceries")
-        #expect(viewModel.methodGroups.flatMap(\.rows).contains { $0.source == .card(SampleData.IDs.mastercardAdditional) })
+        #expect(viewModel.methodGroups.flatMap(\.rows).contains { $0.source == .card(SampleData.IDs.mastercardHolder) })
     }
 
     @Test

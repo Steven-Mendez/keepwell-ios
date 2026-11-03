@@ -25,8 +25,8 @@ struct CardArtSnapshotTests {
             KWCardArt(
                 palette: .lima,
                 bank: "Bank One",
-                badge: .tag("Additional"),
-                holder: "Family",
+                badge: .tag("Credit"),
+                holder: "ALEX",
                 lastFour: "5678",
                 network: .mastercard,
                 kindLabel: "Credit",

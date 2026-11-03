@@ -5,9 +5,8 @@ import Foundation
 public struct AccountsOverview: Hashable, Sendable {
     public struct CreditCard: Identifiable, Hashable, Sendable {
         public let account: Account
-        /// The holder plastic, which gives the card its art, network and digits.
+        /// The plastic, which gives the card its art, network and digits.
         public let holder: Card?
-        public let plasticCount: Int
         /// Debts per currency, negative, second currency first as the cards show them.
         public let balances: [Money]
         public var id: UUID { account.id }

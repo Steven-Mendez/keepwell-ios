@@ -45,8 +45,6 @@ public struct Settings: Hashable, Sendable, Codable {
     public var hidesAmountsInAppSwitcher: Bool
     public var isICloudBackupEnabled: Bool
     public var paymentReminderDaysBefore: Int
-    /// Fraction of an additional card's cap that triggers the alert.
-    public var additionalCapAlertThreshold: Decimal
     public var hasCompletedOnboarding: Bool
 
     public init(
@@ -56,7 +54,6 @@ public struct Settings: Hashable, Sendable, Codable {
         hidesAmountsInAppSwitcher: Bool = true,
         isICloudBackupEnabled: Bool = true,
         paymentReminderDaysBefore: Int = 3,
-        additionalCapAlertThreshold: Decimal = Decimal(string: "0.8") ?? 1,
         hasCompletedOnboarding: Bool = false,
     ) {
         self.currencies = currencies
@@ -65,7 +62,6 @@ public struct Settings: Hashable, Sendable, Codable {
         self.hidesAmountsInAppSwitcher = hidesAmountsInAppSwitcher
         self.isICloudBackupEnabled = isICloudBackupEnabled
         self.paymentReminderDaysBefore = paymentReminderDaysBefore
-        self.additionalCapAlertThreshold = additionalCapAlertThreshold
         self.hasCompletedOnboarding = hasCompletedOnboarding
     }
 }

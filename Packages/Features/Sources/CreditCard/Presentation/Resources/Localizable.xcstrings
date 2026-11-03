@@ -1,76 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ left until the next cutoff" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le quedan %@ hasta el próximo corte"
-          }
-        }
-      }
-    },
-    "+ Additional" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "+ Adicional"
-          }
-        }
-      }
-    },
-    "Add card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agregar tarjeta"
-          }
-        }
-      }
-    },
-    "Additional" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicional"
-          }
-        }
-      }
-    },
-    "Additional of %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicional de %@"
-          }
-        }
-      }
-    },
-    "Alerts" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avisos"
-          }
-        }
-      }
-    },
-    "Amount (%@)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monto (%@)"
-          }
-        }
-      }
-    },
     "Available" : {
       "localizations" : {
         "es" : {
@@ -91,42 +21,12 @@
         }
       }
     },
-    "Cap per cycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tope por ciclo"
-          }
-        }
-      }
-    },
-    "Cap per cycle (%@)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tope por ciclo (%@)"
-          }
-        }
-      }
-    },
     "Card color" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Color de la tarjeta"
-          }
-        }
-      }
-    },
-    "Check the cap amount." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Revisa el monto del tope."
           }
         }
       }
@@ -147,16 +47,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completar datos de la tarjeta"
-          }
-        }
-      }
-    },
-    "Credit" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crédito"
           }
         }
       }
@@ -241,62 +131,12 @@
         }
       }
     },
-    "Default category when logging" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Categoría por defecto al anotar"
-          }
-        }
-      }
-    },
-    "Each purchase" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cada compra"
-          }
-        }
-      }
-    },
-    "Edit" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Editar"
-          }
-        }
-      }
-    },
     "Edit name" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar nombre"
-          }
-        }
-      }
-    },
-    "every category" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "todas las categorías"
-          }
-        }
-      }
-    },
-    "Family" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Familia"
           }
         }
       }
@@ -321,142 +161,12 @@
         }
       }
     },
-    "frozen" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "congelada"
-          }
-        }
-      }
-    },
-    "Holder" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titular"
-          }
-        }
-      }
-    },
-    "Its past purchases stay on the card." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sus compras anteriores se quedan en la tarjeta."
-          }
-        }
-      }
-    },
-    "Its purchases this cycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sus compras de este ciclo"
-          }
-        }
-      }
-    },
-    "Its spending" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sus gastos"
-          }
-        }
-      }
-    },
-    "Last 4 digits" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Últimos 4 dígitos"
-          }
-        }
-      }
-    },
-    "Leave it empty so the card has no cap. It restarts at each cutoff." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Déjalo vacío para que no tenga tope. Se reinicia en cada corte."
-          }
-        }
-      }
-    },
-    "Log its purchases as" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registrar sus compras como"
-          }
-        }
-      }
-    },
     "Manage card" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gestionar tarjeta"
-          }
-        }
-      }
-    },
-    "New additional card" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nueva tarjeta adicional"
-          }
-        }
-      }
-    },
-    "No cap" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin tope"
-          }
-        }
-      }
-    },
-    "No purchases this cycle yet." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Todavía no hay compras en este ciclo."
-          }
-        }
-      }
-    },
-    "None" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ninguna"
-          }
-        }
-      }
-    },
-    "None ›" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ninguna ›"
           }
         }
       }
@@ -477,36 +187,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aún no hay cargos en este ciclo."
-          }
-        }
-      }
-    },
-    "of %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "de %@"
-          }
-        }
-      }
-    },
-    "On reaching %@ of the cap" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Al llegar al %@ del tope"
-          }
-        }
-      }
-    },
-    "only %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "solo %@"
           }
         }
       }
@@ -551,46 +231,6 @@
         }
       }
     },
-    "Plastics" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plásticos"
-          }
-        }
-      }
-    },
-    "Remove" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quitar"
-          }
-        }
-      }
-    },
-    "Remove additional" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quitar adicional"
-          }
-        }
-      }
-    },
-    "Remove this additional card?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Quitar esta tarjeta adicional?"
-          }
-        }
-      }
-    },
     "Save" : {
       "localizations" : {
         "es" : {
@@ -617,12 +257,12 @@
         }
       }
     },
-    "The last 4 digits must be 4 numbers." : {
+    "The cutoff day closes each cycle, and with the payment day we remind you before it's due." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los últimos 4 dígitos deben ser 4 números."
+            "value" : "El día de corte cierra cada ciclo y, con el día de pago, te avisamos antes de que venza."
           }
         }
       }
@@ -667,62 +307,12 @@
         }
       }
     },
-    "Where it can be used" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dónde puede usarla"
-          }
-        }
-      }
-    },
-    "Who carries it" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quién la lleva"
-          }
-        }
-      }
-    },
-    "With the cutoff day, additional cards count their cap per cycle and we remind you before paying." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Con el día de corte, las adicionales cuentan su tope por ciclo y te recordamos antes de pagar."
-          }
-        }
-      }
-    },
     "Write a name for the card." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escribe un nombre para la tarjeta."
-          }
-        }
-      }
-    },
-    "Write who carries the card." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Escribe quién lleva la tarjeta."
-          }
-        }
-      }
-    },
-    "You · no cap" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tú · sin tope"
           }
         }
       }

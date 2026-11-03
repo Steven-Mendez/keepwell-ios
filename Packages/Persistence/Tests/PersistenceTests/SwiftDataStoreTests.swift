@@ -38,12 +38,28 @@ struct SwiftDataStoreTests {
     }
 
     @Test
-    func cardsRoundTripIncludingAdditionalControls() async throws {
+    func cardsRoundTrip() async throws {
         let store = try makeStore()
         for card in sample.cards {
             try await store.save(card)
         }
         #expect(try await Set(store.fetchCards()) == Set(sample.cards))
+    }
+
+    @Test
+    func additionalCardsSavedBeforeTheyWereRetiredAreSkipped() async throws {
+        let container = try ModelContainerFactory.make(store: .inMemory)
+        let context = ModelContext(container)
+        let retired = CardRecord(id: UUID())
+        retired.kindRaw = "creditAdditional"
+        retired.holderName = "Family"
+        context.insert(retired)
+        try context.save()
+        let store = SwiftDataStore(modelContainer: container)
+        let holder = try #require(sample.cards.first { $0.kind == .creditHolder })
+        try await store.save(holder)
+
+        #expect(try await store.fetchCards() == [holder])
     }
 
     @Test

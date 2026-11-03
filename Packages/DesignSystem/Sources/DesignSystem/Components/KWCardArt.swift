@@ -17,7 +17,7 @@ public enum KWCardNetwork: Sendable, Equatable {
 /// and the hero card on a detail screen keep the same proportions.
 public struct KWCardArt: View {
     public enum Badge: Sendable, Equatable {
-        /// Pill such as "Holder", "Additional", "Credit" or "Frozen".
+        /// Pill such as "Credit" or "Frozen".
         case tag(String)
         /// Balance in the top-right corner, as on the accounts stack.
         case amount(String)

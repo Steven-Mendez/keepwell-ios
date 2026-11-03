@@ -197,7 +197,7 @@ final class AppContainer {
             kind: kind,
             getCategories: DefaultGetCategoriesUseCase(categories: store),
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
             reorder: DefaultReorderCategoriesUseCase(categories: store),
             restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
         )
@@ -253,9 +253,6 @@ final class AppContainer {
                 settings: store,
             ),
             updateTerms: DefaultUpdateCreditTermsUseCase(accounts: store),
-            addAdditional: DefaultAddAdditionalCardUseCase(cards: store),
-            updateAdditional: DefaultUpdateAdditionalCardUseCase(cards: store),
-            removeAdditional: DefaultRemoveAdditionalCardUseCase(cards: store),
             setCardFrozen: DefaultSetCardFrozenUseCase(cards: store),
             setCardColor: DefaultSetCardColorUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
