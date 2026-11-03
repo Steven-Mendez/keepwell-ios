@@ -59,17 +59,16 @@ struct CardStack<Item: Identifiable, Art: View>: View {
 struct DepositCards: View {
     let deposit: AccountsOverview.Deposit
     let formatter: CurrencyFormatter
+    var onOpen: ((Card) -> Void)?
     let onLink: () -> Void
 
     private var bank: String {
         deposit.account.bank ?? deposit.account.name
     }
 
-    /// "Debit · Savings" when the bank already names the card, so the account's own name isn't lost.
-    private var caption: String {
-        guard deposit.account.bank != nil else { return String(localized: "Debit", bundle: #bundle) }
-        let name = deposit.account.name
-        return String(localized: "Debit · \(name)", bundle: #bundle)
+    /// The account's own name when the bank already heads the card, so it isn't lost.
+    private var caption: String? {
+        deposit.account.bank == nil ? nil : deposit.account.name
     }
 
     var body: some View {
@@ -81,16 +80,14 @@ struct DepositCards: View {
             )
         } else {
             VStack(alignment: .leading, spacing: KWSpacing.sm) {
-                CardStack(deposit.debitCards, label: accessibilityLabel, art: { card, isFront in
-                    KWCardArt(
-                        palette: CardDisplay.palette(for: card.color),
+                CardStack(deposit.debitCards, label: accessibilityLabel, onTap: onOpen, art: { card, isFront in
+                    CardDisplay.art(
+                        of: card,
+                        kind: .debit,
                         bank: bank,
                         badge: isFront ? .amount(formatter.string(deposit.balance)) : card.lastFour.map { .tag("•••• \($0)") },
-                        showsChip: isFront,
-                        caption: isFront ? caption : nil,
-                        lastFour: isFront ? card.lastFour : nil,
-                        network: isFront ? CardDisplay.wordmark(for: card.network) : nil,
-                        isFrozen: card.isFrozen,
+                        caption: caption,
+                        showsFace: isFront,
                     )
                 })
                 Button(action: onLink) {
@@ -159,8 +156,7 @@ struct EmptyCardSlot: View {
     }
 }
 
-/// Cash drawn as a banknote rather than a card: no chip or digits, a framed note with a medallion,
-/// so it is never mistaken for something you swipe.
+/// Cash as a banknote, with the two things a person does with it.
 struct CashNote: View {
     let cash: AccountsOverview.Cash
     let formatter: CurrencyFormatter
@@ -180,52 +176,11 @@ struct CashNote: View {
     }
 
     private var note: some View {
-        let shape = RoundedRectangle(cornerRadius: KWRadius.input, style: .continuous)
-        return ZStack {
-            KWColor.CardArt.verde.largeGradient
-            medallion
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, KWSpacing.xl)
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: KWSpacing.xs) {
-                    KWIconView(.wallet, size: 18)
-                    Text(cash.account.name)
-                        .font(.kw(17, weight: 800))
-                        .tracking(-0.3)
-                }
-                Spacer(minLength: KWSpacing.sm)
-                Text(formatter.string(cash.balance, fractionDigits: 0))
-                    .font(.kw(28, weight: 800))
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.6)
-                if let equivalent = cash.principalEquivalent {
-                    Text("≈ \(formatter.string(equivalent))")
-                        .font(KWTextStyle.captionSm.font)
-                        .monospacedDigit()
-                        .opacity(0.8)
-                }
-            }
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(KWSpacing.lg)
-        }
-        .foregroundStyle(KWColor.Text.primary)
-        .aspectRatio(2.2, contentMode: .fit)
-        .clipShape(shape)
-        // The inner frame is what makes it read as a note.
-        .overlay(shape.inset(by: KWSpacing.xs).strokeBorder(.white.opacity(0.28), lineWidth: 1))
-        .accessibilityElement(children: .combine)
-    }
-
-    private var medallion: some View {
-        ZStack {
-            Circle().strokeBorder(.white.opacity(0.22), lineWidth: 10)
-            Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1).padding(16)
-            Text(cash.balance.currency)
-                .font(.kw(15, weight: 800))
-                .opacity(0.85)
-        }
-        .frame(width: 84, height: 84)
-        .accessibilityHidden(true)
+        KWBanknote(
+            title: cash.account.name,
+            amount: formatter.string(cash.balance, fractionDigits: 0),
+            footnote: cash.principalEquivalent.map { "≈ \(formatter.string($0))" },
+            currency: cash.balance.currency,
+        )
     }
 }

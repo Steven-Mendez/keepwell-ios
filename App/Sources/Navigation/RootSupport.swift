@@ -145,6 +145,23 @@ struct AdditionalCardRoute: View {
     }
 }
 
+struct DebitCardRoute: View {
+    @State private var viewModel: DebitCardViewModel
+    let onBack: () -> Void
+    let onLinkCard: (UUID) -> Void
+
+    init(container: AppContainer, cardID: UUID, onBack: @escaping () -> Void, onLinkCard: @escaping (UUID) -> Void) {
+        _viewModel = State(initialValue: container.makeDebitCardViewModel(cardID: cardID))
+        self.onBack = onBack
+        self.onLinkCard = onLinkCard
+    }
+
+    var body: some View {
+        DebitCardView(viewModel: viewModel, onBack: onBack, onLinkCard: onLinkCard)
+            .navigationBarBackButtonHidden()
+    }
+}
+
 /// Wraps a flow's view model so it can drive `fullScreenCover(item:)`.
 struct PresentedFlow<ViewModel>: Identifiable {
     let id = UUID()

@@ -137,6 +137,7 @@ struct RootView: View {
                 viewModel: screens.accounts,
                 onAdd: { presentAddCard() },
                 onOpenCreditCard: { router.push(.creditCard(accountID: $0)) },
+                onOpenDebitCard: { router.push(.debitCard(cardID: $0)) },
                 onLinkCard: { presentAddCard(linkingTo: $0) },
             )
         case .summary:
@@ -185,6 +186,8 @@ struct RootView: View {
             )
         case let .additionalCard(accountID, cardID):
             AdditionalCardRoute(container: container, accountID: accountID, cardID: cardID, onBack: router.pop)
+        case let .debitCard(cardID):
+            DebitCardRoute(container: container, cardID: cardID, onBack: router.pop) { presentAddCard(linkingTo: $0) }
         }
     }
 

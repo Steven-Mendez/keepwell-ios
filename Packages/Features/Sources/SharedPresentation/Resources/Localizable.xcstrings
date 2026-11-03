@@ -11,6 +11,16 @@
         }
       }
     },
+    "Account name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de la cuenta"
+          }
+        }
+      }
+    },
     "Additional" : {
       "localizations" : {
         "es" : {
@@ -31,6 +41,36 @@
         }
       }
     },
+    "Card color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de la tarjeta"
+          }
+        }
+      }
+    },
+    "Credit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito"
+          }
+        }
+      }
+    },
+    "Debit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débito"
+          }
+        }
+      }
+    },
     "Debit •••• %@" : {
       "localizations" : {
         "es" : {
@@ -41,12 +81,32 @@
         }
       }
     },
+    "Edit name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar nombre"
+          }
+        }
+      }
+    },
     "Education" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Educación"
+          }
+        }
+      }
+    },
+    "Every card on this account shows this name." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las tarjetas de esta cuenta muestran este nombre."
           }
         }
       }
@@ -203,6 +263,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salario"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
           }
         }
       }

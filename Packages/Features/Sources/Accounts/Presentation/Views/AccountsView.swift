@@ -11,6 +11,7 @@ public struct AccountsView: View {
     private let viewModel: AccountsViewModel
     private let onAdd: () -> Void
     private let onOpenCreditCard: (UUID) -> Void
+    private let onOpenDebitCard: (UUID) -> Void
     private let onLinkCard: (UUID) -> Void
     @State private var cashAction: CashAction?
     private let formatter = CurrencyFormatter()
@@ -31,11 +32,13 @@ public struct AccountsView: View {
         viewModel: AccountsViewModel,
         onAdd: @escaping () -> Void,
         onOpenCreditCard: @escaping (UUID) -> Void,
+        onOpenDebitCard: @escaping (UUID) -> Void,
         onLinkCard: @escaping (UUID) -> Void,
     ) {
         self.viewModel = viewModel
         self.onAdd = onAdd
         self.onOpenCreditCard = onOpenCreditCard
+        self.onOpenDebitCard = onOpenDebitCard
         self.onLinkCard = onLinkCard
     }
 
@@ -54,9 +57,15 @@ public struct AccountsView: View {
                         CreditCardStack(cards: overview.creditCards, formatter: formatter, onOpen: onOpenCreditCard)
                     }
                     if !overview.deposits.isEmpty {
-                        KWSectionHeader(String(localized: "Debit cards", bundle: #bundle), style: .large).padding(.top, 10)
+                        KWSectionHeader(String(localized: "Debit cards", bundle: #bundle), style: .large)
+                            .padding(.top, 10)
                         ForEach(overview.deposits) { deposit in
-                            DepositCards(deposit: deposit, formatter: formatter) { onLinkCard(deposit.id) }
+                            DepositCards(
+                                deposit: deposit,
+                                formatter: formatter,
+                                onOpen: { onOpenDebitCard($0.id) },
+                                onLink: { onLinkCard(deposit.id) },
+                            )
                         }
                     }
                     if !overview.cash.isEmpty {
@@ -145,17 +154,23 @@ struct CreditCardStack: View {
     }
 
     private func art(_ card: AccountsOverview.CreditCard, isFront: Bool) -> KWCardArt {
-        let palette = CardDisplay.palette(for: card.holder?.color)
-        let plastics = card.plasticCount
-        return KWCardArt(
-            palette: palette,
+        CardDisplay.art(
+            of: card.holder,
+            kind: .creditHolder,
             bank: card.account.bank ?? card.account.name,
             badge: .amount(formatter.joined(card.balances)),
-            showsChip: isFront,
-            caption: isFront ? String(localized: "Credit · \(plastics) cards", bundle: #bundle) : nil,
-            lastFour: isFront ? card.holder?.lastFour : nil,
-            network: isFront ? CardDisplay.wordmark(for: card.holder?.network) : nil,
+            caption: caption(card),
+            showsFace: isFront,
         )
+    }
+
+    /// The account's own name when the bank heads the card, and how many plastics share it.
+    private func caption(_ card: AccountsOverview.CreditCard) -> String? {
+        let name = card.account.bank == nil ? nil : card.account.name
+        let plastics = card.plasticCount
+        let count = plastics > 1 ? String(localized: "\(plastics) cards", bundle: #bundle) : nil
+        let parts = [name, count].compactMap(\.self)
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     private static func placeholderCard(for card: AccountsOverview.CreditCard) -> Card {
@@ -177,7 +192,7 @@ private struct AccountsPreview: View {
     @State private var viewModel = AccountsPreviewData.viewModel()
 
     var body: some View {
-        AccountsView(viewModel: viewModel, onAdd: {}, onOpenCreditCard: { _ in }, onLinkCard: { _ in })
+        AccountsView(viewModel: viewModel, onAdd: {}, onOpenCreditCard: { _ in }, onOpenDebitCard: { _ in }, onLinkCard: { _ in })
             .onAppear { KWFonts.register() }
     }
 }

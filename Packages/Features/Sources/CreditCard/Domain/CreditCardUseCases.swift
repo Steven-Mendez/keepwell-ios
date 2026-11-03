@@ -155,23 +155,3 @@ extension AdditionalCardControls {
         )
     }
 }
-
-/// Freezes or unfreezes a plastic, so it can't be chosen to pay while frozen.
-public protocol SetCardFrozenUseCase: Sendable {
-    func execute(cardID: UUID, isFrozen: Bool) async throws(DomainError)
-}
-
-public struct DefaultSetCardFrozenUseCase: SetCardFrozenUseCase {
-    private let cards: any CardRepository
-
-    public init(cards: any CardRepository) {
-        self.cards = cards
-    }
-
-    public func execute(cardID: UUID, isFrozen: Bool) async throws(DomainError) {
-        guard let card = try await cards.fetchCards().first(where: { $0.id == cardID }) else {
-            throw .notFound(cardID)
-        }
-        try await cards.save(card.with(isFrozen: isFrozen))
-    }
-}

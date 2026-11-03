@@ -81,6 +81,16 @@
         }
       }
     },
+    "Billing details" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos de facturación"
+          }
+        }
+      }
+    },
     "Cap per cycle" : {
       "localizations" : {
         "es" : {
@@ -101,12 +111,12 @@
         }
       }
     },
-    "Card details" : {
+    "Card color" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Datos"
+            "value" : "Color de la tarjeta"
           }
         }
       }
@@ -147,6 +157,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crédito"
+          }
+        }
+      }
+    },
+    "Credit card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de crédito"
           }
         }
       }
@@ -251,6 +271,26 @@
         }
       }
     },
+    "Edit name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar nombre"
+          }
+        }
+      }
+    },
+    "every category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "todas las categorías"
+          }
+        }
+      }
+    },
     "Family" : {
       "localizations" : {
         "es" : {
@@ -277,6 +317,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Congelada"
+          }
+        }
+      }
+    },
+    "frozen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "congelada"
           }
         }
       }
@@ -351,12 +401,12 @@
         }
       }
     },
-    "More" : {
+    "Manage card" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Más"
+            "value" : "Gestionar tarjeta"
           }
         }
       }
@@ -421,12 +471,32 @@
         }
       }
     },
+    "of %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "de %@"
+          }
+        }
+      }
+    },
     "On reaching %@ of the cap" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Al llegar al %@ del tope"
+          }
+        }
+      }
+    },
+    "only %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "solo %@"
           }
         }
       }
@@ -521,6 +591,22 @@
         }
       }
     },
+    "sheet.cardDetails" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card details"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos de la tarjeta"
+          }
+        }
+      }
+    },
     "The last 4 digits must be 4 numbers." : {
       "localizations" : {
         "es" : {
@@ -601,6 +687,16 @@
         }
       }
     },
+    "Write a name for the card." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe un nombre para la tarjeta."
+          }
+        }
+      }
+    },
     "Write who carries the card." : {
       "localizations" : {
         "es" : {
@@ -617,62 +713,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tú · sin tope"
-          }
-        }
-      }
-    },
-    "every category" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "todas las categorías"
-          }
-        }
-      }
-    },
-    "frozen" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "congelada"
-          }
-        }
-      }
-    },
-    "of %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "de %@"
-          }
-        }
-      }
-    },
-    "only %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "solo %@"
-          }
-        }
-      }
-    },
-    "sheet.cardDetails" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Card details"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datos de la tarjeta"
           }
         }
       }

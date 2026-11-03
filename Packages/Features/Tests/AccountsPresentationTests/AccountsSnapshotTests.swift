@@ -11,7 +11,7 @@ struct AccountsSnapshotTests {
     func accountsWithSampleData() async {
         let viewModel = await AccountsFactory.loaded()
         assertScreenSnapshot(
-            of: AccountsView(viewModel: viewModel, onAdd: {}, onOpenCreditCard: { _ in }, onLinkCard: { _ in }),
+            of: AccountsView(viewModel: viewModel, onAdd: {}, onOpenCreditCard: { _ in }, onOpenDebitCard: { _ in }, onLinkCard: { _ in }),
             height: 1500,
         )
     }
@@ -22,6 +22,19 @@ struct AccountsSnapshotTests {
         let deposit = try #require(viewModel.overview?.deposits.first)
         let cardless = AccountsOverview.Deposit(account: deposit.account, balance: deposit.balance, debitCards: [])
         assertScreenSnapshot(of: DepositCards(deposit: cardless, formatter: .init()) {}.padding(16), height: 280)
+    }
+
+    @Test
+    func debitCardDetail() async {
+        let viewModel = await DebitCardFactory.loaded()
+        assertScreenSnapshot(of: DebitCardView(viewModel: viewModel, onBack: {}, onLinkCard: { _ in }), height: 900)
+    }
+
+    @Test
+    func frozenDebitCardDetail() async {
+        let viewModel = await DebitCardFactory.loaded()
+        await viewModel.toggleFrozen()
+        assertScreenSnapshot(of: DebitCardView(viewModel: viewModel, onBack: {}, onLinkCard: { _ in }), height: 900)
     }
 
     @Test

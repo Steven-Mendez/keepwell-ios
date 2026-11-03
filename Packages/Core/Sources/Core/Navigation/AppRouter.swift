@@ -9,6 +9,8 @@ public enum AppRoute: Hashable, Sendable {
     case creditCard(accountID: UUID, addsAdditional: Bool = false)
     /// The controls of one additional card on that account.
     case additionalCard(accountID: UUID, cardID: UUID)
+    /// A debit card and the bank account it spends from.
+    case debitCard(cardID: UUID)
 }
 
 /// Single owner of the navigation stack. Feature views don't see it: they expose navigation as

@@ -61,7 +61,12 @@ let package = Package(
         ),
         .testTarget(
             name: "SharedPresentationTests",
-            dependencies: ["SharedPresentation", .product(name: "Domain", package: "Domain"), .product(name: "Core", package: "Core")],
+            dependencies: [
+                "SharedPresentation",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+            ],
         ),
 
         // MARK: Onboarding

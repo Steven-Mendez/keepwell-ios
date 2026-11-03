@@ -51,10 +51,11 @@ public struct PlasticView: View {
             KWCardArt(
                 palette: CardDisplay.palette(for: viewModel.color),
                 bank: viewModel.bank.isEmpty ? bankPlaceholder : viewModel.bank,
-                badge: .tag(kindBadge),
                 showsContactless: false,
                 lastFour: viewModel.lastFour.isEmpty ? "0000" : viewModel.lastFour,
-                network: CardDisplay.wordmark(for: viewModel.network),
+                numberGroups: CardDisplay.numberGroups(for: viewModel.network),
+                network: CardDisplay.networkMark(for: viewModel.network),
+                kindLabel: kindBadge,
             )
             swatches
             KWGroupedCard {

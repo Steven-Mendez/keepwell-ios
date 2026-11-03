@@ -26,6 +26,8 @@ public final class CreditCardViewModel {
     private let updateAdditional: any UpdateAdditionalCardUseCase
     private let removeAdditional: any RemoveAdditionalCardUseCase
     private let setCardFrozen: any SetCardFrozenUseCase
+    private let setCardColor: any SetCardColorUseCase
+    private let renameAccount: any RenameAccountUseCase
     let formatter = CurrencyFormatter()
 
     public init(
@@ -36,6 +38,8 @@ public final class CreditCardViewModel {
         updateAdditional: any UpdateAdditionalCardUseCase,
         removeAdditional: any RemoveAdditionalCardUseCase,
         setCardFrozen: any SetCardFrozenUseCase,
+        setCardColor: any SetCardColorUseCase,
+        renameAccount: any RenameAccountUseCase,
     ) {
         self.accountID = accountID
         self.getDetail = getDetail
@@ -44,6 +48,8 @@ public final class CreditCardViewModel {
         self.updateAdditional = updateAdditional
         self.removeAdditional = removeAdditional
         self.setCardFrozen = setCardFrozen
+        self.setCardColor = setCardColor
+        self.renameAccount = renameAccount
     }
 
     public var detail: CreditCardDetail? {
@@ -90,6 +96,25 @@ public final class CreditCardViewModel {
         _ = await perform { () async throws(DomainError) in
             try await setCardFrozen.execute(cardID: holderID, isFrozen: isFrozen)
         }
+    }
+
+    /// Repaints the holder plastic. Returns whether the sheet can close.
+    public func setHolderColor(_ color: CardColor) async -> Bool {
+        guard let holderID = detail?.holder?.id else { return false }
+        return await perform { () async throws(DomainError) in
+            try await setCardColor.execute(cardID: holderID, color: color)
+        }
+    }
+
+    /// Renames the card's account. Returns whether the sheet can close.
+    public func rename(to name: String) async -> Bool {
+        let saved = await perform { () async throws(DomainError) in
+            try await renameAccount.execute(accountID: accountID, name: name)
+        }
+        if !saved, name.trimmingCharacters(in: .whitespaces).isEmpty {
+            errorMessage = String(localized: "Write a name for the card.", bundle: #bundle)
+        }
+        return saved
     }
 
     /// Returns the new card's id so the caller can open it.
