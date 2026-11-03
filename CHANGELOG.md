@@ -28,4 +28,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
-- The app icon shows the keepwell mark on the brand gradient, as on the brand board.
+- The app icon shows the keepwell mark on the brand gradient, as on the brand board, drawn flat
+  (Icon Composer layers without glass) so iOS 26 doesn't add a halo around the mark.
