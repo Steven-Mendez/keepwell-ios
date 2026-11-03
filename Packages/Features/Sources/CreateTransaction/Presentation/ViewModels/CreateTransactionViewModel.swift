@@ -47,8 +47,6 @@ public final class CreateTransactionViewModel {
     /// The suggestion last written into `description`, so a later category change can replace it.
     var prefilledDescription: String?
     public var date: Date
-    public var isPlanned = false
-    public var isShared = false
     public var debitedText = ""
     public var note = ""
     public private(set) var saved: SavedTransaction?
@@ -238,8 +236,6 @@ public final class CreateTransactionViewModel {
             destinationAccountID: type.movesBetweenAccounts ? destinationAccountID : nil,
             description: resolvedDescription,
             date: date,
-            isPlanned: isPlanned,
-            isShared: kind == .expense && isShared,
             actualDebitedPrincipal: debited,
             note: note,
         )
@@ -267,8 +263,6 @@ public final class CreateTransactionViewModel {
         prefilledDescription = nil
         note = ""
         debitedText = ""
-        isPlanned = false
-        isShared = false
         date = now()
         movementID = makeID()
         saved = nil

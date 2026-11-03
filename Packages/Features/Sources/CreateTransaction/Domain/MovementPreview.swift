@@ -23,8 +23,7 @@ public struct MovementPreview: Equatable, Sendable {
 
 extension TransactionContext {
     /// Runs the draft through the same balance rules a saved movement goes through, against the
-    /// current balances, so the preview can never disagree with what saving produces. Planned
-    /// drafts still report what would move, but leave the balances as they are.
+    /// current balances, so the preview can never disagree with what saving produces.
     public func preview(of draft: TransactionDraft, calendar: Calendar = .current) -> MovementPreview? {
         guard draft.amount > 0, let source = draft.source, let sourceID = accountID(for: source),
               let sourceAccount = account(sourceID)
@@ -48,9 +47,9 @@ extension TransactionContext {
         let destinationSide = destinationAccount.map { side(of: $0, after: movement, calendar: calendar) }
         return MovementPreview(
             sourceBefore: sourceSide.before,
-            sourceAfter: draft.isPlanned ? sourceSide.before : sourceSide.after,
+            sourceAfter: sourceSide.after,
             destinationBefore: destinationSide?.before ?? [],
-            destinationAfter: draft.isPlanned ? destinationSide?.before ?? [] : destinationSide?.after ?? [],
+            destinationAfter: destinationSide?.after ?? [],
             leaving: draft.kind == .income ? nil : Self.change(from: sourceSide.before, to: sourceSide.after),
             arriving: draft.kind == .income
                 ? Self.change(from: sourceSide.before, to: sourceSide.after)

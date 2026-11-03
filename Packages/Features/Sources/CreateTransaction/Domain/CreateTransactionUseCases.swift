@@ -139,7 +139,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
         return Transaction(
             id: draft.id,
             date: draft.date,
-            status: draft.isPlanned ? .planned : .confirmed,
+            status: .confirmed,
             // Safety net only: the view model fills a localized description before saving.
             description: description.isEmpty ? (category?.name ?? "Transfer") : description,
             kind: draft.kind,
@@ -152,7 +152,6 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             actualDebitedPrincipal: draft.currency == currencies.principal ? nil : draft.actualDebitedPrincipal,
             // The rate in force now travels with the movement, so later rate edits don't rewrite it.
             exchangeRate: currencies.exchangeRate,
-            isShared: draft.isShared,
             note: note.isEmpty ? nil : note,
         )
     }

@@ -78,25 +78,8 @@ extension CreateTransactionViewModel {
         return row(for: source, in: context, grouped: false).title
     }
 
-    public var plannedLabel: String {
-        switch kind {
-        case .income: String(localized: "It's a planned income", bundle: #bundle)
-        case .transfer: String(localized: "It's a planned transfer", bundle: #bundle)
-        case .expense: String(localized: "It's a planned expense", bundle: #bundle)
-        }
-    }
-
-    public var plannedHint: String {
-        isPlanned
-            ? String(localized: "Doesn't count until confirmed", bundle: #bundle)
-            : String(localized: "Already happened: counts in balances", bundle: #bundle)
-    }
-
     public var saveTitle: String {
-        if isPlanned {
-            return String(localized: "Save as planned", bundle: #bundle)
-        }
-        return switch type {
+        switch type {
         case .expense: String(localized: "Save expense", bundle: #bundle)
         case .income: String(localized: "Save income", bundle: #bundle)
         case .transfer: String(localized: "Save transfer", bundle: #bundle)

@@ -111,16 +111,6 @@
         }
       }
     },
-    "Already happened: counts in balances" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ya pasó: cuenta en saldos"
-          }
-        }
-      }
-    },
     "Amount %@" : {
       "localizations" : {
         "es" : {
@@ -167,16 +157,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Disponible %@"
-          }
-        }
-      }
-    },
-    "Balance %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saldo %@"
           }
         }
       }
@@ -391,16 +371,6 @@
         }
       }
     },
-    "Doesn't count until confirmed" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No cuenta hasta confirmarlo"
-          }
-        }
-      }
-    },
     "Done" : {
       "localizations" : {
         "es" : {
@@ -517,36 +487,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hacia"
-          }
-        }
-      }
-    },
-    "It's a planned expense" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es un gasto previsto"
-          }
-        }
-      }
-    },
-    "It's a planned income" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es un ingreso previsto"
-          }
-        }
-      }
-    },
-    "It's a planned transfer" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es una transferencia prevista"
           }
         }
       }
@@ -711,16 +651,6 @@
         }
       }
     },
-    "Others owe you a share" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otros te deben una parte"
-          }
-        }
-      }
-    },
     "Paid with" : {
       "localizations" : {
         "es" : {
@@ -807,16 +737,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salario, un reembolso, dinero que recibiste"
-          }
-        }
-      }
-    },
-    "Save as planned" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar como previsto"
           }
         }
       }
@@ -951,16 +871,6 @@
         }
       }
     },
-    "Shared" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compartido"
-          }
-        }
-      }
-    },
     "Slide to move" : {
       "localizations" : {
         "es" : {
@@ -977,16 +887,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desliza para pagar"
-          }
-        }
-      }
-    },
-    "Slide to save as planned" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Desliza para guardar como planificado"
           }
         }
       }

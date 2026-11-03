@@ -82,10 +82,7 @@ extension CreateTransactionViewModel {
     }
 
     public var confirmTitle: String {
-        if isPlanned {
-            return String(localized: "Slide to save as planned", bundle: #bundle)
-        }
-        return switch type {
+        switch type {
         case .expense: String(localized: "Slide to save expense", bundle: #bundle)
         case .income: String(localized: "Slide to save income", bundle: #bundle)
         case .transfer: String(localized: "Slide to move", bundle: #bundle)
@@ -198,8 +195,6 @@ extension CreateTransactionViewModel {
     private func balanceAfter(_ balances: [Money]?, of account: Account) -> String? {
         guard let balance = balance(of: account, in: balances) else { return nil }
         let amount = formatter.string(balance)
-        return isPlanned
-            ? String(localized: "Balance \(amount)", bundle: #bundle)
-            : String(localized: "Balance after \(amount)", bundle: #bundle)
+        return String(localized: "Balance after \(amount)", bundle: #bundle)
     }
 }
