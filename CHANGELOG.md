@@ -178,6 +178,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Settings › Data: "Back up now" and "Restore" show with iCloud backup off too; they work with a
+  file, not with iCloud.
 - Settings: leaving the rate field without editing it no longer saves its rounded display over
   the exact rate; rates below one show six decimals.
 - "Delete all my data" also deletes the iCloud copy itself, even with iCloud backup off; before,

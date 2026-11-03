@@ -221,9 +221,8 @@ struct DataSection: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.leading, 52)
-                    if overview.isICloudBackupEnabled {
-                        backupActions
-                    }
+                    // A backup is a file the person keeps, so it works whether iCloud sync is on or off.
+                    backupActions
                 }
                 .padding(.vertical, 14)
                 Button { isImporting = true } label: {
