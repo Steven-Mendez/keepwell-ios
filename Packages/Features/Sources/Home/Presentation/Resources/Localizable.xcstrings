@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ expires this month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ vence este mes"
+          }
+        }
+      }
+    },
     "%@ · %@ from %@. Has it been paid?" : {
       "localizations" : {
         "es" : {
@@ -57,6 +67,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%@: statement closes today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: hoy cierra el estado de cuenta"
           }
         }
       }
@@ -177,6 +197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gastos"
+          }
+        }
+      }
+    },
+    "From tomorrow, purchases go to next month's statement." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde mañana, las compras pasan al estado del próximo mes."
           }
         }
       }
@@ -457,6 +487,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No cuentan en saldos hasta que los confirmes · %@"
+          }
+        }
+      }
+    },
+    "Update it in %@ before it stops working." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualízala en %@ antes de que deje de funcionar."
+          }
+        }
+      }
+    },
+    "Update it wherever it's saved before it stops working." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualízala donde la tengas guardada antes de que deje de funcionar."
           }
         }
       }

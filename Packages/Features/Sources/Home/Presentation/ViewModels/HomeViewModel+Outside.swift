@@ -12,6 +12,10 @@ public struct Reminder: Hashable, Sendable {
         case planned(UUID)
         /// A credit card's payment coming up.
         case payment(UUID)
+        /// A credit card's statement closing.
+        case cutoff(UUID)
+        /// A plastic expiring this month.
+        case cardExpiry(UUID)
     }
 
     /// Stable per occurrence, so rescheduling replaces instead of duplicating.
@@ -64,12 +68,14 @@ extension HomeViewModel {
         )
     }
 
-    /// Planned movements on their day and card payments ahead of time. Only what's still ahead is
-    /// returned.
+    /// Planned movements on their day, card payments ahead of time, statement cutoffs on their day
+    /// and plastics in their expiry month. Only what's still ahead is returned.
     public func reminders(now: Date = .now, calendar: Calendar = .current) -> [Reminder] {
         guard let overview, let display else { return [] }
         return plannedReminders(overview, display: display, now: now, calendar: calendar)
             + paymentReminders(overview, now: now, calendar: calendar)
+            + cutoffReminders(overview, now: now, calendar: calendar)
+            + expiryReminders(overview, now: now, calendar: calendar)
     }
 
     private func plannedReminders(_ overview: HomeOverview, display: TransactionDisplay, now: Date, calendar: Calendar) -> [Reminder] {
@@ -94,8 +100,7 @@ extension HomeViewModel {
                   let dueDay = account.creditTerms?.dueDay,
                   let reminder = nextPaymentReminder(dueDay: dueDay, daysBefore: days, now: now, calendar: calendar)
             else { return nil }
-            let holder = overview.cards.first { $0.accountID == account.id && $0.kind == .creditHolder }
-            let name = holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: account)
+            let name = cardName(of: account, in: overview)
             return Reminder(
                 id: "payment-\(account.id)-\(Int(reminder.due.timeIntervalSince1970))",
                 kind: .payment(account.id),
@@ -104,6 +109,67 @@ extension HomeViewModel {
                 date: reminder.date,
             )
         }
+    }
+
+    /// On the cutoff morning: what's bought after today goes to next month's statement.
+    private func cutoffReminders(_ overview: HomeOverview, now: Date, calendar: Calendar) -> [Reminder] {
+        overview.accounts.compactMap { account in
+            guard account.kind == .credit,
+                  let cutoffDay = account.creditTerms?.cutoffDay,
+                  let date = nextMorning(onDay: cutoffDay, after: now, calendar: calendar)
+            else { return nil }
+            return Reminder(
+                id: "cutoff-\(account.id)-\(Int(date.timeIntervalSince1970))",
+                kind: .cutoff(account.id),
+                title: String(localized: "\(cardName(of: account, in: overview)): statement closes today", bundle: #bundle),
+                body: String(localized: "From tomorrow, purchases go to next month's statement.", bundle: #bundle),
+                date: date,
+            )
+        }
+    }
+
+    /// On the first of the expiry month, listing what's charged to the card so it can be updated.
+    private func expiryReminders(_ overview: HomeOverview, now: Date, calendar: Calendar) -> [Reminder] {
+        overview.cards.compactMap { card in
+            guard let expiry = card.expiry,
+                  let day = expiry.reminderDay(calendar: calendar),
+                  let date = morning(of: day, calendar: calendar),
+                  date > now
+            else { return nil }
+            let name = CardDisplay.shortName(of: card)
+            let services = overview.cardSubscriptions[card.id] ?? []
+            let body = services.isEmpty
+                ? String(localized: "Update it wherever it's saved before it stops working.", bundle: #bundle)
+                : String(localized: "Update it in \(services.formatted(.list(type: .and))) before it stops working.", bundle: #bundle)
+            return Reminder(
+                id: "expiry-\(card.id)-\(expiry.year)-\(expiry.month)",
+                kind: .cardExpiry(card.id),
+                title: String(localized: "\(name) expires this month", bundle: #bundle),
+                body: body,
+                date: date,
+            )
+        }
+    }
+
+    private func cardName(of account: Account, in overview: HomeOverview) -> String {
+        let holder = overview.cards.first { $0.accountID == account.id && $0.kind == .creditHolder }
+        return holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: account)
+    }
+
+    /// The reminder hour on the next `day` of a month that is still ahead of `now`.
+    private func nextMorning(onDay day: Int, after now: Date, calendar: Calendar) -> Date? {
+        var from = now
+        for _ in 0 ..< 2 {
+            guard let occurrence = BillingCycle.nextOccurrence(ofDay: day, onOrAfter: from, calendar: calendar),
+                  let date = morning(of: occurrence, calendar: calendar)
+            else { return nil }
+            if date > now {
+                return date
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: occurrence) else { return nil }
+            from = next
+        }
+        return nil
     }
 
     private func nextPaymentReminder(dueDay: Int, daysBefore: Int, now: Date, calendar: Calendar) -> (due: Date, date: Date)? {

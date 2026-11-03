@@ -34,6 +34,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let frequentExpenseCategoryIDs: [String]
     /// Days before a card's payment day to remind (settings).
     public let paymentReminderDaysBefore: Int
+    /// Services charged to each plastic again and again, by card id, for the expiry reminder.
+    public let cardSubscriptions: [UUID: [String]]
     /// For row subtitles.
     public let accounts: [Account]
     public let cards: [Card]
@@ -54,6 +56,7 @@ public struct HomeOverview: Hashable, Sendable {
         cardDebt: Money?,
         frequentExpenseCategoryIDs: [String],
         paymentReminderDaysBefore: Int,
+        cardSubscriptions: [UUID: [String]] = [:],
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
@@ -72,6 +75,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.cardDebt = cardDebt
         self.frequentExpenseCategoryIDs = frequentExpenseCategoryIDs
         self.paymentReminderDaysBefore = paymentReminderDaysBefore
+        self.cardSubscriptions = cardSubscriptions
         self.accounts = accounts
         self.cards = cards
         self.categories = categories
