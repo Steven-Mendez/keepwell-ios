@@ -11,6 +11,7 @@ import OnboardingPresentation
 import SettingsDomain
 import SettingsPresentation
 import SummaryPresentation
+import SwiftData
 import SwiftUI
 import TransactionsPresentation
 import UniformTypeIdentifiers
@@ -39,6 +40,8 @@ struct RootView: View {
     @State private var isPickingImport = false
     @State private var banner: String?
     @State private var coverWindow = CoverWindow()
+    /// Bumped on every store save so home, and with it the widgets, reload.
+    @State private var storeRevision = 0
 
     init(container: AppContainer, notifications: NotificationResponder) {
         self.container = container
@@ -96,6 +99,18 @@ struct RootView: View {
         }
         .onChange(of: scenePhase) { _, newPhase in
             Task { await sceneChanged(to: newPhase) }
+        }
+        // Any write (a movement logged, edited or deleted from any screen, an import, a widget
+        // quick log) changes what home and the widgets show, even when home isn't on screen.
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in
+            storeRevision += 1
+        }
+        .task(id: storeRevision) {
+            guard storeRevision > 0 else { return }
+            // Saves come in bursts (a transfer writes both sides), so wait for the last one.
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            await screens?.home.load()
         }
     }
 
@@ -359,6 +374,12 @@ extension RootView {
         switch newPhase {
         case .background:
             lock.backgroundedAt = .now
+            // Leaving the app is when the person looks at the home screen, so the widgets must
+            // hold the latest state by then, including a month that turned while the app was open.
+            if let home = screens?.home {
+                await home.load()
+                container.publishWidgets(from: home)
+            }
         case .active:
             openQuickLogRequest()
             await refreshLockSettings()

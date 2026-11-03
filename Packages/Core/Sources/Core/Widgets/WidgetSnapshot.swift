@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 /// What the home-screen widgets show, written by the app whenever home refreshes and read by the
 /// widget extension from the shared App Group. Texts arrive formatted and translated, so the
@@ -79,7 +80,17 @@ public struct WidgetSnapshotStore: Sendable {
     private static let key = "widgets.snapshot"
 
     public init(bundle: Bundle = .main) {
-        suiteName = bundle.object(forInfoDictionaryKey: "KeepwellAppGroup") as? String
+        self.init(suiteName: bundle.object(forInfoDictionaryKey: "KeepwellAppGroup") as? String)
+    }
+
+    public init(suiteName: String?) {
+        self.suiteName = suiteName
+    }
+
+    /// Whether the app is signed into the App Group. Without the entitlement `UserDefaults`
+    /// silently keeps the suite inside the app's own sandbox, so the widget never sees a write.
+    public var isShared: Bool {
+        suiteName.flatMap { FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: $0) } != nil
     }
 
     /// `UserDefaults` isn't `Sendable`, so each call opens the suite; it's cached by the system.
@@ -94,6 +105,9 @@ public struct WidgetSnapshotStore: Sendable {
 
     public func save(_ snapshot: WidgetSnapshot) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        if !isShared {
+            Logger.widgets.error("App Group \(suiteName ?? "-", privacy: .public) isn't signed; widgets can't read this")
+        }
         defaults?.set(data, forKey: Self.key)
     }
 
@@ -118,6 +132,10 @@ public struct WidgetSnapshotStore: Sendable {
         defaults?.removeObject(forKey: Self.quickLogKey)
         return .some(value == Self.anyCategory ? nil : value)
     }
+}
+
+extension Logger {
+    fileprivate static let widgets = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Keepwell", category: "Widgets")
 }
 
 /// The links widgets open: `keepwell://new-expense?category=groceries`.

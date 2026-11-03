@@ -159,10 +159,7 @@ final class AppContainer {
 
     /// Hands home's latest state to what lives outside the app: widgets and reminders.
     func publish(from home: HomeViewModel) async {
-        if let snapshot = home.widgetSnapshot {
-            widgetSnapshots.save(snapshot)
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        publishWidgets(from: home)
         var upcoming = home.reminders()
         #if DEBUG
         if AppEnvironment.current.remindsSoon {
@@ -171,6 +168,12 @@ final class AppContainer {
         }
         #endif
         await reminders.schedule(upcoming)
+    }
+
+    func publishWidgets(from home: HomeViewModel) {
+        guard let snapshot = home.widgetSnapshot else { return }
+        widgetSnapshots.save(snapshot)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// After "Delete all my data": nothing of the old data may linger on the home screen.

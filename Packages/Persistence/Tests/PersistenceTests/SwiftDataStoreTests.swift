@@ -24,6 +24,20 @@ struct SwiftDataStoreTests {
     }
 
     @Test
+    func savingAMovementAnnouncesTheChange() async throws {
+        // The app reloads home and the widgets on this notification, whichever screen saved.
+        let store = try makeStore()
+        let transaction = try #require(sample.transactions.first)
+        try await confirmation(expectedCount: 1...) { saved in
+            let observer = NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: nil, queue: nil) { _ in
+                saved()
+            }
+            defer { NotificationCenter.default.removeObserver(observer) }
+            try await store.save(transaction)
+        }
+    }
+
+    @Test
     func cardsRoundTripIncludingAdditionalControls() async throws {
         let store = try makeStore()
         for card in sample.cards {

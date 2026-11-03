@@ -60,6 +60,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Widgets show your month, net worth and quick-log categories instead of always asking to open
+  Keepwell. Development builds signed with a personal team kept the App Group out of the signature,
+  so the widgets never saw what the app wrote; `APP_ENTITLEMENTS` now keeps it while dropping iCloud
+  and Push. Widgets also refresh after any change to your movements, from any screen, and when you
+  leave the app.
 - Builds signed without iCloud (free developer accounts) open with on-device storage instead of
   closing at launch.
 - Siri's prompts and messages appear in Spanish on Spanish iPhones.
