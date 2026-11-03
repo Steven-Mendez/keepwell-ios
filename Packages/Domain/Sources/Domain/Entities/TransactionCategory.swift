@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Category: Identifiable, Hashable, Sendable, Codable {
+public struct TransactionCategory: Identifiable, Hashable, Sendable, Codable {
     /// A stable slug, separate from `name`, so renaming a category doesn't orphan its history.
     public let id: String
     public let name: String
@@ -13,7 +13,7 @@ public struct Category: Identifiable, Hashable, Sendable, Codable {
     }
 }
 
-extension Category {
+extension TransactionCategory {
     /// Initial set from HANDOFF → "Categorías". People can edit them later.
     public static let defaultExpense: [Self] = [
         ("groceries", "Supermercado"), ("restaurants", "Restaurantes"), ("transport", "Transporte"),

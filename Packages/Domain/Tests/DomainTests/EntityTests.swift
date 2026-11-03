@@ -6,11 +6,11 @@ import Testing
 struct EntityTests {
     @Test
     func defaultCategoriesMatchHandoff() {
-        #expect(Category.defaultExpense.count == 16)
-        #expect(Category.defaultIncome.count == 5)
-        #expect(Category.defaultExpense.allSatisfy { $0.kind == .expense })
-        #expect(Category.defaultIncome.allSatisfy { $0.kind == .income })
-        #expect(Set(Category.defaults.map(\.id)).count == Category.defaults.count)
+        #expect(TransactionCategory.defaultExpense.count == 16)
+        #expect(TransactionCategory.defaultIncome.count == 5)
+        #expect(TransactionCategory.defaultExpense.allSatisfy { $0.kind == .expense })
+        #expect(TransactionCategory.defaultIncome.allSatisfy { $0.kind == .income })
+        #expect(Set(TransactionCategory.defaults.map(\.id)).count == TransactionCategory.defaults.count)
     }
 
     @Test(arguments: [0, 32, -1])
