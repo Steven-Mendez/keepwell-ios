@@ -7,6 +7,7 @@ public struct CurrenciesView: View {
     @Bindable private var viewModel: OnboardingViewModel
     private let onBack: () -> Void
     @State private var picking: PickerTarget?
+    @FocusState private var rateFocused: Bool
 
     private enum PickerTarget: Identifiable {
         case principal
@@ -147,9 +148,13 @@ public struct CurrenciesView: View {
                 TextField("1.0000", text: $viewModel.rateText)
                     .keyboardType(.decimalPad)
                     .monospacedDigit()
+                    .focused($rateFocused)
                     .padding(.horizontal, 14)
                     .frame(height: 48)
                     .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: KWRadius.input))
+                    // The padding is part of the box the person sees, so a tap anywhere in it edits.
+                    .contentShape(RoundedRectangle(cornerRadius: KWRadius.input))
+                    .onTapGesture { rateFocused = true }
                     .accessibilityLabel(Text("Exchange rate", bundle: #bundle))
                 Text(viewModel.second ?? "")
             }
