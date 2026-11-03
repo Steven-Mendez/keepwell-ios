@@ -3,8 +3,7 @@
 Personal finance iOS app for two currencies. Data lives on device with SwiftData, with optional
 backup to the user's private iCloud (CloudKit). No accounts, no first-party servers.
 
-> Status: **in development**. First feature: Transactions (monthly summary per currency, add and
-> delete movements).
+> Status: **in development**. Screens are built feature by feature from `design/keepwell-design`.
 
 ## Requirements
 

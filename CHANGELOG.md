@@ -14,6 +14,4 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Packages: `Core` (`AppRouter`, `CurrencyFormatter`), `DesignSystem` (tokens, Inter typography,
   `KWSurfaceCard`), `Domain` (shared kernel), `Persistence` (SwiftData + CloudKit, versioned schema)
   and `Features`.
-- Transactions feature: monthly summary per currency (income, expenses, net balance, savings rate),
-  add and delete transactions, SwiftData repository, dashboard with Swift Charts.
 - `AppContainer` composition root with init-based dependency injection.

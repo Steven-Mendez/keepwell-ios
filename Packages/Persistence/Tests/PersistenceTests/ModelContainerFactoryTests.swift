@@ -15,6 +15,5 @@ struct ModelContainerFactoryTests {
     func schemaStartsAtVersionOne() {
         #expect(KeepwellSchemaV1.versionIdentifier == Schema.Version(1, 0, 0))
         #expect(KeepwellMigrationPlan.schemas.count == 1)
-        #expect(KeepwellSchemaV1.models.count == 1)
     }
 }
