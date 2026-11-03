@@ -51,6 +51,16 @@
         }
       }
     },
+    "All currencies" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las monedas"
+          }
+        }
+      }
+    },
     "All set" : {
       "localizations" : {
         "es" : {
@@ -151,6 +161,26 @@
         }
       }
     },
+    "Choose your main currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige tu moneda principal"
+          }
+        }
+      }
+    },
+    "Common" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más usadas"
+          }
+        }
+      }
+    },
     "Continue" : {
       "localizations" : {
         "es" : {
@@ -221,16 +251,6 @@
         }
       }
     },
-    "Córdoba" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Córdoba"
-          }
-        }
-      }
-    },
     "Debit, last 4" : {
       "localizations" : {
         "es" : {
@@ -267,16 +287,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escribe un monto como 1,250.50."
-          }
-        }
-      }
-    },
-    "Euro" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Euro"
           }
         }
       }
@@ -471,16 +481,6 @@
         }
       }
     },
-    "Nicaragua example: 1 USD = 36.6243 NIO" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ejemplo Nicaragua: 1 USD = 36.6243 NIO"
-          }
-        }
-      }
-    },
     "No account and no servers of ours. Your data lives on your iPhone and, if you want, in your iCloud." : {
       "localizations" : {
         "es" : {
@@ -551,6 +551,16 @@
         }
       }
     },
+    "One currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una moneda"
+          }
+        }
+      }
+    },
     "Only %@" : {
       "localizations" : {
         "es" : {
@@ -577,16 +587,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otra"
-          }
-        }
-      }
-    },
-    "Peso" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Peso"
           }
         }
       }
@@ -691,16 +691,6 @@
         }
       }
     },
-    "Single currency only" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo una moneda"
-          }
-        }
-      }
-    },
     "Six digits, kept only on this iPhone" : {
       "localizations" : {
         "es" : {
@@ -737,6 +727,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Corte y pago de tus tarjetas"
+          }
+        }
+      }
+    },
+    "Swap" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intercambiar"
+          }
+        }
+      }
+    },
+    "Swap main and second currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intercambiar moneda principal y segunda"
           }
         }
       }
@@ -791,22 +801,22 @@
         }
       }
     },
-    "We'll greet you by name and print it on your cards. It stays on this iPhone." : {
+    "We'll use it to greet you and show it on your cards. It's only stored on this iPhone." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Te saludaremos por tu nombre y lo pondremos en tus tarjetas. Se queda en este iPhone."
+            "value" : "Lo usaremos para saludarte y mostrarlo en tus tarjetas. Solo se guarda en este iPhone."
           }
         }
       }
     },
-    "What should we call you?" : {
+    "What's your name?" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Cómo quieres que te llamemos?"
+            "value" : "¿Cómo te llamas?"
           }
         }
       }

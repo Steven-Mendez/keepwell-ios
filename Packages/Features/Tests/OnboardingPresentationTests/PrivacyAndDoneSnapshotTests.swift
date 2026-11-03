@@ -13,8 +13,7 @@ struct PrivacyAndDoneSnapshotTests {
 
     @Test
     func doneSummarizesTheChoices() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.useNicaraguaExample()
+        let viewModel = OnboardingFactory.usdAndNIO(rate: "36.6243")
         viewModel.save(viewModel.newAccount(.bank))
         viewModel.save(viewModel.newAccount(.credit))
         viewModel.nameText = "Steven"
