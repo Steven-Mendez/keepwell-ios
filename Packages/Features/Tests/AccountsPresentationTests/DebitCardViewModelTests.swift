@@ -14,6 +14,7 @@ enum DebitCardFactory {
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
+            setDetails: DefaultSetCardDetailsUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),

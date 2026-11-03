@@ -14,6 +14,8 @@ public enum DomainError: Error, Equatable, Sendable {
     /// A name the person must give (a card's or a category's) is empty.
     case missingName
     case invalidDayOfMonth(Int)
+    /// A card's "valid thru" needs a month 1–12 and a four-digit year.
+    case invalidExpiry
     /// Another category of the same kind already has this name.
     case duplicateCategoryName(String)
     /// "Other" and "Other income" take the movements of deleted categories, so they stay.

@@ -254,6 +254,7 @@ final class AppContainer {
             ),
             updateTerms: DefaultUpdateCreditTermsUseCase(accounts: store),
             setCardColor: DefaultSetCardColorUseCase(cards: store),
+            setCardDetails: DefaultSetCardDetailsUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             getPreferredName: makeGetPreferredName(),
         )
@@ -268,6 +269,7 @@ final class AppContainer {
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
+            setDetails: DefaultSetCardDetailsUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
             getPreferredName: makeGetPreferredName(),

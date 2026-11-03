@@ -27,6 +27,7 @@ public final class DebitCardViewModel {
 
     private let getDetail: any GetDebitCardDetailUseCase
     private let setColor: any SetCardColorUseCase
+    private let setDetails: any SetCardDetailsUseCase
     private let renameAccount: any RenameAccountUseCase
     private let deleteAccount: any DeleteAccountUseCase
     private let getPreferredName: any GetPreferredNameUseCase
@@ -36,6 +37,7 @@ public final class DebitCardViewModel {
         accountID: UUID,
         getDetail: any GetDebitCardDetailUseCase,
         setColor: any SetCardColorUseCase,
+        setDetails: any SetCardDetailsUseCase,
         renameAccount: any RenameAccountUseCase,
         deleteAccount: any DeleteAccountUseCase,
         getPreferredName: any GetPreferredNameUseCase,
@@ -44,6 +46,7 @@ public final class DebitCardViewModel {
         self.accountID = accountID
         self.getDetail = getDetail
         self.setColor = setColor
+        self.setDetails = setDetails
         self.renameAccount = renameAccount
         self.deleteAccount = deleteAccount
     }
@@ -77,6 +80,14 @@ public final class DebitCardViewModel {
         guard let cardID = detail?.card.id else { return false }
         return await perform { () async throws(DomainError) in
             try await setColor.execute(cardID: cardID, color: color)
+        }
+    }
+
+    /// The plastic's product name and expiry. Returns whether the sheet can close.
+    public func setDetails(productName: String?, expiry: CardExpiry?) async -> Bool {
+        guard let cardID = detail?.card.id else { return false }
+        return await perform { () async throws(DomainError) in
+            try await setDetails.execute(cardID: cardID, productName: productName, expiry: expiry)
         }
     }
 

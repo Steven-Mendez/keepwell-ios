@@ -105,9 +105,20 @@ public enum CardDisplay {
             .joined(separator: " ")
     }
 
-    /// "Mastercard ··4321".
+    /// "Premia ··0633" when the plastic has a product name, else "Mastercard ··4321".
     public static func shortName(of card: Card) -> String {
-        [networkName(card.network), card.lastFour.map { "··\($0)" }].compactMap(\.self).joined(separator: " ")
+        [card.productName ?? networkName(card.network), card.lastFour.map { "··\($0)" }].compactMap(\.self).joined(separator: " ")
+    }
+
+    /// "09/28", as the plastic prints it.
+    public static func expiry(_ expiry: CardExpiry) -> String {
+        String(format: "%02d/%02d", expiry.month, expiry.year % 100)
+    }
+
+    /// The "Product and expiry" row's value: product and expiry, or `nil` while neither is known.
+    public static func detailsSummary(of card: Card) -> String? {
+        let parts = [card.productName, card.expiry.map(expiry)].compactMap(\.self)
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     /// How a movement names what paid it: "Debit •••• 3922", "Bank One · Bank transfer",

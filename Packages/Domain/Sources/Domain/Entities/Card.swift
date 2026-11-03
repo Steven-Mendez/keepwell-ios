@@ -28,6 +28,29 @@ public enum CardColor: String, Codable, CaseIterable, Sendable {
     case lima
 }
 
+/// The "valid thru" printed on a plastic: only month and year, as the card shows it. A card works
+/// through the last day of that month.
+public struct CardExpiry: Hashable, Sendable, Codable, Comparable {
+    public let month: Int
+    public let year: Int
+
+    public init(month: Int, year: Int) throws(DomainError) {
+        guard (1 ... 12).contains(month), (2000 ... 2199).contains(year) else { throw .invalidExpiry }
+        self.month = month
+        self.year = year
+    }
+
+    /// The first day of the expiry month: a month before the card stops working, early enough to
+    /// update the services charged to it.
+    public func reminderDay(calendar: Calendar) -> Date? {
+        calendar.date(from: DateComponents(year: year, month: month, day: 1))
+    }
+
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        (lhs.year, lhs.month) < (rhs.year, rhs.month)
+    }
+}
+
 /// A payment method: a plastic or a transfer channel, always linked to one account.
 public struct Card: Identifiable, Hashable, Sendable, Codable {
     public let id: UUID
@@ -36,6 +59,10 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
     public let network: CardNetwork?
     public let lastFour: String?
     public let color: CardColor?
+    /// The bank's name for the plastic ("Premia", "Platinum Walmart"), which tells apart two cards
+    /// of the same bank and network better than their digits.
+    public let productName: String?
+    public let expiry: CardExpiry?
 
     public init(
         id: UUID = UUID(),
@@ -44,6 +71,8 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
         network: CardNetwork? = nil,
         lastFour: String? = nil,
         color: CardColor? = nil,
+        productName: String? = nil,
+        expiry: CardExpiry? = nil,
     ) throws(DomainError) {
         if let lastFour {
             guard lastFour.count == 4, lastFour.allSatisfy(\.isASCIIDigit) else { throw .invalidLastFour(lastFour) }
@@ -54,6 +83,9 @@ public struct Card: Identifiable, Hashable, Sendable, Codable {
         self.network = network
         self.lastFour = lastFour
         self.color = color
+        let trimmed = productName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.productName = trimmed?.isEmpty == false ? trimmed : nil
+        self.expiry = expiry
     }
 }
 

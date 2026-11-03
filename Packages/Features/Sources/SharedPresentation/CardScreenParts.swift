@@ -143,6 +143,104 @@ public struct CardNameSheet: View {
     }
 }
 
+/// What's printed on the plastic besides its digits: the product name and the "valid thru".
+public struct CardDetailsSheet: View {
+    private let errorMessage: String?
+    private let isSaving: Bool
+    private let onSave: (String?, CardExpiry?) async -> Bool
+    private let onClose: () -> Void
+    private let years: [Int]
+    @State private var productName: String
+    @State private var month: Int?
+    @State private var year: Int?
+
+    /// `onSave` returns whether the sheet can close.
+    public init(
+        card: Card,
+        errorMessage: String?,
+        isSaving: Bool,
+        now: Date = .now,
+        calendar: Calendar = .current,
+        onSave: @escaping (String?, CardExpiry?) async -> Bool,
+        onClose: @escaping () -> Void,
+    ) {
+        _productName = State(initialValue: card.productName ?? "")
+        _month = State(initialValue: card.expiry?.month)
+        _year = State(initialValue: card.expiry?.year)
+        // Plastics last up to about ten years; an already expired one can still be recorded.
+        let thisYear = calendar.component(.year, from: now)
+        years = Array(Set((thisYear - 1 ... thisYear + 10).map(\.self) + [card.expiry?.year].compactMap(\.self))).sorted()
+        self.errorMessage = errorMessage
+        self.isSaving = isSaving
+        self.onSave = onSave
+        self.onClose = onClose
+    }
+
+    public var body: some View {
+        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+            VStack(alignment: .leading, spacing: KWSpacing.md) {
+                KWFlowHeader(.close, action: onClose)
+                Text("Product and expiry", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
+                KWGroupedCard {
+                    TextField(String(localized: "Product name (e.g. Platinum)", bundle: #bundle), text: $productName)
+                        .font(.kw(17, weight: 600))
+                        .submitLabel(.done)
+                        .padding(.vertical, KWSpacing.md)
+                    picker(String(localized: "Expiry month", bundle: #bundle), selection: $month, options: Array(1 ... 12)) {
+                        String(format: "%02d", $0)
+                    }
+                    picker(String(localized: "Expiry year", bundle: #bundle), selection: $year, options: years) { String($0) }
+                }
+                Text("As printed on the card. We remind you a month before it expires, with what's charged to it.", bundle: #bundle)
+                    .font(KWTextStyle.captionSm.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.muted)
+                if let message = isIncomplete ? String(localized: "Choose both the month and the year.", bundle: #bundle) : errorMessage {
+                    Text(message)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.State.negative)
+                }
+                Spacer(minLength: 0)
+                Button(action: save) { Text("Save", bundle: #bundle) }
+                    .buttonStyle(.kw())
+                    .disabled(isSaving || isIncomplete)
+            }
+        }
+    }
+
+    /// Only one half of the expiry chosen.
+    private var isIncomplete: Bool {
+        (month == nil) != (year == nil)
+    }
+
+    private func picker(_ label: String, selection: Binding<Int?>, options: [Int], title: @escaping (Int) -> String) -> some View {
+        let notSet = String(localized: "Not set", bundle: #bundle)
+        return Menu {
+            Button { selection.wrappedValue = nil } label: { Text(notSet) }
+            ForEach(options, id: \.self) { option in
+                Button(title(option)) { selection.wrappedValue = option }
+            }
+        } label: {
+            KWValueRow(
+                label,
+                value: (selection.wrappedValue.map(title) ?? notSet) + " ›",
+                style: selection.wrappedValue == nil ? .placeholder : .detail,
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func save() {
+        KWKeyboard.dismiss()
+        let expiry = month.flatMap { month in year.flatMap { try? CardExpiry(month: month, year: $0) } }
+        Task {
+            if await onSave(productName, expiry) {
+                onClose()
+            }
+        }
+    }
+}
+
 /// Picks a card's color with a live preview of the art.
 public struct CardColorSheet: View {
     private let preview: (CardColor) -> KWCardArt

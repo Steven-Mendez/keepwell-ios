@@ -462,6 +462,16 @@
           }
         }
       }
+    },
+    "Product and expiry" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Producto y vencimiento"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
