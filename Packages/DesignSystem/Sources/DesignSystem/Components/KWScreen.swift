@@ -40,6 +40,9 @@ public struct KWScreen<Content: View, Background: View>: View {
         }
         .background { background.ignoresSafeArea() }
         .foregroundStyle(KWColor.Text.primary)
+        // The design lays screens out for the full height; the keyboard covers the lower part
+        // instead of squeezing the layout, and screens offer a way to dismiss it.
+        .ignoresSafeArea(.keyboard)
     }
 }
 
@@ -51,5 +54,25 @@ extension KWScreen where Background == Color {
         @ViewBuilder content: () -> Content,
     ) {
         self.init(top: top, bottom: bottom, horizontal: horizontal, background: { KWColor.Surface.bg }, content: content)
+    }
+}
+
+/// Hides the keyboard from anywhere, for "Listo" toolbar buttons and primary actions.
+@MainActor
+public enum KWKeyboard {
+    public static func dismiss() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+extension View {
+    /// Adds the "Listo" button above number pads, which have no return key.
+    public func kwKeyboardDoneButton() -> some View {
+        toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Listo") { KWKeyboard.dismiss() }
+            }
+        }
     }
 }

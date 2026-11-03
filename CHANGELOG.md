@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Add card: credit cards (plastic, debt in one or two currencies, billing cycle), debit cards linked
+  to a bank account, new bank accounts and wallets.
 - Accounts: credit cards stacked like Wallet, deposit accounts with their linked cards, and cash
   with "Cuadrar" and "Retiro de cajero".
 - Onboarding: splash, welcome with restore from iCloud, currencies with a manual rate (default 1),
