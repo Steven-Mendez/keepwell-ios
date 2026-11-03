@@ -12,8 +12,6 @@ public struct Reminder: Hashable, Sendable {
         case planned(UUID)
         /// A credit card's payment coming up.
         case payment(UUID)
-        /// An additional card that reached its alert threshold this cycle.
-        case cap(UUID)
     }
 
     /// Stable per occurrence, so rescheduling replaces instead of duplicating.
@@ -66,13 +64,12 @@ extension HomeViewModel {
         )
     }
 
-    /// Planned movements on their day, card payments ahead of time and additional cards near
-    /// their cap. Only what's still ahead is returned.
+    /// Planned movements on their day and card payments ahead of time. Only what's still ahead is
+    /// returned.
     public func reminders(now: Date = .now, calendar: Calendar = .current) -> [Reminder] {
         guard let overview, let display else { return [] }
         return plannedReminders(overview, display: display, now: now, calendar: calendar)
             + paymentReminders(overview, now: now, calendar: calendar)
-            + capReminders(overview, now: now)
     }
 
     private func plannedReminders(_ overview: HomeOverview, display: TransactionDisplay, now: Date, calendar: Calendar) -> [Reminder] {
@@ -105,28 +102,6 @@ extension HomeViewModel {
                 title: String(localized: "\(name): payment in \(days) days", bundle: #bundle),
                 body: String(localized: "Pay before day \(dueDay) so it doesn't generate interest.", bundle: #bundle),
                 date: reminder.date,
-            )
-        }
-    }
-
-    private func capReminders(_ overview: HomeOverview, now: Date) -> [Reminder] {
-        overview.additionalCards.compactMap { status in
-            guard status.card.additional?.alertNearCap == true,
-                  status.card.additional?.isFrozen == false,
-                  status.usage.hasReached(overview.capAlertThreshold),
-                  let cap = status.usage.cap
-            else { return nil }
-            let holder = status.card.additional?.holderName ?? ""
-            let percent = formatter.number(overview.capAlertThreshold * 100, fractionDigits: 0)
-            let spent = formatter.string(status.usage.spent, fractionDigits: 0)
-            let capText = formatter.string(cap, fractionDigits: 0)
-            return Reminder(
-                // One per card and spending level, so it fires once rather than on every refresh.
-                id: "cap-\(status.card.id)-\(capText)-\(percent)",
-                kind: .cap(status.card.id),
-                title: String(localized: "\(holder) reached \(percent)% of the cap", bundle: #bundle),
-                body: String(localized: "\(spent) of \(capText) this cycle.", bundle: #bundle),
-                date: now.addingTimeInterval(5),
             )
         }
     }

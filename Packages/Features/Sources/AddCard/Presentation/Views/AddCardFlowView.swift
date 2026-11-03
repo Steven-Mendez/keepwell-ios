@@ -34,8 +34,6 @@ public struct AddCardFlowView: View {
                 onExit(viewModel.createdAccount.map { account in
                     viewModel.kind == .credit ? .viewCreditCard(account.id) : .viewBankAccount(account.id)
                 } ?? .close)
-            } onAddAdditional: {
-                onExit(viewModel.createdAccount.map { .addAdditional($0.id) } ?? .close)
             } onAddAnother: {
                 viewModel.restart()
             }

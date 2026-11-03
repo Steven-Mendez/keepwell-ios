@@ -33,6 +33,27 @@ public struct BackupDocument: Codable, Sendable, Equatable {
         self.transactions = transactions
     }
 
+    private enum CodingKeys: String, CodingKey {
+        case version
+        case createdAt
+        case settings
+        case accounts
+        case cards
+        case categories
+        case transactions
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decode(Int.self, forKey: .version)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        settings = try container.decode(Settings.self, forKey: .settings)
+        accounts = try container.decode([Account].self, forKey: .accounts)
+        cards = try container.decode([StoredCard].self, forKey: .cards).compactMap(\.card)
+        categories = try container.decode([TransactionCategory].self, forKey: .categories)
+        transactions = try container.decode([Transaction].self, forKey: .transactions)
+    }
+
     static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -45,6 +66,21 @@ public struct BackupDocument: Codable, Sendable, Equatable {
         decoder.dateDecodingStrategy = .iso8601
         return decoder
     }()
+}
+
+/// A card as an older backup may hold it. Files written while cards could have additionals list
+/// them too; those are dropped, since their purchases already belong to their credit account.
+private struct StoredCard: Decodable {
+    private enum CodingKeys: String, CodingKey {
+        case kind
+    }
+
+    let card: Card?
+
+    init(from decoder: any Decoder) throws {
+        let kind = try decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .kind)
+        card = kind == "creditAdditional" ? nil : try Card(from: decoder)
+    }
 }
 
 public protocol CreateBackupUseCase: Sendable {

@@ -4,39 +4,32 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// A credit card: its art, what's owed per currency, billing data, plastics and this cycle.
+/// A credit card: its art, what's owed per currency, billing data and this cycle.
 public struct CreditCardView: View {
     private let viewModel: CreditCardViewModel
     private let onBack: () -> Void
     private let onPay: () -> Void
-    private let onOpenAdditional: (UUID) -> Void
     private let onSeeAllMovements: () -> Void
     @State private var sheet: Sheet?
 
     enum Sheet: String, Identifiable {
         case terms
-        case newAdditional
         case name
         case color
         var id: String { rawValue }
     }
 
-    /// `startsAddingAdditional` opens the new-additional form right away (from "Card added").
     /// `onSeeAllMovements` opens the card's whole history, past cycles included.
     public init(
         viewModel: CreditCardViewModel,
-        startsAddingAdditional: Bool = false,
         onBack: @escaping () -> Void,
         onPay: @escaping () -> Void,
-        onOpenAdditional: @escaping (UUID) -> Void,
         onSeeAllMovements: @escaping () -> Void,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onPay = onPay
-        self.onOpenAdditional = onOpenAdditional
         self.onSeeAllMovements = onSeeAllMovements
-        _sheet = State(initialValue: startsAddingAdditional ? .newAdditional : nil)
     }
 
     public var body: some View {
@@ -45,11 +38,9 @@ public struct CreditCardView: View {
                 if let detail = viewModel.detail {
                     KWNavigationHeader(String(localized: "Credit card", bundle: #bundle), buttonStyle: .translucent, onBack: onBack)
                     CardHero(art: art(detail), name: detail.account.name)
-                        .animation(.snappy, value: isHolderFrozen)
                     debt(detail)
                     actions
                     terms(detail)
-                    plastics(detail)
                     manage(detail)
                     cycle(detail)
                 } else {
@@ -101,13 +92,6 @@ public struct CreditCardView: View {
                             onClose: { self.sheet = nil },
                         )
                     }
-                case .newAdditional:
-                    NewAdditionalSheet(viewModel: viewModel) { cardID in
-                        self.sheet = nil
-                        if let cardID {
-                            onOpenAdditional(cardID)
-                        }
-                    }
                 }
             }
             .presentationDetents([.large])
@@ -121,7 +105,6 @@ public struct CreditCardView: View {
             kind: .creditHolder,
             bank: viewModel.bank(detail),
             ownerName: viewModel.ownerName,
-            badge: .tag(isHolderFrozen ? String(localized: "Frozen", bundle: #bundle) : String(localized: "Holder", bundle: #bundle)),
             caption: detail.account.bank == nil ? nil : detail.account.name,
         )
     }
@@ -130,85 +113,12 @@ public struct CreditCardView: View {
         CardDisplay.art(of: holder, kind: .creditHolder, bank: viewModel.bank(detail), ownerName: viewModel.ownerName)
     }
 
-    private var isHolderFrozen: Bool {
-        viewModel.detail?.holder?.isFrozen == true
-    }
-
     private func debt(_ detail: CreditCardDetail) -> some View {
         BalanceHeader(
             String(localized: "Current debt", bundle: #bundle),
             amount: viewModel.owed(detail.totalDebt),
             details: detail.balances.count > 1 ? viewModel.debtsSecondFirst(detail).map(viewModel.owed) : [],
         )
-    }
-
-    private func plastics(_ detail: CreditCardDetail) -> some View {
-        VStack(alignment: .leading, spacing: KWSpacing.md) {
-            KWSectionHeader(String(localized: "Plastics", bundle: #bundle), style: .large) {
-                Button { sheet = .newAdditional } label: {
-                    Text("+ Additional", bundle: #bundle)
-                        .font(KWTextStyle.label.font)
-                        .foregroundStyle(KWColor.Brand.link)
-                        .frame(minHeight: KWLayout.minTouch)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.vertical, -KWSpacing.sm)
-            KWGroupedCard(verticalPadding: KWSpacing.xxs) {
-                HStack(spacing: KWSpacing.sm) {
-                    KWMiniCard(.palette(CardDisplay.palette(for: detail.holder?.color), chip: true))
-                    KWTitleSubtitle(viewModel.holderTitle(detail), subtitle: String(localized: "You · no cap", bundle: #bundle))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    VStack(alignment: .trailing, spacing: 2) {
-                        ForEach(Array(viewModel.debtsSecondFirst(detail).enumerated()), id: \.offset) { index, balance in
-                            Text(index == 0 ? viewModel.owed(balance) : "+ \(viewModel.owed(balance))")
-                                .font(index == 0 ? .kw(15, weight: 700) : KWTextStyle.captionSm.font.weight(.regular))
-                                .foregroundStyle(index == 0 ? KWColor.Text.primary : KWColor.Text.muted)
-                        }
-                    }
-                    .monospacedDigit()
-                }
-                .padding(.vertical, 14)
-                ForEach(detail.additionals) { additional in
-                    Button { onOpenAdditional(additional.id) } label: {
-                        additionalRow(additional, detail: detail)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-    }
-
-    private func additionalRow(_ additional: CreditCardDetail.Additional, detail: CreditCardDetail) -> some View {
-        let card = additional.card
-        let isFrozen = card.additional?.isFrozen == true
-        return VStack(spacing: 10) {
-            HStack(spacing: KWSpacing.sm) {
-                KWMiniCard(isFrozen ? .palette(.grafito, chip: true) : .palette(CardDisplay.palette(for: card.color), chip: true))
-                KWTitleSubtitle(
-                    card.additional?.holderName ?? String(localized: "Additional", bundle: #bundle),
-                    subtitle: viewModel.additionalSubtitle(card, categories: detail.categories),
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(viewModel.money(additional.usage.spent, fractionDigits: 0)).font(.kw(15, weight: 700))
-                    if let cap = additional.usage.cap {
-                        Text("of \(viewModel.money(cap, fractionDigits: 0))", bundle: #bundle)
-                            .font(KWTextStyle.captionSm.font.weight(.regular))
-                            .foregroundStyle(KWColor.Text.muted)
-                    }
-                }
-                .monospacedDigit()
-            }
-            if let fraction = additional.usage.fraction {
-                KWProgressBar(
-                    fraction.doubleValue,
-                    fill: fraction >= detail.capAlertThreshold ? KWColor.State.pending : KWColor.State.extra,
-                )
-            }
-        }
-        .padding(.vertical, 14)
-        .contentShape(Rectangle())
     }
 
     @ViewBuilder
@@ -227,11 +137,10 @@ public struct CreditCardView: View {
     }
 
     private func cycleRow(_ transaction: Domain.Transaction, display: TransactionDisplay, detail: CreditCardDetail) -> some View {
-        let card = transaction.cardID.flatMap { id in detail.cards.first { $0.id == id } }
-        let color = card.map { CardDisplay.palette(for: $0.color) } ?? CardDisplay.palette(for: detail.holder?.color)
-        let who = card.map { CardDisplay.methodTitle($0, account: detail.account) } ?? String(localized: "Holder", bundle: #bundle)
+        // Everything here was charged to this one card, so the row names the category, not the card.
+        let color = CardDisplay.palette(for: detail.holder?.color)
         let day = transaction.date.formatted(.dateTime.day().month(.abbreviated))
-        let subtitle = [who, display.categoryName(of: transaction), day].compactMap(\.self).joined(separator: " · ")
+        let subtitle = [display.categoryName(of: transaction), day].compactMap(\.self).joined(separator: " · ")
         return HStack(spacing: KWSpacing.sm) {
             Capsule()
                 .fill(color.gradient)
@@ -251,21 +160,14 @@ public struct CreditCardView: View {
 // MARK: - Actions and billing data
 
 extension CreditCardView {
+    /// Two actions, kept close together under the card rather than pushed to the screen's edges.
     private var actions: some View {
         HStack(spacing: KWSpacing.xs) {
             KWActionButton(String(localized: "Pay", bundle: #bundle), icon: .arrowUp, style: .prominent, action: onPay)
-            if viewModel.detail?.holder != nil {
-                KWActionButton(
-                    isHolderFrozen ? String(localized: "Unfreeze", bundle: #bundle) : String(localized: "Freeze", bundle: #bundle),
-                    icon: .freeze,
-                    style: isHolderFrozen ? .active : .neutral,
-                ) {
-                    Task { await viewModel.setHolderFrozen(!isHolderFrozen) }
-                }
-            }
             KWActionButton(String(localized: "Edit name", bundle: #bundle), icon: .pencil) { sheet = .name }
-            KWActionButton(String(localized: "Additional", bundle: #bundle), icon: .addCard) { sheet = .newAdditional }
         }
+        .frame(maxWidth: KWComponentMetrics.actionPairWidth)
+        .frame(maxWidth: .infinity)
     }
 
     /// What can be changed about the card itself, LAFISE-style, after what it shows.
@@ -286,7 +188,6 @@ extension CreditCardView {
                     }
                 }
                 CardManageRow(String(localized: "Billing details", bundle: #bundle), icon: .creditCard) { sheet = .terms }
-                CardManageRow(String(localized: "New additional card", bundle: #bundle), icon: .addCard) { sheet = .newAdditional }
             }
         }
     }

@@ -11,7 +11,7 @@ struct CardArtSnapshotTests {
             palette: .azul,
             bank: "Bank One",
             badge: .amount("−C$197.02 · −$16.79"),
-            caption: "Credit · 2 cards",
+            caption: "Travel",
             lastFour: "1234",
             network: .mastercard,
             kindLabel: "Credit",
@@ -25,21 +25,11 @@ struct CardArtSnapshotTests {
             KWCardArt(
                 palette: .lima,
                 bank: "Bank One",
-                badge: .tag("Additional"),
-                holder: "Family",
+                badge: .tag("Credit"),
+                holder: "ALEX",
                 lastFour: "5678",
                 network: .mastercard,
                 kindLabel: "Credit",
-            )
-            KWCardArt(
-                palette: .lima,
-                bank: "Bank One",
-                badge: .tag("Frozen"),
-                holder: "Family",
-                lastFour: "5678",
-                network: .mastercard,
-                kindLabel: "Credit",
-                isFrozen: true,
             )
             KWCardArt(palette: .grafito, bank: "Bank Two", badge: .amount("−C$941.30"), showsChip: false)
             KWCardArt(
@@ -53,7 +43,18 @@ struct CardArtSnapshotTests {
             )
         }
         .padding(KWLayout.gutter)
-        assertComponentSnapshot(of: view, height: 1060)
+        assertComponentSnapshot(of: view, height: 800)
+    }
+
+    @Test
+    func metallicPalettesPrintInDarkInk() {
+        let view = VStack(spacing: KWSpacing.xl) {
+            KWCardArt(palette: .platino, bank: "Bank One", holder: "ALEX", lastFour: "4321", network: .visa, kindLabel: "Credit")
+            KWCardArt(palette: .oro, bank: "Bank Two", holder: "ALEX", lastFour: "8765", network: .mastercard, kindLabel: "Credit")
+            KWCardArt(palette: .rojo, bank: "Bank Three", holder: "ALEX", lastFour: "1005", network: .visa, kindLabel: "Debit")
+        }
+        .padding(KWLayout.gutter)
+        assertComponentSnapshot(of: view, height: 800)
     }
 
     @Test

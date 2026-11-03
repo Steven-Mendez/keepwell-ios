@@ -60,14 +60,6 @@ struct HomeOverviewTests {
     }
 
     @Test
-    func cappedAdditionalCardsShowTheirUsage() async throws {
-        let status = try #require(try await overview().additionalCards.first)
-        #expect(status.card.id == SampleData.IDs.mastercardAdditional)
-        #expect(status.usage.cap == Money(4000, "NIO"))
-        #expect(status.holder?.id == SampleData.IDs.mastercardHolder)
-    }
-
-    @Test
     func cardCountLeavesTransferChannelsOut() async throws {
         let result = try await overview()
         #expect(result.cardCount == sample.cards.count { $0.kind != .transfer })

@@ -17,11 +17,10 @@ struct SampleDataTests {
 
     @Test
     func coversTheDesignScenarios() {
-        #expect(sample.cards.count == 7)
+        #expect(sample.cards.count == 6)
         #expect(sample.transactions.contains { $0.status == .planned })
         #expect(sample.transactions.contains { $0.kind == .transfer })
         #expect(sample.transactions.contains { $0.isShared })
-        #expect(sample.cards.contains { $0.additional?.cycleCap != nil })
     }
 
     @Test

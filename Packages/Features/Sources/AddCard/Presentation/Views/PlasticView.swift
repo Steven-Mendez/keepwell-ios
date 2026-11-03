@@ -111,7 +111,9 @@ public struct PlasticView: View {
                 let isSelected = CardDisplay.cardColor(for: palette) == viewModel.color
                 Button { viewModel.color = CardDisplay.cardColor(for: palette) } label: {
                     Circle()
-                        .fill(palette.gradient)
+                        .fill(palette.largeGradient)
+                        // Keeps the black swatch from disappearing into the black screen.
+                        .overlay { Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1) }
                         .frame(width: 36, height: 36)
                         .padding(isSelected ? 3 : 0)
                         .background(isSelected ? Color.black : .clear, in: Circle())

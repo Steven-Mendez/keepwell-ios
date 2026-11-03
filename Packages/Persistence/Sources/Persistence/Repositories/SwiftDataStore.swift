@@ -54,7 +54,9 @@ extension SwiftDataStore: AccountRepository {
 extension SwiftDataStore: CardRepository {
     public func fetchCards() throws(DomainError) -> [Card] {
         try perform { context in
-            try context.fetch(FetchDescriptor<CardRecord>(sortBy: [SortDescriptor(\.createdAt)])).map { try $0.toDomain() }
+            try context.fetch(FetchDescriptor<CardRecord>(sortBy: [SortDescriptor(\.createdAt)]))
+                .filter { !CardRecord.retiredKinds.contains($0.kindRaw) }
+                .map { try $0.toDomain() }
         }
     }
 

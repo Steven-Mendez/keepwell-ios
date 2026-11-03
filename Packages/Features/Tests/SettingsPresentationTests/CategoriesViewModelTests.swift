@@ -12,7 +12,7 @@ struct CategoriesViewModelTests {
             kind: kind,
             getCategories: DefaultGetCategoriesUseCase(categories: store),
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
             reorder: DefaultReorderCategoriesUseCase(categories: store),
             restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
         )
@@ -77,7 +77,7 @@ struct CategoriesViewModelTests {
     func restoringBringsTheDefaultsBack() async throws {
         let store = InMemoryStore()
         let viewModel = make(store)
-        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store, cards: store).execute(id: "groceries")
+        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store).execute(id: "groceries")
         await viewModel.load()
         #expect(!viewModel.visible.contains { $0.id == "groceries" })
         viewModel.isReordering = true

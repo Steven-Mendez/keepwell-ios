@@ -26,7 +26,6 @@ public final class AddCardViewModel {
         case close
         case viewCreditCard(UUID)
         case viewBankAccount(UUID)
-        case addAdditional(UUID)
     }
 
     public var path: [Step] = []
@@ -96,7 +95,7 @@ public final class AddCardViewModel {
     public func choose(_ kind: Kind) {
         self.kind = kind
         network = kind == .credit ? .mastercard : .visa
-        color = kind == .credit ? .azul : .coral
+        color = kind == .credit ? .azul : .verde
         errorMessage = nil
         path = [.plastic]
     }

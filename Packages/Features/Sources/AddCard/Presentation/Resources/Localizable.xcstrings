@@ -61,16 +61,6 @@
         }
       }
     },
-    "Add it with its limit and categories" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agrégala con su tope y categorías"
-          }
-        }
-      }
-    },
     "Bank" : {
       "localizations" : {
         "es" : {
@@ -217,16 +207,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Menos"
-          }
-        }
-      }
-    },
-    "Did you give someone an additional card?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Le diste una adicional a alguien?"
           }
         }
       }

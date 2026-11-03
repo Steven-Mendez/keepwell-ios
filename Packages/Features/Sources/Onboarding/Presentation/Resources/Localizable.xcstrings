@@ -421,16 +421,6 @@
         }
       }
     },
-    "Limits on additional cards" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Topes de tarjetas adicionales"
-          }
-        }
-      }
-    },
     "Log expenses, income and transfers. Cards with extras, cash and expected expenses." : {
       "localizations" : {
         "es" : {

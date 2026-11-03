@@ -8,9 +8,11 @@ public enum CardDisplay {
         switch color {
         case .azul, nil: .azul
         case .grafito: .grafito
+        case .platino: .platino
         case .verde: .verde
         case .violeta: .violeta
         case .coral: .coral
+        case .rojo: .rojo
         case .oro: .oro
         case .lima: .lima
         }
@@ -18,6 +20,14 @@ public enum CardDisplay {
 
     public static func cardColor(for palette: KWColor.CardArt) -> CardColor {
         CardColor(rawValue: palette.rawValue) ?? .azul
+    }
+
+    /// The colors offered for a card. A card painted in a color no longer offered keeps it at the
+    /// end of the row, so opening the picker doesn't silently change it.
+    public static func selectableColors(keeping current: CardColor? = nil) -> [CardColor] {
+        let offered = KWColor.CardArt.selectable.map(cardColor(for:))
+        guard let current, !offered.contains(current) else { return offered }
+        return offered + [current]
     }
 
     /// The network mark printed on card art; `nil` for networks without one.
@@ -39,13 +49,13 @@ public enum CardDisplay {
     public static func kindLabel(_ kind: CardKind) -> String {
         switch kind {
         case .debit, .transfer: String(localized: "Debit", bundle: #bundle)
-        case .creditHolder, .creditAdditional: String(localized: "Credit", bundle: #bundle)
+        case .creditHolder: String(localized: "Credit", bundle: #bundle)
         }
     }
 
     /// The art of a real plastic, so every screen prints a card the same way. `showsFace: false`
     /// leaves only the header, for a card tucked behind another in a stack. `ownerName` is the
-    /// person's own name, printed on their main cards; an additional card prints its holder's.
+    /// person's own name, printed on their cards.
     public static func art(
         of card: Card?,
         kind: CardKind,
@@ -67,16 +77,13 @@ public enum CardDisplay {
             numberGroups: numberGroups(for: card?.network),
             network: showsFace ? networkMark(for: card?.network) : nil,
             kindLabel: showsFace ? kindLabel(card?.kind ?? kind) : nil,
-            isFrozen: card?.isFrozen ?? false,
             showsShadow: showsShadow,
         )
     }
 
-    /// "STEVEN" on the owner's debit and credit cards, uppercased as banks emboss it; the holder's
-    /// name, as typed, on an additional card.
+    /// "STEVEN" on the owner's debit and credit cards, uppercased as banks emboss it.
     public static func holderName(of card: Card?, kind: CardKind, ownerName: String?) -> String? {
         switch card?.kind ?? kind {
-        case .creditAdditional: card?.additional?.holderName
         case .debit, .creditHolder: ownerName.flatMap(PreferredName.normalized)?.uppercased(with: .current)
         case .transfer: nil
         }
@@ -104,14 +111,12 @@ public enum CardDisplay {
     }
 
     /// How a movement names what paid it: "Debit •••• 3922", "Bank One · Bank transfer",
-    /// "Visa •••• 3141". Credit cards show their network and digits rather than the "holder" role,
-    /// which only means something next to the card's additionals.
+    /// "Visa •••• 3141". Credit cards show their network and digits.
     public static func methodTitle(_ card: Card, account: Account?) -> String {
         switch card.kind {
         case .debit: debitTitle(card)
         case .transfer: bankTransferTitle(account: account)
         case .creditHolder: cardNumber(card)
-        case .creditAdditional: card.additional?.holderName ?? String(localized: "Additional", bundle: #bundle)
         }
     }
 

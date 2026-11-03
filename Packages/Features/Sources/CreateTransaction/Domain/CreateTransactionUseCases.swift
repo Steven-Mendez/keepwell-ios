@@ -51,12 +51,6 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
                 categoryUsage[category, default: 0] += 1
             }
         }
-        var usage: [UUID: AdditionalCardUsage] = [:]
-        for card in allCards where card.kind == .creditAdditional {
-            let cutoff = allAccounts.first { $0.id == card.accountID }?.creditTerms?.cutoffDay
-            guard let cycle = BillingCycle.cycle(containing: now(), cutoffDay: cutoff, calendar: calendar) else { continue }
-            usage[card.id] = AdditionalCardUsage(card: card, transactions: movements, cycle: cycle, fallbackCurrency: currencies.principal)
-        }
         return try await TransactionContext(
             currencies: currencies,
             categories: categories.fetchCategories(),
@@ -65,7 +59,6 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
             balances: balances,
             lastUsed: lastUsed,
             categoryUsage: categoryUsage,
-            additionalUsage: usage,
         )
     }
 }
@@ -125,13 +118,6 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             }
             guard found.kind == draft.kind else { throw .categoryKindMismatch(expected: draft.kind, actual: found.kind) }
             category = found
-        }
-
-        if case let .card(cardID) = source, let card = context.card(cardID) {
-            guard !card.isFrozen else { throw .paymentMethodUnavailable(cardID) }
-            if let controls = card.additional, !controls.allows(categoryID: draft.categoryID ?? "") {
-                throw .paymentMethodUnavailable(cardID)
-            }
         }
 
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)

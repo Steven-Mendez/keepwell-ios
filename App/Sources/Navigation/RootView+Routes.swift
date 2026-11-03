@@ -20,18 +20,14 @@ extension RootView {
             )
         case let .categories(showsIncome):
             CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: navigator.pop)
-        case let .creditCard(accountID, addsAdditional):
+        case let .creditCard(accountID):
             CreditCardRoute(
                 container: container,
                 accountID: accountID,
-                addsAdditional: addsAdditional,
                 onBack: navigator.pop,
                 onPay: { presentNewMovement(.cardPayment, payingCard: accountID) },
-                onOpenAdditional: { navigator.push(.additionalCard(accountID: accountID, cardID: $0)) },
                 onSeeAllMovements: { navigator.push(.transactions(accountID: accountID)) },
             )
-        case let .additionalCard(accountID, cardID):
-            AdditionalCardRoute(container: container, accountID: accountID, cardID: cardID, onBack: navigator.pop)
         case let .bankAccount(accountID):
             DebitCardRoute(
                 container: container,

@@ -14,6 +14,7 @@ public final class SettingsRecord {
     var hidesAmountsInAppSwitcher = true
     var isICloudBackupEnabled = true
     var paymentReminderDaysBefore = 3
+    /// From when cards could have additionals; kept because CloudKit can't remove attributes.
     var additionalCapAlertThreshold = "0.8"
     var hasCompletedOnboarding = false
     var updatedAt = Date.now
@@ -29,7 +30,6 @@ public final class SettingsRecord {
         hidesAmountsInAppSwitcher = settings.hidesAmountsInAppSwitcher
         isICloudBackupEnabled = settings.isICloudBackupEnabled
         paymentReminderDaysBefore = settings.paymentReminderDaysBefore
-        additionalCapAlertThreshold = DecimalCoding.string(settings.additionalCapAlertThreshold)
         hasCompletedOnboarding = settings.hasCompletedOnboarding
         updatedAt = .now
     }
@@ -50,7 +50,6 @@ public final class SettingsRecord {
             hidesAmountsInAppSwitcher: hidesAmountsInAppSwitcher,
             isICloudBackupEnabled: isICloudBackupEnabled,
             paymentReminderDaysBefore: paymentReminderDaysBefore,
-            additionalCapAlertThreshold: DecimalCoding.decimal(additionalCapAlertThreshold),
             hasCompletedOnboarding: hasCompletedOnboarding,
         )
     }

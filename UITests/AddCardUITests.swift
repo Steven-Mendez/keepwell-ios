@@ -25,7 +25,7 @@ final class AddCardUITests: XCTestCase {
         let digits = app.textFields["Last 4 digits"]
         digits.tap()
         digits.typeText("2468")
-        app.buttons["Violet"].tap()
+        app.buttons["Platinum"].tap()
         attach("2-plastic")
         app.buttons["Continue"].tap()
 

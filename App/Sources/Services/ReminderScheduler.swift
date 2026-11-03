@@ -11,14 +11,10 @@ final class ReminderScheduler {
     static let postponeAction = "keepwell.postpone"
     static let transactionKey = "transactionID"
     private static let prefix = "keepwell."
-    /// Cap alerts already shown, so a card at 80% doesn't alert again on every refresh.
-    private static let deliveredCapsKey = "reminders.deliveredCaps"
 
     private let center = UNUserNotificationCenter.current()
-    private let defaults: UserDefaults
 
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
+    init() {
         center.setNotificationCategories([
             UNNotificationCategory(
                 identifier: Self.plannedCategory,
@@ -40,15 +36,9 @@ final class ReminderScheduler {
         guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
         let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(Self.prefix) }
         center.removePendingNotificationRequests(withIdentifiers: pending)
-
-        var deliveredCaps = Set(defaults.stringArray(forKey: Self.deliveredCapsKey) ?? [])
         for reminder in reminders {
-            if case .cap = reminder.kind {
-                guard deliveredCaps.insert(reminder.id).inserted else { continue }
-            }
             try? await center.add(request(for: reminder))
         }
-        defaults.set(Array(deliveredCaps), forKey: Self.deliveredCapsKey)
     }
 
     /// "Postpone": the same reminder tomorrow morning.
@@ -63,7 +53,6 @@ final class ReminderScheduler {
     func removeAll() async {
         let ours = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(Self.prefix) }
         center.removePendingNotificationRequests(withIdentifiers: ours)
-        defaults.removeObject(forKey: Self.deliveredCapsKey)
     }
 
     private func request(for reminder: Reminder) -> UNNotificationRequest {

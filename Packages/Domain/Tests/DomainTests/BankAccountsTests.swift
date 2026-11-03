@@ -82,13 +82,6 @@ struct BankAccountsTests {
     }
 
     @Test
-    func creditCardsKeepTheirAdditionals() async throws {
-        let store = InMemoryStore(sample: .standard)
-        try await normalize(store)
-        #expect(await store.fetchCards().contains { $0.id == IDs.mastercardAdditional })
-    }
-
-    @Test
     func aDebitCardWithoutDigitsStillExists() throws {
         let card = try Card.debit(for: UUID(), lastFour: " ")
         #expect(card.kind == .debit)

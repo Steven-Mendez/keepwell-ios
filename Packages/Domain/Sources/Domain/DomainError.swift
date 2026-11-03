@@ -11,7 +11,7 @@ public enum DomainError: Error, Equatable, Sendable {
     /// Rates are "1 principal = X second" and must be positive.
     case invalidExchangeRate
     case invalidLastFour(String)
-    /// A name the person must give (an additional card's holder) is empty.
+    /// A name the person must give (a card's or a category's) is empty.
     case missingName
     case invalidDayOfMonth(Int)
     /// Another category of the same kind already has this name.
@@ -22,8 +22,6 @@ public enum DomainError: Error, Equatable, Sendable {
     case unsupportedTransactionKind(TransactionKind)
     /// A transfer needs a destination account different from its source.
     case invalidTransferDestination
-    /// The payment method can't be used: a frozen additional card, or a category it doesn't allow.
-    case paymentMethodUnavailable(UUID)
     case invalidPeriod
     case notFound(UUID)
     /// An app passcode must be exactly `Passcode.length` digits.

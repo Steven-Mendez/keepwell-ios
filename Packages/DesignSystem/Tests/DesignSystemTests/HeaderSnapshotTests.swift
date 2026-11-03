@@ -15,7 +15,7 @@ struct HeaderSnapshotTests {
                 KWCircleButton(.plus, style: .white, accessibilityLabel: "New transaction") {}
             }
             KWNavigationHeader("Mastercard ··1234", buttonStyle: .translucent) {}
-            KWNavigationHeader("Family", subtitle: "Mastercard ··1234 additional", style: .leading) {}
+            KWNavigationHeader("Travel card", subtitle: "Mastercard ··1234", style: .leading) {}
             KWNavigationHeader("Settings", style: .large) {}
         }
         .padding(KWLayout.gutter)

@@ -3,26 +3,6 @@ import Foundation
 // Edits a person makes from a card's own screen. Credit and debit card screens live in different
 // features, and features can't depend on each other, so the shared edits live in the kernel.
 
-/// Freezes or unfreezes a plastic, so it can't be chosen to pay while frozen.
-public protocol SetCardFrozenUseCase: Sendable {
-    func execute(cardID: UUID, isFrozen: Bool) async throws(DomainError)
-}
-
-public struct DefaultSetCardFrozenUseCase: SetCardFrozenUseCase {
-    private let cards: any CardRepository
-
-    public init(cards: any CardRepository) {
-        self.cards = cards
-    }
-
-    public func execute(cardID: UUID, isFrozen: Bool) async throws(DomainError) {
-        guard let card = try await cards.fetchCards().first(where: { $0.id == cardID }) else {
-            throw .notFound(cardID)
-        }
-        try await cards.save(card.with(isFrozen: isFrozen))
-    }
-}
-
 /// Repaints a plastic's art. Transfer channels have no art, so they are refused.
 public protocol SetCardColorUseCase: Sendable {
     func execute(cardID: UUID, color: CardColor) async throws(DomainError)
@@ -75,8 +55,6 @@ extension Card {
             network: network,
             lastFour: lastFour,
             color: color,
-            additional: additional,
-            isFrozen: isFrozen,
         ) else { return self }
         return copy
     }

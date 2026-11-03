@@ -1,52 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ of %@ cap this cycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ de %@ de tope este ciclo"
-          }
-        }
-      }
-    },
-    "%@ of %@ this cycle." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ de %@ en este ciclo."
-          }
-        }
-      }
-    },
-    "%@ reached %@%% of the cap" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ llegó al %@%% del tope"
-          }
-        }
-      }
-    },
     "%@ · %@ from %@. Has it been paid?" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · %@ desde %@. ¿Ya se pagó?"
-          }
-        }
-      }
-    },
-    "%@ · additional %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · adicional %@"
           }
         }
       }

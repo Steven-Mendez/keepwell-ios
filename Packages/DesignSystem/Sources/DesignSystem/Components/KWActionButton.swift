@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 48pt circular quick action with its caption underneath ("Expense", "Pay", "Freeze").
+/// 48pt circular quick action with its caption underneath ("Expense", "Pay", "Edit name").
 public struct KWActionButton: View {
     public enum Style: Sendable {
         /// `surface2` circle.
@@ -9,7 +9,7 @@ public struct KWActionButton: View {
         case prominent
         /// Translucent white circle on gradients.
         case translucent
-        /// Link-colored circle with a black icon: an action currently on ("Unfreeze").
+        /// Link-colored circle with a black icon: an action currently on.
         case active
     }
 
@@ -65,8 +65,8 @@ public struct KWActionButton: View {
 #Preview {
     HStack {
         KWActionButton("Pay", icon: .arrowUp, style: .prominent) {}
-        KWActionButton("Additional", icon: .addCard) {}
-        KWActionButton("Unfreeze", icon: .freeze, style: .active) {}
+        KWActionButton("Edit name", icon: .pencil) {}
+        KWActionButton("Color", icon: .droplet, style: .active) {}
         KWActionButton("More", icon: .more) {}
     }
     .padding(KWLayout.gutter)

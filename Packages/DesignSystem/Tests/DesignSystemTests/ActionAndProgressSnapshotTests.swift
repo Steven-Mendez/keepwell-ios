@@ -9,8 +9,8 @@ struct ActionAndProgressSnapshotTests {
     func actionButtons() {
         let view = HStack(spacing: KWSpacing.xs) {
             KWActionButton("Pay", icon: .arrowUp, style: .prominent) {}
-            KWActionButton("Additional", icon: .addCard) {}
-            KWActionButton("Unfreeze", icon: .freeze, style: .active) {}
+            KWActionButton("Edit name", icon: .pencil) {}
+            KWActionButton("Color", icon: .droplet, style: .active) {}
             KWActionButton("Expense", icon: .plus, style: .translucent, captionSize: 13) {}
         }
         .padding(KWLayout.gutter)

@@ -27,11 +27,20 @@ struct DisplayTests {
     }
 
     @Test
+    func pickersOfferRealCardColorsAndKeepARetiredOne() {
+        #expect(CardDisplay.selectableColors() == [.grafito, .platino, .oro, .azul, .verde, .rojo])
+        #expect(CardDisplay.selectableColors(keeping: .oro) == CardDisplay.selectableColors())
+        #expect(CardDisplay.selectableColors(keeping: .violeta).last == .violeta)
+        #expect(CardDisplay.palette(for: .platino).displayName == "Platinum")
+        #expect(CardDisplay.palette(for: .grafito).displayName == "Black")
+    }
+
+    @Test
     func cardFacesPrintTheNumberAsTheNetworkGroupsIt() {
         #expect(KWCardArt.maskedNumber(lastFour: "6019") == "•••• •••• •••• 6019")
         #expect(KWCardArt.maskedNumber(lastFour: "6019", groups: CardDisplay.numberGroups(for: .amex)) == "•••• •••••• •6019")
         #expect(CardDisplay.kindLabel(.debit) == "Debit")
-        #expect(CardDisplay.kindLabel(.creditAdditional) == "Credit")
+        #expect(CardDisplay.kindLabel(.creditHolder) == "Credit")
     }
 
     @Test

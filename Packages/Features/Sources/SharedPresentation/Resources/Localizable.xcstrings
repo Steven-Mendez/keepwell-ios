@@ -21,16 +21,6 @@
         }
       }
     },
-    "Additional" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicional"
-          }
-        }
-      }
-    },
     "Amber" : {
       "localizations" : {
         "es" : {

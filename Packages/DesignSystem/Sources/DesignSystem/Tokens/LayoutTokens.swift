@@ -54,6 +54,8 @@ public enum KWComponentMetrics {
     public static let chipHeight: CGFloat = 36
     public static let switchSize = CGSize(width: 52, height: 32)
     public static let actionCircle: CGFloat = 48
+    /// Width a row of two quick actions takes, so the pair sits together under a card.
+    public static let actionPairWidth: CGFloat = 220
     public static let cardArtRatio: CGFloat = 1.586
     public static let iconStroke: CGFloat = 2
     public static let iconSizes: [CGFloat] = [20, 24]

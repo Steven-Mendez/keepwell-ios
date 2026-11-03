@@ -120,7 +120,7 @@ public struct DebitCardDraft: Sendable, Equatable {
     public var network: CardNetwork?
     public var color: CardColor
 
-    public init(lastFour: String? = nil, network: CardNetwork? = nil, color: CardColor = .coral) {
+    public init(lastFour: String? = nil, network: CardNetwork? = nil, color: CardColor = .verde) {
         self.lastFour = lastFour
         self.network = network
         self.color = color

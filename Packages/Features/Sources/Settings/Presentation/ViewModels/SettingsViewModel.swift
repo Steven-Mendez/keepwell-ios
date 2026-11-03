@@ -35,7 +35,6 @@ public final class SettingsViewModel {
 
     static let relockOptions: [TimeInterval] = [0, 60, 300, 900]
     static let reminderOptions = [1, 2, 3, 5, 7]
-    static let capThresholdOptions: [Decimal] = [0.5, 0.7, 0.8, 0.9, 1]
 
     private let getOverview: any GetSettingsOverviewUseCase
     private let updateSettings: any UpdateSettingsUseCase
@@ -138,10 +137,6 @@ public final class SettingsViewModel {
 
     public func setReminderDays(_ days: Int) async {
         await update { $0.paymentReminderDaysBefore = days }
-    }
-
-    public func setCapThreshold(_ threshold: Decimal) async {
-        await update { $0.additionalCapAlertThreshold = threshold }
     }
 
     public func setICloudBackup(_ isEnabled: Bool) async {

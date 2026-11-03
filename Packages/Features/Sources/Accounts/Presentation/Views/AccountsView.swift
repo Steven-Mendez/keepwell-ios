@@ -172,13 +172,9 @@ struct CreditCardStack: View {
         )
     }
 
-    /// The account's own name when the bank heads the card, and how many plastics share it.
+    /// The account's own name when the bank heads the card.
     private func caption(_ card: AccountsOverview.CreditCard) -> String? {
-        let name = card.account.bank == nil ? nil : card.account.name
-        let plastics = card.plasticCount
-        let count = plastics > 1 ? String(localized: "\(plastics) cards", bundle: #bundle) : nil
-        let parts = [name, count].compactMap(\.self)
-        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+        card.account.bank == nil ? nil : card.account.name
     }
 
     private static func placeholderCard(for card: AccountsOverview.CreditCard) -> Card {

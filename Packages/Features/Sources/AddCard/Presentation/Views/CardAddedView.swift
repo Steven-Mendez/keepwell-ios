@@ -6,18 +6,11 @@ import SwiftUI
 public struct CardAddedView: View {
     private let viewModel: AddCardViewModel
     private let onViewCard: () -> Void
-    private let onAddAdditional: () -> Void
     private let onAddAnother: () -> Void
 
-    public init(
-        viewModel: AddCardViewModel,
-        onViewCard: @escaping () -> Void,
-        onAddAdditional: @escaping () -> Void,
-        onAddAnother: @escaping () -> Void,
-    ) {
+    public init(viewModel: AddCardViewModel, onViewCard: @escaping () -> Void, onAddAnother: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onViewCard = onViewCard
-        self.onAddAdditional = onAddAdditional
         self.onAddAnother = onAddAnother
     }
 
@@ -38,7 +31,6 @@ public struct CardAddedView: View {
                         ? String(localized: "Credit", bundle: #bundle)
                         : String(localized: "Debit", bundle: #bundle),
                 )
-                .rotationEffect(.degrees(-3))
                 VStack(spacing: KWSpacing.xs) {
                     Text("Card added", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
                     Text(viewModel.summary)
@@ -49,9 +41,6 @@ public struct CardAddedView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 10)
-                if viewModel.kind == .credit {
-                    additionalRow
-                }
                 Spacer(minLength: 0)
                 VStack(spacing: 0) {
                     Button(action: onViewCard) { Text("View card", bundle: #bundle) }.buttonStyle(.kw())
@@ -61,25 +50,5 @@ public struct CardAddedView: View {
                 }
             }
         }
-    }
-
-    private var additionalRow: some View {
-        Button(action: onAddAdditional) {
-            HStack(spacing: 14) {
-                KWMiniCard(.palette(.lima))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Did you give someone an additional card?", bundle: #bundle).font(.kw(15, weight: 700))
-                    Text("Add it with its limit and categories", bundle: #bundle)
-                        .font(KWTextStyle.caption.font.weight(.regular))
-                        .foregroundStyle(KWColor.Text.muted)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                KWIconView(.chevronRight, size: 18).foregroundStyle(KWColor.Text.muted)
-            }
-            .foregroundStyle(KWColor.Text.primary)
-            .padding(KWSpacing.md)
-            .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface))
-        }
-        .buttonStyle(.plain)
     }
 }

@@ -27,26 +27,6 @@
         }
       }
     },
-    "%lld cards" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld tarjetas"
-          }
-        }
-      }
-    },
-    "A frozen card can't be picked to pay a movement." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Una tarjeta congelada no se puede elegir para pagar un movimiento."
-          }
-        }
-      }
-    },
     "According to the app" : {
       "localizations" : {
         "es" : {
@@ -187,26 +167,6 @@
         }
       }
     },
-    "Freeze" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Congelar"
-          }
-        }
-      }
-    },
-    "Frozen" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Congelada"
-          }
-        }
-      }
-    },
     "If there's a difference, we record it as an adjustment so the balance matches." : {
       "localizations" : {
         "es" : {
@@ -313,16 +273,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca para ver detalle"
-          }
-        }
-      }
-    },
-    "Unfreeze" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descongelar"
           }
         }
       }

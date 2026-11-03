@@ -11,7 +11,7 @@ struct ButtonSnapshotTests {
             Button("Continue") {}.buttonStyle(.kw())
             Button("ATM withdrawal") {}.buttonStyle(.kw(.secondary))
             Button("Log another") {}.buttonStyle(.kw(.surface, size: .regular))
-            Button("Remove additional card") {}.buttonStyle(.kw(.destructive, size: .row))
+            Button("Delete account") {}.buttonStyle(.kw(.destructive, size: .row))
             Button("Complete card details") {}.buttonStyle(.kw(.link, size: .medium))
             Button("Not now") {}.buttonStyle(.kw(.plain, size: .text))
             HStack {

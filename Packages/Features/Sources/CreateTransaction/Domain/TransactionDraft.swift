@@ -71,8 +71,6 @@ public struct TransactionContext: Sendable {
     public let lastUsed: [PaymentSource: Date]
     /// How many movements each category has, to put the usual ones first.
     public let categoryUsage: [String: Int]
-    /// Cap usage of additional cards in their current cycle.
-    public let additionalUsage: [UUID: AdditionalCardUsage]
 
     public init(
         currencies: CurrencySettings,
@@ -82,7 +80,6 @@ public struct TransactionContext: Sendable {
         balances: [UUID: [Money]],
         lastUsed: [PaymentSource: Date],
         categoryUsage: [String: Int],
-        additionalUsage: [UUID: AdditionalCardUsage],
     ) {
         self.currencies = currencies
         self.categories = categories
@@ -91,7 +88,6 @@ public struct TransactionContext: Sendable {
         self.balances = balances
         self.lastUsed = lastUsed
         self.categoryUsage = categoryUsage
-        self.additionalUsage = additionalUsage
     }
 
     public func account(_ id: UUID?) -> Account? {
@@ -121,7 +117,6 @@ public struct TransactionContext: Sendable {
             balances: balances,
             lastUsed: lastUsed,
             categoryUsage: categoryUsage,
-            additionalUsage: additionalUsage,
         )
     }
 

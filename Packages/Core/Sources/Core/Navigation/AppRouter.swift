@@ -8,9 +8,7 @@ public enum AppRoute: Hashable, Sendable {
     /// Settings › Categories, opened on the income tab or the expense one.
     case categories(showsIncome: Bool)
     /// A credit card's detail, by its account.
-    case creditCard(accountID: UUID, addsAdditional: Bool = false)
-    /// The controls of one additional card on that account.
-    case additionalCard(accountID: UUID, cardID: UUID)
+    case creditCard(accountID: UUID)
     /// A bank account and its one debit card, which share a screen.
     case bankAccount(accountID: UUID)
     /// The movement list opened from an account, already filtered to it.

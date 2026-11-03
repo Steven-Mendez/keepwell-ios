@@ -66,7 +66,7 @@ public struct TransactionScopeOption: Identifiable, Hashable, Sendable {
 
 extension TransactionList {
     /// Accounts in the order the Accounts tab shows them: credit cards, bank accounts, cash. One
-    /// row each; a credit card's additionals live on its own screen, not in this filter.
+    /// row each.
     public var scopeOptions: [TransactionScopeOption] {
         let order: [AccountKind] = [.credit, .deposit, .cash]
         return order.flatMap { kind in
