@@ -31,6 +31,16 @@
         }
       }
     },
+    "Bank transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
     "Blue" : {
       "localizations" : {
         "es" : {
@@ -261,16 +271,6 @@
         }
       }
     },
-    "Holder" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titular"
-          }
-        }
-      }
-    },
     "Housing" : {
       "localizations" : {
         "es" : {
@@ -357,22 +357,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nombre"
-          }
-        }
-      }
-    },
-    "network.other" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otra"
           }
         }
       }
@@ -557,16 +541,6 @@
         }
       }
     },
-    "Transfers %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transferencias %@"
-          }
-        }
-      }
-    },
     "Transport" : {
       "localizations" : {
         "es" : {
@@ -633,6 +607,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ya tienes una categoría con ese nombre."
+          }
+        }
+      }
+    },
+    "network.other" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otra"
           }
         }
       }

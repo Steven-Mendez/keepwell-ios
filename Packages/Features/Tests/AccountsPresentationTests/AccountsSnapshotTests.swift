@@ -12,8 +12,16 @@ struct AccountsSnapshotTests {
         let viewModel = await AccountsFactory.loaded()
         assertScreenSnapshot(
             of: AccountsView(viewModel: viewModel, onAdd: {}, onOpenCreditCard: { _ in }, onLinkCard: { _ in }),
-            height: 1180,
+            height: 1500,
         )
+    }
+
+    @Test
+    func bankAccountWithoutCardShowsAnEmptySlot() async throws {
+        let viewModel = await AccountsFactory.loaded()
+        let deposit = try #require(viewModel.overview?.deposits.first)
+        let cardless = AccountsOverview.Deposit(account: deposit.account, balance: deposit.balance, debitCards: [])
+        assertScreenSnapshot(of: DepositCards(deposit: cardless, formatter: .init()) {}.padding(16), height: 280)
     }
 
     @Test

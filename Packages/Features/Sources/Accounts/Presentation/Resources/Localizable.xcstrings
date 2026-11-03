@@ -1,12 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ Debit" : {
+    "%@ debit card •••• %@, %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ debit card •••• %2$@, %3$@"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Débito"
+            "value" : "Tarjeta de débito %1$@ •••• %2$@, %3$@"
           }
         }
       }
@@ -17,46 +23,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ que te cobró el banco"
-          }
-        }
-      }
-    },
-    "%lld linked methods" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld linked method"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld linked methods"
-                }
-              }
-            }
-          }
-        },
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld medio vinculado"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld medios vinculados"
-                }
-              }
-            }
           }
         }
       }
@@ -77,6 +43,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cuentas"
+          }
+        }
+      }
+    },
+    "Add a debit card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar tarjeta de débito"
           }
         }
       }
@@ -181,12 +157,32 @@
         }
       }
     },
-    "Deposits" : {
+    "Debit" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Depósitos"
+            "value" : "Débito"
+          }
+        }
+      }
+    },
+    "Debit cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjetas de débito"
+          }
+        }
+      }
+    },
+    "Debit · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débito · %@"
           }
         }
       }

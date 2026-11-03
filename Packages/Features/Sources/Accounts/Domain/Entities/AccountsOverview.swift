@@ -16,9 +16,17 @@ public struct AccountsOverview: Hashable, Sendable {
     public struct Deposit: Identifiable, Hashable, Sendable {
         public let account: Account
         public let balance: Money
-        /// Debit cards first, then transfer methods.
-        public let methods: [Card]
+        /// The plastics that draw from this account. Its transfer channel is left out: the screen
+        /// shows accounts through their cards, and moving money between accounts is a transfer
+        /// movement, not something the person links.
+        public let debitCards: [Card]
         public var id: UUID { account.id }
+
+        public init(account: Account, balance: Money, debitCards: [Card]) {
+            self.account = account
+            self.balance = balance
+            self.debitCards = debitCards
+        }
     }
 
     public struct Cash: Identifiable, Hashable, Sendable {
