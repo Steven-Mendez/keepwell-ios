@@ -110,3 +110,23 @@ struct SwiftDataStoreTests {
         #expect(try await store.load() == nil)
     }
 }
+
+@Suite("SwiftData store seeding")
+struct SwiftDataStoreSeedTests {
+    @Test
+    func seedsTheWholeSample() async throws {
+        let sample = SampleData.standard
+        let store = try SwiftDataStore(modelContainer: ModelContainerFactory.make(store: .inMemory))
+        try await store.seed(
+            settings: sample.settings,
+            accounts: sample.accounts,
+            cards: sample.cards,
+            transactions: sample.transactions,
+            categories: sample.categories,
+        )
+        #expect(try await store.fetchAccounts().count == sample.accounts.count)
+        #expect(try await store.fetchCards().count == sample.cards.count)
+        #expect(try await store.fetchTransactions(in: nil).count == sample.transactions.count)
+        #expect(try await store.load() == sample.settings)
+    }
+}
