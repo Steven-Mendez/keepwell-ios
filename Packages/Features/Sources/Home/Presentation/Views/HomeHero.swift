@@ -137,7 +137,7 @@ struct HomeHero: View {
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-                .foregroundStyle(item.kind == .cardDebt && !hidesBalances ? KWColor.State.negative : KWColor.Text.primary)
+                .foregroundStyle(KWColor.Text.primary)
                 .contentTransition(.numericText())
                 .accessibilityLabel(hidesBalances
                     ? String(localized: "Hidden", bundle: #bundle)

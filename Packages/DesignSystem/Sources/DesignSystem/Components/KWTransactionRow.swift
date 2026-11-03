@@ -3,7 +3,9 @@ import SwiftUI
 /// Visual kind of a movement row. Planned wins over the movement type because the design
 /// shows every planned movement in amber regardless of direction. Expenses use the soft coral
 /// `negative` rather than an alarm red so a list of everyday spending stays calm to read, and
-/// the amount keeps its "−" so the direction never depends on color alone.
+/// the amount keeps its "−" so the direction never depends on color alone. Transfers between the
+/// person's own accounts don't change what they have, so they stay neutral: grey icon, default
+/// text color. Color is a signal for single movements only; headline totals stay neutral.
 public enum KWTransactionStyle: Sendable {
     case expense
     case income
@@ -23,7 +25,7 @@ public enum KWTransactionStyle: Sendable {
         switch self {
         case .expense: KWColor.Tint.negative
         case .income: KWColor.Tint.positive
-        case .transfer: KWColor.Tint.accent
+        case .transfer: KWColor.Tint.neutral
         case .planned: KWColor.Tint.pending
         }
     }
@@ -32,7 +34,7 @@ public enum KWTransactionStyle: Sendable {
         switch self {
         case .expense: KWColor.State.negative
         case .income: KWColor.State.positive
-        case .transfer: KWColor.State.transfer
+        case .transfer: KWColor.State.neutral
         case .planned: KWColor.State.pending
         }
     }
@@ -41,7 +43,7 @@ public enum KWTransactionStyle: Sendable {
         switch self {
         case .expense: KWColor.State.negative
         case .income: KWColor.State.positive
-        case .transfer: KWColor.State.transfer
+        case .transfer: KWColor.Text.primary
         case .planned: KWColor.State.pending
         }
     }
