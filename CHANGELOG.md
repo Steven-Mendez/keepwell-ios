@@ -25,3 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `AppContainer` composition root with init-based dependency injection.
 - Data stays on the iPhone with SwiftData and is backed up to the private iCloud database while
   "Respaldo en iCloud" is on (default); turning it off keeps data on the device only.
+
+### Fixed
+
+- The app icon shows the keepwell mark on the brand gradient, as on the brand board.
