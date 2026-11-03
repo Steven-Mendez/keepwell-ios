@@ -1,5 +1,7 @@
 import AccountsDomain
 import AccountsPresentation
+import AddCardDomain
+import AddCardPresentation
 import Core
 import Domain
 import Foundation
@@ -57,6 +59,17 @@ final class AppContainer {
             getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
             reconcileCash: DefaultReconcileCashUseCase(transactions: store, settings: store),
             withdrawCash: DefaultWithdrawCashUseCase(transactions: store, cards: store, settings: store),
+        )
+    }
+
+    // MARK: - Add card
+
+    func makeAddCardViewModel() -> AddCardViewModel {
+        AddCardViewModel(
+            getContext: DefaultGetAddCardContextUseCase(settings: store, accounts: store),
+            addCredit: DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store),
+            addDebit: DefaultAddDebitCardUseCase(accounts: store, cards: store),
+            addAccount: DefaultAddAccountUseCase(accounts: store, cards: store),
         )
     }
 }
