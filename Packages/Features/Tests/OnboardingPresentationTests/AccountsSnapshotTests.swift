@@ -9,7 +9,7 @@ import Testing
 struct AccountsSnapshotTests {
     private func viewModelWithAccounts() -> OnboardingViewModel {
         let viewModel = OnboardingFactory.usdAndNIO()
-        var cash = viewModel.newAccount(.cash)
+        var cash = viewModel.accounts[0]
         cash.balance = 560
         viewModel.save(cash)
         var bank = viewModel.newAccount(.bank)

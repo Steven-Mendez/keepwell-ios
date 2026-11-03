@@ -21,6 +21,8 @@ struct AccountFormView: View {
     @FocusState private var focus: Field?
     let principal: String
     let second: String?
+    /// The currencies this cash account may take: one cash account per currency.
+    let cashCurrencies: [String]
     let isNew: Bool
     let onSave: (OnboardingAccountDraft) -> Void
     let onRemove: () -> Void
@@ -30,6 +32,7 @@ struct AccountFormView: View {
         draft: OnboardingAccountDraft,
         principal: String,
         second: String?,
+        cashCurrencies: [String] = [],
         isNew: Bool,
         onSave: @escaping (OnboardingAccountDraft) -> Void,
         onRemove: @escaping () -> Void,
@@ -42,6 +45,7 @@ struct AccountFormView: View {
         )
         self.principal = principal
         self.second = second
+        self.cashCurrencies = cashCurrencies
         self.isNew = isNew
         self.onSave = onSave
         self.onRemove = onRemove
@@ -64,7 +68,7 @@ struct AccountFormView: View {
                 if draft.kind == .credit, second != nil {
                     debtModes
                 }
-                if !isNew, draft.kind != .cash {
+                if !isNew {
                     // Kept out of the footer so it never rides on the keyboard next to "Save".
                     Button(action: onRemove) { Text("Remove account", bundle: #bundle) }
                         .buttonStyle(.kw(.destructive, size: .row))
@@ -114,6 +118,9 @@ struct AccountFormView: View {
             }
             if draft.kind == .bank, let second {
                 currencyRow(options: [principal, second])
+            }
+            if draft.kind == .cash, cashCurrencies.count > 1 {
+                currencyRow(options: cashCurrencies)
             }
             KWAmountFieldRow(balanceLabel, symbol: CurrencyFormatter.symbol(for: balanceCurrency), text: $balanceText)
                 .kwFocused($focus, equals: .balance)

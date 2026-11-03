@@ -130,6 +130,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - "Card added" shows the new card straight, and the debt step no longer has a thumbnail beside its
   title.
 - Logging a movement no longer asks whether it's planned or shared; it's saved as it happened.
+- Onboarding's accounts: swipe an account left to remove it (a long swipe removes it at once),
+  cash included. Cash starts in the main currency and its form lets you pick the currency; with
+  two currencies you can keep cash in each, saved as "Cash USD" and "Cash NIO".
 
 - A bank account is one card. Accounts shows each bank account as a single debit card with its
   balance (no stacks, no "Link another card", no empty "Add a debit card" slot), and tapping it

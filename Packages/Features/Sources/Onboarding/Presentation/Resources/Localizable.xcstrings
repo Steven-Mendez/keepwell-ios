@@ -161,6 +161,16 @@
         }
       }
     },
+    "Cash %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efectivo %@"
+          }
+        }
+      }
+    },
     "Choose your main currency" : {
       "localizations" : {
         "es" : {
@@ -357,16 +367,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ya la usaba: restaurar desde iCloud"
-          }
-        }
-      }
-    },
-    "iCloud backup" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Respaldo en iCloud"
           }
         }
       }
@@ -741,6 +741,16 @@
         }
       }
     },
+    "Swipe an account left to remove it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza una cuenta a la izquierda para quitarla."
+          }
+        }
+      }
+    },
     "Today's balance" : {
       "localizations" : {
         "es" : {
@@ -851,16 +861,6 @@
         }
       }
     },
-    "You can link more cards and add extra ones later." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Podrás vincular más tarjetas y agregar adicionales después."
-          }
-        }
-      }
-    },
     "Your balances are yours alone. Lock the app so only you can open it." : {
       "localizations" : {
         "es" : {
@@ -907,6 +907,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nombre"
+          }
+        }
+      }
+    },
+    "iCloud backup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respaldo en iCloud"
           }
         }
       }

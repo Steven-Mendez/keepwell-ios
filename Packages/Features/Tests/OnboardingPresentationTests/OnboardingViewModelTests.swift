@@ -66,7 +66,7 @@ enum OnboardingFactory {
 @MainActor
 struct OnboardingViewModelTests {
     @Test
-    func accountsCanBeAddedEditedAndRemovedButCashStays() {
+    func accountsCanBeAddedEditedAndRemoved() {
         let viewModel = OnboardingFactory.make()
         var bank = viewModel.newAccount(.bank)
         bank.name = "Savings"
@@ -77,7 +77,7 @@ struct OnboardingViewModelTests {
         #expect(viewModel.accounts.last?.balance == 100)
         viewModel.removeAccount(id: bank.id)
         viewModel.removeAccount(id: viewModel.accounts[0].id)
-        #expect(viewModel.accounts.map(\.kind) == [.cash])
+        #expect(viewModel.accounts.isEmpty)
     }
 
     @Test

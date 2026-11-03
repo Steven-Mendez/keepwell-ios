@@ -114,7 +114,7 @@ public final class OnboardingViewModel {
 
     public func setCurrencyMode(_ mode: CurrencyMode) {
         currencyMode = mode
-        syncCashCurrency()
+        syncAccountCurrencies()
     }
 
     /// Picking the current second currency as the main one swaps them, so the two never match
@@ -127,7 +127,7 @@ public final class OnboardingViewModel {
         }
         principal = code
         rateText = Self.defaultRateText
-        syncCashCurrency()
+        syncAccountCurrencies()
     }
 
     /// Choosing a currency resets the rate to 1, as the design does: the old rate belonged to
@@ -141,7 +141,7 @@ public final class OnboardingViewModel {
             secondChoice = code
             rateText = Self.defaultRateText
         }
-        syncCashCurrency()
+        syncAccountCurrencies()
     }
 
     /// The rate keeps describing the same exchange, so it's inverted: 1 USD = 36.6243 NIO
@@ -151,7 +151,7 @@ public final class OnboardingViewModel {
         if let rate, rate != 1 {
             rateText = Self.rateText(for: 1 / rate)
         }
-        syncCashCurrency()
+        syncAccountCurrencies()
     }
 
     // MARK: Accounts
@@ -166,11 +166,18 @@ public final class OnboardingViewModel {
                 network: .visa,
                 debtMode: second == nil ? .principal : .dual,
             )
-        case .cash: accounts.first { $0.kind == .cash } ?? OnboardingAccountDraft(
-                kind: .cash,
-                name: String(localized: "Cash", bundle: #bundle),
-                currency: second ?? principal,
-            )
+        case .cash:
+            // One cash account per currency: a new one takes the first currency without one, and
+            // once every currency has its cash the tile opens the existing one instead.
+            if let currency = freeCashCurrencies(excluding: nil).first {
+                OnboardingAccountDraft(kind: .cash, name: String(localized: "Cash", bundle: #bundle), currency: currency)
+            } else {
+                accounts.first { $0.kind == .cash } ?? OnboardingAccountDraft(
+                    kind: .cash,
+                    name: String(localized: "Cash", bundle: #bundle),
+                    currency: principal,
+                )
+            }
         }
     }
 
@@ -183,7 +190,7 @@ public final class OnboardingViewModel {
     }
 
     public func removeAccount(id: UUID) {
-        accounts.removeAll { $0.id == id && $0.kind != .cash }
+        accounts.removeAll { $0.id == id }
     }
 
     // MARK: Navigation
@@ -276,7 +283,7 @@ public final class OnboardingViewModel {
         defer { isSaving = false }
         let draft = OnboardingDraft(
             currencies: currencies,
-            accounts: accounts,
+            accounts: accountsToSave,
             locksWithBiometrics: locksWithBiometrics,
             backsUpToICloud: backsUpToICloud,
             hidesAmountsInAppSwitcher: hidesAmountsInAppSwitcher,
@@ -291,12 +298,14 @@ public final class OnboardingViewModel {
         }
     }
 
-    private func syncCashCurrency() {
-        let currency = second ?? principal
-        for index in accounts.indices where accounts[index].kind == .cash {
-            accounts[index].currency = currency
-        }
-        for index in accounts.indices where accounts[index].kind == .bank && accounts[index].currency != second {
+    /// Cash and bank accounts keep the currency they were given while it's still one of the
+    /// chosen ones; a dropped currency falls back to the main one. Cash in a dropped currency goes
+    /// when the main one already has cash, since there's one cash account per currency.
+    private func syncAccountCurrencies() {
+        let chosen = currencies
+        let principalHasCash = accounts.contains { $0.kind == .cash && $0.currency == principal }
+        accounts.removeAll { $0.kind == .cash && !chosen.contains($0.currency) && principalHasCash }
+        for index in accounts.indices where accounts[index].kind != .credit && !chosen.contains(accounts[index].currency) {
             accounts[index].currency = principal
         }
     }

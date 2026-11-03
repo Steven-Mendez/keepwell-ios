@@ -31,7 +31,7 @@ struct OnboardingCurrenciesTests {
         viewModel.setCurrencyMode(.dual)
         #expect(viewModel.second == "EUR")
         #expect(viewModel.rate == 1)
-        #expect(viewModel.accounts.first?.currency == "EUR")
+        #expect(viewModel.accounts.first?.currency == "USD")
         #expect(viewModel.rateSummary == "1 USD = 1 EUR")
         #expect(viewModel.currenciesSummary == "USD + EUR")
     }
@@ -51,7 +51,7 @@ struct OnboardingCurrenciesTests {
         viewModel.rateText = "36.6243"
         viewModel.selectSecond("MXN")
         #expect(viewModel.rateText == "1.0000")
-        #expect(viewModel.accounts.first?.currency == "MXN")
+        #expect(viewModel.accounts.first?.currency == "USD")
     }
 
     @Test
@@ -94,7 +94,7 @@ struct OnboardingCurrenciesTests {
         viewModel.selectPrincipal("NIO")
         #expect(viewModel.principal == "NIO")
         #expect(viewModel.second == "EUR")
-        #expect(viewModel.accounts.first?.currency == "EUR")
+        #expect(viewModel.accounts.first?.currency == "NIO")
         #expect(!viewModel.secondCurrencyOptions.contains("NIO"))
         #expect(viewModel.secondCurrencyOptions.contains("USD"))
     }
@@ -147,5 +147,55 @@ struct OnboardingCurrenciesTests {
         #expect(viewModel.principal == "EUR")
         #expect(viewModel.second == "USD")
         #expect(viewModel.rateText == "1.0000")
+    }
+
+    @Test
+    func cashStaysInTheMainCurrencyWhenASecondIsAdded() {
+        let viewModel = OnboardingFactory.usdAndNIO()
+        #expect(viewModel.accounts.map(\.currency) == ["USD"])
+    }
+
+    @Test
+    func aSecondCashAccountTakesTheCurrencyWithoutCash() {
+        let viewModel = OnboardingFactory.usdAndNIO()
+        let cash = viewModel.newAccount(.cash)
+        #expect(cash.currency == "NIO")
+        #expect(viewModel.cashCurrencyOptions(for: cash) == ["NIO"])
+        viewModel.save(cash)
+        #expect(viewModel.cashCurrencyOptions(for: viewModel.accounts[0]) == ["USD"])
+        // Every currency has its cash, so the tile opens the existing one.
+        #expect(viewModel.newAccount(.cash).id == viewModel.accounts[0].id)
+    }
+
+    @Test
+    func aLoneCashAccountCanMoveToEitherCurrency() {
+        let viewModel = OnboardingFactory.usdAndNIO()
+        #expect(viewModel.cashCurrencyOptions(for: viewModel.accounts[0]) == ["USD", "NIO"])
+    }
+
+    @Test
+    func cashCanBeRemoved() {
+        let viewModel = OnboardingFactory.make()
+        viewModel.removeAccount(id: viewModel.accounts[0].id)
+        #expect(viewModel.accounts.isEmpty)
+    }
+
+    @Test
+    func goingBackToOneCurrencyDropsTheCashInTheOtherOne() {
+        let viewModel = OnboardingFactory.usdAndNIO()
+        viewModel.save(viewModel.newAccount(.cash))
+        viewModel.setCurrencyMode(.single)
+        #expect(viewModel.accounts.map(\.currency) == ["USD"])
+    }
+
+    @Test
+    func cashInTwoCurrenciesIsSavedWithItsCurrencyInTheName() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.setCurrencyMode(.dual)
+        viewModel.selectSecond("NIO")
+        viewModel.save(viewModel.newAccount(.cash))
+        await viewModel.skipNotifications()
+        #expect(complete.received.draft?.accounts.map(\.name) == ["Cash USD", "Cash NIO"])
     }
 }
