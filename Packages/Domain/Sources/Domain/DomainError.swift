@@ -22,6 +22,10 @@ public enum DomainError: Error, Equatable, Sendable {
     case paymentMethodUnavailable(UUID)
     case invalidPeriod
     case notFound(UUID)
+    /// An app passcode must be exactly `Passcode.length` digits.
+    case invalidPasscode
+    /// Repeated or consecutive digits ("111111", "123456") are the first ones anyone tries.
+    case passcodeTooSimple
     case corruptedData(String)
     case persistence(String)
 }

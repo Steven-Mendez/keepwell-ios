@@ -356,8 +356,7 @@ extension RootView {
             coverWindow.hide()
         case .lock:
             coverWindow.show(LockView(
-                authenticator: container.authenticator,
-                prefersPasscode: lock.settings?.unlockMethod == .passcode,
+                viewModel: container.makeLockViewModel(prefersPasscode: lock.settings?.unlockMethod == .passcode),
                 showsHiddenAmountsNote: lock.settings?.hidesAmountsInAppSwitcher == true,
             ) { lock.isLocked = false })
         case .privacy:

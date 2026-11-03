@@ -76,3 +76,33 @@ private final class FakeBackup: BackupPreference, @unchecked Sendable {
         isICloudBackupEnabled = isEnabled
     }
 }
+
+@Suite("Settings lock profile")
+struct SettingsLockProfileTests {
+    @Test
+    func theOverviewReportsThePasscodeAndName() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let lock = try InMemoryPasscodeStore(passcode: Passcode("482915"), name: "Steven")
+        let overview = try await DefaultGetSettingsOverviewUseCase(
+            settings: store, categories: store, cards: store, backup: FakeBackup(), passcodes: lock, profile: lock,
+        ).execute()
+        #expect(overview.hasPasscode)
+        #expect(overview.preferredName == "Steven")
+    }
+
+    @Test
+    func turningThePasscodeOffRemovesIt() async throws {
+        let lock = try InMemoryPasscodeStore(passcode: Passcode("482915"))
+        await DefaultRemovePasscodeUseCase(passcodes: lock).execute()
+        #expect(await !lock.hasPasscode())
+    }
+
+    @Test
+    func theNameIsTrimmedAndABlankOneIsForgotten() async {
+        let lock = InMemoryPasscodeStore()
+        await DefaultSetPreferredNameUseCase(profile: lock).execute("  Steven  ")
+        #expect(await lock.preferredName() == "Steven")
+        await DefaultSetPreferredNameUseCase(profile: lock).execute("   ")
+        #expect(await lock.preferredName() == nil)
+    }
+}

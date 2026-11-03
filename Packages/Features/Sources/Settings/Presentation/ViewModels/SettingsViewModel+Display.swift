@@ -43,7 +43,7 @@ extension SettingsViewModel {
     func unlockTitle(_ method: UnlockMethod) -> String {
         switch method {
         case .biometrics: String(localized: "Face ID /\nTouch ID", bundle: #bundle)
-        case .passcode: String(localized: "iPhone\npasscode", bundle: #bundle)
+        case .passcode: String(localized: "Passcode\nonly", bundle: #bundle)
         case .disabled: String(localized: "No lock", bundle: #bundle)
         }
     }

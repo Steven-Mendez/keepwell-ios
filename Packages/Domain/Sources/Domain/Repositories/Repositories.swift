@@ -47,3 +47,22 @@ public protocol BackupPreference: Sendable {
     var isICloudBackupEnabled: Bool { get }
     func setICloudBackupEnabled(_ isEnabled: Bool)
 }
+
+/// The app passcode, kept on this device only (never in the synced store or a backup). The
+/// implementation stores a salted hash, so the code itself can't be read back.
+public protocol PasscodeRepository: Sendable {
+    func hasPasscode() async -> Bool
+    func setPasscode(_ passcode: Passcode) async throws(DomainError)
+    func verify(_ passcode: Passcode) async -> Bool
+    /// Also clears the failed attempts.
+    func removePasscode() async
+    func attempts() async -> PasscodeAttempts
+    func setAttempts(_ attempts: PasscodeAttempts) async
+}
+
+/// How the lock screen greets the person. Device-local, like the passcode it sits next to.
+public protocol ProfileRepository: Sendable {
+    /// `nil` when the person hasn't given one.
+    func preferredName() async -> String?
+    func setPreferredName(_ name: String?) async
+}

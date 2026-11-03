@@ -10,14 +10,22 @@ public struct SettingsView: View {
     @Bindable private var viewModel: SettingsViewModel
     private let onBack: () -> Void
     private let onErased: () -> Void
+    private let onSetUpPasscode: () -> Void
     @State private var isConfirmingErase = false
     @FocusState private var isEditingRate: Bool
     @Environment(\.openURL) private var openURL
 
-    public init(viewModel: SettingsViewModel, onBack: @escaping () -> Void, onErased: @escaping () -> Void) {
+    /// `onSetUpPasscode` opens creating or changing the app passcode, which the lock feature owns.
+    public init(
+        viewModel: SettingsViewModel,
+        onBack: @escaping () -> Void,
+        onErased: @escaping () -> Void,
+        onSetUpPasscode: @escaping () -> Void = {},
+    ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onErased = onErased
+        self.onSetUpPasscode = onSetUpPasscode
     }
 
     public var body: some View {
@@ -30,7 +38,7 @@ public struct SettingsView: View {
                     cards(overview.settings)
                     organization(overview)
                     languageSection
-                    SecuritySection(viewModel: viewModel, settings: overview.settings)
+                    SecuritySection(viewModel: viewModel, overview: overview, onSetUpPasscode: onSetUpPasscode)
                     DataSection(viewModel: viewModel, overview: overview)
                     erase
                 }

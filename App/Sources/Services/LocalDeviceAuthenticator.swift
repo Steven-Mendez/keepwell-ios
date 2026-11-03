@@ -36,6 +36,13 @@ struct LocalDeviceAuthenticator: DeviceAuthenticator {
         }
     }
 
+    func authenticateWithBiometrics(reason: String, fallbackTitle: String) async -> Bool {
+        let context = LAContext()
+        context.localizedFallbackTitle = fallbackTitle
+        // Any failure, the fallback button included, leaves the person on the app's keypad.
+        return await (try? context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)) ?? false
+    }
+
     /// The passcode screen alone. `deviceOwnerAuthentication` would try Face ID or Touch ID first;
     /// an access control that only accepts the device passcode asks for nothing else.
     private func authenticateWithPasscode(reason: String) async -> Bool {

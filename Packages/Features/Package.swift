@@ -390,6 +390,23 @@ let package = Package(
             path: "Sources/Lock/Presentation",
             resources: [.process("Resources")],
         ),
+        .testTarget(
+            name: "LockDomainTests",
+            dependencies: [
+                "LockDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "LockPresentationTests",
+            dependencies: [
+                "LockPresentation",
+                "LockDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
     ],
     swiftLanguageModes: [.v6],
 )
