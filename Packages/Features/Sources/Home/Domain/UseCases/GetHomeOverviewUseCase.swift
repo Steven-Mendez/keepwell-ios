@@ -6,6 +6,9 @@ public protocol GetHomeOverviewUseCase: Sendable {
 }
 
 public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
+    /// How many confirmed movements home previews before "See all".
+    static let recentCount = 3
+
     private let accounts: any AccountRepository
     private let cards: any CardRepository
     private let transactions: any TransactionRepository
@@ -62,6 +65,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         balances = balances.filter { $0.account.kind != .cash } + balances.filter { $0.account.kind == .cash }
         let netWorth = try NetWorth.total(of: allBalances, settings: currencies)
         let planned = transactions.filter { !$0.isConfirmed }.sorted { $0.date < $1.date }
+        let recent = transactions.filter(\.isConfirmed).sorted { $0.date > $1.date }.prefix(recentCount)
 
         return HomeOverview(
             settings: currencies,
@@ -76,6 +80,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
                 calendar: calendar,
             ),
             hasTransactions: !transactions.isEmpty,
+            recent: Array(recent),
             planned: planned,
             plannedSummary: PlannedSummary(transactions: planned),
             additionalCards: additionalCards(records, principal: currencies.principal, calendar: calendar, now: now),

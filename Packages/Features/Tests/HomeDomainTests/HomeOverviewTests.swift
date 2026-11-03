@@ -26,6 +26,21 @@ struct HomeOverviewTests {
     }
 
     @Test
+    func recentMovementsAreTheLatestConfirmedOnes() async throws {
+        let result = try await overview()
+        let confirmed = sample.transactions.filter(\.isConfirmed)
+        let expectedCount = min(DefaultGetHomeOverviewUseCase.recentCount, confirmed.count)
+        let dates = result.recent.map(\.date)
+        let newestFirst = dates.sorted { $0 > $1 }
+        #expect(result.recent.count == expectedCount)
+        let allConfirmed = result.recent.allSatisfy(\.isConfirmed)
+        #expect(allConfirmed)
+        #expect(dates == newestFirst)
+        let newest = try #require(confirmed.map(\.date).max())
+        #expect(result.recent.first?.date == newest)
+    }
+
+    @Test
     func balancesListDepositsBeforeCashAndLeaveCardsOut() async throws {
         let result = try await overview()
         #expect(result.balances.map(\.account.kind) == [.deposit, .deposit, .cash])

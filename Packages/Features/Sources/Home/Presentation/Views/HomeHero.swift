@@ -3,18 +3,25 @@ import Domain
 import HomeDomain
 import SwiftUI
 
-/// The brand hero at the top of home: search, shortcuts, net worth and the quick actions.
+/// The brand hero at the top of home: greeting and shortcuts, a swipeable carousel with net worth
+/// and each balance, and the quick actions.
 struct HomeHero: View {
     let viewModel: HomeViewModel
     let actions: HomeView.Actions
+    @Binding var hidesBalances: Bool
+
+    @State private var page = BalancePage.Kind.netWorth
+
+    /// Fixed because a paged `TabView` inside a `ScrollView` has no height of its own.
+    private let carouselHeight: CGFloat = 146
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: KWSpacing.xl) {
             topBar
             if let overview = viewModel.overview {
-                netWorth(overview)
+                balances(overview)
             } else {
-                Color.clear.frame(height: 150)
+                Color.clear.frame(height: carouselHeight + 70)
             }
             quickActions
         }
@@ -34,56 +41,31 @@ struct HomeHero: View {
         }
     }
 
-    private func netWorth(_ overview: HomeOverview) -> some View {
-        let parts = viewModel.netWorthParts(overview)
-        let principal = overview.settings.principal
-        return VStack(spacing: KWSpacing.xs) {
-            Text("Net worth · \(principal)", bundle: #bundle)
-                .font(.kw(15, weight: 500))
-                .foregroundStyle(KWColor.Text.onBrand)
-            (Text(parts.whole).font(.kw(52, weight: 800, relativeTo: .largeTitle))
-                + Text(parts.cents).font(.kw(30, weight: 800, relativeTo: .title)))
-                .tracking(-1.5)
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .accessibilityLabel(viewModel.formatter.string(overview.netWorth))
-            if let line = viewModel.secondCurrencyLine(overview) {
-                Text(line)
-                    .font(KWTextStyle.label.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.onBrand)
-                    .monospacedDigit()
-            }
-            Button(action: actions.accounts) {
-                Text(viewModel.countsLine(overview))
-                    .font(.kw(15, weight: 600))
-                    .padding(.horizontal, 18)
-                    .frame(height: 36)
-                    .background(KWColor.Overlay.white18, in: Capsule())
-                    .contentShape(Capsule())
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 6)
-        }
-        .frame(maxWidth: .infinity)
-    }
+    // MARK: - Top bar
 
     private var topBar: some View {
         HStack(spacing: KWSpacing.xs) {
-            Button(action: actions.search) {
-                HStack(spacing: KWSpacing.xs) {
-                    KWIconView(.search, size: 18)
-                    Text("Search transactions", bundle: #bundle)
-                        .font(KWTextStyle.body.font)
-                    Spacer(minLength: 0)
+            TimelineView(.everyMinute) { context in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(viewModel.greeting(at: context.date))
+                        .font(.kw(22, weight: 800, relativeTo: .title2))
+                        .foregroundStyle(KWColor.Text.primary)
+                    Text(viewModel.dateLine(context.date))
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.Text.onBrand)
                 }
-                .foregroundStyle(KWColor.Text.onBrand)
-                .padding(.horizontal, 14)
-                .frame(height: 40)
-                .background(KWColor.Overlay.white14, in: Capsule())
-                .contentShape(Capsule())
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isHeader)
             }
-            .buttonStyle(.plain)
+            Spacer(minLength: KWSpacing.xs)
+            KWCircleButton(
+                .search,
+                style: .translucent,
+                accessibilityLabel: String(localized: "Search transactions", bundle: #bundle),
+                action: actions.search,
+            )
             KWCircleButton(
                 .chartBars,
                 style: .translucent,
@@ -98,6 +80,93 @@ struct HomeHero: View {
             )
         }
     }
+
+    // MARK: - Balances
+
+    private func balances(_ overview: HomeOverview) -> some View {
+        let pages = viewModel.balancePages(overview)
+        return VStack(spacing: KWSpacing.sm) {
+            TabView(selection: $page) {
+                ForEach(pages) { item in
+                    balancePage(item)
+                        .tag(item.kind)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: carouselHeight)
+            .padding(.horizontal, -KWLayout.gutter)
+            if pages.count > 1 {
+                pageDots(pages)
+            }
+            Button(action: actions.accounts) {
+                Text(viewModel.countsLine(overview))
+                    .font(.kw(15, weight: 600))
+                    .padding(.horizontal, 18)
+                    .frame(height: 36)
+                    .background(KWColor.Overlay.white18, in: Capsule())
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func balancePage(_ item: BalancePage) -> some View {
+        let parts = viewModel.parts(item.amount, hidden: hidesBalances)
+        return VStack(spacing: KWSpacing.xs) {
+            Button {
+                withAnimation(.snappy) { hidesBalances.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(item.title)
+                        .lineLimit(1)
+                    KWIconView(hidesBalances ? .eyeOff : .eye, size: 16)
+                }
+                .font(.kw(15, weight: 500))
+                .foregroundStyle(KWColor.Text.onBrand)
+                .frame(minHeight: KWLayout.minTouch)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(item.title)
+            .accessibilityHint(hidesBalances
+                ? String(localized: "Shows balances", bundle: #bundle)
+                : String(localized: "Hides balances", bundle: #bundle))
+            (Text(parts.whole).font(.kw(52, weight: 800, relativeTo: .largeTitle))
+                + Text(parts.cents).font(.kw(30, weight: 800, relativeTo: .title)))
+                .tracking(-1.5)
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .foregroundStyle(item.kind == .cardDebt && !hidesBalances ? KWColor.State.negative : KWColor.Text.primary)
+                .contentTransition(.numericText())
+                .accessibilityLabel(hidesBalances
+                    ? String(localized: "Hidden", bundle: #bundle)
+                    : viewModel.formatter.string(item.amount))
+            if let caption = item.caption {
+                Text(viewModel.visible(caption, hidden: hidesBalances))
+                    .font(KWTextStyle.label.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.onBrand)
+                    .monospacedDigit()
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, KWLayout.gutter)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func pageDots(_ pages: [BalancePage]) -> some View {
+        HStack(spacing: 6) {
+            ForEach(pages) { item in
+                Capsule()
+                    .fill(item.kind == page ? KWColor.Text.primary : KWColor.Overlay.white18)
+                    .frame(width: item.kind == page ? 16 : 6, height: 6)
+            }
+        }
+        .animation(.snappy, value: page)
+        .accessibilityHidden(true)
+    }
+
+    // MARK: - Quick actions
 
     private var quickActions: some View {
         HStack(spacing: KWSpacing.xs) {

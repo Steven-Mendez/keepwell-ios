@@ -9,6 +9,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Home greets you by time of day with today's date, and the hero's balance swipes like Revolut's:
+  net worth first, then each account in its own currency (with its "≈" conversion) and what the
+  cards owe, with page dots.
+- Home: an eye button next to the balance hides every amount on the screen; the choice stays on
+  this device.
+- Home: the three latest movements, with "See all" opening Transactions.
 - Settings › Language shows the app's language and opens the iPhone's Settings to pick another
   one only for Keepwell; the app follows the iPhone's language otherwise.
 - The settings button is a gear.

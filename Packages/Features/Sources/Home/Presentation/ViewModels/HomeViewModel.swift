@@ -21,7 +21,7 @@ public final class HomeViewModel {
 
     private let getOverview: any GetHomeOverviewUseCase
     private let confirmPlanned: any ConfirmPlannedTransactionUseCase
-    private let calendar: Calendar
+    let calendar: Calendar
     let formatter = CurrencyFormatter()
 
     public init(
@@ -69,13 +69,6 @@ public final class HomeViewModel {
         overview.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories) }
     }
 
-    /// The whole part and the cents, drawn at two sizes ("$11,157" ".46").
-    func netWorthParts(_ overview: HomeOverview) -> (whole: String, cents: String) {
-        let text = formatter.string(overview.netWorth)
-        guard let dot = text.lastIndex(of: ".") else { return (text, "") }
-        return (String(text[..<dot]), String(text[dot...]))
-    }
-
     /// "≈ C$408,634 · rate 36.6243".
     func secondCurrencyLine(_ overview: HomeOverview) -> String? {
         guard let second = overview.netWorthInSecond else { return nil }
@@ -113,8 +106,11 @@ public final class HomeViewModel {
     }
 
     /// "They don't count toward balances until you confirm them · C$7,500 (≈ $204.78)".
-    func plannedCaption(_ overview: HomeOverview) -> String {
+    func plannedCaption(_ overview: HomeOverview, hidden: Bool = false) -> String {
         let summary = overview.plannedSummary
+        guard !hidden else {
+            return String(localized: "They don't count toward balances until you confirm them · \(Self.maskedAmount)", bundle: #bundle)
+        }
         let principal = formatter.string(from: summary.principalTotal, currencyCode: overview.settings.principal)
         let total = if let second = overview.settings.second {
             "\(formatter.string(from: summary.secondTotal, currencyCode: second, fractionDigits: 0)) (≈ \(principal))"
@@ -137,7 +133,8 @@ public final class HomeViewModel {
     }
 
     /// "C$2,150 of C$4,000 cap this cycle".
-    func additionalCaption(_ status: HomeOverview.AdditionalCardStatus) -> String {
+    func additionalCaption(_ status: HomeOverview.AdditionalCardStatus, hidden: Bool = false) -> String {
+        guard !hidden else { return Self.maskedAmount }
         let spent = formatter.string(status.usage.spent, fractionDigits: 0)
         guard let cap = status.usage.cap else { return spent }
         let capText = formatter.string(cap, fractionDigits: 0)

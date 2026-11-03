@@ -4,8 +4,9 @@ import HomeDomain
 import SharedPresentation
 import SwiftUI
 
-/// Home: net worth on the brand hero, quick actions, the month so far, planned movements waiting
-/// for confirmation, additional cards against their cap and the balance of each account.
+/// Home: a balance carousel on the brand hero, quick actions, the latest movements, the month so
+/// far, planned movements waiting for confirmation, additional cards against their cap and the
+/// balance of each account.
 public struct HomeView: View {
     /// Where home leads. The root decides how each one is shown.
     public struct Actions {
@@ -16,6 +17,7 @@ public struct HomeView: View {
         public var newMovement: (TransactionKind) -> Void
         public var payCard: () -> Void
         public var allPlanned: () -> Void
+        public var allTransactions: () -> Void
         /// Credit account and additional card.
         public var additionalCard: (UUID, UUID) -> Void
 
@@ -27,6 +29,7 @@ public struct HomeView: View {
             newMovement: @escaping (TransactionKind) -> Void,
             payCard: @escaping () -> Void,
             allPlanned: @escaping () -> Void,
+            allTransactions: @escaping () -> Void,
             additionalCard: @escaping (UUID, UUID) -> Void,
         ) {
             self.search = search
@@ -36,12 +39,15 @@ public struct HomeView: View {
             self.newMovement = newMovement
             self.payCard = payCard
             self.allPlanned = allPlanned
+            self.allTransactions = allTransactions
             self.additionalCard = additionalCard
         }
     }
 
     private let viewModel: HomeViewModel
     private let actions: Actions
+    /// Kept on the device, not synced: hiding amounts is about who is looking at this screen.
+    @AppStorage("home.hidesBalances") private var hidesBalances = false
 
     public init(viewModel: HomeViewModel, actions: Actions) {
         self.viewModel = viewModel
@@ -54,7 +60,7 @@ public struct HomeView: View {
     public var body: some View {
         ScrollView {
             VStack(spacing: KWSpacing.sm) {
-                HomeHero(viewModel: viewModel, actions: actions)
+                HomeHero(viewModel: viewModel, actions: actions, hidesBalances: $hidesBalances)
                 if let overview = viewModel.overview {
                     content(overview)
                         .padding(.horizontal, KWLayout.gutter)
@@ -74,6 +80,9 @@ public struct HomeView: View {
     @ViewBuilder
     private func content(_ overview: HomeOverview) -> some View {
         if overview.hasTransactions {
+            if !overview.recent.isEmpty {
+                HomeRecentCard(viewModel: viewModel, overview: overview, hidesBalances: hidesBalances, onSeeAll: actions.allTransactions)
+            }
             monthCard(overview)
         } else {
             KWEmptyState(
@@ -105,7 +114,7 @@ public struct HomeView: View {
                     Text(viewModel.spentTitle(overview))
                         .font(KWTextStyle.label.font.weight(.regular))
                         .foregroundStyle(KWColor.Text.muted)
-                    Text(viewModel.money(month.expense, overview))
+                    Text(viewModel.visible(viewModel.money(month.expense, overview), hidden: hidesBalances))
                         .font(.kw(26, weight: 800, relativeTo: .title2))
                         .tracking(-0.5)
                         .monospacedDigit()
@@ -152,7 +161,7 @@ public struct HomeView: View {
         HStack(spacing: 10) {
             Text(label).frame(width: 64, alignment: .leading)
             KWProgressBar(largest > 0 ? NSDecimalNumber(decimal: amount / largest).doubleValue : 0, fill: fill, height: 8)
-            Text(viewModel.money(amount, overview))
+            Text(viewModel.visible(viewModel.money(amount, overview), hidden: hidesBalances))
                 .monospacedDigit()
                 .frame(minWidth: 76, alignment: .trailing)
         }
@@ -178,7 +187,7 @@ public struct HomeView: View {
                 .buttonStyle(.plain)
             }
             .padding(.vertical, -KWSpacing.sm)
-            Text(viewModel.plannedCaption(overview))
+            Text(viewModel.plannedCaption(overview, hidden: hidesBalances))
                 .font(KWTextStyle.caption.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.muted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -217,7 +226,7 @@ public struct HomeView: View {
                         .font(.kw(15, weight: 600))
                         .lineLimit(1)
                     KWProgressBar(NSDecimalNumber(decimal: status.usage.fraction ?? 0).doubleValue, fill: KWColor.Brand.link)
-                    Text(viewModel.additionalCaption(status))
+                    Text(viewModel.additionalCaption(status, hidden: hidesBalances))
                         .font(KWTextStyle.caption.font.weight(.regular))
                         .foregroundStyle(KWColor.Text.muted)
                         .monospacedDigit()
@@ -236,13 +245,16 @@ public struct HomeView: View {
     private func balancesCard(_ overview: HomeOverview) -> some View {
         KWGroupedCard(horizontalPadding: 18, verticalPadding: 6) {
             ForEach(overview.balances) { line in
-                balanceRow(CardDisplay.name(of: line.account), viewModel.formatter.string(line.balance))
+                balanceRow(
+                    CardDisplay.name(of: line.account),
+                    viewModel.visible(viewModel.formatter.string(line.balance), hidden: hidesBalances),
+                )
             }
             if let debt = overview.cardDebt {
                 balanceRow(
                     String(localized: "Cards (debt)", bundle: #bundle),
-                    viewModel.formatter.string(debt),
-                    color: debt.amount < 0 ? KWColor.State.negative : nil,
+                    viewModel.visible(viewModel.formatter.string(debt), hidden: hidesBalances),
+                    color: debt.amount < 0 && !hidesBalances ? KWColor.State.negative : nil,
                 )
             }
         }

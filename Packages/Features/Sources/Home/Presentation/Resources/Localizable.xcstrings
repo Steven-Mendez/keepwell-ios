@@ -221,6 +221,56 @@
         }
       }
     },
+    "Good afternoon" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas tardes"
+          }
+        }
+      }
+    },
+    "Good evening" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas noches"
+          }
+        }
+      }
+    },
+    "Good morning" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenos días"
+          }
+        }
+      }
+    },
+    "Hidden" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oculto"
+          }
+        }
+      }
+    },
+    "Hides balances" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oculta los saldos"
+          }
+        }
+      }
+    },
     "Income" : {
       "localizations" : {
         "es" : {
@@ -341,6 +391,16 @@
         }
       }
     },
+    "Recent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recientes"
+          }
+        }
+      }
+    },
     "Search transactions" : {
       "localizations" : {
         "es" : {
@@ -367,6 +427,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajustes"
+          }
+        }
+      }
+    },
+    "Shows balances" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra los saldos"
           }
         }
       }
