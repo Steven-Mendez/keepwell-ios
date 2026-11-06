@@ -22,6 +22,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- "Net worth" on Summary: a line of your net worth at the end of each of the last twelve months
+  (this month as of today, months before your first account are left out), with the latest value
+  and how much it moved since the first month shown. Second-currency balances convert at today's
+  rate, since the app keeps no history of rates. Amounts follow "hide balances".
+- "End of month" on home: roughly what your bank and cash accounts will hold when the month closes
+  ("≈ C$12,400"), with the lines that add up to it. It starts from what they hold today, adds the
+  income and takes away the expenses still planned this month (drafts and recurring movements not
+  recorded yet, except those charged to a card), takes away what each credit card due this month
+  asks for (the statement that closed, less what you already paid since), and takes away your usual
+  day-to-day spending for the days left (the average of the last three complete months, without
+  card purchases or recurring movements). Amounts follow "hide balances"; the web app shows the
+  same figure.
+- "Netflix went up in price": when a subscription's latest charge costs more than the one before,
+  in the same currency and within the last 30 days, home says so ("Now $12.99, before $9.99.") and
+  a notification arrives once for that charge. Charges count as one subscription when the same
+  recurring movement recorded them, or when the same description was charged to the same card in
+  two months or in the Subscriptions category.
 - Savings goals, like a pot or a vault but only on paper: give a goal a name, a target in your main
   or second currency, an optional target month, an icon and a color, then "Add money" or
   "Withdraw" as you set money aside. Nothing moves between your accounts and no movement is

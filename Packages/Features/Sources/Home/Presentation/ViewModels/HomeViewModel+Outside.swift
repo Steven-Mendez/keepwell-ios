@@ -21,6 +21,8 @@ public struct Reminder: Hashable, Sendable {
         /// A category close to or over its monthly budget, by category id. Sent once: unlike the
         /// others it reports something that already happened, so rescheduling must not repeat it.
         case budget(String)
+        /// A subscription charged more than the time before, by the charge. Sent once, like budgets.
+        case priceIncrease(UUID)
     }
 
     /// Stable per occurrence, so rescheduling replaces instead of duplicating.
@@ -74,8 +76,8 @@ extension HomeViewModel {
     }
 
     /// Planned movements on their day, card payments ahead of time, statement cutoffs on their day,
-    /// plastics in their expiry month and budgets near or over their line right away. Only what's
-    /// still ahead is returned.
+    /// plastics in their expiry month, and budgets near or over their line and subscriptions that
+    /// went up in price right away. Only what's still ahead is returned.
     public func reminders(now: Date = .now, calendar: Calendar = .current) -> [Reminder] {
         guard let overview, let display else { return [] }
         return plannedReminders(overview, display: display, now: now, calendar: calendar)
@@ -84,6 +86,7 @@ extension HomeViewModel {
             + expiryReminders(overview, now: now, calendar: calendar)
             + renewalReminders(overview, display: display, now: now, calendar: calendar)
             + budgetReminders(overview, now: now, calendar: calendar)
+            + priceIncreaseReminders(now: now)
     }
 
     /// The morning before each subscription renews, so there's time to cancel it.

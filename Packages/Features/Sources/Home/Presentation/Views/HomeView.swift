@@ -85,9 +85,16 @@ public struct HomeView: View {
                 HomeRecentCard(viewModel: viewModel, overview: overview, hidesBalances: hidesBalances, onSeeAll: actions.allTransactions)
             }
             monthCard(overview)
+            if let forecast = overview.forecast {
+                HomeForecastCard(viewModel: viewModel, forecast: forecast, hidesBalances: hidesBalances)
+            }
             let alerts = viewModel.budgetAlerts
             if !alerts.isEmpty {
                 HomeBudgetAlertsCard(alerts: alerts, hidesBalances: hidesBalances)
+            }
+            let increases = viewModel.priceIncreaseAlerts
+            if !increases.isEmpty {
+                HomePriceIncreasesCard(alerts: increases, hidesBalances: hidesBalances)
             }
         } else {
             KWEmptyState(

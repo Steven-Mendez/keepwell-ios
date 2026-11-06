@@ -88,6 +88,15 @@ public enum RecurringSchedule {
         .sorted { ($0.date, $0.rule.name) < ($1.date, $1.rule.name) }
     }
 
+    /// Occurrences not recorded yet, from `nextDate` through `lastDay`'s calendar day, none after
+    /// `endDate`. A paused rule has none. The balance forecast counts these on top of the drafts
+    /// already recorded, so nothing is counted twice.
+    public static func pending(_ rule: RecurringRule, through lastDay: Date, calendar: Calendar) -> [Date] {
+        guard !rule.isPaused else { return [] }
+        let limit = calendar.startOfDay(for: lastDay)
+        return occurrences(of: rule, from: rule.nextDate, calendar: calendar) { calendar.startOfDay(for: $0) <= limit }
+    }
+
     /// The next `count` occurrences from `nextDate`, for a rule's detail.
     public static func next(_ count: Int, of rule: RecurringRule, calendar: Calendar) -> [Date] {
         var dates: [Date] = []
