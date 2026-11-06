@@ -203,6 +203,7 @@ final class AppContainer {
             delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
             reorder: DefaultReorderCategoriesUseCase(categories: store),
             restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
+            getPrincipalCurrency: DefaultGetPrincipalCurrencyUseCase(settings: store),
         )
     }
 

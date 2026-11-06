@@ -151,9 +151,17 @@ public struct CategoriesView: View {
                 .foregroundStyle(color)
                 .frame(width: 38, height: 38)
                 .background(color.opacity(0.15), in: Circle())
-            Text(CategoryDisplay.name(of: category))
-                .font(KWTextStyle.body.font)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(CategoryDisplay.name(of: category))
+                    .font(KWTextStyle.body.font)
+                    .lineLimit(1)
+                if let budget = viewModel.budgetLine(of: category) {
+                    Text(budget)
+                        .font(KWTextStyle.caption.font.weight(.regular))
+                        .foregroundStyle(KWColor.Text.muted)
+                        .monospacedDigit()
+                }
+            }
             Spacer(minLength: KWSpacing.xs)
             trailing()
         }

@@ -49,4 +49,27 @@ struct SummaryReportTests {
         let total = current.incomeCategories.reduce(Decimal(0)) { $0 + $1.amount }
         #expect(total == current.income)
     }
+
+    @Test
+    func eachMonthCarriesItsBudgetsInTheSameOrder() async throws {
+        let budgeted = sample.categories.map { category in
+            category.kind == .expense
+                ? TransactionCategory(id: category.id, name: category.name, kind: category.kind, monthlyBudget: Money(100, "USD"))
+                : category
+        }
+        let result = DefaultGetSummaryReportUseCase.report(
+            transactions: sample.transactions,
+            categories: budgeted,
+            currency: "USD",
+            calendar: .current,
+            now: SampleData.defaultReferenceDate,
+        )
+        #expect(result.budgets.count == result.months.count)
+        for (month, budgets) in zip(result.months, result.budgets) {
+            #expect(budgets == CategoryBudgetStatus.statuses(of: month, categories: budgeted))
+            #expect(budgets.count == TransactionCategory.defaultExpense.count)
+        }
+        let unbudgeted = try await report()
+        #expect(unbudgeted.budgets.joined().isEmpty)
+    }
 }

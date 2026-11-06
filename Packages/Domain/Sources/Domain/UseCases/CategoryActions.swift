@@ -10,13 +10,23 @@ public struct CategoryDraft: Hashable, Sendable {
     public var kind: TransactionKind
     public var icon: String?
     public var color: String?
+    /// `nil` for no budget. Dropped for anything but an expense category.
+    public var monthlyBudget: Money?
 
-    public init(id: String? = nil, name: String, kind: TransactionKind, icon: String? = nil, color: String? = nil) {
+    public init(
+        id: String? = nil,
+        name: String,
+        kind: TransactionKind,
+        icon: String? = nil,
+        color: String? = nil,
+        monthlyBudget: Money? = nil,
+    ) {
         self.id = id
         self.name = name
         self.kind = kind
         self.icon = icon
         self.color = color
+        self.monthlyBudget = monthlyBudget
     }
 
     /// Long enough for "Kids' activities", short enough to fit a grid tile.
@@ -69,6 +79,11 @@ public struct DefaultSaveCategoryUseCase: SaveCategoryUseCase {
                 && other.name.compare(name, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
         }
         guard !isTaken else { throw .duplicateCategoryName(name) }
+        // Budgets cap spending; income has nothing to cap, so a stray amount is dropped, not refused.
+        let budget = kind == .expense ? draft.monthlyBudget : nil
+        if let budget, budget.amount <= 0 {
+            throw .invalidAmount
+        }
         let category = TransactionCategory(
             id: draft.id ?? TransactionCategory.newCustomID(),
             name: name,
@@ -76,9 +91,28 @@ public struct DefaultSaveCategoryUseCase: SaveCategoryUseCase {
             icon: draft.icon,
             color: draft.color,
             isRenamed: isRenamed,
+            monthlyBudget: budget,
         )
         try await categories.save(category)
         return category
+    }
+}
+
+/// The currency budgets are typed and compared in. Before onboarding there are no settings and
+/// no movements to budget, so `nil`.
+public protocol GetPrincipalCurrencyUseCase: Sendable {
+    func execute() async throws(DomainError) -> String?
+}
+
+public struct DefaultGetPrincipalCurrencyUseCase: GetPrincipalCurrencyUseCase {
+    private let settings: any SettingsRepository
+
+    public init(settings: any SettingsRepository) {
+        self.settings = settings
+    }
+
+    public func execute() async throws(DomainError) -> String? {
+        try await settings.load()?.currencies.principal
     }
 }
 

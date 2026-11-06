@@ -9,7 +9,8 @@ import Foundation
 /// category absent from the file is simply not deleted.
 ///
 /// Version 2 added `recurringRules` and each movement's `recurringId`. A version 1 file has
-/// neither and still restores, with no rules.
+/// neither and still restores, with no rules. A category's optional `monthlyBudget` came later
+/// within version 2: it is additive, so older files restore without budgets and older apps skip it.
 public struct BackupSnapshot: Codable, Sendable, Equatable {
     /// Raised on a breaking change, so an older app refuses a file it doesn't understand.
     public static let currentSchemaVersion = 2
@@ -75,7 +76,7 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         }
         var categories: [Stamped<TransactionCategory>] = []
         for row in self.categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
-            categories.append(row.toDomain())
+            try categories.append(row.toDomain())
         }
         var transactions: [Stamped<Transaction>] = []
         for row in self.transactions {
@@ -311,6 +312,9 @@ public struct CategoryBackup: Codable, Sendable, Equatable {
     public let icon: String?
     public let color: String?
     public let isRenamed: Bool
+    /// Left out when there is none, so files without budgets read exactly as before and an older
+    /// app that doesn't know the key still opens the file.
+    public let monthlyBudget: MoneyBackup?
     public let sortIndex: Int
     public let createdAt: Date
     public let updatedAt: Date
@@ -324,15 +328,29 @@ public struct CategoryBackup: Codable, Sendable, Equatable {
         icon = category.icon
         color = category.color
         isRenamed = category.isRenamed
+        monthlyBudget = category.monthlyBudget.map(MoneyBackup.init)
         self.sortIndex = sortIndex
         createdAt = stamped.metadata.createdAt
         updatedAt = stamped.metadata.updatedAt
         deletedAt = stamped.metadata.deletedAt
     }
 
-    func toDomain() -> Stamped<TransactionCategory> {
-        Stamped(
-            TransactionCategory(id: id, name: name, kind: kind, icon: icon, color: color, isRenamed: isRenamed),
+    func toDomain() throws(DomainError) -> Stamped<TransactionCategory> {
+        let budget = try monthlyBudget.map { budget throws(DomainError) in try budget.toDomain() }
+        if let budget, budget.amount <= 0 {
+            throw .invalidAmount
+        }
+        return Stamped(
+            TransactionCategory(
+                id: id,
+                name: name,
+                kind: kind,
+                icon: icon,
+                color: color,
+                isRenamed: isRenamed,
+                // The same rule as saving one: only expenses are budgeted.
+                monthlyBudget: kind == .expense ? budget : nil,
+            ),
             RecordMetadata(createdAt: createdAt, updatedAt: updatedAt, deletedAt: deletedAt),
         )
     }

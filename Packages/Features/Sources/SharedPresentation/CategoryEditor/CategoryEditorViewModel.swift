@@ -1,3 +1,4 @@
+import Core
 import Domain
 import Foundation
 import Observation
@@ -18,6 +19,14 @@ public final class CategoryEditorViewModel: Identifiable {
     public var color: String?
     /// What "Other" of this kind is called now, for the delete confirmation.
     public let fallbackName: String
+    /// The currency a budget is typed in. `nil` hides the budget field: without settings there
+    /// is no principal to measure spending in.
+    public let principalCurrency: String?
+    /// The monthly budget as typed; empty means no budget.
+    public var budgetText: String {
+        didSet { errorMessage = nil }
+    }
+
     public private(set) var errorMessage: String?
     public private(set) var isSaving = false
 
@@ -27,10 +36,14 @@ public final class CategoryEditorViewModel: Identifiable {
     public init(
         kind: TransactionKind,
         name: String = "",
+        principalCurrency: String? = nil,
         save: any SaveCategoryUseCase,
     ) {
         self.kind = kind
         editing = nil
+        self.principalCurrency = principalCurrency
+        budgetText = ""
+        initialBudgetText = ""
         self.name = String(name.prefix(CategoryDraft.maxNameLength))
         icon = CategoryDisplay.symbolChoices.first ?? CategoryDisplay.fallbackSymbol
         color = CategoryDisplay.colorChoices.first
@@ -43,11 +56,19 @@ public final class CategoryEditorViewModel: Identifiable {
     public init(
         editing category: TransactionCategory,
         fallbackName: String? = nil,
+        principalCurrency: String? = nil,
         save: any SaveCategoryUseCase,
         delete: any DeleteCategoryUseCase,
     ) {
         kind = category.kind
         editing = category
+        self.principalCurrency = principalCurrency
+        // A budget left in an old principal currency isn't shown as if it were in today's.
+        let budgetText = category.monthlyBudget.flatMap { budget in
+            budget.currency == principalCurrency ? CurrencyFormatter().number(budget.amount) : nil
+        } ?? ""
+        self.budgetText = budgetText
+        initialBudgetText = budgetText
         // A default that still translates opens with the name the person reads, not the stored English.
         let shownName = CategoryDisplay.name(of: category)
         name = shownName
@@ -60,13 +81,37 @@ public final class CategoryEditorViewModel: Identifiable {
     }
 
     private let initialName: String
+    private let initialBudgetText: String
 
     public var isCreating: Bool {
         editing == nil
     }
 
     public var canSave: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSaving
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSaving && isBudgetValid
+    }
+
+    /// Budgets cap spending, so only expense categories offer one.
+    public var showsBudget: Bool {
+        kind == .expense && principalCurrency != nil
+    }
+
+    /// Empty, or a positive amount.
+    public var isBudgetValid: Bool {
+        guard showsBudget else { return true }
+        let trimmed = budgetText.trimmingCharacters(in: .whitespaces)
+        return trimmed.isEmpty || AmountInput.decimal(from: trimmed).map { $0 > 0 } == true
+    }
+
+    public var budgetFooter: String {
+        String(localized: "Summary shows how much is left, and Home warns you at 80% and 100%.", bundle: #bundle)
+    }
+
+    /// Rewrites the typed budget with grouping and two decimals once the field loses focus.
+    public func formatBudget() {
+        if let formatted = AmountInput.formatted(budgetText) {
+            budgetText = formatted
+        }
     }
 
     /// "Other" receives the movements of deleted categories, so it can only be renamed.
@@ -116,7 +161,16 @@ public final class CategoryEditorViewModel: Identifiable {
             kind: kind,
             icon: keepsIcon ? nil : icon,
             color: color,
+            monthlyBudget: monthlyBudget,
         )
+    }
+
+    /// An untouched field keeps the stored budget as it is, even one in an earlier principal
+    /// currency that the field doesn't show.
+    private var monthlyBudget: Money? {
+        guard showsBudget, let principalCurrency else { return editing?.monthlyBudget }
+        guard budgetText != initialBudgetText else { return editing?.monthlyBudget }
+        return AmountInput.decimal(from: budgetText).map { Money($0, principalCurrency) }
     }
 
     public func delete() async -> Bool {

@@ -82,6 +82,10 @@ public struct HomeView: View {
                 HomeRecentCard(viewModel: viewModel, overview: overview, hidesBalances: hidesBalances, onSeeAll: actions.allTransactions)
             }
             monthCard(overview)
+            let alerts = viewModel.budgetAlerts
+            if !alerts.isEmpty {
+                HomeBudgetAlertsCard(alerts: alerts, hidesBalances: hidesBalances)
+            }
         } else {
             KWEmptyState(
                 icon: .home,
