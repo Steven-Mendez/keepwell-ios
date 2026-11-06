@@ -25,6 +25,7 @@ struct SwiftDataStoreSyncTests {
             savingsGoals: sample.savingsGoals,
             loans: sample.loans,
             personalDebts: sample.personalDebts,
+            categorizationRules: sample.categorizationRules,
         )
         return store
     }

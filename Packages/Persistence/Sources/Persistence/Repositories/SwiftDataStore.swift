@@ -371,6 +371,7 @@ extension SwiftDataStore: DataEraser {
             try context.delete(model: SavingsGoalRecord.self)
             try context.delete(model: LoanRecord.self)
             try context.delete(model: PersonalDebtRecord.self)
+            try context.delete(model: CategorizationRuleRecord.self)
             try context.delete(model: CardRecord.self)
             try context.delete(model: AccountRecord.self)
             try context.delete(model: CategoryRecord.self)

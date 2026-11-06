@@ -86,3 +86,33 @@ struct ImportTransactionsTests {
         #expect(rows == [["a", "b, c", "say \"hi\""], ["two\nlines", "x"]])
     }
 }
+
+extension ImportTransactionsTests {
+    @Test
+    func rowsWithoutAKnownCategoryTakeTheFirstMatchingRule() async throws {
+        let store = InMemoryStore(sample: sample)
+        let cash = try #require(sample.accounts.first { $0.id == SampleData.IDs.cash })
+        await store.save(CategorizationRule(match: "taxi", categoryID: "transport", kind: .expense, tags: ["trabajo"]))
+        let csv = """
+        date,type,description,category,amount,currency,account,note
+        2026-10-03,expense,TAXÍ *TRIP,,120,NIO,\(cash.name),
+        2026-10-03,expense,Ride home,,80,NIO,\(cash.name),taxi to the airport
+        2026-10-03,expense,Taxi gift,Gifts,90,NIO,\(cash.name),
+        2026-10-03,expense,Corner bakery,,30,NIO,\(cash.name),
+        """
+        let importer = DefaultImportTransactionsUseCase(
+            transactions: store, accounts: store, cards: store, categories: store, settings: store, rules: store,
+        )
+        #expect(try await importer.execute(csv: csv).imported == 4)
+        let saved = await store.fetchTransactions(in: nil)
+        func movement(_ description: String) throws -> Transaction {
+            try #require(saved.first { $0.description == description })
+        }
+        #expect(try movement("TAXÍ *TRIP").categoryID == "transport")
+        #expect(try movement("TAXÍ *TRIP").tags == ["trabajo"])
+        #expect(try movement("Ride home").categoryID == "transport")
+        #expect(try movement("Taxi gift").categoryID == "gifts")
+        #expect(try movement("Taxi gift").tags.isEmpty)
+        #expect(try movement("Corner bakery").categoryID == TransactionCategory.otherExpenseID)
+    }
+}

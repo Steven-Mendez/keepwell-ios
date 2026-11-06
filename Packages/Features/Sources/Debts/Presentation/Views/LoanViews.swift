@@ -143,6 +143,8 @@ struct LoanDetailView: View {
     let hidesBalances: Bool
     let onEdit: () -> Void
     let onClose: () -> Void
+    /// The paid installment waiting for "Mark unpaid" to be confirmed.
+    @State private var unpaying: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: KWSpacing.md) {
@@ -167,6 +169,11 @@ struct LoanDetailView: View {
                             installmentRow(installment)
                         }
                     }
+                    if viewModel.loan.paidCount > 0 {
+                        Text("Touch and hold a paid installment to mark it unpaid.", bundle: #bundle)
+                            .font(KWTextStyle.captionSm.font.weight(.regular))
+                            .foregroundStyle(KWColor.Text.muted)
+                    }
                 }
                 .padding(.bottom, KWSpacing.md)
             }
@@ -178,6 +185,24 @@ struct LoanDetailView: View {
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
         .task { await viewModel.load() }
+        .confirmationDialog(
+            unpaying.map(viewModel.unpayTitle) ?? "",
+            isPresented: Binding(get: { unpaying != nil }, set: {
+                if !$0 {
+                    unpaying = nil
+                }
+            }),
+            titleVisibility: .visible,
+            presenting: unpaying,
+        ) { number in
+            Button(role: .destructive) {
+                Task { await viewModel.markUnpaid(number) }
+            } label: {
+                Text("Mark unpaid", bundle: #bundle)
+            }
+        } message: { _ in
+            Text("The expense it recorded is deleted, so balances go back to before you paid it.", bundle: #bundle)
+        }
     }
 
     private var summary: some View {
@@ -259,6 +284,19 @@ struct LoanDetailView: View {
                 .frame(width: 56, alignment: .trailing)
         }
         .padding(.vertical, KWSpacing.xs)
+        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
+        .contextMenu {
+            if installment.isPaid {
+                Button(role: .destructive) { unpaying = installment.number } label: {
+                    Label { Text("Mark unpaid", bundle: #bundle) } icon: { Image(systemName: "arrow.uturn.backward") }
+                }
+            }
+        }
+        .accessibilityActions {
+            if installment.isPaid {
+                Button { unpaying = installment.number } label: { Text("Mark unpaid", bundle: #bundle) }
+            }
+        }
     }
 }

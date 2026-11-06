@@ -20,7 +20,7 @@ public enum DebtsPreview {
             saveLoan: DefaultSaveLoanUseCase(loans: store, settings: store),
             payInstallment: DefaultPayLoanInstallmentUseCase(
                 loans: store,
-                recorder: SaveTransactionInstallmentRecorder(save: DefaultSaveTransactionUseCase(context: context, transactions: store)),
+                recorder: InstallmentMovementRecorder(prepare: DefaultPrepareTransactionUseCase(context: context)),
             ),
             paymentContext: context,
             saveDebt: DefaultSavePersonalDebtUseCase(debts: store, settings: store),

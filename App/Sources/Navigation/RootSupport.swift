@@ -118,6 +118,7 @@ struct SettingsRoute: View {
     let onOpenCategories: (TransactionKind) -> Void
     let onOpenPaymentMethods: () -> Void
     let onOpenRecurring: () -> Void
+    let onOpenRules: () -> Void
 
     init(
         container: AppContainer,
@@ -126,6 +127,7 @@ struct SettingsRoute: View {
         onOpenCategories: @escaping (TransactionKind) -> Void,
         onOpenPaymentMethods: @escaping () -> Void,
         onOpenRecurring: @escaping () -> Void,
+        onOpenRules: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         self.container = container
@@ -134,6 +136,7 @@ struct SettingsRoute: View {
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
         self.onOpenRecurring = onOpenRecurring
+        self.onOpenRules = onOpenRules
     }
 
     var body: some View {
@@ -145,6 +148,7 @@ struct SettingsRoute: View {
             onOpenCategories: onOpenCategories,
             onOpenPaymentMethods: onOpenPaymentMethods,
             onOpenRecurring: onOpenRecurring,
+            onOpenRules: onOpenRules,
         )
         .navigationBarBackButtonHidden()
         .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in
@@ -170,6 +174,21 @@ struct CategoriesRoute: View {
 
     var body: some View {
         CategoriesView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+struct RulesRoute: View {
+    @State private var viewModel: RulesViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeRulesViewModel())
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        RulesView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
     }
 }

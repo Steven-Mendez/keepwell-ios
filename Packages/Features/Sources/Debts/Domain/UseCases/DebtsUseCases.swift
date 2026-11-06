@@ -96,11 +96,14 @@ public struct DefaultSaveLoanUseCase: SaveLoanUseCase {
 }
 
 /// "Pay installment": records the installment as a confirmed expense from the chosen account or
-/// card, through the same use case as a movement the person types, then marks it paid. The
-/// movement is saved first, so a failure never marks an installment paid without its expense.
+/// card, checked like a movement the person types, and marks it paid in the same write, so an
+/// installment is never paid without its expense nor an expense left without its installment.
+/// "Mark unpaid" undoes it the same way: the installment is due again and its expense is deleted.
 public protocol PayLoanInstallmentUseCase: Sendable {
     @discardableResult
     func execute(_ payment: InstallmentPayment) async throws(DomainError) -> Loan
+    @discardableResult
+    func markUnpaid(loanID: UUID, number: Int) async throws(DomainError) -> Loan
 }
 
 public struct DefaultPayLoanInstallmentUseCase: PayLoanInstallmentUseCase {
@@ -122,16 +125,23 @@ public struct DefaultPayLoanInstallmentUseCase: PayLoanInstallmentUseCase {
             throw .notFound(payment.loanID)
         }
         guard let number = loan.nextNumber else { throw .invalidAmount }
-        let transactionID = try await recorder.record(InstallmentExpense(
+        let expense = try await recorder.prepare(InstallmentExpense(
             amount: loan.installment,
             categoryID: payment.categoryID,
             source: payment.source,
             description: Self.description(of: loan, number: number),
             date: payment.date,
         ))
-        let paid = try loan.paying(at: payment.date, transactionID: transactionID)
-        try await loans.save(paid)
+        let paid = try loan.paying(at: payment.date, transactionID: expense.id)
+        try await loans.save(paid, recording: expense)
         return paid
+    }
+
+    public func markUnpaid(loanID: UUID, number: Int) async throws(DomainError) -> Loan {
+        guard let loan = try await loans.fetchLoans().first(where: { $0.id == loanID }) else { throw .notFound(loanID) }
+        let (unpaid, payment) = try loan.unpaying(number: number)
+        try await loans.save(unpaid, deletingTransaction: payment.transactionID)
+        return unpaid
     }
 }
 

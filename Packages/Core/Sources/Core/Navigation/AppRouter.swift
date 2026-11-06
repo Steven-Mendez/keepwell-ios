@@ -9,6 +9,8 @@ public enum AppRoute: Hashable, Sendable {
     case categories(showsIncome: Bool)
     /// Settings › Payment methods.
     case paymentMethods
+    /// Settings › Rules: categorization rules ("if it says Uber → Transport").
+    case categorizationRules
     /// A credit card's detail, by its account.
     case creditCard(accountID: UUID)
     /// A bank account and its one debit card, which share a screen.

@@ -161,3 +161,19 @@ struct DebtsTests {
         #expect(throws: DomainError.invalidAmount) { try BillSplit.check([], total: 100) }
     }
 }
+
+extension DebtsTests {
+    @Test
+    func markingAnInstallmentUnpaidGivesBackItsPaymentAndMakesItDueAgain() throws {
+        let movement = UUID()
+        let paid = loan(paid: [1]).with(payments: [
+            LoanPayment(number: 1, paidAt: date(2026, 1, 1)),
+            LoanPayment(number: 2, paidAt: date(2026, 2, 1), transactionID: movement),
+        ])
+        let (unpaid, payment) = try paid.unpaying(number: 2)
+        #expect(payment.transactionID == movement)
+        #expect(unpaid.payments.map(\.number) == [1])
+        #expect(unpaid.nextNumber == 2)
+        #expect(throws: DomainError.invalidAmount) { try unpaid.unpaying(number: 5) }
+    }
+}

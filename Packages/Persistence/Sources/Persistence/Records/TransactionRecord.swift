@@ -28,6 +28,9 @@ public final class TransactionRecord: AuditedRecord {
     var deletedAt: Date?
     /// Added in V6: the recurring rule that recorded it.
     var recurringID: UUID?
+    /// Added in V9: the normalized tags, one per line (a tag never holds whitespace). Text rather
+    /// than an array attribute, which CloudKit mirroring would store as an opaque blob anyway.
+    var tagsText = ""
 
     #Index<TransactionRecord>([\.date])
 
@@ -53,6 +56,7 @@ public final class TransactionRecord: AuditedRecord {
         isShared = transaction.isShared
         note = transaction.note
         recurringID = transaction.recurringID
+        tagsText = TagsText.encode(transaction.tags)
     }
 
     func toDomain() throws(DomainCorruption) -> Transaction {
@@ -84,6 +88,18 @@ public final class TransactionRecord: AuditedRecord {
             isShared: isShared,
             note: note,
             recurringID: recurringID,
+            tags: TagsText.decode(tagsText),
         )
+    }
+}
+
+/// Tags as one line each, the way movements, recurring rules and categorization rules store them.
+enum TagsText {
+    static func encode(_ tags: [String]) -> String {
+        tags.joined(separator: "\n")
+    }
+
+    static func decode(_ text: String) -> [String] {
+        text.split(separator: "\n").map(String.init)
     }
 }

@@ -24,6 +24,8 @@ extension SwiftDataStore: BackupStore {
                 .map { try Stamped($0.toDomain(), $0.metadata) }
             let debts = try context.fetch(FetchDescriptor<PersonalDebtRecord>(sortBy: [SortDescriptor(\.createdAt)]))
                 .map { try Stamped($0.toDomain(), $0.metadata) }
+            let categorizationRules = try context.fetch(FetchDescriptor<CategorizationRuleRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
+                .map { try Stamped($0.toDomain(), $0.metadata) }
             return try BackupContents(
                 settings: settings,
                 accounts: accounts,
@@ -34,6 +36,7 @@ extension SwiftDataStore: BackupStore {
                 savingsGoals: goals,
                 loans: loans,
                 personalDebts: debts,
+                categorizationRules: categorizationRules,
             )
         }
     }
@@ -80,7 +83,7 @@ extension SwiftDataStore: BackupStore {
         }
     }
 
-    /// Recurring rules, savings goals, loans and personal debts: what the person planned or keeps
+    /// Recurring rules, savings goals, loans, personal debts and categorization rules: what the person planned or keeps
     /// track of rather than the movements themselves.
     private func insertPlans(of contents: BackupContents, into context: ModelContext) {
         for rule in contents.recurringRules {
@@ -102,6 +105,11 @@ extension SwiftDataStore: BackupStore {
             let record = PersonalDebtRecord(id: debt.value.id).inserted(into: context)
             record.update(from: debt.value)
             record.apply(debt.metadata)
+        }
+        for (index, rule) in contents.categorizationRules.enumerated() {
+            let record = CategorizationRuleRecord(id: rule.value.id).inserted(into: context)
+            record.update(from: rule.value, sortIndex: index)
+            record.apply(rule.metadata)
         }
     }
 
@@ -130,6 +138,7 @@ extension SwiftDataStore: BackupStore {
         try context.fetch(FetchDescriptor<SavingsGoalRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<LoanRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<PersonalDebtRecord>()).forEach(context.delete)
+        try context.fetch(FetchDescriptor<CategorizationRuleRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CardRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<AccountRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CategoryRecord>()).forEach(context.delete)

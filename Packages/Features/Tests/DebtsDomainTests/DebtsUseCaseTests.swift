@@ -16,7 +16,7 @@ struct DebtsUseCaseTests {
         )
         return DefaultPayLoanInstallmentUseCase(
             loans: store,
-            recorder: MovementRecorder(save: DefaultSaveTransactionUseCase(context: context, transactions: store)),
+            recorder: MovementRecorder(prepare: DefaultPrepareTransactionUseCase(context: context)),
         )
     }
 
@@ -51,6 +51,22 @@ struct DebtsUseCaseTests {
         #expect(movement.currency == "NIO")
         #expect(movement.accountID == SampleData.IDs.savings)
         #expect(await store.fetchLoans().first?.paidCount == 3)
+    }
+
+    @Test
+    func markingAnInstallmentUnpaidDeletesItsExpenseAndMakesItDueAgain() async throws {
+        let store = InMemoryStore(sample: sample)
+        let pay = payUseCase(store)
+        let paid = try await pay.execute(InstallmentPayment(
+            loanID: SampleData.IDs.motorbikeLoan, source: .card(SampleData.IDs.savingsTransfer), categoryID: "other-expense", date: now,
+        ))
+        let movementID = try #require(paid.payments.last?.transactionID)
+        let unpaid = try await pay.markUnpaid(loanID: paid.id, number: 3)
+        #expect(unpaid.paidCount == 2)
+        #expect(unpaid.nextNumber == 3)
+        #expect(await store.fetchLoans().first { $0.id == paid.id }?.paidCount == 2)
+        #expect(try await !store.fetchTransactions(in: nil).contains { $0.id == movementID })
+        await #expect(throws: DomainError.invalidAmount) { try await pay.markUnpaid(loanID: paid.id, number: 3) }
     }
 
     @Test
@@ -163,18 +179,18 @@ struct DebtsUseCaseTests {
     }
 }
 
-/// What the app plugs in: the installment saved through the movement-saving use case.
+/// What the app plugs in: the installment built through the movement-saving rules.
 private struct MovementRecorder: InstallmentExpenseRecorder {
-    let save: any SaveTransactionUseCase
+    let prepare: any PrepareTransactionUseCase
 
-    func record(_ expense: InstallmentExpense) async throws(DomainError) -> UUID {
+    func prepare(_ expense: InstallmentExpense) async throws(DomainError) -> Transaction {
         let source: PaymentSource = switch expense.source {
         case let .card(id): .card(id)
         case let .account(id): .account(id)
         }
-        return try await save.execute(TransactionDraft(
+        return try await prepare.execute(TransactionDraft(
             kind: .expense, amount: expense.amount.amount, currency: expense.amount.currency, categoryID: expense.categoryID,
             source: source, description: expense.description, date: expense.date,
-        )).transaction.id
+        ))
     }
 }

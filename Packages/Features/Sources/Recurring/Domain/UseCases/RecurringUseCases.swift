@@ -103,6 +103,8 @@ public struct DefaultSaveRecurringRuleUseCase: SaveRecurringRuleUseCase {
             autoConfirm: draft.autoConfirm,
             isPaused: existing?.isPaused ?? false,
             note: draft.note,
+            // Tags come from "Repeat" on a tagged movement; the rule editor keeps them as they are.
+            tags: existing?.tags ?? [],
         )
         let currencies = try await settings.load()?.currencies ?? .initial
         let valid = try await candidate.validated(

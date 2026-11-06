@@ -15,6 +15,7 @@ extension RecurringRuleBackup: StampedBackupRow {}
 extension SavingsGoalBackup: StampedBackupRow {}
 extension LoanBackup: StampedBackupRow {}
 extension PersonalDebtBackup: StampedBackupRow {}
+extension CategorizationRuleBackup: StampedBackupRow {}
 
 extension Array where Element: StampedBackupRow {
     /// Every row converted in order; the first invalid one fails the whole file.
