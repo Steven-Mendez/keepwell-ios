@@ -40,6 +40,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let upcoming: [RecurringOccurrence]
     /// This month's budgeted categories, closest to their limit first.
     public let budgets: [CategoryBudgetStatus]
+    /// Savings goals in list order (the first is the one home previews).
+    public let goals: [SavingsGoalProgress]
     /// For row subtitles.
     public let accounts: [Account]
     public let cards: [Card]
@@ -63,6 +65,7 @@ public struct HomeOverview: Hashable, Sendable {
         cardSubscriptions: [UUID: [String]] = [:],
         upcoming: [RecurringOccurrence] = [],
         budgets: [CategoryBudgetStatus] = [],
+        goals: [SavingsGoalProgress] = [],
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
@@ -84,6 +87,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.cardSubscriptions = cardSubscriptions
         self.upcoming = upcoming
         self.budgets = budgets
+        self.goals = goals
         self.accounts = accounts
         self.cards = cards
         self.categories = categories

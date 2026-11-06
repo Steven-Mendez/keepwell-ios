@@ -21,6 +21,16 @@
         }
       }
     },
+    "%@ of %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ de %@"
+          }
+        }
+      }
+    },
     "%@ on %@" : {
       "localizations" : {
         "es" : {
@@ -431,6 +441,16 @@
         }
       }
     },
+    "No goals yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no tienes metas"
+          }
+        }
+      }
+    },
     "No transactions yet" : {
       "localizations" : {
         "es" : {
@@ -467,6 +487,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recientes"
+          }
+        }
+      }
+    },
+    "Savings goals" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metas de ahorro"
           }
         }
       }
