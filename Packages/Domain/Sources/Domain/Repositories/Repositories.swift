@@ -25,6 +25,18 @@ public protocol TransactionRepository: Sendable {
     func deleteTransaction(id: UUID) async throws(DomainError)
 }
 
+public protocol RecurringRuleRepository: Sendable {
+    /// Live rules only, in the order they were created.
+    func fetchRecurringRules() async throws(DomainError) -> [RecurringRule]
+    /// Inserts or replaces the rule with the same id.
+    func save(_ rule: RecurringRule) async throws(DomainError)
+    /// Soft-deletes, like every other record. Throws `.notFound` for an unknown or deleted id.
+    func deleteRecurringRule(id: UUID) async throws(DomainError)
+    /// The movements one materialization run records and the rules it moves on, in a single save:
+    /// a failure records nothing, so the next run tries the same occurrences again.
+    func saveMaterialized(transactions: [Transaction], rules: [RecurringRule]) async throws(DomainError)
+}
+
 public protocol CategoryRepository: Sendable {
     /// In the person's order. Includes every `TransactionCategory.defaults` entry, adding the ones
     /// a newer version ships, except the defaults the person deleted.

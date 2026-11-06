@@ -16,12 +16,15 @@ extension SwiftDataStore: BackupStore {
                 .map { try Stamped($0.toDomain(), $0.metadata) }
             let transactions = try context.fetch(FetchDescriptor<TransactionRecord>(sortBy: [SortDescriptor(\.date, order: .reverse)]))
                 .map { try Stamped($0.toDomain(), $0.metadata) }
+            let rules = try context.fetch(FetchDescriptor<RecurringRuleRecord>(sortBy: [SortDescriptor(\.createdAt)]))
+                .map { try Stamped($0.toDomain(), $0.metadata) }
             return try BackupContents(
                 settings: settings,
                 accounts: accounts,
                 cards: cards,
                 categories: exportedCategories(in: context),
                 transactions: transactions,
+                recurringRules: rules,
             )
         }
     }
@@ -59,6 +62,11 @@ extension SwiftDataStore: BackupStore {
                     record.update(from: transaction.value)
                     record.apply(transaction.metadata)
                 }
+                for rule in contents.recurringRules {
+                    let record = RecurringRuleRecord(id: rule.value.id).inserted(into: context)
+                    record.update(from: rule.value)
+                    record.apply(rule.metadata)
+                }
                 try context.save()
             } catch {
                 context.rollback()
@@ -88,6 +96,7 @@ extension SwiftDataStore: BackupStore {
     /// the same save and roll back together.
     private func deleteEveryRecord(in context: ModelContext) throws {
         try context.fetch(FetchDescriptor<TransactionRecord>()).forEach(context.delete)
+        try context.fetch(FetchDescriptor<RecurringRuleRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CardRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<AccountRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CategoryRecord>()).forEach(context.delete)

@@ -1,4 +1,5 @@
 // swift-tools-version: 6.2
+// swiftlint:disable file_length
 import PackageDescription
 
 /// One folder per feature, split into Domain / Data / Presentation targets so the compiler
@@ -30,6 +31,8 @@ let package = Package(
         .library(name: "CreditCardPresentation", targets: ["CreditCardPresentation"]),
         .library(name: "LockDomain", targets: ["LockDomain"]),
         .library(name: "LockPresentation", targets: ["LockPresentation"]),
+        .library(name: "RecurringDomain", targets: ["RecurringDomain"]),
+        .library(name: "RecurringPresentation", targets: ["RecurringPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -430,6 +433,47 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+        ),
+
+        // MARK: Recurring
+
+        .target(
+            name: "RecurringDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Recurring/Domain",
+        ),
+        .target(
+            name: "RecurringPresentation",
+            dependencies: [
+                "RecurringDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                // `#Preview` sample data only.
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/Recurring/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "RecurringDomainTests",
+            dependencies: [
+                "RecurringDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "RecurringPresentationTests",
+            dependencies: [
+                "RecurringPresentation",
+                "RecurringDomain",
+                "FeatureTestSupport",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            exclude: ["__Snapshots__"],
         ),
     ],
     swiftLanguageModes: [.v6],

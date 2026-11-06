@@ -15,6 +15,10 @@ public enum AppRoute: Hashable, Sendable {
     case bankAccount(accountID: UUID)
     /// The movement list opened from an account, already filtered to it.
     case transactions(accountID: UUID? = nil)
+    /// Recurring movements and subscriptions.
+    case recurring
+    /// A recurring rule's editor; `nil` creates one.
+    case recurringRule(id: UUID?)
 }
 
 /// Single owner of the navigation stack. Feature views don't see it: they expose navigation as

@@ -70,18 +70,40 @@ public protocol SaveTransactionUseCase: Sendable {
 public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     private let context: any GetTransactionContextUseCase
     private let transactions: any TransactionRepository
+    private let recurringRules: (any RecurringRuleRepository)?
+    private let materialize: (any MaterializeRecurringUseCase)?
     private let calendar: Calendar
 
-    public init(context: any GetTransactionContextUseCase, transactions: any TransactionRepository, calendar: Calendar = .current) {
+    /// Without `recurringRules`, "Repeat" is ignored and only the movement is saved.
+    public init(
+        context: any GetTransactionContextUseCase,
+        transactions: any TransactionRepository,
+        recurringRules: (any RecurringRuleRepository)? = nil,
+        materialize: (any MaterializeRecurringUseCase)? = nil,
+        calendar: Calendar = .current,
+    ) {
         self.context = context
         self.transactions = transactions
+        self.recurringRules = recurringRules
+        self.materialize = materialize
         self.calendar = calendar
     }
 
     public func execute(_ draft: TransactionDraft) async throws(DomainError) -> SavedTransaction {
         let current = try await context.execute()
+        var draft = draft
+        if recurringRules == nil {
+            draft.repeatFrequency = nil
+        }
         let transaction = try Self.validated(draft, context: current)
+        let rule = try draft.repeatFrequency.map { frequency throws(DomainError) in
+            try Self.rule(repeating: transaction, every: frequency, id: draft.recurringRuleID, calendar: calendar)
+        }
         try await transactions.save(transaction)
+        if let rule, let recurringRules {
+            try await recurringRules.save(rule)
+            try await materialize?.execute()
+        }
 
         guard let account = current.account(transaction.accountID) else { throw .notFound(transaction.accountID) }
         let movements = try await transactions.fetchTransactions(in: nil)
@@ -99,25 +121,16 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     static func validated(_ draft: TransactionDraft, context: TransactionContext) throws(DomainError) -> Transaction {
         try Transaction.checkAmounts(draft.amount, actualDebitedPrincipal: draft.actualDebitedPrincipal)
         let currencies = context.currencies
-        guard draft.currency == currencies.principal || draft.currency == currencies.second else {
-            throw .invalidCurrency(draft.currency)
-        }
+        try Transaction.checkCurrency(draft.currency, currencies: currencies)
         guard let source = draft.source, let accountID = context.accountID(for: source) else {
             throw .notFound(UUID(uuid: UUID_NULL))
         }
 
         var category: TransactionCategory?
-        switch draft.kind {
-        case .transfer:
-            guard let destination = draft.destinationAccountID, destination != accountID, context.account(destination) != nil else {
-                throw .invalidTransferDestination
-            }
-        case .expense, .income:
-            guard let found = context.categories.first(where: { $0.id == draft.categoryID }) else {
-                throw .notFound(UUID(uuid: UUID_NULL))
-            }
-            guard found.kind == draft.kind else { throw .categoryKindMismatch(expected: draft.kind, actual: found.kind) }
-            category = found
+        if draft.kind == .transfer {
+            try Transaction.checkDestination(draft.destinationAccountID, from: accountID, accounts: context.accounts)
+        } else {
+            category = try Transaction.checkCategory(draft.categoryID, kind: draft.kind, categories: context.categories)
         }
 
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -139,7 +152,37 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             // The rate in force now travels with the movement, so later rate edits don't rewrite it.
             exchangeRate: currencies.exchangeRate,
             note: note.isEmpty ? nil : note,
+            recurringID: draft.repeatFrequency == nil ? nil : draft.recurringRuleID,
         )
+    }
+
+    /// The rule "Repeat" saves: the movement as its first occurrence, the next one still ahead,
+    /// waiting as drafts. A movement in "Subscriptions" makes it a subscription.
+    static func rule(
+        repeating transaction: Transaction,
+        every frequency: RecurringFrequency,
+        id: UUID,
+        calendar: Calendar,
+    ) throws(DomainError) -> RecurringRule {
+        let first = RecurringRule(
+            id: id,
+            name: transaction.description,
+            kind: transaction.kind,
+            categoryID: transaction.categoryID,
+            amount: transaction.amount,
+            currency: transaction.currency,
+            accountID: transaction.accountID,
+            cardID: transaction.cardID,
+            destinationAccountID: transaction.destinationAccountID,
+            frequency: frequency,
+            startDate: transaction.date,
+            isSubscription: transaction.kind == .expense && transaction.categoryID == Subscriptions.categoryID,
+            autoConfirm: false,
+            note: transaction.note,
+        )
+        try first.checkSchedule(calendar: calendar)
+        let next = RecurringSchedule.firstOccurrence(of: first, after: transaction.date, calendar: calendar) ?? transaction.date
+        return first.with(nextDate: next)
     }
 }
 

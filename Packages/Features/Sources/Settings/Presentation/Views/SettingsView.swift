@@ -13,6 +13,7 @@ public struct SettingsView: View {
     private let onSetUpPasscode: () -> Void
     private let onOpenCategories: (TransactionKind) -> Void
     private let onOpenPaymentMethods: () -> Void
+    private let onOpenRecurring: () -> Void
     @State private var isConfirmingErase = false
     @State private var isConfirmingSwap = false
     @FocusState private var isEditingRate: Bool
@@ -26,6 +27,7 @@ public struct SettingsView: View {
         onSetUpPasscode: @escaping () -> Void = {},
         onOpenCategories: @escaping (TransactionKind) -> Void = { _ in },
         onOpenPaymentMethods: @escaping () -> Void = {},
+        onOpenRecurring: @escaping () -> Void = {},
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
@@ -33,6 +35,7 @@ public struct SettingsView: View {
         self.onSetUpPasscode = onSetUpPasscode
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
+        self.onOpenRecurring = onOpenRecurring
     }
 
     public var body: some View {
@@ -224,6 +227,11 @@ public struct SettingsView: View {
                         verticalPadding: 14,
                     )
                     .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                Button(action: onOpenRecurring) {
+                    KWValueRow(String(localized: "Recurring", bundle: #bundle), value: "›", style: .navigation, verticalPadding: 14)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

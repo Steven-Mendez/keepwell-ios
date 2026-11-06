@@ -242,31 +242,92 @@ public enum KeepwellSchemaV5: VersionedSchema {
         [
             Persistence.AccountRecord.self,
             Persistence.CardRecord.self,
+            TransactionRecord.self,
+            Persistence.CategoryRecord.self,
+            SettingsRecord.self,
+        ]
+    }
+
+    /// The movement row with audit dates, before it named the recurring rule that recorded it.
+    @Model
+    public final class TransactionRecord {
+        public var id = UUID()
+        var date = Date.distantPast
+        var statusRaw = "confirmed"
+        var descriptionText = ""
+        var kindRaw = "expense"
+        var categoryID: String?
+        var amount = "0"
+        var currency = ""
+        var accountID = UUID()
+        var cardID: UUID?
+        var destinationAccountID: UUID?
+        var actualDebitedPrincipal: String?
+        var ratePrincipal = ""
+        var rateSecond = ""
+        var rate = "1"
+        var isShared = false
+        var note: String?
+        var createdAt = Date.now
+        var updatedAt = Date.now
+        var deletedAt: Date?
+
+        #Index<TransactionRecord>([\.date])
+
+        init(id: UUID, date: Date, amount: String, currency: String, accountID: UUID) {
+            self.id = id
+            self.date = date
+            self.amount = amount
+            self.currency = currency
+            self.accountID = accountID
+            ratePrincipal = currency
+            rateSecond = currency
+        }
+    }
+}
+
+/// Recurring rules (`RecurringRuleRecord`), and movements remember the rule that recorded them.
+public enum KeepwellSchemaV6: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(6, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        [
+            Persistence.AccountRecord.self,
+            Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
             SettingsRecord.self,
+            RecurringRuleRecord.self,
         ]
     }
 }
 
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV5
+public typealias KeepwellCurrentSchema = KeepwellSchemaV6
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
-        [KeepwellSchemaV1.self, KeepwellSchemaV2.self, KeepwellSchemaV3.self, KeepwellSchemaV4.self, KeepwellSchemaV5.self]
+        [
+            KeepwellSchemaV1.self,
+            KeepwellSchemaV2.self,
+            KeepwellSchemaV3.self,
+            KeepwellSchemaV4.self,
+            KeepwellSchemaV5.self,
+            KeepwellSchemaV6.self,
+        ]
     }
 
     /// Each step adds optional or defaulted attributes: SwiftData infers the mapping, and CloudKit
     /// accepts additive changes. Rows from V2 start not renamed and not removed, which is true:
     /// V2 couldn't do either to a default. Cards from V3 start with no product name or expiry.
-    /// Rows from V4 start alive (`deletedAt` nil), changed at the time of the migration.
+    /// Rows from V4 start alive (`deletedAt` nil), changed at the time of the migration. Movements
+    /// from V5 start without a recurring rule, and there are no rules yet.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
             .lightweight(fromVersion: KeepwellSchemaV2.self, toVersion: KeepwellSchemaV3.self),
             .lightweight(fromVersion: KeepwellSchemaV3.self, toVersion: KeepwellSchemaV4.self),
             .lightweight(fromVersion: KeepwellSchemaV4.self, toVersion: KeepwellSchemaV5.self),
+            .lightweight(fromVersion: KeepwellSchemaV5.self, toVersion: KeepwellSchemaV6.self),
         ]
     }
 }

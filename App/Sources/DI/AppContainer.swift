@@ -17,6 +17,8 @@ import OnboardingDomain
 import OnboardingPresentation
 import OSLog
 import Persistence
+import RecurringDomain
+import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
 import SummaryDomain
@@ -50,7 +52,7 @@ final class AppContainer {
     /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
     func normalizeBankCards() async {
         do {
-            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store).execute()
+            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store, recurringRules: store).execute()
         } catch {
             Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
         }
@@ -66,6 +68,7 @@ final class AppContainer {
                 cards: sample.cards,
                 transactions: sample.transactions,
                 categories: sample.categories,
+                recurringRules: sample.recurringRules,
             )
         } catch {
             Logger.app.error("Sample data could not be seeded: \(String(describing: error), privacy: .public)")
@@ -119,6 +122,7 @@ final class AppContainer {
                 transactions: store,
                 categories: store,
                 settings: store,
+                recurringRules: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
@@ -138,6 +142,7 @@ final class AppContainer {
                 cards: store,
                 categories: store,
                 settings: store,
+                recurringRules: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             deleteTransaction: DefaultDeleteTransactionUseCase(transactions: store),
@@ -277,8 +282,47 @@ final class AppContainer {
             setColor: DefaultSetCardColorUseCase(cards: store),
             setDetails: DefaultSetCardDetailsUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
             getPreferredName: makeGetPreferredName(),
+        )
+    }
+
+    // MARK: - Recurring
+
+    /// Records the recurring movements whose day has come. Runs at launch, on returning to the
+    /// app and after a rule is saved; it skips what another device already recorded.
+    func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
+        DefaultMaterializeRecurringUseCase(rules: store, transactions: store, settings: store)
+    }
+
+    func materializeRecurring() async {
+        do {
+            try await makeMaterializeRecurring().execute()
+        } catch {
+            Logger.app.error("Recurring movements could not be recorded: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    private func makeGetRecurringOverview() -> any GetRecurringOverviewUseCase {
+        DefaultGetRecurringOverviewUseCase(
+            rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
+        )
+    }
+
+    func makeRecurringViewModel() -> RecurringViewModel {
+        RecurringViewModel(getOverview: makeGetRecurringOverview())
+    }
+
+    func makeRecurringRuleEditorViewModel(ruleID: UUID?) -> RecurringRuleEditorViewModel {
+        RecurringRuleEditorViewModel(
+            ruleID: ruleID,
+            getOverview: makeGetRecurringOverview(),
+            save: DefaultSaveRecurringRuleUseCase(
+                rules: store, accounts: store, cards: store, categories: store, settings: store,
+                materialize: makeMaterializeRecurring(),
+            ),
+            setPaused: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
+            delete: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
         )
     }
 
@@ -288,7 +332,9 @@ final class AppContainer {
         let context = makeGetTransactionContext()
         return CreateTransactionViewModel(
             getContext: context,
-            save: DefaultSaveTransactionUseCase(context: context, transactions: store),
+            save: DefaultSaveTransactionUseCase(
+                context: context, transactions: store, recurringRules: store, materialize: makeMaterializeRecurring(),
+            ),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
             receiptSaver: PhotoLibraryReceiptSaver(),
             type: type,

@@ -9,6 +9,7 @@ extension SwiftDataStore {
         cards: [Card],
         transactions: [Transaction],
         categories: [TransactionCategory],
+        recurringRules: [RecurringRule] = [],
     ) throws(DomainError) {
         try save(settings)
         for account in accounts {
@@ -22,6 +23,9 @@ extension SwiftDataStore {
         }
         for category in categories {
             try save(category)
+        }
+        for rule in recurringRules {
+            try save(rule)
         }
     }
 }

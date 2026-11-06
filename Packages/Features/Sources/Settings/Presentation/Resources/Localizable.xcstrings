@@ -671,6 +671,16 @@
         }
       }
     },
+    "Recurring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurrentes"
+          }
+        }
+      }
+    },
     "Remind me to pay" : {
       "localizations" : {
         "es" : {

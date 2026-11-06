@@ -8,6 +8,8 @@ public struct TransactionList: Hashable, Sendable {
     public let accounts: [Account]
     public let cards: [Card]
     public let categories: [TransactionCategory]
+    /// Live recurring rules, to name the one a movement came from.
+    public let recurringRules: [RecurringRule]
 
     public init(
         settings: CurrencySettings,
@@ -15,12 +17,19 @@ public struct TransactionList: Hashable, Sendable {
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
+        recurringRules: [RecurringRule] = [],
     ) {
         self.settings = settings
         self.transactions = transactions
         self.accounts = accounts
         self.cards = cards
         self.categories = categories
+        self.recurringRules = recurringRules
+    }
+
+    /// The live rule that recorded the movement; `nil` when it was deleted since.
+    public func recurringRule(of transaction: Transaction) -> RecurringRule? {
+        transaction.recurringID.flatMap { id in recurringRules.first { $0.id == id } }
     }
 }
 
@@ -54,6 +63,7 @@ public struct DefaultGetTransactionListUseCase: GetTransactionListUseCase {
     private let cards: any CardRepository
     private let categories: any CategoryRepository
     private let settings: any SettingsRepository
+    private let recurringRules: (any RecurringRuleRepository)?
 
     public init(
         transactions: any TransactionRepository,
@@ -61,12 +71,14 @@ public struct DefaultGetTransactionListUseCase: GetTransactionListUseCase {
         cards: any CardRepository,
         categories: any CategoryRepository,
         settings: any SettingsRepository,
+        recurringRules: (any RecurringRuleRepository)? = nil,
     ) {
         self.transactions = transactions
         self.accounts = accounts
         self.cards = cards
         self.categories = categories
         self.settings = settings
+        self.recurringRules = recurringRules
     }
 
     public func execute() async throws(DomainError) -> TransactionList {
@@ -77,6 +89,7 @@ public struct DefaultGetTransactionListUseCase: GetTransactionListUseCase {
             accounts: accounts.fetchAccounts(),
             cards: cards.fetchCards(),
             categories: categories.fetchCategories(),
+            recurringRules: recurringRules?.fetchRecurringRules() ?? [],
         )
     }
 }
