@@ -173,6 +173,7 @@ public enum RecurringSchedule {
             isShared: false,
             note: rule.note,
             recurringID: rule.id,
+            tags: rule.tags,
         )
     }
 

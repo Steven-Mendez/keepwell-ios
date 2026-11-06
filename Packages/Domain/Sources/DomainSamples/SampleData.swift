@@ -15,6 +15,7 @@ public struct SampleData: Sendable {
     public let savingsGoals: [SavingsGoal]
     public let loans: [Loan]
     public let personalDebts: [PersonalDebt]
+    public let categorizationRules: [CategorizationRule]
 
     public enum IDs {
         public static let savings = UUID(uuidString: "00000000-0000-0000-0000-00000000A001") ?? UUID()
@@ -39,6 +40,8 @@ public struct SampleData: Sendable {
         public static let juanDebt = UUID(uuidString: "00000000-0000-0000-0000-00000000F101") ?? UUID()
         public static let anaDebt = UUID(uuidString: "00000000-0000-0000-0000-00000000F102") ?? UUID()
         public static let settledDebt = UUID(uuidString: "00000000-0000-0000-0000-00000000F103") ?? UUID()
+        public static let uberRule = UUID(uuidString: "00000000-0000-0000-0000-00000000F201") ?? UUID()
+        public static let salaryMatchRule = UUID(uuidString: "00000000-0000-0000-0000-00000000F202") ?? UUID()
     }
 
     /// The sample's fixed "today": 22 October 2026.
@@ -72,6 +75,10 @@ public struct SampleData: Sendable {
         savingsGoals = Self.makeSavingsGoals(month: month)
         loans = Self.makeLoans(day: day)
         personalDebts = Self.makePersonalDebts(day: day)
+        categorizationRules = [
+            CategorizationRule(id: IDs.uberRule, match: "Uber", categoryID: "transport", kind: .expense),
+            CategorizationRule(id: IDs.salaryMatchRule, match: "Payroll", categoryID: "salary", kind: .income, tags: ["work"]),
+        ]
     }
 
     /// A motorbike loan started two months ago with its first two installments paid; the third is

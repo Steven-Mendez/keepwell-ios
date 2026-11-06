@@ -106,6 +106,12 @@ public struct Loan: Identifiable, Hashable, Sendable, Codable {
         return with(payments: payments + [LoanPayment(number: number, paidAt: date, transactionID: transactionID)])
     }
 
+    /// "Mark unpaid": the installment back to due. Throws when it isn't paid.
+    public func unpaying(number: Int) throws(DomainError) -> (loan: Self, payment: LoanPayment) {
+        guard let payment = payments.first(where: { $0.number == number }) else { throw .invalidAmount }
+        return (with(payments: payments.filter { $0.number != number }), payment)
+    }
+
     public func with(payments: [LoanPayment]) -> Self {
         Self(
             id: id, name: name, lender: lender, borrowed: borrowed, installmentAmount: installmentAmount,
