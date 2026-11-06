@@ -99,25 +99,16 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     static func validated(_ draft: TransactionDraft, context: TransactionContext) throws(DomainError) -> Transaction {
         try Transaction.checkAmounts(draft.amount, actualDebitedPrincipal: draft.actualDebitedPrincipal)
         let currencies = context.currencies
-        guard draft.currency == currencies.principal || draft.currency == currencies.second else {
-            throw .invalidCurrency(draft.currency)
-        }
+        try Transaction.checkCurrency(draft.currency, currencies: currencies)
         guard let source = draft.source, let accountID = context.accountID(for: source) else {
             throw .notFound(UUID(uuid: UUID_NULL))
         }
 
         var category: TransactionCategory?
-        switch draft.kind {
-        case .transfer:
-            guard let destination = draft.destinationAccountID, destination != accountID, context.account(destination) != nil else {
-                throw .invalidTransferDestination
-            }
-        case .expense, .income:
-            guard let found = context.categories.first(where: { $0.id == draft.categoryID }) else {
-                throw .notFound(UUID(uuid: UUID_NULL))
-            }
-            guard found.kind == draft.kind else { throw .categoryKindMismatch(expected: draft.kind, actual: found.kind) }
-            category = found
+        if draft.kind == .transfer {
+            try Transaction.checkDestination(draft.destinationAccountID, from: accountID, accounts: context.accounts)
+        } else {
+            category = try Transaction.checkCategory(draft.categoryID, kind: draft.kind, categories: context.categories)
         }
 
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)

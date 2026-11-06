@@ -53,4 +53,23 @@ struct SubscriptionsTests {
         ]
         #expect(Subscriptions.charged(toCard: card, transactions: transactions, calendar: calendar).isEmpty)
     }
+
+    @Test
+    func subscriptionRulesPaidWithTheCardCountOnceEach() throws {
+        let charged = try [charge("Apple Music", on: "2026-10-01", category: Subscriptions.categoryID)]
+        func rule(_ name: String, card: UUID, isSubscription: Bool = true) -> RecurringRule {
+            RecurringRule(
+                name: name, kind: .expense, categoryID: Subscriptions.categoryID, amount: 10, currency: "USD",
+                accountID: account, cardID: card, frequency: .monthly, startDate: .now, isSubscription: isSubscription,
+            )
+        }
+        let rules = [
+            rule("apple músic", card: card),
+            rule("Gym", card: card),
+            rule("Rent", card: card, isSubscription: false),
+            rule("Netflix", card: UUID()),
+        ]
+        let found = Subscriptions.charged(toCard: card, transactions: charged, rules: rules, calendar: calendar)
+        #expect(found == ["Apple Music", "Gym"])
+    }
 }

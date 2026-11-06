@@ -26,6 +26,8 @@ public final class TransactionRecord: AuditedRecord {
     var createdAt = Date.now
     var updatedAt = Date.now
     var deletedAt: Date?
+    /// Added in V6: the recurring rule that recorded it.
+    var recurringID: UUID?
 
     #Index<TransactionRecord>([\.date])
 
@@ -50,6 +52,7 @@ public final class TransactionRecord: AuditedRecord {
         rate = DecimalCoding.string(transaction.exchangeRate.rate)
         isShared = transaction.isShared
         note = transaction.note
+        recurringID = transaction.recurringID
     }
 
     func toDomain() throws(DomainCorruption) -> Transaction {
@@ -80,6 +83,7 @@ public final class TransactionRecord: AuditedRecord {
             exchangeRate: exchangeRate,
             isShared: isShared,
             note: note,
+            recurringID: recurringID,
         )
     }
 }
