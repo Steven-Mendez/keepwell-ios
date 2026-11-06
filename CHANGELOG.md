@@ -22,16 +22,32 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Tags besides the category ("#viaje-mexico", "#boda"): add them as chips when you log a movement,
+  with the tags you already use offered first. They're stored lowercase, without the "#" and with
+  dashes for spaces, and show on each movement's row. Typing "#boda" in Transactions' search (or
+  "Show #boda" in a movement's menu) narrows the list to that tag and totals what it spent and
+  received over all time in your main currency. A movement made with "Repeat" passes its tags to
+  the recurring rule, and the rule to every movement it records.
+- Rules, in Settings: "if it says Uber → Transport". When a new movement's description or note
+  contains a rule's text (capitals and accents don't matter) and you haven't picked a category, or
+  picked "Other", the first matching rule picks it and adds its tags, with "Category from rule:
+  Uber" under it; you can still change it. CSV imports use them for rows without a known category.
+  Rules can be reordered, since the first match wins, and "Apply to past movements" moves the
+  uncategorized or "Other" movements a rule matches, after telling you how many. Backups keep
+  `schemaVersion` 4 and gain `categorizationRules` and the optional `tags` of movements and
+  recurring rules; older files restore without them.
+- Loans: "Mark unpaid" on a paid installment (touch and hold it) makes it due again and deletes the
+  expense it recorded.
 - Debts and loans, opened from home's new "Debts" card. A loan (bank or personal) has a lender,
   the amount borrowed in your main or second currency, the installment, how many and whether they
   fall monthly or weekly from the first due date. Its schedule shows each installment as paid or
   due, what's left and the next one; "Pay installment" records a confirmed expense from the account
-  or card you pick ("Motorbike · 3/12", in the category you choose) and marks it paid. The next
-  installment is reminded as many days ahead as card payments. Personal debts track money you lent
-  ("they owe me") or borrowed ("I owe") with partial repayments and "Mark as settled"; like savings
-  goals they never record movements or change balances. "Split" in a movement's menu divides an
-  expense with other people (equal shares by default, editable), each of whom then owes you their
-  part. The screen totals "You owe" and "Owed to you" one currency at a time. Backups move to
+  or card you pick ("Motorbike · 3/12", in the category you choose) and marks it paid in the same
+  save, so a failure leaves neither. The next installment is reminded as many days ahead as card
+  payments. Personal debts track money you lent ("they owe me") or borrowed ("I owe") with partial
+  repayments and "Mark as settled"; like savings goals they never record movements or change
+  balances. "Split" in a movement's menu divides an expense with other people (equal shares by
+  default, editable), each of whom then owes you their part. The screen totals "You owe" and "Owed to you" one currency at a time. Backups move to
   `schemaVersion` 4 with `loans` and `personalDebts`; files from versions 1 to 3 still restore,
   with neither.
 - Savings goals, like a pot or a vault but only on paper: give a goal a name, a target in your main
