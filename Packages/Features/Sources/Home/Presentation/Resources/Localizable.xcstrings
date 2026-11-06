@@ -11,6 +11,26 @@
         }
       }
     },
+    "%@ on %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ con %@"
+          }
+        }
+      }
+    },
+    "%@ renews tomorrow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ se renueva mañana"
+          }
+        }
+      }
+    },
     "%@ · %@ from %@. Has it been paid?" : {
       "localizations" : {
         "es" : {
@@ -487,6 +507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No cuentan en saldos hasta que los confirmes · %@"
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximos"
           }
         }
       }

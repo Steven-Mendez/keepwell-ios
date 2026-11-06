@@ -16,6 +16,8 @@ public struct Reminder: Hashable, Sendable {
         case cutoff(UUID)
         /// A plastic expiring this month.
         case cardExpiry(UUID)
+        /// A subscription renewing tomorrow, by its recurring rule.
+        case subscription(UUID)
     }
 
     /// Stable per occurrence, so rescheduling replaces instead of duplicating.
@@ -76,6 +78,32 @@ extension HomeViewModel {
             + paymentReminders(overview, now: now, calendar: calendar)
             + cutoffReminders(overview, now: now, calendar: calendar)
             + expiryReminders(overview, now: now, calendar: calendar)
+            + renewalReminders(overview, display: display, now: now, calendar: calendar)
+    }
+
+    /// The morning before each subscription renews, so there's time to cancel it.
+    private func renewalReminders(_ overview: HomeOverview, display: TransactionDisplay, now: Date, calendar: Calendar) -> [Reminder] {
+        overview.upcoming.compactMap { occurrence in
+            let rule = occurrence.rule
+            guard rule.isSubscription,
+                  let dayBefore = calendar.date(byAdding: .day, value: -1, to: occurrence.date),
+                  let date = morning(of: dayBefore, calendar: calendar),
+                  date > now
+            else { return nil }
+            let amount = formatter.string(from: rule.amount, currencyCode: rule.currency)
+            let method = display.methodName(of: RecurringSchedule.movement(
+                from: rule,
+                on: occurrence.date,
+                exchangeRate: .single(rule.currency),
+            ))
+            return Reminder(
+                id: "renewal-\(rule.id)-\(Int(occurrence.date.timeIntervalSince1970))",
+                kind: .subscription(rule.id),
+                title: String(localized: "\(rule.name) renews tomorrow", bundle: #bundle),
+                body: String(localized: "\(amount) on \(method)", bundle: #bundle),
+                date: date,
+            )
+        }
     }
 
     private func plannedReminders(_ overview: HomeOverview, display: TransactionDisplay, now: Date, calendar: Calendar) -> [Reminder] {
