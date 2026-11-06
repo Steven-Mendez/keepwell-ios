@@ -3,7 +3,7 @@ import Foundation
 
 /// Repository implementations kept in memory, for previews, snapshot tests and use case tests.
 public actor InMemoryStore: AccountRepository, CardRepository, TransactionRepository, CategoryRepository,
-    SettingsRepository, DataEraser, BackupStore, RecurringRuleRepository
+    SettingsRepository, DataEraser, BackupStore, RecurringRuleRepository, SavingsGoalRepository
 {
     private var accounts: [Account]
     private var cards: [Card]
@@ -11,6 +11,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
     private var categories: [TransactionCategory]
     private var settings: Settings?
     private var recurringRules: [RecurringRule]
+    private var savingsGoals: [SavingsGoal]
 
     public init(
         accounts: [Account] = [],
@@ -19,6 +20,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         categories: [TransactionCategory] = TransactionCategory.defaults,
         settings: Settings? = nil,
         recurringRules: [RecurringRule] = [],
+        savingsGoals: [SavingsGoal] = [],
     ) {
         self.accounts = accounts
         self.cards = cards
@@ -26,6 +28,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         self.categories = categories
         self.settings = settings
         self.recurringRules = recurringRules
+        self.savingsGoals = savingsGoals
     }
 
     public init(sample: SampleData) {
@@ -36,6 +39,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             categories: sample.categories,
             settings: sample.settings,
             recurringRules: sample.recurringRules,
+            savingsGoals: sample.savingsGoals,
         )
     }
 
@@ -98,6 +102,18 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         }
     }
 
+    public func fetchSavingsGoals() -> [SavingsGoal] {
+        savingsGoals
+    }
+
+    public func save(_ goal: SavingsGoal) {
+        upsert(goal, into: &savingsGoals)
+    }
+
+    public func deleteSavingsGoal(id: UUID) throws(DomainError) {
+        try remove(id, from: &savingsGoals)
+    }
+
     public func fetchCategories() -> [TransactionCategory] {
         categories
     }
@@ -136,6 +152,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         categories = []
         settings = nil
         recurringRules = []
+        savingsGoals = []
     }
 
     /// Records here carry no history, so they export stamped with the moment of the export and a
@@ -149,6 +166,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             categories: categories.map { Stamped($0, stamp) },
             transactions: transactions.map { Stamped($0, stamp) },
             recurringRules: recurringRules.map { Stamped($0, stamp) },
+            savingsGoals: savingsGoals.map { Stamped($0, stamp) },
         )
     }
 
@@ -159,6 +177,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         categories = contents.categories.filter { !$0.metadata.isDeleted }.map(\.value)
         transactions = contents.transactions.filter { !$0.metadata.isDeleted }.map(\.value)
         recurringRules = contents.recurringRules.filter { !$0.metadata.isDeleted }.map(\.value)
+        savingsGoals = contents.savingsGoals.filter { !$0.metadata.isDeleted }.map(\.value)
     }
 
     private func upsert<T: Identifiable>(_ item: T, into list: inout [T]) {

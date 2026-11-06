@@ -100,7 +100,7 @@ private struct StoredCard: Decodable {
     }
 }
 
-/// "Back up now": the whole store as a portable `BackupSnapshot` file (`schemaVersion` 1), which
+/// "Back up now": the whole store as a portable `BackupSnapshot` file (`currentSchemaVersion`), which
 /// the person keeps wherever they choose (iCloud Drive, Files) and the web app can open too.
 public protocol CreateBackupUseCase: Sendable {
     /// The backup file's contents.
