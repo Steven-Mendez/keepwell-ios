@@ -104,9 +104,30 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             goals: SavingsGoalProgress.ordered(goals, currentMonth: month.month),
+            forecast: forecast(records, rules: rules, settings: currencies, calendar: calendar, now: now),
+            priceIncreases: PriceIncrease.detect(in: transactions, now: now, calendar: calendar),
             accounts: accounts,
             cards: cards,
             categories: records.categories,
+        )
+    }
+
+    /// Only with a bank or cash account: the forecast is about the money that can be spent.
+    private static func forecast(
+        _ records: LedgerRecords,
+        rules: [RecurringRule],
+        settings: CurrencySettings,
+        calendar: Calendar,
+        now: Date,
+    ) -> BalanceForecast? {
+        guard records.accounts.contains(where: { $0.kind != .credit }) else { return nil }
+        return BalanceForecast(
+            accounts: records.accounts,
+            transactions: records.transactions,
+            rules: rules,
+            settings: settings,
+            now: now,
+            calendar: calendar,
         )
     }
 

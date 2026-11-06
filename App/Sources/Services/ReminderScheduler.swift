@@ -14,10 +14,12 @@ final class ReminderScheduler {
     /// iOS keeps at most 64 pending notifications per app and silently drops the rest, so only
     /// the soonest are scheduled; the next reschedule (every time home loads) adds the later ones.
     static let pendingLimit = 64
-    /// Budget alerts already handed to the system. They report something that already happened,
-    /// so unlike the dated reminders they must not be sent again each time home reschedules.
+    /// Budget and price-increase alerts already handed to the system. They report something that
+    /// already happened, so unlike the dated reminders they must not be sent again each time home
+    /// reschedules. The key keeps its old name so alerts announced before stay announced.
     static let announcedKey = "keepwell.reminders.announcedBudgets"
-    /// Ids carry their month, so old ones never match again; this only keeps the list short.
+    /// Ids carry their month or their charge, so old ones never match again; this only keeps the
+    /// list short.
     static let announcedLimit = 200
 
     private let center = UNUserNotificationCenter.current()
@@ -45,7 +47,7 @@ final class ReminderScheduler {
         let settings = await center.notificationSettings()
         guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
         var announced = defaults.stringArray(forKey: Self.announcedKey) ?? []
-        // A budget alert still waiting its few seconds stays: removing it would lose it for good.
+        // A one-shot alert still waiting its few seconds stays: removing it would lose it for good.
         let pending = await center.pendingNotificationRequests().map(\.identifier)
             .filter { $0.hasPrefix(Self.prefix) && !announced.contains(String($0.dropFirst(Self.prefix.count))) }
         center.removePendingNotificationRequests(withIdentifiers: pending)
@@ -60,10 +62,9 @@ final class ReminderScheduler {
     }
 
     private static func isOneShot(_ reminder: Reminder) -> Bool {
-        if case .budget = reminder.kind {
-            true
-        } else {
-            false
+        switch reminder.kind {
+        case .budget, .priceIncrease: true
+        default: false
         }
     }
 
