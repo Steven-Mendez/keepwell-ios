@@ -19,34 +19,7 @@ public struct CategoriesView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
-                HStack {
-                    KWNavigationHeader(String(localized: "Categories", bundle: #bundle), style: .large, onBack: onBack)
-                    Button { viewModel.isReordering.toggle() } label: {
-                        Text(viewModel.isReordering ? String(localized: "Done", bundle: #bundle) : String(
-                            localized: "Reorder",
-                            bundle: #bundle,
-                        ))
-                    }
-                    .buttonStyle(.kw(.secondary, size: .small))
-                    .fixedSize()
-                }
-                KWSegmentedControl(
-                    [
-                        (TransactionKind.expense, String(localized: "Expenses", bundle: #bundle)),
-                        (TransactionKind.income, String(localized: "Income", bundle: #bundle)),
-                    ],
-                    selection: $viewModel.kind,
-                )
-                if !viewModel.isReordering {
-                    Button(action: viewModel.startNew) {
-                        Label {
-                            Text("New category", bundle: #bundle)
-                        } icon: {
-                            KWIconView(.plus, size: 18)
-                        }
-                    }
-                    .buttonStyle(.kw(.secondary, size: .row))
-                }
+                header
                 list
                 if let error = viewModel.errorMessage {
                     Text(error)
@@ -66,14 +39,9 @@ public struct CategoriesView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
         .sheet(item: $viewModel.editor) { editor in
-            CategoryEditorView(
-                viewModel: editor,
-                onSaved: { _ in Task { await viewModel.editorFinished() } },
-                onDeleted: { Task { await viewModel.editorFinished() } },
-                onClose: { viewModel.editor = nil },
-            )
-            .presentationDetents([.large])
-            .presentationBackground(KWColor.Surface.bg)
+            editorSheet(editor)
+                .presentationDetents([.large])
+                .presentationBackground(KWColor.Surface.bg)
         }
         .confirmationDialog(
             String(localized: "Restore default categories?", bundle: #bundle),
@@ -88,6 +56,48 @@ public struct CategoriesView: View {
         } message: {
             Text("Deleted defaults come back and edits to them are undone. Your own categories and movements stay.", bundle: #bundle)
         }
+    }
+
+    /// The title with Reorder, the expense/income switch and, unless reordering, "New category".
+    @ViewBuilder
+    private var header: some View {
+        HStack {
+            KWNavigationHeader(String(localized: "Categories", bundle: #bundle), style: .large, onBack: onBack)
+            Button { viewModel.isReordering.toggle() } label: {
+                Text(viewModel.isReordering ? String(localized: "Done", bundle: #bundle) : String(
+                    localized: "Reorder",
+                    bundle: #bundle,
+                ))
+            }
+            .buttonStyle(.kw(.secondary, size: .small))
+            .fixedSize()
+        }
+        KWSegmentedControl(
+            [
+                (TransactionKind.expense, String(localized: "Expenses", bundle: #bundle)),
+                (TransactionKind.income, String(localized: "Income", bundle: #bundle)),
+            ],
+            selection: $viewModel.kind,
+        )
+        if !viewModel.isReordering {
+            Button(action: viewModel.startNew) {
+                Label {
+                    Text("New category", bundle: #bundle)
+                } icon: {
+                    KWIconView(.plus, size: 18)
+                }
+            }
+            .buttonStyle(.kw(.secondary, size: .row))
+        }
+    }
+
+    private func editorSheet(_ editor: CategoryEditorViewModel) -> some View {
+        CategoryEditorView(
+            viewModel: editor,
+            onSaved: { _ in Task { await viewModel.editorFinished() } },
+            onDeleted: { Task { await viewModel.editorFinished() } },
+            onClose: { viewModel.editor = nil },
+        )
     }
 
     private var list: some View {

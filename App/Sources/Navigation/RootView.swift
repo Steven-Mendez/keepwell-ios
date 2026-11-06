@@ -56,82 +56,95 @@ struct RootView: View {
     }
 
     var body: some View {
-        Group {
-            switch phase {
-            case .loading:
-                // The splash stays while settings load, so launch never flashes black.
-                SplashView()
-            case let .onboarding(viewModel):
-                OnboardingRoute(
-                    container: container,
-                    viewModel: viewModel,
-                    onImportCSV: { isPickingImport = true },
-                    onRestoreFile: { isPickingBackup = true },
-                    onFinish: finishOnboarding,
-                )
-            case .main:
-                main
-            }
-        }
-        .onChange(of: cover, initial: true) { _, cover in showCover(cover) }
-        .overlay(alignment: .top) {
-            if let banner {
-                Text(banner)
-                    .font(KWTextStyle.label.font)
-                    .foregroundStyle(KWColor.Text.onPositive)
-                    .padding(.horizontal, KWSpacing.md)
-                    .padding(.vertical, 10)
-                    .background(KWColor.State.positive, in: Capsule())
-                    .padding(.top, KWSpacing.xs)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .task {
-                        try? await Task.sleep(for: .seconds(3))
-                        self.banner = nil
-                    }
-            }
-        }
-        .fileImporter(isPresented: $isPickingImport, allowedContentTypes: [.commaSeparatedText, .plainText]) { result in
-            guard case let .success(url) = result else { return }
-            let didAccess = url.startAccessingSecurityScopedResource()
-            defer {
-                if didAccess {
-                    url.stopAccessingSecurityScopedResource()
+        phaseContent
+            .onChange(of: cover, initial: true) { _, cover in showCover(cover) }
+            .overlay(alignment: .top) { bannerView }
+            .fileImporter(
+                isPresented: $isPickingImport,
+                allowedContentTypes: [.commaSeparatedText, .plainText],
+                onCompletion: readPickedCSV,
+            )
+            .background {
+                // A second importer can't share a view with the first, so it lives on the background.
+                Color.clear.fileImporter(isPresented: $isPickingBackup, allowedContentTypes: [.json]) { result in
+                    guard case let .success(url) = result else { return }
+                    Task { await restoreFromFile(url) }
                 }
             }
-            pendingImport = (try? Data(contentsOf: url)).flatMap { String(data: $0, encoding: .utf8) }
+            .animation(.snappy, value: banner)
+            .task {
+                notifications.handler = handleNotification
+                await load()
+            }
+            .onOpenURL(perform: open)
+            .onChange(of: screens?.home.overview) { _, overview in
+                guard overview != nil, let home = screens?.home else { return }
+                Task { await container.publish(from: home) }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                Task { await sceneChanged(to: newPhase) }
+            }
+            // Any write (a movement logged, edited or deleted from any screen, an import, a widget
+            // quick log) changes what home and the widgets show, even when home isn't on screen.
+            .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in
+                storeRevision += 1
+            }
+            .task(id: storeRevision) {
+                guard storeRevision > 0 else { return }
+                // Saves come in bursts (a transfer writes both sides), so wait for the last one.
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
+                await screens?.home.load()
+            }
+    }
+
+    @ViewBuilder
+    private var phaseContent: some View {
+        switch phase {
+        case .loading:
+            // The splash stays while settings load, so launch never flashes black.
+            SplashView()
+        case let .onboarding(viewModel):
+            OnboardingRoute(
+                container: container,
+                viewModel: viewModel,
+                onImportCSV: { isPickingImport = true },
+                onRestoreFile: { isPickingBackup = true },
+                onFinish: finishOnboarding,
+            )
+        case .main:
+            main
         }
-        .background {
-            // A second importer can't share a view with the first, so it lives on the background.
-            Color.clear.fileImporter(isPresented: $isPickingBackup, allowedContentTypes: [.json]) { result in
-                guard case let .success(url) = result else { return }
-                Task { await restoreFromFile(url) }
+    }
+
+    @ViewBuilder
+    private var bannerView: some View {
+        if let banner {
+            Text(banner)
+                .font(KWTextStyle.label.font)
+                .foregroundStyle(KWColor.Text.onPositive)
+                .padding(.horizontal, KWSpacing.md)
+                .padding(.vertical, 10)
+                .background(KWColor.State.positive, in: Capsule())
+                .padding(.top, KWSpacing.xs)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .task {
+                    try? await Task.sleep(for: .seconds(3))
+                    self.banner = nil
+                }
+        }
+    }
+
+    /// Keeps the picked CSV's text for after onboarding saves the accounts it refers to.
+    private func readPickedCSV(_ result: Result<URL, any Error>) {
+        guard case let .success(url) = result else { return }
+        let didAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if didAccess {
+                url.stopAccessingSecurityScopedResource()
             }
         }
-        .animation(.snappy, value: banner)
-        .task {
-            notifications.handler = handleNotification
-            await load()
-        }
-        .onOpenURL(perform: open)
-        .onChange(of: screens?.home.overview) { _, overview in
-            guard overview != nil, let home = screens?.home else { return }
-            Task { await container.publish(from: home) }
-        }
-        .onChange(of: scenePhase) { _, newPhase in
-            Task { await sceneChanged(to: newPhase) }
-        }
-        // Any write (a movement logged, edited or deleted from any screen, an import, a widget
-        // quick log) changes what home and the widgets show, even when home isn't on screen.
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in
-            storeRevision += 1
-        }
-        .task(id: storeRevision) {
-            guard storeRevision > 0 else { return }
-            // Saves come in bursts (a transfer writes both sides), so wait for the last one.
-            try? await Task.sleep(for: .milliseconds(300))
-            guard !Task.isCancelled else { return }
-            await screens?.home.load()
-        }
+        pendingImport = (try? Data(contentsOf: url)).flatMap { String(data: $0, encoding: .utf8) }
     }
 
     // MARK: - Main

@@ -35,46 +35,56 @@ public struct ReviewView: View {
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
-            KWSwipeToConfirm(viewModel.confirmTitle, accessibilityLabel: viewModel.saveTitle) {
-                KWKeyboard.dismiss()
-                Task {
-                    await viewModel.save()
-                    if viewModel.saved == nil {
-                        attempt += 1
-                    }
-                }
-            }
-            .id(attempt)
-            .disabled(!viewModel.canSave)
-            .padding(.horizontal, KWLayout.gutter)
-            .padding(.top, KWSpacing.sm)
-            // Not slid on purpose: a draft doesn't move money yet, so one tap is enough.
-            Button {
-                KWKeyboard.dismiss()
-                Task { await viewModel.save(asDraft: true) }
-            } label: {
-                Text("Save as draft", bundle: #bundle)
-            }
-            .buttonStyle(KWButtonStyle(.plain, size: .text, height: 44))
-            .disabled(!viewModel.canSave)
-            .padding(.bottom, 24)
+            saveActions
         }
         .ignoresSafeArea(.container, edges: [.top, .bottom])
         .onAppear { viewModel.prefillDescription() }
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
         .sheet(isPresented: $isPickingDate) {
-            DatePicker(selection: $viewModel.date, displayedComponents: [.date]) {
-                Text("Date", bundle: #bundle)
-            }
-            .datePickerStyle(.graphical)
-            .padding(KWLayout.gutter)
-            .presentationDetents([.medium])
-            .presentationBackground(KWColor.Surface.surface)
+            datePicker
+                .presentationDetents([.medium])
+                .presentationBackground(KWColor.Surface.surface)
         }
         .sheet(isPresented: $isEditingNote) {
             NoteSheet(note: $viewModel.note) { isEditingNote = false }
         }
+    }
+
+    /// Slide to save, or save as a draft.
+    @ViewBuilder
+    private var saveActions: some View {
+        KWSwipeToConfirm(viewModel.confirmTitle, accessibilityLabel: viewModel.saveTitle) {
+            KWKeyboard.dismiss()
+            Task {
+                await viewModel.save()
+                if viewModel.saved == nil {
+                    attempt += 1
+                }
+            }
+        }
+        .id(attempt)
+        .disabled(!viewModel.canSave)
+        .padding(.horizontal, KWLayout.gutter)
+        .padding(.top, KWSpacing.sm)
+        // Not slid on purpose: a draft doesn't move money yet, so one tap is enough.
+        Button {
+            KWKeyboard.dismiss()
+            Task { await viewModel.save(asDraft: true) }
+        } label: {
+            Text("Save as draft", bundle: #bundle)
+        }
+        .buttonStyle(KWButtonStyle(.plain, size: .text, height: 44))
+        .disabled(!viewModel.canSave)
+        .padding(.bottom, 24)
+    }
+
+    private var datePicker: some View {
+        DatePicker(selection: $viewModel.date, displayedComponents: [.date]) {
+            Text("Date", bundle: #bundle)
+        }
+        .datePickerStyle(.graphical)
+        .padding(KWLayout.gutter)
     }
 
     // MARK: Summary card

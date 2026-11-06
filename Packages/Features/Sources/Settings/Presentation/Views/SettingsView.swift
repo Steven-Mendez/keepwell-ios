@@ -41,13 +41,7 @@ public struct SettingsView: View {
                 KWNavigationHeader(String(localized: "Settings", bundle: #bundle), style: .large, onBack: onBack)
                     .padding(.bottom, KWSpacing.xs)
                 if let overview = viewModel.overview {
-                    currency(overview.settings)
-                    cards(overview.settings)
-                    organization(overview)
-                    languageSection
-                    SecuritySection(viewModel: viewModel, overview: overview, onSetUpPasscode: onSetUpPasscode)
-                    DataSection(viewModel: viewModel, overview: overview)
-                    erase
+                    sections(overview)
                 }
                 if let error = viewModel.errorMessage {
                     Text(error)
@@ -80,15 +74,7 @@ public struct SettingsView: View {
             isPresented: $isConfirmingErase,
             titleVisibility: .visible,
         ) {
-            Button(role: .destructive) {
-                Task {
-                    if await viewModel.eraseAll() {
-                        onErased()
-                    }
-                }
-            } label: {
-                Text("Delete everything", bundle: #bundle)
-            }
+            eraseConfirmation
         } message: {
             Text(
                 "Your accounts, cards and transactions are deleted from this iPhone and from iCloud. This can't be undone.",
@@ -278,4 +264,29 @@ private struct ShareSheet: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_: UIActivityViewController, context _: Context) {}
+}
+
+extension SettingsView {
+    @ViewBuilder
+    private func sections(_ overview: SettingsOverview) -> some View {
+        currency(overview.settings)
+        cards(overview.settings)
+        organization(overview)
+        languageSection
+        SecuritySection(viewModel: viewModel, overview: overview, onSetUpPasscode: onSetUpPasscode)
+        DataSection(viewModel: viewModel, overview: overview)
+        erase
+    }
+
+    private var eraseConfirmation: some View {
+        Button(role: .destructive) {
+            Task {
+                if await viewModel.eraseAll() {
+                    onErased()
+                }
+            }
+        } label: {
+            Text("Delete everything", bundle: #bundle)
+        }
+    }
 }

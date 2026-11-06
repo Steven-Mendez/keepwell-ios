@@ -37,10 +37,15 @@ final class AccountsUITests: XCTestCase {
         app.buttons["Accounts"].tap()
         let savings = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Bank One Savings debit card")).firstMatch
         XCTAssertTrue(savings.waitForExistence(timeout: 5))
-        // The card sits behind others in the wallet; only its top strip shows.
+        // The card sits behind others in the wallet: tapping its top strip rolls it to the front,
+        // and tapping the front card opens it.
         savings.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        let opened = app.staticTexts["Bank account"]
+        if !opened.waitForExistence(timeout: 2) {
+            savings.tap()
+        }
 
-        XCTAssertTrue(app.staticTexts["Bank account"].waitForExistence(timeout: 5))
+        XCTAssertTrue(opened.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Manage account"].exists)
         XCTAssertFalse(app.buttons["Link another card"].exists)
         let delete = app.buttons["Delete account"]
