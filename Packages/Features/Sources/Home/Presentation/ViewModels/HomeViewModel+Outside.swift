@@ -12,6 +12,8 @@ public struct Reminder: Hashable, Sendable {
         case planned(UUID)
         /// A credit card's payment coming up.
         case payment(UUID)
+        /// A loan's next installment coming up, by loan.
+        case loanInstallment(UUID)
         /// A credit card's statement closing.
         case cutoff(UUID)
         /// A plastic expiring this month.
@@ -73,13 +75,14 @@ extension HomeViewModel {
         )
     }
 
-    /// Planned movements on their day, card payments ahead of time, statement cutoffs on their day,
-    /// plastics in their expiry month and budgets near or over their line right away. Only what's
-    /// still ahead is returned.
+    /// Planned movements on their day, card payments and loan installments ahead of time, statement
+    /// cutoffs on their day, plastics in their expiry month and budgets near or over their line right
+    /// away. Only what's still ahead is returned.
     public func reminders(now: Date = .now, calendar: Calendar = .current) -> [Reminder] {
         guard let overview, let display else { return [] }
         return plannedReminders(overview, display: display, now: now, calendar: calendar)
             + paymentReminders(overview, now: now, calendar: calendar)
+            + installmentReminders(overview, now: now, calendar: calendar)
             + cutoffReminders(overview, now: now, calendar: calendar)
             + expiryReminders(overview, now: now, calendar: calendar)
             + renewalReminders(overview, display: display, now: now, calendar: calendar)
@@ -140,6 +143,28 @@ extension HomeViewModel {
                 title: String(localized: "\(name): payment in \(days) days", bundle: #bundle),
                 body: String(localized: "Pay before day \(dueDay) so it doesn't generate interest.", bundle: #bundle),
                 date: reminder.date,
+            )
+        }
+    }
+
+    /// Each loan's next installment, as many days ahead as card payments. Only the next one: the
+    /// following installment is scheduled once this one is paid and home reloads.
+    private func installmentReminders(_ overview: HomeOverview, now: Date, calendar: Calendar) -> [Reminder] {
+        let days = overview.paymentReminderDaysBefore
+        return overview.loans.compactMap { progress in
+            guard let next = progress.next,
+                  let remindDay = calendar.date(byAdding: .day, value: -days, to: next.dueDate),
+                  let date = morning(of: remindDay, calendar: calendar),
+                  date > now
+            else { return nil }
+            let loan = progress.loan
+            let amount = formatter.string(from: loan.installmentAmount, currencyCode: loan.borrowed.currency)
+            return Reminder(
+                id: "installment-\(loan.id)-\(next.number)",
+                kind: .loanInstallment(loan.id),
+                title: String(localized: "\(loan.name): installment in \(days) days", bundle: #bundle),
+                body: String(localized: "Installment \(next.number) of \(loan.installmentCount) · \(amount)", bundle: #bundle),
+                date: date,
             )
         }
     }
