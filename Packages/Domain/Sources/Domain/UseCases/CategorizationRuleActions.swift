@@ -34,6 +34,8 @@ public protocol ManageCategorizationRulesUseCase: Sendable {
     /// tags added. Returns how many changed.
     @discardableResult
     func applyToPast(_ rule: CategorizationRule) async throws(DomainError) -> Int
+    /// Every tag used on movements, most used first, for the rule editor's suggestions.
+    func tagUsage() async throws(DomainError) -> [String]
 }
 
 public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRulesUseCase {
@@ -92,5 +94,9 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
             try await transactions.save(CategorizationRules.applying(rule, to: transaction))
         }
         return matches.count
+    }
+
+    public func tagUsage() async throws(DomainError) -> [String] {
+        try await Tags.usage(in: transactions.fetchTransactions(in: nil))
     }
 }
