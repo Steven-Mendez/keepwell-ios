@@ -51,6 +51,16 @@
         }
       }
     },
+    "%@ since %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ desde %2$@"
+          }
+        }
+      }
+    },
     "%@ total: %@" : {
       "localizations" : {
         "es" : {
@@ -167,6 +177,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Monto"
+          }
+        }
+      }
+    },
+    "At the end of each month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al cierre de cada mes"
+          }
+        }
+      }
+    },
+    "At the end of each month, at today's rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al cierre de cada mes, con la tasa de hoy"
           }
         }
       }
@@ -341,12 +371,32 @@
         }
       }
     },
+    "Net worth" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patrimonio neto"
+          }
+        }
+      }
+    },
     "Next month" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mes siguiente"
+          }
+        }
+      }
+    },
+    "No change since %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin cambios desde %@"
           }
         }
       }

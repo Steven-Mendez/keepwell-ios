@@ -21,6 +21,8 @@ public struct RecurringRuleBackup: Codable, Sendable, Equatable {
     public let autoConfirm: Bool
     public let isPaused: Bool
     public let note: String?
+    /// Copied to each movement it records (schema 4); left out when there are none.
+    public let tags: [String]?
     public let createdAt: Date
     public let updatedAt: Date
     public let deletedAt: Date?
@@ -45,6 +47,7 @@ public struct RecurringRuleBackup: Codable, Sendable, Equatable {
         autoConfirm = rule.autoConfirm
         isPaused = rule.isPaused
         note = rule.note
+        tags = rule.tags.isEmpty ? nil : rule.tags
         createdAt = stamped.metadata.createdAt
         updatedAt = stamped.metadata.updatedAt
         deletedAt = stamped.metadata.deletedAt
@@ -70,6 +73,7 @@ public struct RecurringRuleBackup: Codable, Sendable, Equatable {
             autoConfirm: autoConfirm,
             isPaused: isPaused,
             note: note,
+            tags: tags ?? [],
         )
         // The amount and interval only: what it pays with may be a tombstone in the same file, and
         // the end date was checked by calendar day in a time zone this file doesn't record.

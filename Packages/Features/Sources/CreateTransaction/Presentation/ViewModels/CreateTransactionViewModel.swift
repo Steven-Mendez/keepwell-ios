@@ -32,7 +32,7 @@ public final class CreateTransactionViewModel {
     public private(set) var amountText = "0"
     public var currency = "USD"
     public internal(set) var context: TransactionContext?
-    public private(set) var categoryID: String?
+    public internal(set) var categoryID: String?
     public internal(set) var source: PaymentSource?
     public internal(set) var destinationAccountID: UUID?
     /// Set by `presetTransfer(to:)`.
@@ -43,12 +43,29 @@ public final class CreateTransactionViewModel {
     public var showsAllCategories = false
     /// The open "New category" sheet.
     public var categoryEditor: CategoryEditorViewModel?
-    public var description = ""
+    public var description = "" {
+        didSet { applyRules() }
+    }
+
     /// The suggestion last written into `description`, so a later category change can replace it.
     var prefilledDescription: String?
     public var date: Date
     public var debitedText = ""
-    public var note = ""
+    public var note = "" {
+        didSet { applyRules() }
+    }
+
+    /// Labels besides the category, normalized as they're added.
+    public var tags: [String] = []
+    /// The categorization rule that chose the category, for "Category from rule: Uber". Cleared when
+    /// the person picks one themselves.
+    public internal(set) var appliedRule: CategorizationRule?
+    /// Whether the person tapped the category, rather than a widget preset or a rule choosing it.
+    var categoryPickedByPerson = false
+    /// What the category was before a rule changed it, to put back if the text stops matching.
+    var categoryBeforeRule: String?
+    /// The tags the applied rule added, so a different rule can take them back.
+    var ruleAddedTags: [String] = []
     /// "Repeat": `nil` records this movement once.
     public var repeatFrequency: RecurringFrequency?
     public private(set) var saved: SavedTransaction?
@@ -153,24 +170,6 @@ public final class CreateTransactionViewModel {
         amount > 0 && (!type.movesBetweenAccounts || canContinueFromAccounts)
     }
 
-    public var currencyOptions: [String] {
-        guard let currencies = context?.currencies else { return [currency] }
-        return [currencies.second, currencies.principal].compactMap(\.self)
-    }
-
-    /// "−C$879" as typed, with the sign of the movement.
-    public var amountDisplay: String {
-        sign + CurrencyFormatter.symbol(for: currency) + amountText
-    }
-
-    public var sign: String {
-        switch kind {
-        case .expense: "−"
-        case .income: "+"
-        case .transfer: ""
-        }
-    }
-
     public func continueFromAmount() {
         guard canContinueFromAmount else { return }
         if type.movesBetweenAccounts {
@@ -179,14 +178,20 @@ public final class CreateTransactionViewModel {
         }
         path = [.category]
         if let presetCategoryID, categories.contains(where: { $0.id == presetCategoryID }) {
-            selectCategory(presetCategoryID)
+            selectCategory(presetCategoryID, byPerson: false)
         }
     }
 
     // MARK: Category
 
-    public func selectCategory(_ id: String) {
+    /// `byPerson` is false for a widget's preset: a categorization rule may still replace that one.
+    public func selectCategory(_ id: String, byPerson: Bool = true) {
         categoryID = id
+        if byPerson {
+            categoryPickedByPerson = true
+            appliedRule = nil
+            ruleAddedTags = []
+        }
         if let source, !isUsable(source) {
             self.source = nil
         }
@@ -245,6 +250,7 @@ public final class CreateTransactionViewModel {
             note: note,
             repeatFrequency: repeatFrequency,
             recurringRuleID: recurringRuleID,
+            tags: tags,
         )
     }
 
@@ -277,6 +283,11 @@ public final class CreateTransactionViewModel {
         movementID = makeID()
         recurringRuleID = UUID()
         repeatFrequency = nil
+        tags = []
+        appliedRule = nil
+        categoryPickedByPerson = false
+        categoryBeforeRule = nil
+        ruleAddedTags = []
         saved = nil
         receiptImageStatus = .idle
         categoryQuery = ""
@@ -284,18 +295,6 @@ public final class CreateTransactionViewModel {
         categoryEditor = nil
         path = []
         await load()
-    }
-
-    /// What gets stored when the person leaves the description empty. Resolved here, not in the use
-    /// case, so the persisted text is in the language they were using at creation time.
-    var descriptionPlaceholder: String {
-        switch type {
-        case .expense, .income:
-            category.map(CategoryDisplay.name(of:)) ?? String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle)
-        case .transfer: String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle)
-        case .withdrawal: String(localized: "ATM withdrawal", bundle: #bundle)
-        case .cardPayment: String(localized: "Card payment", bundle: #bundle)
-        }
     }
 
     private var resolvedDescription: String {

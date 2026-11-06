@@ -15,7 +15,8 @@ public struct ImportSummary: Hashable, Sendable {
 
 /// "Import CSV": reads the file "Export CSV" writes (same columns, any order). Each row must name
 /// an account that exists, so movements never land somewhere the person didn't choose; rows
-/// already recorded are skipped, so importing the same file twice changes nothing.
+/// already recorded are skipped, so importing the same file twice changes nothing. A row without a
+/// category the app knows gets the first categorization rule its description or note matches.
 public protocol ImportTransactionsUseCase: Sendable {
     func execute(csv: String) async throws(DomainError) -> ImportSummary
 }
@@ -26,6 +27,7 @@ public struct DefaultImportTransactionsUseCase: ImportTransactionsUseCase {
     private let cards: any CardRepository
     private let categories: any CategoryRepository
     private let settings: any SettingsRepository
+    private let rules: (any CategorizationRuleRepository)?
     private let calendar: Calendar
 
     public init(
@@ -34,6 +36,7 @@ public struct DefaultImportTransactionsUseCase: ImportTransactionsUseCase {
         cards: any CardRepository,
         categories: any CategoryRepository,
         settings: any SettingsRepository,
+        rules: (any CategorizationRuleRepository)? = nil,
         calendar: Calendar = .current,
     ) {
         self.transactions = transactions
@@ -41,13 +44,15 @@ public struct DefaultImportTransactionsUseCase: ImportTransactionsUseCase {
         self.cards = cards
         self.categories = categories
         self.settings = settings
+        self.rules = rules
         self.calendar = calendar
     }
 
     public func execute(csv: String) async throws(DomainError) -> ImportSummary {
         let currencies = try await settings.load()?.currencies ?? .initial
         let records = try await LedgerRecords.load(accounts: accounts, cards: cards, transactions: transactions, categories: categories)
-        let parsed = Self.parse(csv: csv, records: records, currencies: currencies, calendar: calendar)
+        let rules = try await rules?.fetchCategorizationRules() ?? []
+        let parsed = Self.parse(csv: csv, records: records, currencies: currencies, rules: rules, calendar: calendar)
         for transaction in parsed.transactions {
             try await transactions.save(transaction)
         }
@@ -58,13 +63,16 @@ public struct DefaultImportTransactionsUseCase: ImportTransactionsUseCase {
         csv: String,
         records: LedgerRecords,
         currencies: CurrencySettings,
+        rules: [CategorizationRule] = [],
         calendar: Calendar,
     ) -> (transactions: [Transaction], skipped: Int) {
         let rows = CSV.rows(csv)
         guard let header = rows.first else { return ([], 0) }
         let columns = Dictionary(header.enumerated()
             .map { ($0.element.lowercased().trimmingCharacters(in: .whitespaces), $0.offset) }) { first, _ in first }
-        let reader = RowReader(columns: columns, records: records, currencies: currencies, calendar: calendar)
+        // A rule whose category was deleted since can't place anything.
+        let usable = rules.filter { rule in records.categories.contains { $0.id == rule.categoryID && $0.kind == rule.kind } }
+        let reader = RowReader(columns: columns, records: records, currencies: currencies, rules: usable, calendar: calendar)
         var seen = Set(records.transactions.map(Fingerprint.init))
         var imported: [Transaction] = []
         var skipped = 0
@@ -84,6 +92,7 @@ private struct RowReader {
     let columns: [String: Int]
     let records: LedgerRecords
     let currencies: CurrencySettings
+    let rules: [CategorizationRule]
     let calendar: Calendar
 
     func value(_ name: String, in row: [String]) -> String? {
@@ -107,12 +116,21 @@ private struct RowReader {
         let currency = (try? Money.normalizedCurrency(value("currency", in: row) ?? "")) ?? account.currencies.first ?? currencies.principal
         let lastFour = value("card_last_four", in: row)
         let card = lastFour.flatMap { digits in records.cards.first { $0.accountID == account.id && $0.lastFour == digits } }
+        let description = value("description", in: row) ?? ""
+        let note = value("note", in: row)
+        var category = kind == .transfer ? nil : categoryID(value("category", in: row), kind: kind)
+        var tags: [String] = []
+        if kind != .transfer, category == nil {
+            let rule = CategorizationRules.firstMatch(in: rules, kind: kind, description: description, note: note)
+            category = rule?.categoryID ?? TransactionCategory.otherID(for: kind)
+            tags = rule?.tags ?? []
+        }
         return Transaction(
             date: date,
             status: value("status", in: row).flatMap(TransactionStatus.init(rawValue:)) ?? .confirmed,
-            description: value("description", in: row) ?? "",
+            description: description,
             kind: kind,
-            categoryID: kind == .transfer ? nil : categoryID(value("category", in: row), kind: kind),
+            categoryID: category,
             amount: amount,
             currency: currency,
             accountID: account.id,
@@ -121,7 +139,8 @@ private struct RowReader {
             actualDebitedPrincipal: debited,
             exchangeRate: rate(value("rate", in: row)),
             isShared: value("shared", in: row)?.lowercased() == "yes",
-            note: value("note", in: row),
+            note: note,
+            tags: tags,
         )
     }
 
@@ -134,14 +153,13 @@ private struct RowReader {
         }
     }
 
-    /// By id or stored name; anything unknown goes to "Other" of the right kind.
-    private func categoryID(_ text: String?, kind: TransactionKind) -> String {
-        let fallback = kind == .income ? TransactionCategory.otherIncomeID : TransactionCategory.otherExpenseID
-        guard let text else { return fallback }
-        let match = records.categories.first { category in
+    /// By id or stored name; `nil` when the row has none or one this app doesn't know, which a
+    /// rule or else "Other" of the right kind then fills.
+    private func categoryID(_ text: String?, kind: TransactionKind) -> String? {
+        guard let text else { return nil }
+        return records.categories.first { category in
             category.kind == kind && (category.id == text || category.name.localizedCaseInsensitiveCompare(text) == .orderedSame)
-        }
-        return match?.id ?? fallback
+        }?.id
     }
 
     /// The rate the file recorded, or today's when it has none.

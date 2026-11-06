@@ -23,8 +23,9 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV6.versionIdentifier == Schema.Version(6, 0, 0))
         #expect(KeepwellSchemaV7.versionIdentifier == Schema.Version(7, 0, 0))
         #expect(KeepwellSchemaV8.versionIdentifier == Schema.Version(8, 0, 0))
-        #expect(KeepwellMigrationPlan.schemas.count == 8)
-        #expect(KeepwellMigrationPlan.stages.count == 7)
+        #expect(KeepwellSchemaV9.versionIdentifier == Schema.Version(9, 0, 0))
+        #expect(KeepwellMigrationPlan.schemas.count == 9)
+        #expect(KeepwellMigrationPlan.stages.count == 8)
         #expect(KeepwellSchemaV1.models.count == 5)
         #expect(KeepwellSchemaV2.models.count == 5)
         #expect(KeepwellSchemaV3.models.count == 5)
@@ -33,6 +34,7 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV6.models.count == 6)
         #expect(KeepwellSchemaV7.models.count == 6)
         #expect(KeepwellSchemaV8.models.count == 7)
+        #expect(KeepwellSchemaV9.models.count == 10)
     }
 
     /// A store written by V3 opens with today's schema: cards keep their digits and start with no
@@ -206,7 +208,8 @@ struct ModelContainerFactoryTests {
     }
 
     /// A store written by V5 opens with V6: movements keep everything and name no rule, and there
-    /// are no rules until the person creates one.
+    /// are no rules until the person creates one. It opens the current schema, not V6, because the
+    /// store reads movements with today's record.
     @Test
     func versionFiveStoreMigratesToVersionSix() async throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
@@ -228,7 +231,7 @@ struct ModelContainerFactoryTests {
             try context.save()
         }
 
-        let schema = Schema(versionedSchema: KeepwellSchemaV6.self)
+        let schema = Schema(versionedSchema: KeepwellCurrentSchema.self)
         let container = try ModelContainer(
             for: schema,
             migrationPlan: KeepwellMigrationPlan.self,
@@ -312,5 +315,69 @@ extension ModelContainerFactoryTests {
         let goal = SavingsGoal(name: "Trip", target: Money(15000, "NIO"))
         try await store.save(goal)
         #expect(try await store.fetchSavingsGoals() == [goal])
+    }
+}
+
+extension ModelContainerFactoryTests {
+    /// A store written by V8 opens with V9: goals, movements and recurring rules stay, the movements
+    /// and rules start without tags, and there are no loans, personal debts or categorization rules
+    /// until the person adds one.
+    @Test
+    func versionEightStoreMigratesToVersionNine() async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Keepwell.store")
+        let goal = SavingsGoal(name: "Trip", target: Money(15000, "NIO"), saved: 2500)
+        let transactionID = UUID()
+        let ruleID = UUID()
+
+        try await writeVersionEightStore(at: url, goal: goal, transactionID: transactionID, ruleID: ruleID)
+
+        let schema = Schema(versionedSchema: KeepwellSchemaV9.self)
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: KeepwellMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+        )
+        let store = SwiftDataStore(modelContainer: container)
+        #expect(try await store.fetchSavingsGoals() == [goal])
+        #expect(try await store.fetchLoans().isEmpty)
+        #expect(try await store.fetchPersonalDebts().isEmpty)
+        #expect(try await store.fetchCategorizationRules().isEmpty)
+        let movement = try #require(await store.fetchTransactions(in: nil).first)
+        #expect(movement.id == transactionID)
+        #expect(movement.tags.isEmpty)
+        let gym = try #require(await store.fetchRecurringRules().first)
+        #expect(gym.id == ruleID)
+        #expect(gym.tags.isEmpty)
+        try await store.save(movement.with(categoryID: movement.categoryID, tags: ["boda"]))
+        #expect(try await store.fetchTransactions(in: nil).first?.tags == ["boda"])
+        let rule = CategorizationRule(match: "Uber", categoryID: "transport", kind: .expense)
+        try await store.save(rule)
+        #expect(try await store.fetchCategorizationRules() == [rule])
+        let loan = Loan(
+            name: "Motorbike", borrowed: Money(60000, "NIO"), installmentAmount: 5500, installmentCount: 12,
+            firstDueDate: Date(timeIntervalSince1970: 1_793_000_000),
+        )
+        try await store.save(loan)
+        #expect(try await store.fetchLoans() == [loan])
+    }
+
+    private func writeVersionEightStore(at url: URL, goal: SavingsGoal, transactionID: UUID, ruleID: UUID) async throws {
+        let schema = Schema(versionedSchema: KeepwellSchemaV8.self)
+        let container = try ModelContainer(
+            for: schema,
+            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+        )
+        try await SwiftDataStore(modelContainer: container).save(goal)
+        let context = ModelContext(container)
+        context.insert(KeepwellSchemaV8.TransactionRecord(
+            id: transactionID, date: .now, amount: "12.34", currency: "USD", accountID: UUID(),
+        ))
+        context.insert(KeepwellSchemaV8.RecurringRuleRecord(
+            id: ruleID, name: "Gym", amount: "30", currency: "USD", accountID: UUID(), startDate: .now,
+        ))
+        try context.save()
     }
 }

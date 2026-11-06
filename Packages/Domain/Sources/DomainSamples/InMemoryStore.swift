@@ -3,7 +3,8 @@ import Foundation
 
 /// Repository implementations kept in memory, for previews, snapshot tests and use case tests.
 public actor InMemoryStore: AccountRepository, CardRepository, TransactionRepository, CategoryRepository,
-    SettingsRepository, DataEraser, BackupStore, RecurringRuleRepository, SavingsGoalRepository
+    SettingsRepository, DataEraser, BackupStore, RecurringRuleRepository, SavingsGoalRepository,
+    LoanRepository, PersonalDebtRepository, CategorizationRuleRepository
 {
     private var accounts: [Account]
     private var cards: [Card]
@@ -12,6 +13,9 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
     private var settings: Settings?
     private var recurringRules: [RecurringRule]
     private var savingsGoals: [SavingsGoal]
+    private var loans: [Loan]
+    private var personalDebts: [PersonalDebt]
+    private var categorizationRules: [CategorizationRule]
 
     public init(
         accounts: [Account] = [],
@@ -21,6 +25,9 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         settings: Settings? = nil,
         recurringRules: [RecurringRule] = [],
         savingsGoals: [SavingsGoal] = [],
+        loans: [Loan] = [],
+        personalDebts: [PersonalDebt] = [],
+        categorizationRules: [CategorizationRule] = [],
     ) {
         self.accounts = accounts
         self.cards = cards
@@ -29,6 +36,9 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         self.settings = settings
         self.recurringRules = recurringRules
         self.savingsGoals = savingsGoals
+        self.loans = loans
+        self.personalDebts = personalDebts
+        self.categorizationRules = categorizationRules
     }
 
     public init(sample: SampleData) {
@@ -40,6 +50,9 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             settings: sample.settings,
             recurringRules: sample.recurringRules,
             savingsGoals: sample.savingsGoals,
+            loans: sample.loans,
+            personalDebts: sample.personalDebts,
+            categorizationRules: sample.categorizationRules,
         )
     }
 
@@ -114,6 +127,58 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         try remove(id, from: &savingsGoals)
     }
 
+    public func fetchLoans() -> [Loan] {
+        loans
+    }
+
+    public func save(_ loan: Loan) {
+        upsert(loan, into: &loans)
+    }
+
+    public func deleteLoan(id: UUID) throws(DomainError) {
+        try remove(id, from: &loans)
+    }
+
+    public func save(_ loan: Loan, recording transaction: Transaction) {
+        upsert(transaction, into: &transactions)
+        upsert(loan, into: &loans)
+    }
+
+    public func save(_ loan: Loan, deletingTransaction transactionID: UUID?) {
+        transactions.removeAll { $0.id == transactionID }
+        upsert(loan, into: &loans)
+    }
+
+    public func fetchPersonalDebts() -> [PersonalDebt] {
+        personalDebts
+    }
+
+    public func save(_ debt: PersonalDebt) {
+        upsert(debt, into: &personalDebts)
+    }
+
+    public func deletePersonalDebt(id: UUID) throws(DomainError) {
+        try remove(id, from: &personalDebts)
+    }
+
+    public func fetchCategorizationRules() -> [CategorizationRule] {
+        categorizationRules
+    }
+
+    public func save(_ rule: CategorizationRule) {
+        upsert(rule, into: &categorizationRules)
+    }
+
+    public func deleteCategorizationRule(id: UUID) throws(DomainError) {
+        try remove(id, from: &categorizationRules)
+    }
+
+    public func reorderCategorizationRules(ids: [UUID]) {
+        let rank = Dictionary(ids.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
+        let listed = categorizationRules.filter { rank[$0.id] != nil }.sorted { rank[$0.id] ?? 0 < rank[$1.id] ?? 0 }
+        categorizationRules = listed + categorizationRules.filter { rank[$0.id] == nil }
+    }
+
     public func fetchCategories() -> [TransactionCategory] {
         categories
     }
@@ -153,6 +218,9 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         settings = nil
         recurringRules = []
         savingsGoals = []
+        loans = []
+        personalDebts = []
+        categorizationRules = []
     }
 
     /// Records here carry no history, so they export stamped with the moment of the export and a
@@ -167,6 +235,9 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             transactions: transactions.map { Stamped($0, stamp) },
             recurringRules: recurringRules.map { Stamped($0, stamp) },
             savingsGoals: savingsGoals.map { Stamped($0, stamp) },
+            loans: loans.map { Stamped($0, stamp) },
+            personalDebts: personalDebts.map { Stamped($0, stamp) },
+            categorizationRules: categorizationRules.map { Stamped($0, stamp) },
         )
     }
 
@@ -178,6 +249,9 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         transactions = contents.transactions.filter { !$0.metadata.isDeleted }.map(\.value)
         recurringRules = contents.recurringRules.filter { !$0.metadata.isDeleted }.map(\.value)
         savingsGoals = contents.savingsGoals.filter { !$0.metadata.isDeleted }.map(\.value)
+        loans = contents.loans.filter { !$0.metadata.isDeleted }.map(\.value)
+        personalDebts = contents.personalDebts.filter { !$0.metadata.isDeleted }.map(\.value)
+        categorizationRules = contents.categorizationRules.filter { !$0.metadata.isDeleted }.map(\.value)
     }
 
     private func upsert<T: Identifiable>(_ item: T, into list: inout [T]) {

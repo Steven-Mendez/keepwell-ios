@@ -11,15 +11,18 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
     private let accounts: any AccountRepository
     private let cards: any CardRepository
     private let transactions: any TransactionRepository
+    private let rules: (any CategorizationRuleRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
+    /// Without `rules`, no category comes from a rule.
     public init(
         settings: any SettingsRepository,
         categories: any CategoryRepository,
         accounts: any AccountRepository,
         cards: any CardRepository,
         transactions: any TransactionRepository,
+        rules: (any CategorizationRuleRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -28,6 +31,7 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
         self.accounts = accounts
         self.cards = cards
         self.transactions = transactions
+        self.rules = rules
         self.calendar = calendar
         self.now = now
     }
@@ -59,6 +63,8 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
             balances: balances,
             lastUsed: lastUsed,
             categoryUsage: categoryUsage,
+            tagUsage: Tags.usage(in: movements),
+            rules: rules?.fetchCategorizationRules() ?? [],
         )
     }
 }
@@ -153,6 +159,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             exchangeRate: currencies.exchangeRate,
             note: note.isEmpty ? nil : note,
             recurringID: draft.repeatFrequency == nil ? nil : draft.recurringRuleID,
+            tags: draft.tags,
         )
     }
 
@@ -179,10 +186,31 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             isSubscription: transaction.kind == .expense && transaction.categoryID == Subscriptions.categoryID,
             autoConfirm: false,
             note: transaction.note,
+            tags: transaction.tags,
         )
         try first.checkSchedule(calendar: calendar)
         let next = RecurringSchedule.firstOccurrence(of: first, after: transaction.date, calendar: calendar) ?? transaction.date
         return first.with(nextDate: next)
+    }
+}
+
+/// A movement checked and built exactly as saving builds it, without storing it, for callers that
+/// store it in one write together with something else (a loan installment and the loan).
+public protocol PrepareTransactionUseCase: Sendable {
+    func execute(_ draft: TransactionDraft) async throws(DomainError) -> Transaction
+}
+
+public struct DefaultPrepareTransactionUseCase: PrepareTransactionUseCase {
+    private let context: any GetTransactionContextUseCase
+
+    public init(context: any GetTransactionContextUseCase) {
+        self.context = context
+    }
+
+    public func execute(_ draft: TransactionDraft) async throws(DomainError) -> Transaction {
+        var draft = draft
+        draft.repeatFrequency = nil
+        return try await DefaultSaveTransactionUseCase.validated(draft, context: context.execute())
     }
 }
 

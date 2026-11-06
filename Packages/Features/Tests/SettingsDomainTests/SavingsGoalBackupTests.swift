@@ -45,7 +45,7 @@ struct SavingsGoalBackupTests {
     }
 
     @Test
-    func goalsAreWrittenWithTheSharedKeysInSchemaThree() throws {
+    func goalsAreWrittenWithTheSharedKeys() throws {
         let data = try #require(BackupSnapshot(contents: fixedContents(), exportedAt: stamp.createdAt)).encoded()
         let text = try #require(String(data: data, encoding: .utf8))
         // The same text the web app writes: keys sorted, empty optionals left out, exact decimals.
@@ -61,8 +61,7 @@ struct SavingsGoalBackupTests {
         "target":{"amount":"3000","currency":"USD"},"updatedAt":"2026-10-26T07:33:20.500Z"}
         """
         #expect(text.contains("\"savingsGoals\":[\(trip),\(fund)]"))
-        #expect(try json(data)["schemaVersion"] as? Int == 3)
-        #expect(BackupSnapshot.currentSchemaVersion == 3)
+        #expect(try json(data)["schemaVersion"] as? Int == BackupSnapshot.currentSchemaVersion)
     }
 
     @Test
