@@ -31,7 +31,7 @@ extension Transaction {
             id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
-            exchangeRate: exchangeRate, isShared: isShared, note: note,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID,
         )
     }
 }
@@ -50,11 +50,19 @@ public struct DefaultNormalizeBankCardsUseCase: NormalizeBankCardsUseCase {
     private let accounts: any AccountRepository
     private let cards: any CardRepository
     private let transactions: any TransactionRepository
+    private let recurringRules: (any RecurringRuleRepository)?
 
-    public init(accounts: any AccountRepository, cards: any CardRepository, transactions: any TransactionRepository) {
+    /// `recurringRules` follow their merged method the way movements do.
+    public init(
+        accounts: any AccountRepository,
+        cards: any CardRepository,
+        transactions: any TransactionRepository,
+        recurringRules: (any RecurringRuleRepository)? = nil,
+    ) {
         self.accounts = accounts
         self.cards = cards
         self.transactions = transactions
+        self.recurringRules = recurringRules
     }
 
     @discardableResult
@@ -79,6 +87,11 @@ public struct DefaultNormalizeBankCardsUseCase: NormalizeBankCardsUseCase {
                     try await transactions.save(moved)
                     movements[index] = moved
                 }
+                if let recurringRules {
+                    for rule in try await recurringRules.fetchRecurringRules() where rule.cardID.map(merged.contains) == true {
+                        try await recurringRules.save(rule.with(cardID: keeper.id))
+                    }
+                }
                 for id in merged {
                     try await cards.deleteCard(id: id)
                 }
@@ -99,7 +112,7 @@ public struct DefaultNormalizeBankCardsUseCase: NormalizeBankCardsUseCase {
 
 /// "Delete account": the account, its cards and every movement that touches it. Transfers to and
 /// from other accounts go too, because a movement can't point at an account that no longer exists;
-/// the screen says so before asking.
+/// the screen says so before asking. Recurring rules that pay from it or into it go for the same reason.
 public protocol DeleteAccountUseCase: Sendable {
     func execute(accountID: UUID) async throws(DomainError)
 }
@@ -108,11 +121,18 @@ public struct DefaultDeleteAccountUseCase: DeleteAccountUseCase {
     private let accounts: any AccountRepository
     private let cards: any CardRepository
     private let transactions: any TransactionRepository
+    private let recurringRules: (any RecurringRuleRepository)?
 
-    public init(accounts: any AccountRepository, cards: any CardRepository, transactions: any TransactionRepository) {
+    public init(
+        accounts: any AccountRepository,
+        cards: any CardRepository,
+        transactions: any TransactionRepository,
+        recurringRules: (any RecurringRuleRepository)? = nil,
+    ) {
         self.accounts = accounts
         self.cards = cards
         self.transactions = transactions
+        self.recurringRules = recurringRules
     }
 
     public func execute(accountID: UUID) async throws(DomainError) {
@@ -122,6 +142,13 @@ public struct DefaultDeleteAccountUseCase: DeleteAccountUseCase {
         let scope = TransactionScope.account(accountID)
         for movement in try await transactions.fetchTransactions(in: nil) where scope.includes(movement) {
             try await transactions.deleteTransaction(id: movement.id)
+        }
+        if let recurringRules {
+            for rule in try await recurringRules.fetchRecurringRules()
+                where rule.accountID == accountID || rule.destinationAccountID == accountID
+            {
+                try await recurringRules.deleteRecurringRule(id: rule.id)
+            }
         }
         for card in try await cards.fetchCards() where card.accountID == accountID {
             try await cards.deleteCard(id: card.id)

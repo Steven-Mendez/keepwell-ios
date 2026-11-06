@@ -22,6 +22,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Recurring movements and subscriptions: rent, salaries, transfers and subscriptions repeat every
+  N weeks, months or years from their start date (the 31st stays the 31st in months that have
+  one). Each time one comes due it's recorded on its date, as a draft to confirm or, with "Record
+  automatically", already confirmed; after time away only the latest 12 are recorded, and a
+  movement another device already recorded isn't repeated. The new Recurring screen (from home's
+  "Upcoming" card or Settings › Organization) shows what subscriptions cost per month and per
+  year, and each rule can be edited, paused, resumed or deleted (its pending drafts go with it).
+  "Repeat" on a new movement's review turns it into a rule, a movement's menu opens the rule that
+  recorded it, and subscriptions are reminded the morning before they renew. Backups move to
+  `schemaVersion` 2 with the rules; version 1 files still restore.
 - "Save as draft" on a movement's review: it's saved without counting toward balances until you
   confirm it. What the app called "Planned" is now "Drafts" everywhere (home, Transactions,
   reminders, widgets).

@@ -210,6 +210,32 @@ struct SwiftDataStoreTests {
         #expect(try await store.fetchTransactions(in: nil).isEmpty)
         #expect(try await store.load() == nil)
     }
+
+    @Test
+    func recurringRulesRoundTripAndDeleteAsTombstones() async throws {
+        let store = try makeStore()
+        for rule in sample.recurringRules {
+            try await store.save(rule)
+        }
+        #expect(try await Set(store.fetchRecurringRules()) == Set(sample.recurringRules))
+        let rule = try #require(sample.recurringRules.first)
+        try await store.deleteRecurringRule(id: rule.id)
+        #expect(try await !store.fetchRecurringRules().contains { $0.id == rule.id })
+        await #expect(throws: DomainError.notFound(rule.id)) { try await store.deleteRecurringRule(id: rule.id) }
+        #expect(try await store.exportContents().recurringRules.contains { $0.value.id == rule.id && $0.metadata.isDeleted })
+    }
+
+    @Test
+    func materializingSavesMovementsAndRulesTogether() async throws {
+        let store = try makeStore()
+        let rule = try #require(sample.recurringRules.first)
+        try await store.save(rule)
+        let movement = RecurringSchedule.movement(from: rule, on: rule.nextDate, exchangeRate: sample.settings.currencies.exchangeRate)
+        let moved = rule.with(nextDate: rule.nextDate.addingTimeInterval(86400 * 30))
+        try await store.saveMaterialized(transactions: [movement], rules: [moved])
+        #expect(try await store.fetchTransactions(in: nil) == [movement])
+        #expect(try await store.fetchRecurringRules() == [moved])
+    }
 }
 
 @Suite("SwiftData store seeding")
@@ -224,7 +250,9 @@ struct SwiftDataStoreSeedTests {
             cards: sample.cards,
             transactions: sample.transactions,
             categories: sample.categories,
+            recurringRules: sample.recurringRules,
         )
+        #expect(try await store.fetchRecurringRules().count == sample.recurringRules.count)
         #expect(try await store.fetchAccounts().count == sample.accounts.count)
         #expect(try await store.fetchCards().count == sample.cards.count)
         #expect(try await store.fetchTransactions(in: nil).count == sample.transactions.count)

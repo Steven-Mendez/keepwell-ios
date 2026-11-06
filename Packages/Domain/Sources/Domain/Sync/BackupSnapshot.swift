@@ -7,9 +7,12 @@ import Foundation
 /// writes them, and dates are ISO 8601 with milliseconds, as `Date.toISOString()` writes them.
 /// Optional fields are left out when empty. A deleted record carries `deletedAt`; a default
 /// category absent from the file is simply not deleted.
+///
+/// Version 2 added `recurringRules` and each movement's `recurringId`. A version 1 file has
+/// neither and still restores, with no rules.
 public struct BackupSnapshot: Codable, Sendable, Equatable {
     /// Raised on a breaking change, so an older app refuses a file it doesn't understand.
-    public static let currentSchemaVersion = 1
+    public static let currentSchemaVersion = 2
 
     public let schemaVersion: Int
     public let exportedAt: Date
@@ -18,6 +21,18 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
     public let cards: [CardBackup]
     public let categories: [CategoryBackup]
     public let transactions: [TransactionBackup]
+    public let recurringRules: [RecurringRuleBackup]
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion
+        case exportedAt
+        case settings
+        case accounts
+        case cards
+        case categories
+        case transactions
+        case recurringRules
+    }
 
     /// `nil` when there are no settings yet: before onboarding there is nothing to back up.
     public init?(contents: BackupContents, exportedAt: Date) {
@@ -29,6 +44,20 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         cards = contents.cards.map(CardBackup.init)
         categories = contents.categories.enumerated().map { CategoryBackup($0.element, sortIndex: $0.offset) }
         transactions = contents.transactions.map(TransactionBackup.init)
+        recurringRules = contents.recurringRules.map(RecurringRuleBackup.init)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        exportedAt = try container.decode(Date.self, forKey: .exportedAt)
+        settings = try container.decode(SettingsBackup.self, forKey: .settings)
+        accounts = try container.decode([AccountBackup].self, forKey: .accounts)
+        cards = try container.decode([CardBackup].self, forKey: .cards)
+        categories = try container.decode([CategoryBackup].self, forKey: .categories)
+        transactions = try container.decode([TransactionBackup].self, forKey: .transactions)
+        // Version 1 files were written before recurring rules existed.
+        recurringRules = try container.decodeIfPresent([RecurringRuleBackup].self, forKey: .recurringRules) ?? []
     }
 
     /// Converts and validates every record, so a damaged file fails here, before anything is replaced.
@@ -52,12 +81,17 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         for row in self.transactions {
             try transactions.append(row.toDomain())
         }
+        var rules: [Stamped<RecurringRule>] = []
+        for row in recurringRules {
+            try rules.append(row.toDomain())
+        }
         return try BackupContents(
             settings: settings.toDomain(),
             accounts: accounts,
             cards: cards,
             categories: categories,
             transactions: transactions,
+            recurringRules: rules,
         )
     }
 
@@ -328,6 +362,8 @@ public struct TransactionBackup: Codable, Sendable, Equatable {
     public let exchangeRate: Rate
     public let isShared: Bool
     public let note: String?
+    /// The recurring rule that recorded it (schema 2).
+    public let recurringId: String?
     public let createdAt: Date
     public let updatedAt: Date
     public let deletedAt: Date?
@@ -353,6 +389,7 @@ public struct TransactionBackup: Codable, Sendable, Equatable {
         )
         isShared = transaction.isShared
         note = transaction.note
+        recurringId = transaction.recurringID.map(PortableID.string)
         createdAt = stamped.metadata.createdAt
         updatedAt = stamped.metadata.updatedAt
         deletedAt = stamped.metadata.deletedAt
@@ -382,47 +419,8 @@ public struct TransactionBackup: Codable, Sendable, Equatable {
             ),
             isShared: isShared,
             note: note,
+            recurringID: recurringId.map { id throws(DomainError) in try PortableID.uuid(id) },
         )
         return Stamped(transaction, RecordMetadata(createdAt: createdAt, updatedAt: updatedAt, deletedAt: deletedAt))
-    }
-}
-
-// MARK: - Portable scalars
-
-/// Exact decimal text with a dot and no exponent or grouping, which both Swift and JavaScript
-/// decimal libraries read without going through a binary double.
-enum PortableDecimal {
-    static func string(_ value: Decimal) -> String {
-        value.description
-    }
-
-    static func decimal(_ text: String) throws(DomainError) -> Decimal {
-        // `Decimal(string:)` alone accepts "12abc" as 12, so the shape is checked first.
-        guard text.wholeMatch(of: /-?[0-9]+(\.[0-9]+)?/) != nil,
-              let value = Decimal(string: text, locale: Locale(identifier: "en_US_POSIX"))
-        else { throw .corruptedData("Invalid decimal '\(text)'") }
-        return value
-    }
-}
-
-/// Lowercase, as the web writes them, so the same id is the same string on both platforms.
-enum PortableID {
-    static func string(_ id: UUID) -> String {
-        id.uuidString.lowercased()
-    }
-
-    static func uuid(_ text: String) throws(DomainError) -> UUID {
-        guard let id = UUID(uuidString: text) else { throw .corruptedData("Invalid id '\(text)'") }
-        return id
-    }
-}
-
-enum PortableDate {
-    static let withMilliseconds = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
-    private static let wholeSeconds = Date.ISO8601FormatStyle()
-
-    /// Accepts both forms: JavaScript always writes milliseconds, older Swift writers never do.
-    static func parse(_ text: String) -> Date? {
-        (try? withMilliseconds.parse(text)) ?? (try? wholeSeconds.parse(text))
     }
 }

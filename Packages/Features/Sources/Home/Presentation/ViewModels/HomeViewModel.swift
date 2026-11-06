@@ -126,6 +126,36 @@ public final class HomeViewModel {
         return String(localized: "They don't count toward balances until you confirm them · \(total)", bundle: #bundle)
     }
 
+    /// The next three recurring occurrences within a week, for the "Upcoming" card.
+    func upcomingPreview(_ overview: HomeOverview, now: Date = .now) -> [RecurringOccurrence] {
+        let limit = calendar.date(byAdding: .day, value: Self.upcomingDays, to: calendar.startOfDay(for: now)) ?? now
+        return Array(overview.upcoming.filter { calendar.startOfDay(for: $0.date) <= limit }.prefix(Self.upcomingCount))
+    }
+
+    /// "Tomorrow · Mastercard ··4321".
+    func upcomingSubtitle(_ occurrence: RecurringOccurrence, now: Date = .now) -> String {
+        let day = RecurringDisplay.day(occurrence.date, today: now, calendar: calendar)
+        let movement = RecurringSchedule.movement(
+            from: occurrence.rule,
+            on: occurrence.date,
+            exchangeRate: .single(occurrence.rule.currency),
+        )
+        let method = display.map { $0.subtitle(of: movement) } ?? ""
+        return [day, method].filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    func upcomingAmount(_ occurrence: RecurringOccurrence, hidden: Bool) -> String {
+        let movement = RecurringSchedule.movement(
+            from: occurrence.rule,
+            on: occurrence.date,
+            exchangeRate: .single(occurrence.rule.currency),
+        )
+        return visible(display?.amount(of: movement) ?? "", hidden: hidden)
+    }
+
+    static let upcomingDays = 7
+    static let upcomingCount = 3
+
     func plannedTitle(_ overview: HomeOverview) -> String {
         let count = overview.plannedSummary.count
         return String(localized: "Drafts · \(count)", bundle: #bundle)

@@ -11,6 +11,9 @@ final class ReminderScheduler {
     static let postponeAction = "keepwell.postpone"
     static let transactionKey = "transactionID"
     private static let prefix = "keepwell."
+    /// iOS keeps at most 64 pending notifications per app and silently drops the rest, so only
+    /// the soonest are scheduled; the next reschedule (every time home loads) adds the later ones.
+    static let pendingLimit = 64
 
     private let center = UNUserNotificationCenter.current()
 
@@ -36,7 +39,7 @@ final class ReminderScheduler {
         guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
         let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(Self.prefix) }
         center.removePendingNotificationRequests(withIdentifiers: pending)
-        for reminder in reminders {
+        for reminder in reminders.sorted(by: { $0.date < $1.date }).prefix(Self.pendingLimit) {
             try? await center.add(request(for: reminder))
         }
     }

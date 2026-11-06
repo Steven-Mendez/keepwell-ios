@@ -131,6 +131,65 @@ extension SwiftDataStore: TransactionRepository {
     }
 }
 
+extension SwiftDataStore: RecurringRuleRepository {
+    public func fetchRecurringRules() throws(DomainError) -> [RecurringRule] {
+        try perform { context in
+            try context.fetch(FetchDescriptor<RecurringRuleRecord>(
+                predicate: #Predicate { $0.deletedAt == nil },
+                sortBy: [SortDescriptor(\.createdAt)],
+            ))
+            .map { try $0.toDomain() }
+        }
+    }
+
+    public func save(_ rule: RecurringRule) throws(DomainError) {
+        try perform { context in
+            try upsert(rule, in: context)
+            try context.save()
+        }
+    }
+
+    public func deleteRecurringRule(id: UUID) throws(DomainError) {
+        try perform { context in
+            let alive = #Predicate<RecurringRuleRecord> { $0.id == id && $0.deletedAt == nil }
+            guard let record = try context.fetch(FetchDescriptor(predicate: alive)).first else {
+                throw DomainError.notFound(id)
+            }
+            record.stampDeleted()
+            try context.save()
+        }
+    }
+
+    public func saveMaterialized(transactions: [Transaction], rules: [RecurringRule]) throws(DomainError) {
+        try perform { context in
+            do {
+                for transaction in transactions {
+                    let id = transaction.id
+                    let record = try context.fetch(FetchDescriptor<TransactionRecord>(predicate: #Predicate { $0.id == id })).first
+                        ?? TransactionRecord(id: id).inserted(into: context)
+                    record.update(from: transaction)
+                    record.stampSaved()
+                }
+                for rule in rules {
+                    try upsert(rule, in: context)
+                }
+                try context.save()
+            } catch {
+                context.rollback()
+                throw error
+            }
+        }
+    }
+
+    private func upsert(_ rule: RecurringRule, in context: ModelContext) throws {
+        let id = rule.id
+        let record = try context.fetch(FetchDescriptor<RecurringRuleRecord>(predicate: #Predicate { $0.id == id })).first
+            ?? RecurringRuleRecord(id: id).inserted(into: context)
+        record.update(from: rule)
+        record.stampSaved()
+    }
+}
+
 extension SwiftDataStore: CategoryRepository {
     public func fetchCategories() throws(DomainError) -> [TransactionCategory] {
         try perform { context in
@@ -274,6 +333,7 @@ extension SwiftDataStore: DataEraser {
     public func eraseAll() throws(DomainError) {
         try perform { context in
             try context.delete(model: TransactionRecord.self)
+            try context.delete(model: RecurringRuleRecord.self)
             try context.delete(model: CardRecord.self)
             try context.delete(model: AccountRecord.self)
             try context.delete(model: CategoryRecord.self)

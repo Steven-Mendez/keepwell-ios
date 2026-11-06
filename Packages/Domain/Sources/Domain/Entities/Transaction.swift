@@ -25,6 +25,9 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
     /// Others owe part of it.
     public let isShared: Bool
     public let note: String?
+    /// The recurring rule that produced it, if any. It may outlive the rule: deleting a rule keeps
+    /// the confirmed movements it made.
+    public let recurringID: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -42,6 +45,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         exchangeRate: ExchangeRate,
         isShared: Bool = false,
         note: String? = nil,
+        recurringID: UUID? = nil,
     ) {
         self.id = id
         self.date = date
@@ -58,6 +62,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         self.exchangeRate = exchangeRate
         self.isShared = isShared
         self.note = note
+        self.recurringID = recurringID
     }
 
     /// The rule behind "`amount` is always positive", kept here so every path that records a
@@ -81,7 +86,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
-            exchangeRate: exchangeRate, isShared: isShared, note: note,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID,
         )
     }
 }

@@ -192,7 +192,11 @@ struct RootView: View {
         case .home:
             HomeView(viewModel: screens.home, actions: homeActions(screens))
         case .transactions:
-            TransactionsView(viewModel: screens.transactions) { presentMovementMenu() }
+            TransactionsView(
+                viewModel: screens.transactions,
+                onOpenRecurringRule: { router.push(.recurringRule(id: $0)) },
+                onNewMovement: { presentMovementMenu() },
+            )
         case .accounts:
             AccountsView(
                 viewModel: screens.accounts,
@@ -234,6 +238,7 @@ struct RootView: View {
                 screens.transactions.filter = .all
                 tab = .transactions
             },
+            allRecurring: { router.push(.recurring) },
         )
     }
 }
@@ -385,6 +390,8 @@ extension RootView {
             }
         case .active:
             openQuickLogRequest()
+            // A day may have turned while the app was away; what came due is recorded now.
+            await container.materializeRecurring()
             await refreshLockSettings()
             if lock.shouldRelock(now: .now) {
                 lock.isLocked = true

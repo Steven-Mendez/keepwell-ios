@@ -45,6 +45,7 @@ struct KeepwellApp: App {
         }
         #endif
         await made.normalizeBankCards()
+        await made.materializeRecurring()
         await minimumSplash
         container = made
     }

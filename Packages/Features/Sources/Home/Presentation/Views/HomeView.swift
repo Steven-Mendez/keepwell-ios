@@ -17,6 +17,7 @@ public struct HomeView: View {
         public var payCard: () -> Void
         public var allPlanned: () -> Void
         public var allTransactions: () -> Void
+        public var allRecurring: () -> Void
 
         public init(
             search: @escaping () -> Void,
@@ -27,6 +28,7 @@ public struct HomeView: View {
             payCard: @escaping () -> Void,
             allPlanned: @escaping () -> Void,
             allTransactions: @escaping () -> Void,
+            allRecurring: @escaping () -> Void = {},
         ) {
             self.search = search
             self.summary = summary
@@ -36,6 +38,7 @@ public struct HomeView: View {
             self.payCard = payCard
             self.allPlanned = allPlanned
             self.allTransactions = allTransactions
+            self.allRecurring = allRecurring
         }
     }
 
@@ -90,6 +93,10 @@ public struct HomeView: View {
                 actionTitle: String(localized: "Log transaction", bundle: #bundle),
             ) { actions.newMovement(.expense) }
                 .padding(.vertical, KWSpacing.xl)
+        }
+        let upcoming = viewModel.upcomingPreview(overview)
+        if !upcoming.isEmpty {
+            HomeUpcomingCard(viewModel: viewModel, occurrences: upcoming, hidesBalances: hidesBalances, onSeeAll: actions.allRecurring)
         }
         if !overview.planned.isEmpty {
             plannedCard(overview)
