@@ -22,6 +22,23 @@ public enum MovementType: String, CaseIterable, Hashable, Sendable {
         }
     }
 
+    /// The shape a saved movement reads as, so editing a transfer opens on the right type.
+    public init(of transaction: Transaction, accounts: [Account]) {
+        guard transaction.kind == .transfer else {
+            self.init(transaction.kind)
+            return
+        }
+        let source = accounts.first { $0.id == transaction.accountID }
+        let destination = accounts.first { $0.id == transaction.destinationAccountID }
+        if destination?.kind == .credit {
+            self = .cardPayment
+        } else if source?.kind == .deposit, destination?.kind == .cash {
+            self = .withdrawal
+        } else {
+            self = .transfer
+        }
+    }
+
     public var kind: TransactionKind {
         switch self {
         case .expense: .expense

@@ -10,9 +10,9 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
     private let categories: any CategoryRepository
     private let accounts: any AccountRepository
     private let cards: any CardRepository
-    private let transactions: any TransactionRepository
+    let transactions: any TransactionRepository
     private let rules: (any CategorizationRuleRepository)?
-    private let calendar: Calendar
+    let calendar: Calendar
     private let now: @Sendable () -> Date
 
     /// Without `rules`, no category comes from a rule.
@@ -37,14 +37,28 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
     }
 
     public func execute() async throws(DomainError) -> TransactionContext {
-        let currencies = try await settings.load()?.currencies ?? .fallbackForMovements
+        try await context(of: transactions.fetchTransactions(in: nil))
+    }
+
+    /// `excluding` leaves one movement out of the balances (the one being edited), so its old
+    /// version doesn't count next to the new one. `currencies` replaces the settings' (an edit
+    /// keeps the rate it was recorded with), and `usesRules` is off for edits: rules only choose
+    /// the category of a movement being logged.
+    func context(
+        of movements: [Transaction],
+        excluding excluded: UUID? = nil,
+        currencies override: CurrencySettings? = nil,
+        usesRules: Bool = true,
+    ) async throws(DomainError) -> TransactionContext {
+        let settingsCurrencies = try await settings.load()?.currencies ?? .fallbackForMovements
+        let currencies = override ?? settingsCurrencies
         let allAccounts = try await accounts.fetchAccounts()
         let allCards = try await cards.fetchCards()
-        let movements = try await transactions.fetchTransactions(in: nil)
+        let counted = movements.filter { $0.id != excluded }
 
         var balances: [UUID: [Money]] = [:]
         for account in allAccounts {
-            balances[account.id] = Balances.balance(of: account, transactions: movements, calendar: calendar)
+            balances[account.id] = Balances.balance(of: account, transactions: counted, calendar: calendar)
         }
         var lastUsed: [PaymentSource: Date] = [:]
         var categoryUsage: [String: Int] = [:]
@@ -64,8 +78,13 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
             lastUsed: lastUsed,
             categoryUsage: categoryUsage,
             tagUsage: Tags.usage(in: movements),
-            rules: rules?.fetchCategorizationRules() ?? [],
+            rules: usesRules ? rules?.fetchCategorizationRules() ?? [] : [],
         )
+    }
+
+    /// The principal currency in settings now, which month totals are reported in.
+    func principalCurrency() async throws(DomainError) -> String {
+        try await (settings.load()?.currencies ?? .fallbackForMovements).principal
     }
 }
 
@@ -111,23 +130,50 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             try await materialize?.execute()
         }
 
-        guard let account = current.account(transaction.accountID) else { throw .notFound(transaction.accountID) }
-        let movements = try await transactions.fetchTransactions(in: nil)
+        return try await Self.receipt(
+            of: transaction,
+            accounts: current.accounts,
+            movements: transactions.fetchTransactions(in: nil),
+            principal: current.currencies.principal,
+            calendar: calendar,
+        )
+    }
+
+    /// What the receipt states about a stored movement: its account's balances with every movement
+    /// and, for an expense, its category's spending that month. Also rebuilds a receipt from history.
+    static func receipt(
+        of transaction: Transaction,
+        accounts: [Account],
+        movements: [Transaction],
+        principal: String,
+        calendar: Calendar,
+    ) throws(DomainError) -> SavedTransaction {
+        guard let account = accounts.first(where: { $0.id == transaction.accountID }) else { throw .notFound(transaction.accountID) }
         let newBalances = Balances.balance(of: account, transactions: movements, calendar: calendar)
         var categoryTotal: Money?
         if transaction.kind == .expense {
             let month = YearMonth(containing: transaction.date, calendar: calendar)
-            let summary = MonthlySummary(month: month, transactions: movements, currency: current.currencies.principal, calendar: calendar)
+            let summary = MonthlySummary(month: month, transactions: movements, currency: principal, calendar: calendar)
             let total = summary.categories.first { $0.categoryID == transaction.categoryID }?.amount ?? 0
-            categoryTotal = Money(total, current.currencies.principal)
+            categoryTotal = Money(total, principal)
         }
         return SavedTransaction(transaction: transaction, account: account, newBalances: newBalances, categoryMonthTotal: categoryTotal)
     }
 
-    static func validated(_ draft: TransactionDraft, context: TransactionContext) throws(DomainError) -> Transaction {
+    /// Checks a draft and builds the movement to store. With `existing` it edits that movement: it
+    /// keeps the rate it was recorded with (so its currencies are the allowed ones), whether it's
+    /// shared and the recurring rule behind it.
+    static func validated(
+        _ draft: TransactionDraft,
+        context: TransactionContext,
+        existing: Transaction? = nil,
+    ) throws(DomainError) -> Transaction {
         try Transaction.checkAmounts(draft.amount, actualDebitedPrincipal: draft.actualDebitedPrincipal)
-        let currencies = context.currencies
-        try Transaction.checkCurrency(draft.currency, currencies: currencies)
+        // The rate in force now travels with a new movement, so later rate edits don't rewrite it.
+        let rate = existing?.exchangeRate ?? context.currencies.exchangeRate
+        guard draft.currency == rate.principal || draft.currency == rate.second else {
+            throw .invalidCurrency(draft.currency)
+        }
         guard let source = draft.source, let accountID = context.accountID(for: source) else {
             throw .notFound(UUID(uuid: UUID_NULL))
         }
@@ -154,11 +200,11 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             accountID: accountID,
             cardID: source.cardID,
             destinationAccountID: draft.kind == .transfer ? draft.destinationAccountID : nil,
-            actualDebitedPrincipal: draft.currency == currencies.principal ? nil : draft.actualDebitedPrincipal,
-            // The rate in force now travels with the movement, so later rate edits don't rewrite it.
-            exchangeRate: currencies.exchangeRate,
+            actualDebitedPrincipal: draft.currency == rate.principal ? nil : draft.actualDebitedPrincipal,
+            exchangeRate: rate,
+            isShared: existing?.isShared ?? false,
             note: note.isEmpty ? nil : note,
-            recurringID: draft.repeatFrequency == nil ? nil : draft.recurringRuleID,
+            recurringID: existing?.recurringID ?? (draft.repeatFrequency == nil ? nil : draft.recurringRuleID),
             tags: draft.tags,
         )
     }
