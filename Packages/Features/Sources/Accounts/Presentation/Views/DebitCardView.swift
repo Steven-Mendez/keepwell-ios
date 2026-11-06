@@ -61,60 +61,16 @@ public struct DebitCardView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
         .sheet(item: $sheet, onDismiss: viewModel.clearError) { sheet in
-            Group {
-                if let detail = viewModel.detail {
-                    switch sheet {
-                    case .name:
-                        CardNameSheet(
-                            name: detail.account.name,
-                            errorMessage: viewModel.errorMessage,
-                            isSaving: viewModel.isSaving,
-                            onSave: viewModel.rename(to:),
-                            onClose: { self.sheet = nil },
-                        )
-                    case .color:
-                        CardColorSheet(
-                            color: detail.card.color,
-                            preview: { color in
-                                CardDisplay.art(
-                                    of: detail.card.with(color: color),
-                                    kind: .debit,
-                                    bank: viewModel.bank(detail),
-                                    ownerName: viewModel.ownerName,
-                                    caption: caption(detail),
-                                )
-                            },
-                            onSave: viewModel.setColor,
-                            onClose: { self.sheet = nil },
-                        )
-                    case .details:
-                        CardDetailsSheet(
-                            card: detail.card,
-                            errorMessage: viewModel.errorMessage,
-                            isSaving: viewModel.isSaving,
-                            onSave: viewModel.setDetails,
-                            onClose: { self.sheet = nil },
-                        )
-                    }
-                }
-            }
-            .presentationDetents([.large])
-            .presentationBackground(KWColor.Surface.bg)
+            sheetContent(sheet)
+                .presentationDetents([.large])
+                .presentationBackground(KWColor.Surface.bg)
         }
         .confirmationDialog(
             viewModel.detail.map(viewModel.deleteTitle) ?? "",
             isPresented: $isConfirmingDeletion,
             titleVisibility: .visible,
         ) {
-            Button(role: .destructive) {
-                Task {
-                    if await viewModel.delete() {
-                        onBack()
-                    }
-                }
-            } label: {
-                Text("Delete account", bundle: #bundle)
-            }
+            deleteConfirmation
         } message: {
             if let detail = viewModel.detail {
                 Text(viewModel.deleteMessage(detail))
@@ -188,6 +144,57 @@ public struct DebitCardView: View {
 }
 
 extension DebitCardView {
+    @ViewBuilder
+    private func sheetContent(_ sheet: Sheet) -> some View {
+        if let detail = viewModel.detail {
+            switch sheet {
+            case .name:
+                CardNameSheet(
+                    name: detail.account.name,
+                    errorMessage: viewModel.errorMessage,
+                    isSaving: viewModel.isSaving,
+                    onSave: viewModel.rename(to:),
+                    onClose: { self.sheet = nil },
+                )
+            case .color:
+                CardColorSheet(
+                    color: detail.card.color,
+                    preview: { color in
+                        CardDisplay.art(
+                            of: detail.card.with(color: color),
+                            kind: .debit,
+                            bank: viewModel.bank(detail),
+                            ownerName: viewModel.ownerName,
+                            caption: caption(detail),
+                        )
+                    },
+                    onSave: viewModel.setColor,
+                    onClose: { self.sheet = nil },
+                )
+            case .details:
+                CardDetailsSheet(
+                    card: detail.card,
+                    errorMessage: viewModel.errorMessage,
+                    isSaving: viewModel.isSaving,
+                    onSave: viewModel.setDetails,
+                    onClose: { self.sheet = nil },
+                )
+            }
+        }
+    }
+
+    private var deleteConfirmation: some View {
+        Button(role: .destructive) {
+            Task {
+                if await viewModel.delete() {
+                    onBack()
+                }
+            }
+        } label: {
+            Text("Delete account", bundle: #bundle)
+        }
+    }
+
     /// Apart from the edits, Revolut-style, so it isn't tapped on the way to "Card color".
     private var deleteButton: some View {
         KWGroupedCard(verticalPadding: KWSpacing.xxs) {

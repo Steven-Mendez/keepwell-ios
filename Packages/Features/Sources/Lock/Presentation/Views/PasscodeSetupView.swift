@@ -22,30 +22,11 @@ public struct PasscodeSetupView: View {
                     KWCircleButton(.close, accessibilityLabel: String(localized: "Close", bundle: #bundle), action: onClose)
                     Spacer()
                 }
-                Text(title)
-                    .font(.kw(26, weight: 800, relativeTo: .title2))
-                    .tracking(-0.6)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, KWSpacing.xxl)
-                    .accessibilityAddTraits(.isHeader)
-                Text(subtitle)
-                    .font(KWTextStyle.body.font)
-                    .foregroundStyle(KWColor.Text.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, KWSpacing.xs)
+                heading
                 KWPasscodeDots(length: LockStrings.passcodeLength, filled: viewModel.entered.count, isError: viewModel.isError)
                     .kwShake(viewModel.rejections)
                     .padding(.top, KWSpacing.xxl)
-                Group {
-                    if let message = viewModel.message {
-                        Text(message)
-                            .font(KWTextStyle.label.font)
-                            .foregroundStyle(KWColor.State.negative)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                .frame(minHeight: 40)
-                .padding(.top, KWSpacing.md)
+                messageLine
                 Spacer(minLength: KWSpacing.md)
                 KWKeypad(
                     isEnabled: !viewModel.isSaving,
@@ -70,6 +51,35 @@ public struct PasscodeSetupView: View {
                 onClose()
             }
         }
+    }
+
+    @ViewBuilder
+    private var heading: some View {
+        Text(title)
+            .font(.kw(26, weight: 800, relativeTo: .title2))
+            .tracking(-0.6)
+            .multilineTextAlignment(.center)
+            .padding(.top, KWSpacing.xxl)
+            .accessibilityAddTraits(.isHeader)
+        Text(subtitle)
+            .font(KWTextStyle.body.font)
+            .foregroundStyle(KWColor.Text.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.top, KWSpacing.xs)
+    }
+
+    /// Keeps its height when empty, so the keypad doesn't jump when an error comes and goes.
+    private var messageLine: some View {
+        Group {
+            if let message = viewModel.message {
+                Text(message)
+                    .font(KWTextStyle.label.font)
+                    .foregroundStyle(KWColor.State.negative)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(minHeight: 40)
+        .padding(.top, KWSpacing.md)
     }
 
     private var title: String {

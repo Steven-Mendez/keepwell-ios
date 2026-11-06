@@ -68,21 +68,7 @@ struct SecuritySection: View {
     var body: some View {
         SettingsSection(title: String(localized: "Security and privacy", bundle: #bundle)) {
             KWGroupedCard {
-                VStack(alignment: .leading, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Unlock the app with", bundle: #bundle).font(KWTextStyle.body.font)
-                        Text("We use Face ID or Touch ID, whichever your iPhone has", bundle: #bundle)
-                            .font(KWTextStyle.captionSm.font.weight(.regular))
-                            .foregroundStyle(KWColor.Text.muted)
-                    }
-                    HStack(spacing: 6) {
-                        ForEach(UnlockMethod.allCases, id: \.self) { method in
-                            unlockOption(method, isSelected: settings.unlockMethod == method)
-                        }
-                    }
-                    .accessibilityElement(children: .contain)
-                }
-                .padding(.vertical, 14)
+                unlockPicker
                 if settings.unlockMethod != .disabled {
                     passcodeRow
                     nameRow
@@ -93,14 +79,7 @@ struct SecuritySection: View {
                         title: viewModel.relockTitle,
                     ) { seconds in Task { await viewModel.setRelockAfter(seconds) } }
                 }
-                Toggle(isOn: Binding(
-                    get: { settings.hidesAmountsInAppSwitcher },
-                    set: { hides in Task { await viewModel.setHidesAmounts(hides) } },
-                )) {
-                    Text("Hide amounts when leaving", bundle: #bundle).font(KWTextStyle.body.font)
-                }
-                .toggleStyle(.kw)
-                .padding(.vertical, 14)
+                hideAmountsToggle
             }
         }
         .onChange(of: isEditingName) { _, editing in
@@ -121,6 +100,35 @@ struct SecuritySection: View {
         } message: {
             Text("Keepwell will ask for your iPhone passcode instead.", bundle: #bundle)
         }
+    }
+
+    private var unlockPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Unlock the app with", bundle: #bundle).font(KWTextStyle.body.font)
+                Text("We use Face ID or Touch ID, whichever your iPhone has", bundle: #bundle)
+                    .font(KWTextStyle.captionSm.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.muted)
+            }
+            HStack(spacing: 6) {
+                ForEach(UnlockMethod.allCases, id: \.self) { method in
+                    unlockOption(method, isSelected: settings.unlockMethod == method)
+                }
+            }
+            .accessibilityElement(children: .contain)
+        }
+        .padding(.vertical, 14)
+    }
+
+    private var hideAmountsToggle: some View {
+        Toggle(isOn: Binding(
+            get: { settings.hidesAmountsInAppSwitcher },
+            set: { hides in Task { await viewModel.setHidesAmounts(hides) } },
+        )) {
+            Text("Hide amounts when leaving", bundle: #bundle).font(KWTextStyle.body.font)
+        }
+        .toggleStyle(.kw)
+        .padding(.vertical, 14)
     }
 
     /// The app's own six-digit code: the keypad on the lock screen, with Face ID on top.
@@ -211,34 +219,12 @@ struct DataSection: View {
             KWGroupedCard {
                 VStack(alignment: .leading, spacing: 10) {
                     backupToggle
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(overview.isICloudBackupEnabled ? KWColor.State.positive : KWColor.Text.faint)
-                            .frame(width: 8, height: 8)
-                        Text(backupStatus)
-                            .font(KWTextStyle.caption.font.weight(.regular))
-                            .foregroundStyle(KWColor.Text.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(.leading, 52)
+                    backupStatusRow
                     // A backup is a file the person keeps, so it works whether iCloud sync is on or off.
                     backupActions
                 }
                 .padding(.vertical, 14)
-                Button { isImporting = true } label: {
-                    KWValueRow(String(localized: "Import CSV", bundle: #bundle), value: "›", style: .navigation, verticalPadding: 14)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isWorking)
-                Button {
-                    Task { await viewModel.export() }
-                } label: {
-                    KWValueRow(String(localized: "Export CSV", bundle: #bundle), value: "›", style: .navigation, verticalPadding: 14)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isWorking)
+                csvRows
             }
             if let message = viewModel.importMessage {
                 Text(message)
@@ -261,11 +247,7 @@ struct DataSection: View {
         }
         .confirmationDialog(
             String(localized: "Replace your data with this backup?", bundle: #bundle),
-            isPresented: Binding(get: { pendingRestore != nil }, set: {
-                if !$0 {
-                    pendingRestore = nil
-                }
-            }),
+            isPresented: isConfirmingRestore,
             titleVisibility: .visible,
         ) {
             Button(role: .destructive) {
@@ -278,6 +260,45 @@ struct DataSection: View {
         } message: {
             Text("What's on this iPhone now is replaced by the backup.", bundle: #bundle)
         }
+    }
+
+    private var backupStatusRow: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(overview.isICloudBackupEnabled ? KWColor.State.positive : KWColor.Text.faint)
+                .frame(width: 8, height: 8)
+            Text(backupStatus)
+                .font(KWTextStyle.caption.font.weight(.regular))
+                .foregroundStyle(KWColor.Text.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.leading, 52)
+    }
+
+    @ViewBuilder
+    private var csvRows: some View {
+        Button { isImporting = true } label: {
+            KWValueRow(String(localized: "Import CSV", bundle: #bundle), value: "›", style: .navigation, verticalPadding: 14)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isWorking)
+        Button {
+            Task { await viewModel.export() }
+        } label: {
+            KWValueRow(String(localized: "Export CSV", bundle: #bundle), value: "›", style: .navigation, verticalPadding: 14)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isWorking)
+    }
+
+    private var isConfirmingRestore: Binding<Bool> {
+        Binding(get: { pendingRestore != nil }, set: {
+            if !$0 {
+                pendingRestore = nil
+            }
+        })
     }
 
     private var backupActions: some View {
