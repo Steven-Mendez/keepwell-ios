@@ -14,6 +14,11 @@ public struct TransactionCategory: Identifiable, Hashable, Sendable, Codable {
     /// English text and screens translate it by id; afterwards it is shown exactly as typed.
     /// Always `false` for categories the person created, whose name is theirs from the start.
     public let isRenamed: Bool
+    /// How much the person means to spend in this category each month. Only expense categories
+    /// carry one. It stays in the principal currency in force when it was set: if the person
+    /// changes their principal later the budget is ignored rather than converted, because a rate
+    /// picked today would silently move the line they drew.
+    public let monthlyBudget: Money?
 
     public init(
         id: String,
@@ -22,6 +27,7 @@ public struct TransactionCategory: Identifiable, Hashable, Sendable, Codable {
         icon: String? = nil,
         color: String? = nil,
         isRenamed: Bool = false,
+        monthlyBudget: Money? = nil,
     ) {
         self.id = id
         self.name = name
@@ -29,9 +35,11 @@ public struct TransactionCategory: Identifiable, Hashable, Sendable, Codable {
         self.icon = icon
         self.color = color
         self.isRenamed = isRenamed
+        self.monthlyBudget = monthlyBudget
     }
 
-    /// Backups written before defaults could be renamed have no `isRenamed`.
+    /// Backups written before defaults could be renamed have no `isRenamed`, and those written
+    /// before budgets have no `monthlyBudget`.
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
@@ -40,6 +48,7 @@ public struct TransactionCategory: Identifiable, Hashable, Sendable, Codable {
         icon = try container.decodeIfPresent(String.self, forKey: .icon)
         color = try container.decodeIfPresent(String.self, forKey: .color)
         isRenamed = try container.decodeIfPresent(Bool.self, forKey: .isRenamed) ?? false
+        monthlyBudget = try container.decodeIfPresent(Money.self, forKey: .monthlyBudget)
     }
 
     /// Shipped with the app. The person can still rename, restyle or delete it, and bring it
