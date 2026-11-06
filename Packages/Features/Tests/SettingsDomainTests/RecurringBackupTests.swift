@@ -68,7 +68,7 @@ struct RecurringBackupTests {
         """
         #expect(text.contains("\"recurringRules\":[\(rule)]"))
         #expect(text.contains("\"recurringId\":\"6f1c2b0a-3d4e-4f5a-8b9c-0d1e2f3a4b5c\""))
-        #expect(try json(data)["schemaVersion"] as? Int == 2)
+        #expect(try json(data)["schemaVersion"] as? Int == BackupSnapshot.currentSchemaVersion)
     }
 
     @Test

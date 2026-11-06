@@ -33,6 +33,8 @@ let package = Package(
         .library(name: "LockPresentation", targets: ["LockPresentation"]),
         .library(name: "RecurringDomain", targets: ["RecurringDomain"]),
         .library(name: "RecurringPresentation", targets: ["RecurringPresentation"]),
+        .library(name: "GoalsDomain", targets: ["GoalsDomain"]),
+        .library(name: "GoalsPresentation", targets: ["GoalsPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -474,6 +476,45 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
             exclude: ["__Snapshots__"],
+        ),
+
+        // MARK: Goals
+
+        .target(
+            name: "GoalsDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Goals/Domain",
+        ),
+        .target(
+            name: "GoalsPresentation",
+            dependencies: [
+                "GoalsDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                // `#Preview` sample data only.
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/Goals/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "GoalsDomainTests",
+            dependencies: [
+                "GoalsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "GoalsPresentationTests",
+            dependencies: [
+                "GoalsPresentation",
+                "GoalsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
     ],
     swiftLanguageModes: [.v6],

@@ -239,6 +239,7 @@ struct RootView: View {
                 tab = .transactions
             },
             allRecurring: { router.push(.recurring) },
+            goals: { router.push(.goals) },
         )
     }
 }

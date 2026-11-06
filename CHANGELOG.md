@@ -22,6 +22,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Savings goals, like a pot or a vault but only on paper: give a goal a name, a target in your main
+  or second currency, an optional target month, an icon and a color, then "Add money" or
+  "Withdraw" as you set money aside. Nothing moves between your accounts and no movement is
+  recorded. Each goal shows its progress and how much to set aside each month to arrive on time
+  (rounded up to the cent), "Goal reached", or that the date passed. Open them from home's new
+  "Savings goals" card, which previews the soonest goal and follows "hide balances". Backups move to
+  `schemaVersion` 3 with `savingsGoals`; files from versions 1 and 2 still restore, with no goals.
 - Monthly budgets per expense category: set one in the category editor (in your main currency;
   empty means no limit). Summary › Categories lists each budget for the selected month with how
   much is spent, left or over, and home warns about a category at 80% and again at 100% of its

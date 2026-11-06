@@ -17,6 +17,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     private let categories: any CategoryRepository
     private let settings: any SettingsRepository
     private let recurringRules: (any RecurringRuleRepository)?
+    private let savingsGoals: (any SavingsGoalRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
@@ -27,6 +28,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         categories: any CategoryRepository,
         settings: any SettingsRepository,
         recurringRules: (any RecurringRuleRepository)? = nil,
+        savingsGoals: (any SavingsGoalRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -36,6 +38,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         self.categories = categories
         self.settings = settings
         self.recurringRules = recurringRules
+        self.savingsGoals = savingsGoals
         self.calendar = calendar
         self.now = now
     }
@@ -44,12 +47,14 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         let stored = try await settings.load() ?? Settings(currencies: .initial)
         let records = try await LedgerRecords.load(accounts: accounts, cards: cards, transactions: transactions, categories: categories)
         let rules = try await recurringRules?.fetchRecurringRules() ?? []
-        return try Self.overview(records, rules: rules, settings: stored, calendar: calendar, now: now())
+        let goals = try await savingsGoals?.fetchSavingsGoals() ?? []
+        return try Self.overview(records, rules: rules, goals: goals, settings: stored, calendar: calendar, now: now())
     }
 
     static func overview(
         _ records: LedgerRecords,
         rules: [RecurringRule] = [],
+        goals: [SavingsGoal] = [],
         settings: Settings,
         calendar: Calendar,
         now: Date,
@@ -98,6 +103,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             cardSubscriptions: cardSubscriptions(records, rules: rules, calendar: calendar),
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
+            goals: SavingsGoalProgress.ordered(goals, currentMonth: month.month),
             accounts: accounts,
             cards: cards,
             categories: records.categories,
