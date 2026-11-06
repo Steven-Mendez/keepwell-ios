@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+
+- Deleting a category kept its movements' tags and the recurring movement that recorded them; they
+  used to be dropped when the movements moved to "Other".
+
 ### Changed
 
 - Accounts: the card stack rolls like an endless deck. Drag over it to turn the cards one at a time

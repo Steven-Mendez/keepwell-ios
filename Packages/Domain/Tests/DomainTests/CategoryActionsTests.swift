@@ -131,6 +131,25 @@ struct CategoryActionsTests {
     }
 
     @Test
+    func deletingACategoryKeepsItsMovementsTagsAndRecurringRule() async throws {
+        let expense = try #require(sample.transactions.first { $0.kind == .expense })
+        let ruleID = UUID()
+        let tagged = Transaction(
+            id: expense.id, date: expense.date, status: expense.status, description: expense.description,
+            kind: expense.kind, categoryID: "groceries", amount: expense.amount, currency: expense.currency,
+            accountID: expense.accountID, cardID: expense.cardID, exchangeRate: expense.exchangeRate,
+            note: "Weekly", recurringID: ruleID, tags: ["boda"],
+        )
+        let store = InMemoryStore(transactions: [tagged])
+        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store).execute(id: "groceries")
+        let moved = try #require(await store.fetchTransactions(in: nil).first)
+        #expect(moved.categoryID == TransactionCategory.otherExpenseID)
+        #expect(moved.tags == ["boda"])
+        #expect(moved.recurringID == ruleID)
+        #expect(moved.note == "Weekly")
+    }
+
+    @Test
     func restoringBringsBackDeletedDefaultsAndUndoesEditsButKeepsYours() async throws {
         let store = InMemoryStore()
         let save = DefaultSaveCategoryUseCase(categories: store)
