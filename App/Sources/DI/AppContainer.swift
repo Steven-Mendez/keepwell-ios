@@ -147,7 +147,8 @@ final class AppContainer {
     }
 
     func makeSummaryViewModel() -> SummaryViewModel {
-        SummaryViewModel(getReport: DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store))
+        let report = DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store, accounts: store)
+        return SummaryViewModel(getReport: report)
     }
 
     // MARK: - Settings and lock
