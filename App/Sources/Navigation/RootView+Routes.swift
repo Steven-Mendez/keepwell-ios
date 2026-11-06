@@ -53,6 +53,8 @@ extension RootView {
             RecurringRuleRoute(container: container, ruleID: id, onBack: navigator.pop)
         case .goals:
             GoalsRoute(container: container, onBack: navigator.pop)
+        case .debts:
+            DebtsRoute(container: container, onBack: navigator.pop)
         }
     }
 

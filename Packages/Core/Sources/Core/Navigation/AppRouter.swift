@@ -21,6 +21,8 @@ public enum AppRoute: Hashable, Sendable {
     case recurringRule(id: UUID?)
     /// Savings goals, reached from home.
     case goals
+    /// Loans and personal debts, reached from home.
+    case debts
 }
 
 /// Single owner of the navigation stack. Feature views don't see it: they expose navigation as
