@@ -221,16 +221,6 @@
         }
       }
     },
-    "Search merchant, note or category" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buscar comercio, nota o categoría"
-          }
-        }
-      }
-    },
     "Show all accounts" : {
       "localizations" : {
         "es" : {
@@ -317,6 +307,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Borradores · no afectan saldos"
+          }
+        }
+      }
+    },
+    "%@ · All time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Desde siempre"
+          }
+        }
+      }
+    },
+    "Show %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver %@"
+          }
+        }
+      }
+    },
+    "Search merchant, note, category or #tag" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar comercio, nota, categoría o #etiqueta"
           }
         }
       }

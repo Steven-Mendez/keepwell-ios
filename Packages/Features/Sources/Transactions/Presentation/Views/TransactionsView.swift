@@ -162,7 +162,7 @@ public struct TransactionsView: View {
             TextField(
                 String(localized: "Search", bundle: #bundle),
                 text: $viewModel.query,
-                prompt: Text("Search merchant, note or category", bundle: #bundle).foregroundStyle(KWColor.Text.muted),
+                prompt: Text("Search merchant, note, category or #tag", bundle: #bundle).foregroundStyle(KWColor.Text.muted),
             )
             .font(KWTextStyle.body.font)
             .focused($isSearchFocused)
@@ -247,12 +247,17 @@ extension TransactionsView {
         KWTransactionRow(
             display.style(of: transaction),
             title: transaction.description,
-            subtitle: display.subtitle(of: transaction),
+            subtitle: viewModel.subtitle(of: transaction, display: display),
             amount: display.amount(of: transaction),
             secondaryAmount: display.secondaryAmount(of: transaction),
         )
         .contentShape(Rectangle())
         .contextMenu {
+            ForEach(transaction.tags, id: \.self) { tag in
+                Button { viewModel.show(tag: tag) } label: {
+                    Label { Text("Show \(TagDisplay.label(tag))", bundle: #bundle) } icon: { Image(systemName: "number") }
+                }
+            }
             if let rule = viewModel.list?.recurringRule(of: transaction), let onOpenRecurringRule {
                 Button { onOpenRecurringRule(rule.id) } label: {
                     Label { Text(RecurringDisplay.badge(of: rule)) } icon: { Image(systemName: "repeat") }

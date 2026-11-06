@@ -25,6 +25,9 @@ public struct ReviewView: View {
                     KWFlowHeader(.back, progress: viewModel.progress(of: .review), action: onBack)
                     summaryCard.padding(.top, 30)
                     KWGroupedCard { details }
+                    if !viewModel.type.movesBetweenAccounts {
+                        tagsCard
+                    }
                     if let error = viewModel.errorMessage {
                         Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
                     }
@@ -139,6 +142,13 @@ public struct ReviewView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                if let hint = viewModel.ruleHint {
+                    Text(hint)
+                        .font(KWTextStyle.captionSm.font)
+                        .foregroundStyle(KWColor.Text.muted)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, KWSpacing.xs)
+                }
             }
             if let from = viewModel.fromParty {
                 Button(action: viewModel.editSource) { party(from) }.buttonStyle(.plain)
@@ -201,6 +211,19 @@ public struct ReviewView: View {
         .buttonStyle(.plain)
         if viewModel.showsDebitedField {
             debitedRow
+        }
+    }
+
+    /// "#chips" besides the category, with the tags already used offered first.
+    private var tagsCard: some View {
+        VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+            Text("Tags", bundle: #bundle)
+                .font(KWTextStyle.label.font)
+                .foregroundStyle(KWColor.Text.muted)
+                .padding(.leading, KWSpacing.xxs)
+            KWGroupedCard {
+                TagEditor(tags: $viewModel.tags, usage: viewModel.tagUsage)
+            }
         }
     }
 
