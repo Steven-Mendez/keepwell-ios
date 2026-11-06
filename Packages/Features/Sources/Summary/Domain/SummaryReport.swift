@@ -21,6 +21,10 @@ public struct SummaryReport: Hashable, Sendable {
     public let paces: [SpendingPace]
     /// Same order as `months`: how each budgeted category did that month, closest to its limit first.
     public let budgets: [[CategoryBudgetStatus]]
+    /// Net worth at the end of each of the last twelve months (`NetWorthHistory`), oldest first.
+    public let netWorth: [NetWorthHistory.Point]
+    /// Whether a second currency goes into net worth at today's rate, which the card then says.
+    public let convertsCurrencies: Bool
 
     public init(
         currency: String,
@@ -29,6 +33,8 @@ public struct SummaryReport: Hashable, Sendable {
         averageIncome: Decimal?,
         categories: [TransactionCategory],
         paces: [SpendingPace],
+        netWorth: [NetWorthHistory.Point] = [],
+        convertsCurrencies: Bool = false,
     ) {
         self.currency = currency
         self.months = months
@@ -36,6 +42,8 @@ public struct SummaryReport: Hashable, Sendable {
         self.averageIncome = averageIncome
         self.categories = categories
         self.paces = paces
+        self.netWorth = netWorth
+        self.convertsCurrencies = convertsCurrencies
         cashFlow = CashFlowTrend(months: months)
         expenseBreakdowns = months.map { CategoryBreakdown(totals: $0.categories) }
         incomeBreakdowns = months.map { CategoryBreakdown(totals: $0.incomeCategories) }
@@ -55,6 +63,7 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
     private let transactions: any TransactionRepository
     private let categories: any CategoryRepository
     private let settings: any SettingsRepository
+    private let accounts: (any AccountRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
@@ -62,22 +71,26 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
         transactions: any TransactionRepository,
         categories: any CategoryRepository,
         settings: any SettingsRepository,
+        accounts: (any AccountRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
         self.transactions = transactions
         self.categories = categories
         self.settings = settings
+        self.accounts = accounts
         self.calendar = calendar
         self.now = now
     }
 
     public func execute() async throws(DomainError) -> SummaryReport {
-        let currency = try await settings.load()?.currencies.principal ?? "USD"
+        let currencies = try await settings.load()?.currencies ?? .initial
         return try await Self.report(
             transactions: transactions.fetchTransactions(in: nil),
             categories: categories.fetchCategories(),
-            currency: currency,
+            currency: currencies.principal,
+            accounts: accounts?.fetchAccounts() ?? [],
+            currencies: currencies,
             calendar: calendar,
             now: now(),
         )
@@ -87,6 +100,8 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
         transactions: [Transaction],
         categories: [TransactionCategory],
         currency: String,
+        accounts: [Account] = [],
+        currencies: CurrencySettings? = nil,
         calendar: Calendar,
         now: Date,
     ) -> SummaryReport {
@@ -101,6 +116,11 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
             averageIncome: SpendingHistory.averageMonthlyTotal(of: .income, transactions: transactions, calendar: calendar),
             categories: categories,
             paces: months.map { SpendingPace(month: $0.month, transactions: transactions, calendar: calendar, now: now) },
+            // A currency the settings no longer convert leaves the card out rather than the summary.
+            netWorth: currencies.flatMap {
+                try? NetWorthHistory.points(accounts: accounts, transactions: transactions, settings: $0, now: now, calendar: calendar)
+            } ?? [],
+            convertsCurrencies: currencies?.second != nil,
         )
     }
 }

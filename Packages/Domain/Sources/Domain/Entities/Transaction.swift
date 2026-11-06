@@ -28,6 +28,9 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
     /// The recurring rule that produced it, if any. It may outlive the rule: deleting a rule keeps
     /// the confirmed movements it made.
     public let recurringID: UUID?
+    /// Labels besides the category ("viaje-mexico"), normalized by `Tags`, each once, in the order
+    /// they were added.
+    public let tags: [String]
 
     public init(
         id: UUID = UUID(),
@@ -46,6 +49,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         isShared: Bool = false,
         note: String? = nil,
         recurringID: UUID? = nil,
+        tags: [String] = [],
     ) {
         self.id = id
         self.date = date
@@ -63,6 +67,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         self.isShared = isShared
         self.note = note
         self.recurringID = recurringID
+        self.tags = Tags.normalized(tags)
     }
 
     /// The rule behind "`amount` is always positive", kept here so every path that records a
@@ -86,7 +91,43 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
-            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+        )
+    }
+
+    /// The same movement in another category and with other tags (a categorization rule applied).
+    public func with(categoryID: String?, tags: [String]) -> Self {
+        Self(
+            id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
+            amount: amount, currency: currency, accountID: accountID, cardID: cardID,
+            destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+        )
+    }
+}
+
+extension Transaction {
+    /// Movements written before tags existed (the version 1 backup document) have no `tags`.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(
+            id: container.decode(UUID.self, forKey: .id),
+            date: container.decode(Date.self, forKey: .date),
+            status: container.decode(TransactionStatus.self, forKey: .status),
+            description: container.decode(String.self, forKey: .description),
+            kind: container.decode(TransactionKind.self, forKey: .kind),
+            categoryID: container.decodeIfPresent(String.self, forKey: .categoryID),
+            amount: container.decode(Decimal.self, forKey: .amount),
+            currency: container.decode(String.self, forKey: .currency),
+            accountID: container.decode(UUID.self, forKey: .accountID),
+            cardID: container.decodeIfPresent(UUID.self, forKey: .cardID),
+            destinationAccountID: container.decodeIfPresent(UUID.self, forKey: .destinationAccountID),
+            actualDebitedPrincipal: container.decodeIfPresent(Decimal.self, forKey: .actualDebitedPrincipal),
+            exchangeRate: container.decode(ExchangeRate.self, forKey: .exchangeRate),
+            isShared: container.decode(Bool.self, forKey: .isShared),
+            note: container.decodeIfPresent(String.self, forKey: .note),
+            recurringID: container.decodeIfPresent(UUID.self, forKey: .recurringID),
+            tags: container.decodeIfPresent([String].self, forKey: .tags) ?? [],
         )
     }
 }

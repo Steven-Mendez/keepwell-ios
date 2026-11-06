@@ -42,6 +42,9 @@ public struct SummaryView: View {
                     case .categories: CategorySection(viewModel: viewModel)
                     case .pace: PaceSection(viewModel: viewModel)
                     }
+                    // A year of month ends, whatever month the stepper picks.
+                    NetWorthSection(viewModel: viewModel)
+                        .padding(.top, KWSpacing.xs)
                 }
             }
             .padding(.horizontal, KWLayout.gutter)

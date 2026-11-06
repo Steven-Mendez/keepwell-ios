@@ -13,6 +13,9 @@ public struct SampleData: Sendable {
     public let categories: [TransactionCategory]
     public let recurringRules: [RecurringRule]
     public let savingsGoals: [SavingsGoal]
+    public let loans: [Loan]
+    public let personalDebts: [PersonalDebt]
+    public let categorizationRules: [CategorizationRule]
 
     public enum IDs {
         public static let savings = UUID(uuidString: "00000000-0000-0000-0000-00000000A001") ?? UUID()
@@ -33,6 +36,12 @@ public struct SampleData: Sendable {
         public static let tripGoal = UUID(uuidString: "00000000-0000-0000-0000-00000000E001") ?? UUID()
         public static let emergencyGoal = UUID(uuidString: "00000000-0000-0000-0000-00000000E002") ?? UUID()
         public static let phoneGoal = UUID(uuidString: "00000000-0000-0000-0000-00000000E003") ?? UUID()
+        public static let motorbikeLoan = UUID(uuidString: "00000000-0000-0000-0000-00000000F001") ?? UUID()
+        public static let juanDebt = UUID(uuidString: "00000000-0000-0000-0000-00000000F101") ?? UUID()
+        public static let anaDebt = UUID(uuidString: "00000000-0000-0000-0000-00000000F102") ?? UUID()
+        public static let settledDebt = UUID(uuidString: "00000000-0000-0000-0000-00000000F103") ?? UUID()
+        public static let uberRule = UUID(uuidString: "00000000-0000-0000-0000-00000000F201") ?? UUID()
+        public static let salaryMatchRule = UUID(uuidString: "00000000-0000-0000-0000-00000000F202") ?? UUID()
     }
 
     /// The sample's fixed "today": 22 October 2026.
@@ -64,6 +73,40 @@ public struct SampleData: Sendable {
         transactions = Self.makeTransactions(rate: rate, day: day)
         recurringRules = Self.makeRecurringRules(day: day)
         savingsGoals = Self.makeSavingsGoals(month: month)
+        loans = Self.makeLoans(day: day)
+        personalDebts = Self.makePersonalDebts(day: day)
+        categorizationRules = [
+            CategorizationRule(id: IDs.uberRule, match: "Uber", categoryID: "transport", kind: .expense),
+            CategorizationRule(id: IDs.salaryMatchRule, match: "Payroll", categoryID: "salary", kind: .income, tags: ["work"]),
+        ]
+    }
+
+    /// A motorbike loan started two months ago with its first two installments paid; the third is
+    /// due on the 28th of this month.
+    static func makeLoans(day: (Int, Int) -> Date) -> [Loan] {
+        [
+            Loan(
+                id: IDs.motorbikeLoan, name: "Motorbike", lender: "Banpro", borrowed: Money(60000, "NIO"),
+                installmentAmount: 5500, installmentCount: 12, frequency: .monthly, firstDueDate: day(28, -2),
+                payments: [LoanPayment(number: 1, paidAt: day(27, -2)), LoanPayment(number: 2, paidAt: day(28, -1))],
+            ),
+        ]
+    }
+
+    /// Juan owes part of a dinner, the person owes Ana for concert tickets, and an old loan to
+    /// Carlos is settled.
+    static func makePersonalDebts(day: (Int, Int) -> Date) -> [PersonalDebt] {
+        [
+            PersonalDebt(
+                id: IDs.juanDebt, person: "Juan", direction: .theyOweMe, amount: Money(500, "NIO"), date: day(12, 0),
+                note: "Dinner", repayments: [DebtRepayment(amount: 200, date: day(15, 0))],
+            ),
+            PersonalDebt(id: IDs.anaDebt, person: "Ana", direction: .iOwe, amount: Money(40, "USD"), date: day(5, 0), note: "Concert"),
+            PersonalDebt(
+                id: IDs.settledDebt, person: "Carlos", direction: .theyOweMe, amount: Money(1000, "NIO"), date: day(3, -1),
+                repayments: [DebtRepayment(amount: 1000, date: day(20, -1))], settledAt: day(20, -1),
+            ),
+        ]
     }
 
     /// A trip due in two months, an emergency fund without a date and a phone already paid for.

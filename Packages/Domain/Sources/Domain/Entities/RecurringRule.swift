@@ -47,6 +47,8 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
     public let isPaused: Bool
     /// Copied to each movement's note.
     public let note: String?
+    /// Copied to each movement's tags.
+    public let tags: [String]
 
     public init(
         id: UUID = UUID(),
@@ -67,6 +69,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
         autoConfirm: Bool = false,
         isPaused: Bool = false,
         note: String? = nil,
+        tags: [String] = [],
     ) {
         self.id = id
         self.name = name
@@ -86,6 +89,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
         self.autoConfirm = autoConfirm
         self.isPaused = isPaused
         self.note = note
+        self.tags = Tags.normalized(tags)
     }
 
     /// The rule's own limits: a positive amount, a name, an interval of 1–99 and an end that isn't
@@ -138,7 +142,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             id: id, name: name, kind: kind, categoryID: categoryID, amount: amount, currency: currency,
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
-            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note,
+            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
         )
     }
 
@@ -147,7 +151,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             id: id, name: name, kind: kind, categoryID: categoryID, amount: amount, currency: currency,
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
-            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note,
+            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
         )
     }
 
@@ -157,7 +161,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             id: id, name: name, kind: kind, categoryID: categoryID, amount: amount, currency: currency,
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
-            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note,
+            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
         )
     }
 
@@ -166,7 +170,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             id: id, name: name, kind: kind, categoryID: categoryID, amount: amount, currency: currency,
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
-            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note,
+            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
         )
     }
 }

@@ -31,7 +31,7 @@ extension Transaction {
             id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
-            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
         )
     }
 }

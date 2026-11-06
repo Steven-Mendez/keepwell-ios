@@ -38,6 +38,8 @@ public struct TransactionDraft: Sendable {
     public var repeatFrequency: RecurringFrequency?
     /// The id the recurring rule gets when `repeatFrequency` is set, so the movement can name it.
     public var recurringRuleID: UUID
+    /// Labels besides the category; normalized when saved.
+    public var tags: [String]
 
     public init(
         id: UUID = UUID(),
@@ -54,6 +56,7 @@ public struct TransactionDraft: Sendable {
         isDraft: Bool = false,
         repeatFrequency: RecurringFrequency? = nil,
         recurringRuleID: UUID = UUID(),
+        tags: [String] = [],
     ) {
         self.id = id
         self.kind = kind
@@ -69,6 +72,7 @@ public struct TransactionDraft: Sendable {
         self.isDraft = isDraft
         self.repeatFrequency = repeatFrequency
         self.recurringRuleID = recurringRuleID
+        self.tags = tags
     }
 }
 
@@ -83,6 +87,10 @@ public struct TransactionContext: Sendable {
     public let lastUsed: [PaymentSource: Date]
     /// How many movements each category has, to put the usual ones first.
     public let categoryUsage: [String: Int]
+    /// Every tag used, most used first: the tag field's suggestions.
+    public let tagUsage: [String]
+    /// The person's categorization rules in order, only those whose category still exists.
+    public let rules: [CategorizationRule]
 
     public init(
         currencies: CurrencySettings,
@@ -92,6 +100,8 @@ public struct TransactionContext: Sendable {
         balances: [UUID: [Money]],
         lastUsed: [PaymentSource: Date],
         categoryUsage: [String: Int],
+        tagUsage: [String] = [],
+        rules: [CategorizationRule] = [],
     ) {
         self.currencies = currencies
         self.categories = categories
@@ -100,6 +110,8 @@ public struct TransactionContext: Sendable {
         self.balances = balances
         self.lastUsed = lastUsed
         self.categoryUsage = categoryUsage
+        self.tagUsage = tagUsage
+        self.rules = rules.filter { rule in categories.contains { $0.id == rule.categoryID && $0.kind == rule.kind } }
     }
 
     public func account(_ id: UUID?) -> Account? {
@@ -129,6 +141,8 @@ public struct TransactionContext: Sendable {
             balances: balances,
             lastUsed: lastUsed,
             categoryUsage: categoryUsage,
+            tagUsage: tagUsage,
+            rules: rules,
         )
     }
 

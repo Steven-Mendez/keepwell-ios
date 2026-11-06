@@ -200,3 +200,68 @@ struct CreateTransactionViewModelTests {
         #expect(viewModel.dayLabel(CreateTransactionFactory.now).hasPrefix("Today, "))
     }
 }
+
+@Suite("Create transaction rules and tags")
+@MainActor
+struct CreateTransactionRulesTests {
+    private func make(rules: [CategorizationRule]) async -> CreateTransactionViewModel {
+        let sample = SampleData.standard
+        let store = InMemoryStore(
+            accounts: sample.accounts, cards: sample.cards, transactions: sample.transactions, settings: sample.settings,
+        )
+        for rule in rules {
+            await store.save(rule)
+        }
+        let context = DefaultGetTransactionContextUseCase(
+            settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
+        )
+        let viewModel = CreateTransactionViewModel(
+            getContext: context,
+            save: DefaultSaveTransactionUseCase(context: context, transactions: store),
+        )
+        await viewModel.load()
+        viewModel.press(.digit(5))
+        viewModel.continueFromAmount()
+        return viewModel
+    }
+
+    private let uber = CategorizationRule(match: "uber", categoryID: "transport", kind: .expense, tags: ["trabajo"])
+
+    @Test
+    func aRuleChoosesTheCategoryWhenThePersonPickedOther() async {
+        let viewModel = await make(rules: [uber])
+        viewModel.selectCategory(TransactionCategory.otherExpenseID)
+        viewModel.description = "UBER *TRIP"
+        #expect(viewModel.categoryID == "transport")
+        #expect(viewModel.tags == ["trabajo"])
+        #expect(viewModel.ruleHint == "Category from rule: uber")
+        #expect(viewModel.draft.tags == ["trabajo"])
+        // The text stops matching: the earlier category and the rule's tags go back.
+        viewModel.description = "Bus"
+        #expect(viewModel.categoryID == TransactionCategory.otherExpenseID)
+        #expect(viewModel.tags.isEmpty)
+        #expect(viewModel.ruleHint == nil)
+    }
+
+    @Test
+    func aCategoryThePersonPickedStays() async {
+        let viewModel = await make(rules: [uber])
+        viewModel.selectCategory("restaurants")
+        viewModel.note = "uber eats"
+        #expect(viewModel.categoryID == "restaurants")
+        #expect(viewModel.ruleHint == nil)
+    }
+
+    @Test
+    func aWidgetPresetCanStillBeReplacedByARule() async {
+        let viewModel = await make(rules: [uber])
+        viewModel.selectCategory("groceries", byPerson: false)
+        viewModel.description = "Uber"
+        #expect(viewModel.categoryID == "transport")
+        // Picking one by hand takes over.
+        viewModel.selectCategory("health")
+        viewModel.description = "Uber again"
+        #expect(viewModel.categoryID == "health")
+        #expect(viewModel.ruleHint == nil)
+    }
+}

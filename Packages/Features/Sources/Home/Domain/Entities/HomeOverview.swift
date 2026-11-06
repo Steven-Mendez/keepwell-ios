@@ -42,6 +42,15 @@ public struct HomeOverview: Hashable, Sendable {
     public let budgets: [CategoryBudgetStatus]
     /// Savings goals in list order (the first is the one home previews).
     public let goals: [SavingsGoalProgress]
+    /// Roughly what the bank and cash accounts will hold at the end of this month. `nil` without
+    /// any such account.
+    public let forecast: BalanceForecast?
+    /// Subscriptions whose latest charge cost more than the one before, newest first.
+    public let priceIncreases: [PriceIncrease]
+    /// Loans in list order: the first open one has the next installment due.
+    public let loans: [LoanProgress]
+    /// "You owe" and "Owed to you" per currency, loans and personal debts together.
+    public let debtTotals: DebtTotals
     /// For row subtitles.
     public let accounts: [Account]
     public let cards: [Card]
@@ -66,6 +75,10 @@ public struct HomeOverview: Hashable, Sendable {
         upcoming: [RecurringOccurrence] = [],
         budgets: [CategoryBudgetStatus] = [],
         goals: [SavingsGoalProgress] = [],
+        forecast: BalanceForecast? = nil,
+        priceIncreases: [PriceIncrease] = [],
+        loans: [LoanProgress] = [],
+        debtTotals: DebtTotals = DebtTotals(loans: [], debts: []),
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
@@ -88,6 +101,10 @@ public struct HomeOverview: Hashable, Sendable {
         self.upcoming = upcoming
         self.budgets = budgets
         self.goals = goals
+        self.forecast = forecast
+        self.priceIncreases = priceIncreases
+        self.loans = loans
+        self.debtTotals = debtTotals
         self.accounts = accounts
         self.cards = cards
         self.categories = categories

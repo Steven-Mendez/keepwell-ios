@@ -22,6 +22,28 @@ public struct TransactionQuery: Hashable, Sendable {
     public static func normalized(_ text: String) -> String {
         text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
     }
+
+    /// "#boda" in the search narrows the list to movements with that tag, rather than to the text.
+    public var tag: String? {
+        Tags.searched(in: text)
+    }
+}
+
+/// What the movements a tag search leaves came to over all time, in the principal currency like
+/// the month's totals: what was spent and what was received. Drafts and transfers don't count.
+public struct TagTotals: Hashable, Sendable {
+    public let tag: String
+    public let currency: String
+    public let expense: Decimal
+    public let income: Decimal
+
+    public init(tag: String, transactions: [Transaction], currency: String) {
+        self.tag = tag
+        self.currency = currency
+        let counted = transactions.filter { $0.isConfirmed && $0.tags.contains(tag) }
+        expense = counted.filter { $0.kind == .expense }.reduce(0) { $0 + $1.principalAmount }
+        income = counted.filter { $0.kind == .income }.reduce(0) { $0 + $1.principalAmount }
+    }
 }
 
 /// Narrows movements by a query. What a movement is searched by (its category's translated name,
@@ -43,10 +65,14 @@ public struct DefaultFilterTransactionsUseCase: FilterTransactionsUseCase {
         searchableText: (Transaction) -> String,
     ) -> [Transaction] {
         let needle = query.needle
+        let tag = query.tag
         return transactions.filter { transaction in
-            query.kind.matches(transaction)
-                && query.scope.includes(transaction)
-                && (needle.isEmpty || TransactionQuery.normalized(searchableText(transaction)).contains(needle))
+            let matchesText = if let tag {
+                transaction.tags.contains(tag)
+            } else {
+                needle.isEmpty || TransactionQuery.normalized(searchableText(transaction)).contains(needle)
+            }
+            return query.kind.matches(transaction) && query.scope.includes(transaction) && matchesText
         }
     }
 }

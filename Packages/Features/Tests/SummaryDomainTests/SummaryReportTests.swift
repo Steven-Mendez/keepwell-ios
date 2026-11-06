@@ -27,6 +27,19 @@ struct SummaryReportTests {
     }
 
     @Test
+    func netWorthEndsWithTodayWhenAccountsAreGiven() async throws {
+        let store = InMemoryStore(sample: sample)
+        let result = try await DefaultGetSummaryReportUseCase(
+            transactions: store, categories: store, settings: store, accounts: store,
+            now: { SampleData.defaultReferenceDate },
+        ).execute()
+        let current = YearMonth(containing: SampleData.defaultReferenceDate, calendar: .current)
+        #expect(result.netWorth.last?.month == current)
+        #expect(result.netWorth.allSatisfy { $0.total.currency == "USD" })
+        #expect(try await report().netWorth.isEmpty)
+    }
+
+    @Test
     func eachMonthMatchesItsMonthlySummary() async throws {
         let result = try await report()
         for month in result.months {

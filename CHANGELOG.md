@@ -22,6 +22,51 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- "Net worth" on Summary: a line of your net worth at the end of each of the last twelve months
+  (this month as of today, months before your first account are left out), with the latest value
+  and how much it moved since the first month shown. Second-currency balances convert at today's
+  rate, since the app keeps no history of rates. Amounts follow "hide balances".
+- "End of month" on home: roughly what your bank and cash accounts will hold when the month closes
+  ("≈ C$12,400"), with the lines that add up to it. It starts from what they hold today, adds the
+  income and takes away the expenses still planned this month (drafts and recurring movements not
+  recorded yet, except those charged to a card), takes away what each credit card due this month
+  asks for (the statement that closed, less what you already paid since), and takes away your usual
+  day-to-day spending for the days left (the average of the last three complete months, without
+  card purchases or recurring movements). Amounts follow "hide balances"; the web app shows the
+  same figure.
+- "Netflix went up in price": when a subscription's latest charge costs more than the one before,
+  in the same currency and within the last 30 days, home says so ("Now $12.99, before $9.99.") and
+  a notification arrives once for that charge. Charges count as one subscription when the same
+  recurring movement recorded them, or when the same description was charged to the same card in
+  two months or in the Subscriptions category.
+- Tags besides the category ("#viaje-mexico", "#boda"): add them as chips when you log a movement,
+  with the tags you already use offered first. They're stored lowercase, without the "#" and with
+  dashes for spaces, and show on each movement's row. Typing "#boda" in Transactions' search (or
+  "Show #boda" in a movement's menu) narrows the list to that tag and totals what it spent and
+  received over all time in your main currency. A movement made with "Repeat" passes its tags to
+  the recurring rule, and the rule to every movement it records.
+- Rules, in Settings: "if it says Uber → Transport". When a new movement's description or note
+  contains a rule's text (capitals and accents don't matter) and you haven't picked a category, or
+  picked "Other", the first matching rule picks it and adds its tags, with "Category from rule:
+  Uber" under it; you can still change it. CSV imports use them for rows without a known category.
+  Rules can be reordered, since the first match wins, and "Apply to past movements" moves the
+  uncategorized or "Other" movements a rule matches, after telling you how many. Backups keep
+  `schemaVersion` 4 and gain `categorizationRules` and the optional `tags` of movements and
+  recurring rules; older files restore without them.
+- Loans: "Mark unpaid" on a paid installment (touch and hold it) makes it due again and deletes the
+  expense it recorded.
+- Debts and loans, opened from home's new "Debts" card. A loan (bank or personal) has a lender,
+  the amount borrowed in your main or second currency, the installment, how many and whether they
+  fall monthly or weekly from the first due date. Its schedule shows each installment as paid or
+  due, what's left and the next one; "Pay installment" records a confirmed expense from the account
+  or card you pick ("Motorbike · 3/12", in the category you choose) and marks it paid in the same
+  save, so a failure leaves neither. The next installment is reminded as many days ahead as card
+  payments. Personal debts track money you lent ("they owe me") or borrowed ("I owe") with partial
+  repayments and "Mark as settled"; like savings goals they never record movements or change
+  balances. "Split" in a movement's menu divides an expense with other people (equal shares by
+  default, editable), each of whom then owes you their part. The screen totals "You owe" and "Owed to you" one currency at a time. Backups move to
+  `schemaVersion` 4 with `loans` and `personalDebts`; files from versions 1 to 3 still restore,
+  with neither.
 - Savings goals, like a pot or a vault but only on paper: give a goal a name, a target in your main
   or second currency, an optional target month, an icon and a color, then "Add money" or
   "Withdraw" as you set money aside. Nothing moves between your accounts and no movement is

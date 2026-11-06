@@ -18,6 +18,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     private let settings: any SettingsRepository
     private let recurringRules: (any RecurringRuleRepository)?
     private let savingsGoals: (any SavingsGoalRepository)?
+    private let loans: (any LoanRepository)?
+    private let personalDebts: (any PersonalDebtRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
@@ -29,6 +31,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         settings: any SettingsRepository,
         recurringRules: (any RecurringRuleRepository)? = nil,
         savingsGoals: (any SavingsGoalRepository)? = nil,
+        loans: (any LoanRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -39,6 +43,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         self.settings = settings
         self.recurringRules = recurringRules
         self.savingsGoals = savingsGoals
+        self.loans = loans
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.now = now
     }
@@ -48,33 +54,24 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         let records = try await LedgerRecords.load(accounts: accounts, cards: cards, transactions: transactions, categories: categories)
         let rules = try await recurringRules?.fetchRecurringRules() ?? []
         let goals = try await savingsGoals?.fetchSavingsGoals() ?? []
-        return try Self.overview(records, rules: rules, goals: goals, settings: stored, calendar: calendar, now: now())
+        let loanRows = try await loans?.fetchLoans() ?? []
+        let personalRows = try await personalDebts?.fetchPersonalDebts() ?? []
+        let debts = DebtRecords(loans: loanRows, personal: personalRows)
+        return try Self.overview(records, rules: rules, goals: goals, debts: debts, settings: stored, calendar: calendar, now: now())
     }
 
     static func overview(
         _ records: LedgerRecords,
         rules: [RecurringRule] = [],
         goals: [SavingsGoal] = [],
+        debts: DebtRecords = DebtRecords(),
         settings: Settings,
         calendar: Calendar,
         now: Date,
     ) throws(DomainError) -> HomeOverview {
         let currencies = settings.currencies
         let (accounts, cards, transactions) = (records.accounts, records.cards, records.transactions)
-        var allBalances: [Money] = []
-        var balances: [HomeOverview.Balance] = []
-        var cardDebt = Decimal(0)
-        for account in accounts {
-            let accountBalances = Balances.balance(of: account, transactions: transactions, calendar: calendar)
-            allBalances += accountBalances
-            if account.kind == .credit {
-                cardDebt += try NetWorth.total(of: accountBalances, settings: currencies).amount
-            } else if let balance = accountBalances.first {
-                balances.append(HomeOverview.Balance(account: account, balance: balance))
-            }
-        }
-        // Deposits before cash, keeping the order the person created them in.
-        balances = balances.filter { $0.account.kind != .cash } + balances.filter { $0.account.kind == .cash }
+        let (allBalances, balances, cardDebt) = try accountBalances(records, settings: currencies, calendar: calendar)
         let netWorth = try NetWorth.total(of: allBalances, settings: currencies)
         let planned = transactions.filter { !$0.isConfirmed }.sorted { $0.date < $1.date }
         let recent = transactions.filter(\.isConfirmed).sorted { $0.date > $1.date }.prefix(recentCount)
@@ -104,9 +101,56 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             goals: SavingsGoalProgress.ordered(goals, currentMonth: month.month),
+            forecast: forecast(records, rules: rules, settings: currencies, calendar: calendar, now: now),
+            priceIncreases: PriceIncrease.detect(in: transactions, now: now, calendar: calendar),
+            loans: LoanProgress.ordered(debts.loans, today: now, calendar: calendar),
+            debtTotals: DebtTotals(loans: debts.loans, debts: debts.personal),
             accounts: accounts,
             cards: cards,
             categories: records.categories,
+        )
+    }
+
+    /// Every balance (for net worth), the bank and cash ones shown on home, and what the cards owe in
+    /// the principal currency.
+    private static func accountBalances(
+        _ records: LedgerRecords,
+        settings currencies: CurrencySettings,
+        calendar: Calendar,
+    ) throws(DomainError) -> ([Money], [HomeOverview.Balance], Decimal) {
+        var allBalances: [Money] = []
+        var balances: [HomeOverview.Balance] = []
+        var cardDebt = Decimal(0)
+        for account in records.accounts {
+            let accountBalances = Balances.balance(of: account, transactions: records.transactions, calendar: calendar)
+            allBalances += accountBalances
+            if account.kind == .credit {
+                cardDebt += try NetWorth.total(of: accountBalances, settings: currencies).amount
+            } else if let balance = accountBalances.first {
+                balances.append(HomeOverview.Balance(account: account, balance: balance))
+            }
+        }
+        // Deposits before cash, keeping the order the person created them in.
+        balances = balances.filter { $0.account.kind != .cash } + balances.filter { $0.account.kind == .cash }
+        return (allBalances, balances, cardDebt)
+    }
+
+    /// Only with a bank or cash account: the forecast is about the money that can be spent.
+    private static func forecast(
+        _ records: LedgerRecords,
+        rules: [RecurringRule],
+        settings: CurrencySettings,
+        calendar: Calendar,
+        now: Date,
+    ) -> BalanceForecast? {
+        guard records.accounts.contains(where: { $0.kind != .credit }) else { return nil }
+        return BalanceForecast(
+            accounts: records.accounts,
+            transactions: records.transactions,
+            rules: rules,
+            settings: settings,
+            now: now,
+            calendar: calendar,
         )
     }
 
@@ -130,4 +174,10 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             .prefix(3)
             .map(\.element)
     }
+}
+
+/// Loans and personal debts as home reads them, together so `overview` keeps one parameter for both.
+struct DebtRecords {
+    var loans: [Loan] = []
+    var personal: [PersonalDebt] = []
 }
