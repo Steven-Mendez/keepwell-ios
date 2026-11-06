@@ -97,6 +97,7 @@ public enum KWColor {
         "shopping": 0xFF8A50,
         "subscriptions": 0xA3E635,
         "education": 0xF2D16B,
+        "loan-payments": 0x3FD69A,
         "other-expense": 0x8A8A96,
     ]
 

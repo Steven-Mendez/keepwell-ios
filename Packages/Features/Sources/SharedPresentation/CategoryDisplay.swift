@@ -38,6 +38,7 @@ public enum CategoryDisplay {
         case "taxes": "doc.text"
         case "savings": "banknote"
         case "donations": "heart.circle"
+        case TransactionCategory.loanPaymentsID: "calendar.badge.clock"
         case TransactionCategory.otherExpenseID: fallbackSymbol
         case "salary": "briefcase"
         case "freelance": "laptopcomputer"
@@ -129,6 +130,7 @@ public enum CategoryDisplay {
         case "taxes": String(localized: "Taxes", bundle: #bundle)
         case "savings": String(localized: "Savings", bundle: #bundle)
         case "donations": String(localized: "Donations", bundle: #bundle)
+        case TransactionCategory.loanPaymentsID: String(localized: "Loan payments", bundle: #bundle)
         case TransactionCategory.otherExpenseID: String(localized: "Other", bundle: #bundle)
         case "salary": String(localized: "Salary", bundle: #bundle)
         case "freelance": String(localized: "Freelance", bundle: #bundle)

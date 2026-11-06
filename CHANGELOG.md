@@ -22,6 +22,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+### Added
+
+- "Loan payments", a new default expense category ("Pagos de préstamos" in Spanish), placed before
+  "Other" and added on existing installs too. "Pay installment" on a loan files the expense there
+  unless you pick another category, or in "Other" if you deleted it.
 - "Net worth" on Summary: a line of your net worth at the end of each of the last twelve months
   (this month as of today, months before your first account are left out), with the latest value
   and how much it moved since the first month shown. Second-currency balances convert at each

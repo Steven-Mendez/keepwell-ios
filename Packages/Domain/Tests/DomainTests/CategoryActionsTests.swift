@@ -24,7 +24,7 @@ struct CategoryActionsTests {
         let stored = [tips] + TransactionCategory.defaults.reversed() + [boat]
         let ordered = TransactionCategory.ordered(stored)
         let expense = ordered.filter { $0.kind == .expense }.map(\.id)
-        #expect(expense.first == "donations")
+        #expect(expense.first == TransactionCategory.loanPaymentsID)
         #expect(expense.suffix(2) == ["custom-boat", TransactionCategory.otherExpenseID])
         #expect(ordered.first(where: { $0.kind == .income }) == tips)
         #expect(ordered.last(where: { $0.kind == .income })?.id == TransactionCategory.otherIncomeID)
