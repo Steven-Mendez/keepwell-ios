@@ -3,7 +3,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class CategoryRecord {
+public final class CategoryRecord: AuditedRecord {
     /// The category slug ("groceries", or "custom-…" for the person's own).
     public var id = ""
     var name = ""
@@ -18,9 +18,20 @@ public final class CategoryRecord {
     /// Added in V3. A deleted default stays as this tombstone, so seeding doesn't bring it back
     /// and the deletion syncs to the person's other devices.
     var isRemoved = false
+    /// Added in V5. `isRemoved` stays in step with `deletedAt` for stores written before V5.
+    var createdAt = Date.now
+    var updatedAt = Date.now
+    var deletedAt: Date?
 
     init(id: String) {
         self.id = id
+    }
+
+    /// `isRemoved` decides, not `deletedAt`: this version sets both together, but a device still on
+    /// a version before V5 only knows `isRemoved`, and when it brings a default back the `deletedAt`
+    /// it can't see must not keep the category hidden here.
+    var isTombstone: Bool {
+        isRemoved
     }
 
     func update(from category: TransactionCategory, sortIndex: Int) {

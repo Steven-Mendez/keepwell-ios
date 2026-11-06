@@ -2,8 +2,7 @@ import Domain
 import Foundation
 
 extension SwiftDataStore {
-    /// Writes a whole data set at once: UI tests and simulator runs launch with sample data, and a
-    /// future restore from a file goes through the same path.
+    /// Writes a whole data set at once: UI tests and simulator runs launch with sample data.
     public func seed(
         settings: Settings,
         accounts: [Account],

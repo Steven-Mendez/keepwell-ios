@@ -3,7 +3,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class CardRecord {
+public final class CardRecord: AuditedRecord {
     /// Kinds the app no longer has. Their rows are skipped when reading rather than migrated away:
     /// CloudKit-backed stores can't drop an attribute or a row type in a schema change, and an
     /// additional card's purchases already belong to its credit account, so they stay listed there.
@@ -32,6 +32,9 @@ public final class CardRecord {
     /// Kept as two numbers rather than a date: the plastic only prints month and year.
     var expiryMonth: Int?
     var expiryYear: Int?
+    /// Added in V5, with `deletedAt`.
+    var updatedAt = Date.now
+    var deletedAt: Date?
 
     init(id: UUID) {
         self.id = id

@@ -4,7 +4,7 @@ import SwiftData
 
 /// CloudKit-compatible: every attribute optional or defaulted, no unique constraints.
 @Model
-public final class AccountRecord {
+public final class AccountRecord: AuditedRecord {
     public var id = UUID()
     var name = ""
     var bank: String?
@@ -18,6 +18,9 @@ public final class AccountRecord {
     var cutoffDay: Int?
     var dueDay: Int?
     var createdAt = Date.now
+    /// Added in V5, with `deletedAt`: a deleted account stays as a tombstone so the deletion syncs.
+    var updatedAt = Date.now
+    var deletedAt: Date?
 
     init(id: UUID) {
         self.id = id

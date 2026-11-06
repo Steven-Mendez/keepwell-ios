@@ -7,7 +7,8 @@ public protocol AccountRepository: Sendable {
     func fetchAccounts() async throws(DomainError) -> [Account]
     /// Inserts or replaces the account with the same id.
     func save(_ account: Account) async throws(DomainError)
-    /// Throws `.notFound` instead of succeeding silently, so the UI can't show a stale row as deleted.
+    /// Soft-deletes: the record stays as a tombstone so the deletion syncs. Throws `.notFound`
+    /// instead of succeeding silently, so the UI can't show a stale row as deleted.
     func deleteAccount(id: UUID) async throws(DomainError)
 }
 
@@ -49,6 +50,14 @@ public protocol SettingsRepository: Sendable {
 /// "Eliminar todos mis datos": wipes this device and the iCloud copy (App Store guideline 5.1.1).
 public protocol DataEraser: Sendable {
     func eraseAll() async throws(DomainError)
+}
+
+/// The whole store at once, deleted records and their metadata included, for the backup file
+/// the iOS and web apps share.
+public protocol BackupStore: Sendable {
+    func exportContents() async throws(DomainError) -> BackupContents
+    /// Replaces everything with `contents` in a single save: a failure leaves the store as it was.
+    func replaceAll(with contents: BackupContents) async throws(DomainError)
 }
 
 /// The device-local "Respaldo en iCloud" switch. It decides which store opens at launch, so it

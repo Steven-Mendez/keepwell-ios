@@ -7,6 +7,7 @@ public struct StorePreferences: @unchecked Sendable {
     // `UserDefaults` is documented as thread-safe; it just isn't marked `Sendable`.
     private let defaults: UserDefaults
     private static let iCloudKey = "persistence.iCloudBackupEnabled"
+    private static let syncModeKey = "persistence.syncMode"
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -18,10 +19,19 @@ public struct StorePreferences: @unchecked Sendable {
         nonmutating set { defaults.set(newValue, forKey: Self.iCloudKey) }
     }
 
-    /// The store to open: the CloudKit-mirrored one when backup is on, on-device only otherwise.
-    /// Both use the same file, so turning backup back on uploads what was recorded meanwhile.
+    /// iCloud until the person moves to Keepwell's own sync. Read before the store opens, like
+    /// the iCloud switch, because it decides whether CloudKit mirroring starts at all.
+    public var syncMode: SyncMode {
+        get { defaults.string(forKey: Self.syncModeKey).flatMap(SyncMode.init(rawValue:)) ?? .localWithICloud }
+        nonmutating set { defaults.set(newValue.rawValue, forKey: Self.syncModeKey) }
+    }
+
+    /// The store to open: the CloudKit-mirrored one when iCloud sync is the mode and backup is on,
+    /// on-device only otherwise. Every case uses the same file, so switching never copies records:
+    /// with `customCloudSync` CloudKit simply stops mirroring and the custom engine starts from it.
     public func store(cloudKitContainer: String) -> PersistenceStore {
-        isICloudBackupEnabled && !cloudKitContainer.isEmpty ? .cloudKit(containerIdentifier: cloudKitContainer) : .local
+        guard syncMode == .localWithICloud, isICloudBackupEnabled, !cloudKitContainer.isEmpty else { return .local }
+        return .cloudKit(containerIdentifier: cloudKitContainer)
     }
 
     public func reset() {
