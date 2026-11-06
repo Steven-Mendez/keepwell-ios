@@ -21,16 +21,6 @@
         }
       }
     },
-    "What you've spent this month and what's planned." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lo que llevas gastado este mes y lo previsto."
-          }
-        }
-      }
-    },
     "Log quickly" : {
       "localizations" : {
         "es" : {
@@ -77,16 +67,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todo lo que tienes en tu moneda principal, con tus saldos más grandes."
-          }
-        }
-      }
-    },
-    "spent · 4 planned" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "gastado · 4 previstos"
           }
         }
       }
@@ -157,6 +137,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Widget de ejemplo."
+          }
+        }
+      }
+    },
+    "What you've spent this month and your drafts." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que llevas gastado este mes y tus borradores."
+          }
+        }
+      }
+    },
+    "spent · 4 drafts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gastado · 4 borradores"
           }
         }
       }

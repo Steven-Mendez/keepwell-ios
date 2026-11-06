@@ -11,6 +11,8 @@ public struct AccountsView: View {
     @State private var editing: OnboardingAccountDraft?
     private let formatter = CurrencyFormatter()
 
+    /// `onImportCSV` only adds movements to the accounts made here; backups are restored a step
+    /// before, from "Have you used Keepwell before?".
     public init(viewModel: OnboardingViewModel, onBack: @escaping () -> Void, onImportCSV: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onBack = onBack
@@ -39,7 +41,7 @@ public struct AccountsView: View {
                 Spacer(minLength: 0)
                 Button { viewModel.continueFromAccounts() } label: { Text("Continue", bundle: #bundle) }
                     .buttonStyle(.kw())
-                Button(action: onImportCSV) { Text("Import transactions from CSV", bundle: #bundle) }
+                Button(action: onImportCSV) { Text("Import movements only (.csv)", bundle: #bundle) }
                     .buttonStyle(KWButtonStyle(.plain, size: .text, height: 40))
             }
         }

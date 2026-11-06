@@ -83,6 +83,7 @@ struct OnboardingRoute: View {
     let container: AppContainer
     let viewModel: OnboardingViewModel
     let onImportCSV: () -> Void
+    let onRestoreFile: () -> Void
     let onFinish: (OnboardingFlowView.Exit) -> Void
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
 
@@ -90,6 +91,7 @@ struct OnboardingRoute: View {
         OnboardingFlowView(
             viewModel: viewModel,
             onImportCSV: onImportCSV,
+            onRestoreFile: onRestoreFile,
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onFinish: onFinish,
         )
@@ -111,18 +113,21 @@ struct SettingsRoute: View {
     let onBack: () -> Void
     let onErased: () -> Void
     let onOpenCategories: (TransactionKind) -> Void
+    let onOpenPaymentMethods: () -> Void
 
     init(
         container: AppContainer,
         onBack: @escaping () -> Void,
         onErased: @escaping () -> Void,
         onOpenCategories: @escaping (TransactionKind) -> Void,
+        onOpenPaymentMethods: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         self.container = container
         self.onBack = onBack
         self.onErased = onErased
         self.onOpenCategories = onOpenCategories
+        self.onOpenPaymentMethods = onOpenPaymentMethods
     }
 
     var body: some View {
@@ -132,6 +137,7 @@ struct SettingsRoute: View {
             onErased: onErased,
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onOpenCategories: onOpenCategories,
+            onOpenPaymentMethods: onOpenPaymentMethods,
         )
         .navigationBarBackButtonHidden()
         .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in
@@ -157,6 +163,23 @@ struct CategoriesRoute: View {
 
     var body: some View {
         CategoriesView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+struct PaymentMethodsRoute: View {
+    @State private var viewModel: PaymentMethodsViewModel
+    let onBack: () -> Void
+    let onOpenAccount: (Account) -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void, onOpenAccount: @escaping (Account) -> Void) {
+        _viewModel = State(initialValue: container.makePaymentMethodsViewModel())
+        self.onBack = onBack
+        self.onOpenAccount = onOpenAccount
+    }
+
+    var body: some View {
+        PaymentMethodsView(viewModel: viewModel, onBack: onBack, onOpenAccount: onOpenAccount)
             .navigationBarBackButtonHidden()
     }
 }

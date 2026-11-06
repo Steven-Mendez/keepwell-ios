@@ -23,6 +23,27 @@ public struct DefaultSetCardColorUseCase: SetCardColorUseCase {
     }
 }
 
+/// What's printed on a plastic besides its digits: the product name and the "valid thru". Transfer
+/// channels aren't plastics, so they are refused.
+public protocol SetCardDetailsUseCase: Sendable {
+    func execute(cardID: UUID, productName: String?, expiry: CardExpiry?) async throws(DomainError)
+}
+
+public struct DefaultSetCardDetailsUseCase: SetCardDetailsUseCase {
+    private let cards: any CardRepository
+
+    public init(cards: any CardRepository) {
+        self.cards = cards
+    }
+
+    public func execute(cardID: UUID, productName: String?, expiry: CardExpiry?) async throws(DomainError) {
+        guard let card = try await cards.fetchCards().first(where: { $0.id == cardID && $0.kind != .transfer }) else {
+            throw .notFound(cardID)
+        }
+        try await cards.save(card.with(productName: productName, expiry: expiry))
+    }
+}
+
 /// Renames an account: the nickname its cards show ("Savings", "Travel card").
 public protocol RenameAccountUseCase: Sendable {
     func execute(accountID: UUID, name: String) async throws(DomainError)
@@ -48,6 +69,15 @@ public struct DefaultRenameAccountUseCase: RenameAccountUseCase {
 extension Card {
     /// The same card with new art.
     public func with(color: CardColor) -> Self {
+        copy(color: color, productName: productName, expiry: expiry)
+    }
+
+    /// The same card with what's printed on it.
+    public func with(productName: String?, expiry: CardExpiry?) -> Self {
+        copy(color: color, productName: productName, expiry: expiry)
+    }
+
+    private func copy(color: CardColor?, productName: String?, expiry: CardExpiry?) -> Self {
         guard let copy = try? Self(
             id: id,
             accountID: accountID,
@@ -55,6 +85,8 @@ extension Card {
             network: network,
             lastFour: lastFour,
             color: color,
+            productName: productName,
+            expiry: expiry,
         ) else { return self }
         return copy
     }

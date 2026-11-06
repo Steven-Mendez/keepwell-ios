@@ -21,6 +21,17 @@ public struct CurrencySettings: Hashable, Sendable, Codable {
         return settings
     }()
 
+    /// The second currency as the principal, with the rate turned around ("1 USD = 36.6243 NIO"
+    /// becomes "1 NIO = 0.0273… USD"). Past transactions keep the rate they stored, which names both
+    /// currencies, so their conversions stay right. `nil` with a single currency.
+    public func swapped() -> Self? {
+        // Twelve decimals: swapping back lands on the original rate to well past what anyone types.
+        guard let second, let swapped = try? Self(principal: second, second: principal, rate: (1 / rate).rounded(scale: 12)) else {
+            return nil
+        }
+        return swapped
+    }
+
     /// The rate new transactions store.
     public var exchangeRate: ExchangeRate {
         guard let second, let rate = try? ExchangeRate(principal: principal, second: second, rate: rate) else {

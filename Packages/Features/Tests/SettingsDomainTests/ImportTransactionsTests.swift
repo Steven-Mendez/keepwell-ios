@@ -53,6 +53,19 @@ struct ImportTransactionsTests {
     }
 
     @Test
+    func rowsWithANonPositiveBankChargeAreSkipped() async throws {
+        let store = InMemoryStore(sample: sample)
+        let cash = try #require(sample.accounts.first { $0.id == SampleData.IDs.cash })
+        let csv = """
+        date,type,description,amount,currency,account,debited_principal
+        2026-10-01,expense,Lunch,250,NIO,\(cash.name),-6.83
+        2026-10-01,expense,Dinner,0,NIO,\(cash.name),
+        """
+        let summary = try await importer(store).execute(csv: csv)
+        #expect(summary == ImportSummary(imported: 0, skipped: 2))
+    }
+
+    @Test
     func unknownCategoriesLandInOther() async throws {
         let store = InMemoryStore(sample: sample)
         let cash = try #require(sample.accounts.first { $0.id == SampleData.IDs.cash })

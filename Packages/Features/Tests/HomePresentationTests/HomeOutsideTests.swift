@@ -10,8 +10,7 @@ import Testing
 struct HomeOutsideTests {
     private let now = SampleData.defaultReferenceDate
 
-    private func loadedViewModel() async -> HomeViewModel {
-        let store = InMemoryStore(sample: .standard)
+    private func loadedViewModel(_ store: InMemoryStore = InMemoryStore(sample: .standard)) async -> HomeViewModel {
         let viewModel = HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store, now: { [now] in now },
@@ -62,5 +61,55 @@ struct HomeOutsideTests {
         let days = viewModel.overview?.paymentReminderDaysBefore ?? 0
         let due = try #require(Calendar.current.date(byAdding: .day, value: days, to: payment.date))
         #expect(Calendar.current.component(.day, from: due) == 15)
+    }
+
+    @Test
+    func aCardWithACutoffDayGetsAReminderThatMorning() async throws {
+        // The sample's single-currency card closes on the 28th.
+        let reminder = try #require(await loadedViewModel().reminders(now: now).first { $0.kind == .cutoff(SampleData.IDs.visa) })
+        #expect(Calendar.current.component(.day, from: reminder.date) == 28)
+        #expect(Calendar.current.component(.hour, from: reminder.date) == HomeViewModel.reminderHour)
+        #expect(reminder.title.contains("Visa ··9012"))
+    }
+
+    @Test
+    func anExpiringCardIsRemindedOnTheFirstOfItsMonthWithItsServices() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let next = try #require(Calendar.current.date(byAdding: .month, value: 2, to: now))
+        let parts = Calendar.current.dateComponents([.year, .month], from: next)
+        let holder = try #require(await store.fetchCards().first { $0.id == SampleData.IDs.visaHolder })
+        try await store.save(holder.with(productName: "Premia", expiry: CardExpiry(month: parts.month ?? 1, year: parts.year ?? 2030)))
+        for (index, day) in [-40, -10].enumerated() {
+            try await store.save(Transaction(
+                date: #require(Calendar.current.date(byAdding: .day, value: day, to: now)),
+                description: index == 0 ? "Apple Music" : "apple music",
+                kind: .expense,
+                categoryID: "leisure",
+                amount: 6.49,
+                currency: "USD",
+                accountID: SampleData.IDs.visa,
+                cardID: SampleData.IDs.visaHolder,
+                exchangeRate: .single("USD"),
+            ))
+        }
+
+        let reminder = try #require(await loadedViewModel(store).reminders(now: now).first {
+            $0.kind == .cardExpiry(SampleData.IDs.visaHolder)
+        })
+        let day = Calendar.current.dateComponents([.month, .day, .hour], from: reminder.date)
+        #expect(day.month == parts.month)
+        #expect(day.day == 1)
+        #expect(day.hour == HomeViewModel.reminderHour)
+        #expect(reminder.title == "Premia ··9012 expires this month")
+        #expect(reminder.body.contains("apple music"))
+    }
+
+    @Test
+    func anAlreadyExpiredCardIsNotReminded() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let holder = try #require(await store.fetchCards().first { $0.id == SampleData.IDs.visaHolder })
+        try await store.save(holder.with(productName: nil, expiry: CardExpiry(month: 1, year: 2020)))
+        let reminders = await loadedViewModel(store).reminders(now: now)
+        #expect(!reminders.contains { $0.kind == .cardExpiry(SampleData.IDs.visaHolder) })
     }
 }

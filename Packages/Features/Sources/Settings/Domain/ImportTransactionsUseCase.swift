@@ -95,9 +95,10 @@ private struct RowReader {
     func transaction(from row: [String]) -> Transaction? {
         guard let date = value("date", in: row).flatMap(day),
               let amount = value("amount", in: row).flatMap({ Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) }),
-              amount > 0,
               let account = value("account", in: row).flatMap(account(named:))
         else { return nil }
+        let debited = value("debited_principal", in: row).flatMap { Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) }
+        guard (try? Transaction.checkAmounts(amount, actualDebitedPrincipal: debited)) != nil else { return nil }
         let kind = value("type", in: row).flatMap(TransactionKind.init(rawValue:)) ?? .expense
         let destination = value("destination_account", in: row).flatMap(account(named:))
         if kind == .transfer, destination == nil || destination?.id == account.id {
@@ -117,10 +118,7 @@ private struct RowReader {
             accountID: account.id,
             cardID: card?.id,
             destinationAccountID: kind == .transfer ? destination?.id : nil,
-            actualDebitedPrincipal: value("debited_principal", in: row).flatMap { Decimal(
-                string: $0,
-                locale: Locale(identifier: "en_US_POSIX"),
-            ) },
+            actualDebitedPrincipal: debited,
             exchangeRate: rate(value("rate", in: row)),
             isShared: value("shared", in: row)?.lowercased() == "yes",
             note: value("note", in: row),

@@ -18,11 +18,61 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV1.versionIdentifier == Schema.Version(1, 0, 0))
         #expect(KeepwellSchemaV2.versionIdentifier == Schema.Version(2, 0, 0))
         #expect(KeepwellSchemaV3.versionIdentifier == Schema.Version(3, 0, 0))
-        #expect(KeepwellMigrationPlan.schemas.count == 3)
-        #expect(KeepwellMigrationPlan.stages.count == 2)
+        #expect(KeepwellSchemaV4.versionIdentifier == Schema.Version(4, 0, 0))
+        #expect(KeepwellMigrationPlan.schemas.count == 4)
+        #expect(KeepwellMigrationPlan.stages.count == 3)
         #expect(KeepwellSchemaV1.models.count == 5)
         #expect(KeepwellSchemaV2.models.count == 5)
         #expect(KeepwellSchemaV3.models.count == 5)
+        #expect(KeepwellSchemaV4.models.count == 5)
+    }
+
+    /// A store written by V3 opens with V4: cards keep their digits and start with no product name
+    /// or expiry, which the person adds later.
+    @Test
+    func versionThreeStoreMigratesToVersionFour() async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Keepwell.store")
+        let cardID = UUID()
+
+        do {
+            let schema = Schema(versionedSchema: KeepwellSchemaV3.self)
+            let container = try ModelContainer(
+                for: schema,
+                configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+            )
+            let context = ModelContext(container)
+            context.insert(KeepwellSchemaV3.CardRecord(id: cardID, accountID: UUID(), kindRaw: "creditHolder", lastFour: "0633"))
+            try context.save()
+        }
+
+        let schema = Schema(versionedSchema: KeepwellSchemaV4.self)
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: KeepwellMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+        )
+        let cards = try await SwiftDataStore(modelContainer: container).fetchCards()
+        let card = try #require(cards.first { $0.id == cardID })
+        #expect(card.lastFour == "0633")
+        #expect(card.productName == nil)
+        #expect(card.expiry == nil)
+    }
+
+    /// Product name and expiry survive a save and a read.
+    @Test
+    func cardDetailsRoundTrip() async throws {
+        let store = try SwiftDataStore(modelContainer: ModelContainerFactory.make(store: .inMemory))
+        let card = try Card(
+            accountID: UUID(), kind: .creditHolder, network: .visa, lastFour: "0842",
+            productName: "Platinum Walmart", expiry: CardExpiry(month: 2, year: 2028),
+        )
+        try await store.save(card)
+        let saved = try #require(await store.fetchCards().first { $0.id == card.id })
+        #expect(saved.productName == "Platinum Walmart")
+        #expect(try saved.expiry == CardExpiry(month: 2, year: 2028))
     }
 
     /// A store written by V1 opens with V2 and keeps its categories, now without icon or color.

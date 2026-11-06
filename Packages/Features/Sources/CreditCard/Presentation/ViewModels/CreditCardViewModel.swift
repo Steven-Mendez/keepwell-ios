@@ -25,6 +25,7 @@ public final class CreditCardViewModel {
     private let getDetail: any GetCreditCardDetailUseCase
     private let updateTerms: any UpdateCreditTermsUseCase
     private let setCardColor: any SetCardColorUseCase
+    private let setCardDetails: any SetCardDetailsUseCase
     private let renameAccount: any RenameAccountUseCase
     private let getPreferredName: any GetPreferredNameUseCase
     let formatter = CurrencyFormatter()
@@ -34,6 +35,7 @@ public final class CreditCardViewModel {
         getDetail: any GetCreditCardDetailUseCase,
         updateTerms: any UpdateCreditTermsUseCase,
         setCardColor: any SetCardColorUseCase,
+        setCardDetails: any SetCardDetailsUseCase,
         renameAccount: any RenameAccountUseCase,
         getPreferredName: any GetPreferredNameUseCase,
     ) {
@@ -42,6 +44,7 @@ public final class CreditCardViewModel {
         self.getDetail = getDetail
         self.updateTerms = updateTerms
         self.setCardColor = setCardColor
+        self.setCardDetails = setCardDetails
         self.renameAccount = renameAccount
     }
 
@@ -88,6 +91,14 @@ public final class CreditCardViewModel {
         guard let holderID = detail?.holder?.id else { return false }
         return await perform { () async throws(DomainError) in
             try await setCardColor.execute(cardID: holderID, color: color)
+        }
+    }
+
+    /// Saves the plastic's product name and expiry. Returns whether the sheet can close.
+    public func setHolderDetails(productName: String?, expiry: CardExpiry?) async -> Bool {
+        guard let holderID = detail?.holder?.id else { return false }
+        return await perform { () async throws(DomainError) in
+            try await setCardDetails.execute(cardID: holderID, productName: productName, expiry: expiry)
         }
     }
 

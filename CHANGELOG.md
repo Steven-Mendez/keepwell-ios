@@ -9,6 +9,31 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- "Save as draft" on a movement's review: it's saved without counting toward balances until you
+  confirm it. What the app called "Planned" is now "Drafts" everywhere (home, Transactions,
+  reminders, widgets).
+- Onboarding: the welcome screen has only "Start", and the next screen asks "Have you used Keepwell
+  before?" with "Restore from iCloud", "Restore from a backup file (.json)" (accounts, cards and
+  movements at once, straight to home) and "Start from scratch". The accounts step's CSV button
+  reads "Import movements only (.csv)", since a CSV only adds movements to existing accounts.
+- Settings › Currency: "Make NIO the main currency" swaps the main and second currencies and
+  turns the rate around; net worth, summaries and new movements follow the new main currency, and
+  past movements keep the rate they were logged with.
+- Cards keep their product name ("Premia", "Platinum Walmart") and expiry month and year, from
+  "Product and expiry" on a credit or debit card's screen. A card with a product name is shown as
+  "Premia ··0633" (the credit card screen's title too); never the full number or CVV.
+- Reminder on the first day of the month a card expires, listing the services charged to it
+  again and again (the "Subscriptions" category, or the same charge in two months) so you can
+  update them in time.
+- Reminder on a credit card's cutoff morning: "statement closes today", since purchases from
+  tomorrow go to next month's statement.
+- Summary: the cash-flow chart shows your average spending per month as a dashed line, with
+  "Average $X / month" in the legend.
+- Settings › Payment methods lists each account with its card and bank transfer, with each
+  card's expiry (in red when it expires this month or already did); a card opens its screen.
+- Siri: "Log an expense from Cash in Keepwell" names the account in the phrase, credit cards can
+  pay ("Premia ··0633"), and the answer shows a small card with the category, amount and account.
+
 - Onboarding asks "What's your name?" right after the welcome (it can be skipped), and the
   name is the same one Settings › Security edits. Home then greets you by it ("Good morning,
   Steven"), the done screen says "All set, Steven", and your debit and credit cards print it
@@ -120,6 +145,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Accounts is one wallet: debit cards, credit cards and cash share a single Wallet-style stack,
+  with chips to show all or one kind. Scrolling folds the cards into a deck at the top, and any
+  card opens with a tap. "Reconcile" and "ATM withdrawal" are gone from Accounts; cash opens its
+  movements.
 - Keepwell tracks cards, it doesn't run them: additional cards (their screen, caps, allowed
   categories, cap reminders and setting), "Holder", "Plastics" and freezing a card are gone. Cards
   already saved as additional are skipped and older backups with them still restore; their
@@ -159,6 +188,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   every other page, matching "Spent in …" and the net worth. Color marks single movements.
 
 ### Fixed
+
+- Settings › Data: "Back up now" and "Restore" show with iCloud backup off too; they work with a
+  file, not with iCloud.
+- Settings: leaving the rate field without editing it no longer saves its rounded display over
+  the exact rate; rates below one show six decimals.
+- "Delete all my data" also deletes the iCloud copy itself, even with iCloud backup off; before,
+  a copy uploaded earlier could stay in iCloud. If iCloud can't be reached, the iPhone is still
+  emptied and trying again retries iCloud.
+- Movements with an amount of zero or less, or a negative "charged by the bank", are refused
+  wherever they come from (the app, ATM withdrawals and CSV imports skip those rows).
 
 - Accounts: the add button opens "What do you want to add?" again. The cards' decoration reached
   past the plastic, so a credit card in the stack caught taps meant for the button and for the

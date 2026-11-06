@@ -28,6 +28,10 @@ public final class CardRecord {
     /// From when cards could be frozen; kept because CloudKit can't remove attributes.
     var isFrozen = false
     var createdAt = Date.now
+    var productName: String?
+    /// Kept as two numbers rather than a date: the plastic only prints month and year.
+    var expiryMonth: Int?
+    var expiryYear: Int?
 
     init(id: UUID) {
         self.id = id
@@ -39,6 +43,9 @@ public final class CardRecord {
         networkRaw = card.network?.rawValue
         lastFour = card.lastFour
         colorRaw = card.color?.rawValue
+        productName = card.productName
+        expiryMonth = card.expiry?.month
+        expiryYear = card.expiry?.year
     }
 
     func toDomain() throws(DomainCorruption) -> Card {
@@ -51,6 +58,8 @@ public final class CardRecord {
                 network: networkRaw.flatMap(CardNetwork.init(rawValue:)),
                 lastFour: lastFour,
                 color: colorRaw.flatMap(CardColor.init(rawValue:)),
+                productName: productName,
+                expiry: expiryMonth.flatMap { month in expiryYear.flatMap { try? CardExpiry(month: month, year: $0) } },
             )
         } catch {
             throw DomainCorruption("Card: \(error)")

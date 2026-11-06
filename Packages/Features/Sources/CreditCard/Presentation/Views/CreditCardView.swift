@@ -16,6 +16,7 @@ public struct CreditCardView: View {
         case terms
         case name
         case color
+        case details
         var id: String { rawValue }
     }
 
@@ -36,7 +37,7 @@ public struct CreditCardView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 if let detail = viewModel.detail {
-                    KWNavigationHeader(String(localized: "Credit card", bundle: #bundle), buttonStyle: .translucent, onBack: onBack)
+                    KWNavigationHeader(title(detail), buttonStyle: .translucent, onBack: onBack)
                     CardHero(art: art(detail), name: detail.account.name)
                     debt(detail)
                     actions
@@ -83,6 +84,16 @@ public struct CreditCardView: View {
                             onClose: { self.sheet = nil },
                         )
                     }
+                case .details:
+                    if let holder = viewModel.detail?.holder {
+                        CardDetailsSheet(
+                            card: holder,
+                            errorMessage: viewModel.errorMessage,
+                            isSaving: viewModel.isSaving,
+                            onSave: viewModel.setHolderDetails,
+                            onClose: { self.sheet = nil },
+                        )
+                    }
                 case .color:
                     if let detail = viewModel.detail, let holder = detail.holder {
                         CardColorSheet(
@@ -97,6 +108,11 @@ public struct CreditCardView: View {
             .presentationDetents([.large])
             .presentationBackground(KWColor.Surface.bg)
         }
+    }
+
+    /// "Premia ··0633", or "Visa ··0633" until the card has a product name.
+    private func title(_ detail: CreditCardDetail) -> String {
+        detail.holder.map(CardDisplay.shortName(of:)) ?? String(localized: "Credit card", bundle: #bundle)
     }
 
     private func art(_ detail: CreditCardDetail) -> KWCardArt {
@@ -185,6 +201,13 @@ extension CreditCardView {
                         value: CardDisplay.palette(for: holder.color).displayName,
                     ) {
                         sheet = .color
+                    }
+                    CardManageRow(
+                        String(localized: "Product and expiry", bundle: #bundle),
+                        icon: .creditCard,
+                        value: CardDisplay.detailsSummary(of: holder),
+                    ) {
+                        sheet = .details
                     }
                 }
                 CardManageRow(String(localized: "Billing details", bundle: #bundle), icon: .creditCard) { sheet = .terms }

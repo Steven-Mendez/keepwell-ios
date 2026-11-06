@@ -13,9 +13,7 @@ final class OnboardingUITests: XCTestCase {
         app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
-        attachScreenshot("1-welcome")
-        app.buttons["Start"].tap()
+        startFromScratch(app)
 
         XCTAssertTrue(app.staticTexts["What's your name?"].waitForExistence(timeout: 5))
         let name = app.textFields["Your name"]
@@ -81,5 +79,15 @@ final class OnboardingUITests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    /// Welcome, then "Have you used Keepwell before?" answered with "Start from scratch".
+    private func startFromScratch(_ app: XCUIApplication) {
+        XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
+        attachScreenshot("1-welcome")
+        app.buttons["Start"].tap()
+        XCTAssertTrue(app.buttons["Start from scratch"].waitForExistence(timeout: 5))
+        attachScreenshot("1b-returning")
+        app.buttons["Start from scratch"].tap()
     }
 }

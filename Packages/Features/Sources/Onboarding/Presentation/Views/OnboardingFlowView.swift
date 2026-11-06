@@ -11,6 +11,7 @@ public struct OnboardingFlowView: View {
 
     @Bindable private var viewModel: OnboardingViewModel
     private let onImportCSV: () -> Void
+    private let onRestoreFile: () -> Void
     private let onSetUpPasscode: () -> Void
     private let onFinish: (Exit) -> Void
 
@@ -19,37 +20,45 @@ public struct OnboardingFlowView: View {
     public init(
         viewModel: OnboardingViewModel,
         onImportCSV: @escaping () -> Void,
+        onRestoreFile: @escaping () -> Void = {},
         onSetUpPasscode: @escaping () -> Void,
         onFinish: @escaping (Exit) -> Void,
     ) {
         self.viewModel = viewModel
         self.onImportCSV = onImportCSV
+        self.onRestoreFile = onRestoreFile
         self.onSetUpPasscode = onSetUpPasscode
         self.onFinish = onFinish
     }
 
     public var body: some View {
         NavigationStack(path: $viewModel.path) {
-            WelcomeView(restoreState: viewModel.restoreState) {
-                viewModel.start()
-            } onRestore: {
-                Task {
-                    if await viewModel.restore() != nil {
-                        onFinish(.home)
-                    }
+            WelcomeView(onStart: viewModel.begin)
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: OnboardingViewModel.Step.self) { step in
+                    destination(step)
+                        .toolbar(.hidden, for: .navigationBar)
                 }
-            }
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: OnboardingViewModel.Step.self) { step in
-                destination(step)
-                    .toolbar(.hidden, for: .navigationBar)
-            }
         }
     }
 
     @ViewBuilder
     private func destination(_ step: OnboardingViewModel.Step) -> some View {
         switch step {
+        case .returning:
+            ReturningView(
+                restoreState: viewModel.restoreState,
+                onBack: back,
+                onRestoreFromICloud: {
+                    Task {
+                        if await viewModel.restore() != nil {
+                            onFinish(.home)
+                        }
+                    }
+                },
+                onRestoreFromFile: onRestoreFile,
+                onStartFresh: viewModel.start,
+            )
         case .name:
             NameView(viewModel: viewModel, onBack: back)
         case .currencies:

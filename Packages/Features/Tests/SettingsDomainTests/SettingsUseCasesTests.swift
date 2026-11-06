@@ -21,6 +21,17 @@ struct SettingsUseCasesTests {
     }
 
     @Test
+    func swappingCurrenciesIsSaved() async throws {
+        let store = InMemoryStore(sample: sample)
+        let updated = try await DefaultUpdateSettingsUseCase(settings: store).execute { settings throws(DomainError) in
+            try settings.swapCurrencies()
+        }
+        #expect(updated.currencies.principal == sample.settings.currencies.second)
+        #expect(updated.currencies.second == sample.settings.currencies.principal)
+        #expect(await store.load() == updated)
+    }
+
+    @Test
     func aZeroRateIsRefusedAndNothingIsSaved() async throws {
         let store = InMemoryStore(sample: sample)
         await #expect(throws: DomainError.invalidExchangeRate) {
@@ -104,5 +115,40 @@ struct SettingsLockProfileTests {
         #expect(await lock.preferredName() == "Steven")
         await DefaultSetPreferredNameUseCase(profile: lock).execute("   ")
         #expect(await lock.preferredName() == nil)
+    }
+
+    @Test
+    func erasingAllDataClearsThisDeviceThenTheCloudCopy() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let cloud = CloudSpy()
+        try await DefaultEraseAllDataUseCase(eraser: store, cloud: cloud).execute()
+        #expect(await store.fetchTransactions(in: nil).isEmpty)
+        #expect(await store.fetchAccounts().isEmpty)
+        #expect(await cloud.erased)
+    }
+
+    @Test
+    func anUnreachableCloudStillLeavesThisDeviceEmpty() async throws {
+        let store = InMemoryStore(sample: .standard)
+        await #expect(throws: DomainError.persistence("offline")) {
+            try await DefaultEraseAllDataUseCase(eraser: store, cloud: CloudSpy(failure: .persistence("offline"))).execute()
+        }
+        #expect(await store.fetchAccounts().isEmpty)
+    }
+}
+
+private actor CloudSpy: CloudCopyEraser {
+    private let failure: DomainError?
+    private(set) var erased = false
+
+    init(failure: DomainError? = nil) {
+        self.failure = failure
+    }
+
+    func eraseCloudCopy() async throws(DomainError) {
+        if let failure {
+            throw failure
+        }
+        erased = true
     }
 }

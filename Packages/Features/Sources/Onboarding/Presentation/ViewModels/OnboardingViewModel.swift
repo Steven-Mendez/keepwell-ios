@@ -10,6 +10,8 @@ import OnboardingDomain
 @Observable
 public final class OnboardingViewModel {
     public enum Step: Hashable, Sendable {
+        /// "Have you used Keepwell before?": restore a backup or start from scratch.
+        case returning
         case name
         case currencies
         case accounts
@@ -195,8 +197,14 @@ public final class OnboardingViewModel {
 
     // MARK: Navigation
 
+    /// "Start" on the welcome: asks whether there's a backup to bring before setting anything up.
+    public func begin() {
+        path = [.returning]
+    }
+
+    /// "Start from scratch": the setup steps, with the question still one step back.
     public func start() {
-        path = [.name]
+        path = [.returning, .name]
     }
 
     /// The trimmed name, or `nil` while the field is blank.

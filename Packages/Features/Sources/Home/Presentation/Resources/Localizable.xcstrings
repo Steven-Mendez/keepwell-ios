@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ expires this month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ vence este mes"
+          }
+        }
+      }
+    },
     "%@ · %@ from %@. Has it been paid?" : {
       "localizations" : {
         "es" : {
@@ -57,6 +67,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%@: statement closes today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: hoy cierra el estado de cuenta"
           }
         }
       }
@@ -161,6 +181,26 @@
         }
       }
     },
+    "Draft for today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrador para hoy"
+          }
+        }
+      }
+    },
+    "Drafts · %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borradores · %lld"
+          }
+        }
+      }
+    },
     "Expense" : {
       "localizations" : {
         "es" : {
@@ -177,6 +217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gastos"
+          }
+        }
+      }
+    },
+    "From tomorrow, purchases go to next month's statement." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde mañana, las compras pasan al estado del próximo mes."
           }
         }
       }
@@ -361,26 +411,6 @@
         }
       }
     },
-    "Planned for today" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previsto para hoy"
-          }
-        }
-      }
-    },
-    "Planned · %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previstos · %lld"
-          }
-        }
-      }
-    },
     "Recent" : {
       "localizations" : {
         "es" : {
@@ -461,6 +491,26 @@
         }
       }
     },
+    "Update it in %@ before it stops working." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualízala en %@ antes de que deje de funcionar."
+          }
+        }
+      }
+    },
+    "Update it wherever it's saved before it stops working." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualízala donde la tengas guardada antes de que deje de funcionar."
+          }
+        }
+      }
+    },
     "We couldn't confirm it. Try again." : {
       "localizations" : {
         "es" : {
@@ -497,7 +547,7 @@
         }
       }
     },
-    "spent · %lld planned" : {
+    "spent · %lld drafts" : {
       "localizations" : {
         "en" : {
           "variations" : {
@@ -505,13 +555,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "spent · %lld planned"
+                  "value" : "spent · %lld draft"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "spent · %lld planned"
+                  "value" : "spent · %lld drafts"
                 }
               }
             }
@@ -523,13 +573,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "gastado · %lld previsto"
+                  "value" : "gastado · %lld borrador"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "gastado · %lld previstos"
+                  "value" : "gastado · %lld borradores"
                 }
               }
             }

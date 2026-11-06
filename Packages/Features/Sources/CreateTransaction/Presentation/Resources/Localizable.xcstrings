@@ -661,16 +661,6 @@
         }
       }
     },
-    "Planned" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previsto"
-          }
-        }
-      }
-    },
     "Purchase in %@ → debt in %@" : {
       "localizations" : {
         "es" : {
@@ -1363,6 +1353,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Directo desde %@"
+          }
+        }
+      }
+    },
+    "Draft" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrador"
+          }
+        }
+      }
+    },
+    "Save as draft" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar como borrador"
           }
         }
       }

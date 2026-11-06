@@ -141,6 +141,16 @@
         }
       }
     },
+    "Average %@ / month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Promedio %@ / mes"
+          }
+        }
+      }
+    },
     "By category" : {
       "localizations" : {
         "es" : {

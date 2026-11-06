@@ -89,7 +89,7 @@ struct OnboardingViewModelTests {
         viewModel.continueFromCurrencies()
         viewModel.continueFromAccounts()
         viewModel.continueFromProtect()
-        #expect(viewModel.path == [.name, .currencies, .accounts, .protect, .privacy])
+        #expect(viewModel.path == [.returning, .name, .currencies, .accounts, .protect, .privacy])
     }
 
     @Test
@@ -112,7 +112,7 @@ struct OnboardingViewModelTests {
         viewModel.start()
         viewModel.nameText = "Typo"
         viewModel.skipName()
-        #expect(viewModel.path == [.name, .currencies])
+        #expect(viewModel.path == [.returning, .name, .currencies])
         #expect(viewModel.preferredName == nil)
         #expect(viewModel.doneTitle == "All set")
         await viewModel.skipNotifications()

@@ -1,6 +1,36 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ · expired %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · venció %2$@"
+          }
+        }
+      }
+    },
+    "%@ · expires this month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · vence este mes"
+          }
+        }
+      }
+    },
+    "%@ · valid thru %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · vence %2$@"
+          }
+        }
+      }
+    },
     "%lld days" : {
       "localizations" : {
         "en" : {
@@ -121,6 +151,16 @@
         }
       }
     },
+    "Add a bank account or a card from Accounts to see it here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega una cuenta de banco o una tarjeta desde Cuentas para verla aquí."
+          }
+        }
+      }
+    },
     "App language" : {
       "localizations" : {
         "es" : {
@@ -161,6 +201,16 @@
         }
       }
     },
+    "Bank transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
     "Categories" : {
       "localizations" : {
         "es" : {
@@ -177,6 +227,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar código"
+          }
+        }
+      }
+    },
+    "Charged straight to the account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cobra directo de la cuenta"
+          }
+        }
+      }
+    },
+    "Credit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito"
           }
         }
       }
@@ -207,6 +277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datos"
+          }
+        }
+      }
+    },
+    "Debit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débito"
           }
         }
       }
@@ -451,6 +531,26 @@
         }
       }
     },
+    "Make %@ the main currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar %@ como moneda principal"
+          }
+        }
+      }
+    },
+    "Make %@ the main currency?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Usar %@ como moneda principal?"
+          }
+        }
+      }
+    },
     "Manual · default 1" : {
       "localizations" : {
         "es" : {
@@ -477,6 +577,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subir"
+          }
+        }
+      }
+    },
+    "Net worth, summaries and new movements will be in %@, and the rate is turned around. Past movements keep the rate they were logged with." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El patrimonio, los resúmenes y los movimientos nuevos estarán en %@, y la tasa se invierte. Los movimientos anteriores conservan la tasa con la que se anotaron."
           }
         }
       }
@@ -711,6 +821,16 @@
         }
       }
     },
+    "Swap currencies" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intercambiar monedas"
+          }
+        }
+      }
+    },
     "Syncs on its own while you have iCloud on this iPhone." : {
       "localizations" : {
         "es" : {
@@ -837,6 +957,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos cargar tus categorías."
+          }
+        }
+      }
+    },
+    "We couldn't load your payment methods." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus medios de pago."
           }
         }
       }

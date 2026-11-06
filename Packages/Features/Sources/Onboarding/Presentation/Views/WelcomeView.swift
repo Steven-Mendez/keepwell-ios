@@ -3,14 +3,10 @@ import SwiftUI
 
 /// Step 1 · Welcome.
 public struct WelcomeView: View {
-    private let restoreState: OnboardingViewModel.RestoreState
     private let onStart: () -> Void
-    private let onRestore: () -> Void
 
-    public init(restoreState: OnboardingViewModel.RestoreState, onStart: @escaping () -> Void, onRestore: @escaping () -> Void) {
-        self.restoreState = restoreState
+    public init(onStart: @escaping () -> Void) {
         self.onStart = onStart
-        self.onRestore = onRestore
     }
 
     public var body: some View {
@@ -26,7 +22,7 @@ public struct WelcomeView: View {
                     .padding(.top, 28)
                     .padding(.bottom, 12)
                     .accessibilityAddTraits(.isHeader)
-                Text("Log expenses, income and transfers. Cards with extras, cash and expected expenses.", bundle: #bundle)
+                Text("Log expenses, income and transfers. Cards, cash and drafts to confirm later.", bundle: #bundle)
                     .font(.kw(17, weight: 400))
                     .foregroundStyle(KWColor.Text.onBrand)
                     .lineSpacing(4)
@@ -40,31 +36,8 @@ public struct WelcomeView: View {
                 Spacer(minLength: KWSpacing.md)
                 Button(action: onStart) { Text("Start", bundle: #bundle) }
                     .buttonStyle(.kw())
-                restoreButton
-                if restoreState == .notFound {
-                    Text("We couldn't find a backup in your iCloud.", bundle: #bundle)
-                        .font(KWTextStyle.caption.font)
-                        .foregroundStyle(KWColor.Text.muted)
-                        .frame(maxWidth: .infinity)
-                }
             }
         }
-    }
-
-    private var restoreButton: some View {
-        Button(action: onRestore) {
-            HStack(spacing: KWSpacing.xs) {
-                KWIconView(.cloud, size: 18)
-                if restoreState == .searching {
-                    Text("Looking for your backup…", bundle: #bundle)
-                } else {
-                    Text("I've used it before: restore from iCloud", bundle: #bundle)
-                }
-            }
-        }
-        .buttonStyle(KWButtonStyle(.plain, size: .text, height: 48))
-        .disabled(restoreState == .searching)
-        .padding(.top, 10)
     }
 
     private func feature(_ icon: KWIcon, _ text: String) -> some View {
@@ -114,6 +87,6 @@ private struct CardsIllustration: View {
 }
 
 #Preview {
-    WelcomeView(restoreState: .idle, onStart: {}, onRestore: {})
+    WelcomeView(onStart: {})
         .onAppear { KWFonts.register() }
 }

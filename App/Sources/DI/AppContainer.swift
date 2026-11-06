@@ -94,8 +94,6 @@ final class AppContainer {
     func makeAccountsViewModel() -> AccountsViewModel {
         AccountsViewModel(
             getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
-            reconcileCash: DefaultReconcileCashUseCase(transactions: store, settings: store),
-            withdrawCash: DefaultWithdrawCashUseCase(transactions: store, cards: store, settings: store),
             getPreferredName: makeGetPreferredName(),
         )
     }
@@ -169,10 +167,8 @@ final class AppContainer {
                 categories: store,
                 transactions: store,
             ),
-            restoreBackup: DefaultRestoreBackupUseCase(
-                eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store,
-            ),
-            eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
+            restoreBackup: makeRestoreBackup(),
+            eraseAllData: DefaultEraseAllDataUseCase(eraser: store, cloud: makeCloudCopyEraser()),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
         )
@@ -190,6 +186,14 @@ final class AppContainer {
 
     func makePasscodeSetupViewModel() -> PasscodeSetupViewModel {
         PasscodeSetupViewModel(setPasscode: DefaultSetPasscodeUseCase(passcodes: passcodes))
+    }
+
+    func makeRestoreBackup() -> any RestoreBackupUseCase {
+        DefaultRestoreBackupUseCase(eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store)
+    }
+
+    func makePaymentMethodsViewModel() -> PaymentMethodsViewModel {
+        PaymentMethodsViewModel(getMethods: DefaultGetPaymentMethodsUseCase(accounts: store, cards: store))
     }
 
     func makeCategoriesViewModel(kind: TransactionKind) -> CategoriesViewModel {
@@ -240,6 +244,14 @@ final class AppContainer {
         DefaultImportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store, settings: store)
     }
 
+    /// Sample-data and UI-test runs keep an in-memory store, so erasing them must never reach the
+    /// real iCloud copy.
+    private func makeCloudCopyEraser() -> (any CloudCopyEraser)? {
+        let environment = AppEnvironment.current
+        guard !environment.isUITesting, !environment.usesSampleData else { return nil }
+        return CloudKitCopyEraser(containerIdentifier: environment.cloudKitContainer)
+    }
+
     // MARK: - Credit card
 
     func makeCreditCardViewModel(accountID: UUID) -> CreditCardViewModel {
@@ -254,6 +266,7 @@ final class AppContainer {
             ),
             updateTerms: DefaultUpdateCreditTermsUseCase(accounts: store),
             setCardColor: DefaultSetCardColorUseCase(cards: store),
+            setCardDetails: DefaultSetCardDetailsUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             getPreferredName: makeGetPreferredName(),
         )
@@ -268,6 +281,7 @@ final class AppContainer {
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
+            setDetails: DefaultSetCardDetailsUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
             getPreferredName: makeGetPreferredName(),

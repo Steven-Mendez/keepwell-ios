@@ -3,7 +3,7 @@ import Foundation
 public enum AccountKind: String, Codable, CaseIterable, Sendable {
     /// Bank account; debit cards and transfers are linked to it.
     case deposit
-    /// Cash. Filled by withdrawals and reconciled with "Reconcile cash".
+    /// Cash, filled by transfers from a bank account.
     case cash
     /// A credit card is its own account: its balance is what is owed (negative).
     case credit

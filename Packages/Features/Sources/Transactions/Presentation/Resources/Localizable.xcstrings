@@ -211,26 +211,6 @@
         }
       }
     },
-    "Planned" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previstos"
-          }
-        }
-      }
-    },
-    "Planned · they don't affect balances" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previstos · no afectan saldos"
-          }
-        }
-      }
-    },
     "Search" : {
       "localizations" : {
         "es" : {
@@ -307,6 +287,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elige qué cuenta mostrar"
+          }
+        }
+      }
+    },
+    "Drafts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borradores"
+          }
+        }
+      }
+    },
+    "Drafts · they don't affect balances" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borradores · no afectan saldos"
           }
         }
       }

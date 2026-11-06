@@ -116,6 +116,12 @@ extension Settings {
     public mutating func setRate(_ rate: Decimal) throws(DomainError) {
         currencies = try CurrencySettings(principal: currencies.principal, second: currencies.second, rate: rate)
     }
+
+    /// Makes the second currency the main one: net worth, summaries and new movements follow it.
+    public mutating func swapCurrencies() throws(DomainError) {
+        guard let swapped = currencies.swapped() else { throw .invalidExchangeRate }
+        currencies = swapped
+    }
 }
 
 /// The device's iCloud switch. It picks the store at launch, so it takes effect next time the
@@ -163,14 +169,25 @@ public protocol EraseAllDataUseCase: Sendable {
     func execute() async throws(DomainError)
 }
 
+/// Removes the iCloud copy itself. Deleting local records only reaches iCloud while sync is on and
+/// running, so with iCloud off (or before the deletions upload) the cloud copy would survive.
+public protocol CloudCopyEraser: Sendable {
+    func eraseCloudCopy() async throws(DomainError)
+}
+
 public struct DefaultEraseAllDataUseCase: EraseAllDataUseCase {
     private let eraser: any DataEraser
+    private let cloud: (any CloudCopyEraser)?
 
-    public init(eraser: any DataEraser) {
+    public init(eraser: any DataEraser, cloud: (any CloudCopyEraser)? = nil) {
         self.eraser = eraser
+        self.cloud = cloud
     }
 
+    /// This device first, so a failure to reach iCloud never leaves local data behind; running it
+    /// again then only retries the cloud.
     public func execute() async throws(DomainError) {
         try await eraser.eraseAll()
+        try await cloud?.eraseCloudCopy()
     }
 }

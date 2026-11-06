@@ -57,12 +57,33 @@ struct CashFlowSection: View {
     }
 
     private var legend: some View {
-        HStack(spacing: KWSpacing.md) {
-            legendItem(String(localized: "Came in", bundle: #bundle), color: KWColor.State.positive)
-            legendItem(String(localized: "Went out", bundle: #bundle), color: KWColor.State.negative)
+        // The average gets its own line: three items don't fit beside each other at larger text sizes.
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: KWSpacing.md) {
+                legendItem(String(localized: "Came in", bundle: #bundle), color: KWColor.State.positive)
+                legendItem(String(localized: "Went out", bundle: #bundle), color: KWColor.State.negative)
+            }
+            if let average = viewModel.averageSpending {
+                HStack(spacing: 6) {
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: 1))
+                        path.addLine(to: CGPoint(x: 14, y: 1))
+                    }
+                    .stroke(KWColor.Text.secondary, style: Self.averageStroke)
+                    .frame(width: 14, height: 2)
+                    Text(average.text)
+                        .font(KWTextStyle.captionSm.font)
+                        .foregroundStyle(KWColor.Text.secondary)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
         }
         .accessibilityHidden(true)
     }
+
+    private static let averageStroke = StrokeStyle(lineWidth: 1.5, dash: [4, 3])
 
     private func legendItem(_ title: String, color: Color) -> some View {
         HStack(spacing: 6) {
@@ -75,28 +96,16 @@ struct CashFlowSection: View {
 
     private var flowChart: some View {
         let months = viewModel.flowMonths
-        return Chart(months) { month in
-            let isSelected = month.id == viewModel.selectedIndex
-            BarMark(
-                x: .value(ChartAxis.month, month.key),
-                y: .value(ChartAxis.amount, month.income),
-                width: .ratio(0.8),
-            )
-            .position(by: .value(ChartAxis.direction, "in"))
-            .foregroundStyle(KWColor.State.positive.opacity(isSelected ? 1 : 0.35))
-            .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
-            .accessibilityLabel(month.incomeLabel)
-            .accessibilityValue(month.incomeText)
-            BarMark(
-                x: .value(ChartAxis.month, month.key),
-                y: .value(ChartAxis.amount, month.expense),
-                width: .ratio(0.8),
-            )
-            .position(by: .value(ChartAxis.direction, "out"))
-            .foregroundStyle(KWColor.State.negative.opacity(isSelected ? 1 : 0.35))
-            .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
-            .accessibilityLabel(month.expenseLabel)
-            .accessibilityValue(month.expenseText)
+        return Chart {
+            ForEach(months) { month in
+                flowBars(month)
+            }
+            if let average = viewModel.averageSpending {
+                RuleMark(y: .value(ChartAxis.amount, average.value))
+                    .foregroundStyle(KWColor.Text.secondary)
+                    .lineStyle(Self.averageStroke)
+                    .accessibilityLabel(average.text)
+            }
         }
         .chartXAxis {
             AxisMarks { value in
@@ -114,6 +123,31 @@ struct CashFlowSection: View {
         }
         .chartXSelection(value: $rawSelection)
         .frame(height: chartHeight)
+    }
+
+    @ChartContentBuilder
+    private func flowBars(_ month: SummaryViewModel.FlowMonth) -> some ChartContent {
+        let isSelected = month.id == viewModel.selectedIndex
+        BarMark(
+            x: .value(ChartAxis.month, month.key),
+            y: .value(ChartAxis.amount, month.income),
+            width: .ratio(0.8),
+        )
+        .position(by: .value(ChartAxis.direction, "in"))
+        .foregroundStyle(KWColor.State.positive.opacity(isSelected ? 1 : 0.35))
+        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
+        .accessibilityLabel(month.incomeLabel)
+        .accessibilityValue(month.incomeText)
+        BarMark(
+            x: .value(ChartAxis.month, month.key),
+            y: .value(ChartAxis.amount, month.expense),
+            width: .ratio(0.8),
+        )
+        .position(by: .value(ChartAxis.direction, "out"))
+        .foregroundStyle(KWColor.State.negative.opacity(isSelected ? 1 : 0.35))
+        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
+        .accessibilityLabel(month.expenseLabel)
+        .accessibilityValue(month.expenseText)
     }
 
     private var netChart: some View {

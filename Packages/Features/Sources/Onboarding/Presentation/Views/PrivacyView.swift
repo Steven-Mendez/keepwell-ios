@@ -69,7 +69,7 @@ public struct PrivacyView: View {
         VStack(alignment: .leading, spacing: KWSpacing.sm) {
             Text("Useful notifications, no spam", bundle: #bundle).font(.kw(15, weight: 700))
             VStack(alignment: .leading, spacing: 10) {
-                bullet(KWColor.State.pending, String(localized: "Expected expenses due today", bundle: #bundle))
+                bullet(KWColor.State.pending, String(localized: "Drafts due today", bundle: #bundle))
                 bullet(KWColor.Brand.accent, String(localized: "Statement and payment dates for your cards", bundle: #bundle))
             }
             .font(KWTextStyle.label.font.weight(.regular))

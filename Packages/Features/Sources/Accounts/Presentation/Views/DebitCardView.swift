@@ -17,6 +17,7 @@ public struct DebitCardView: View {
     enum Sheet: String, Identifiable {
         case name
         case color
+        case details
         var id: String { rawValue }
     }
 
@@ -84,6 +85,14 @@ public struct DebitCardView: View {
                                 )
                             },
                             onSave: viewModel.setColor,
+                            onClose: { self.sheet = nil },
+                        )
+                    case .details:
+                        CardDetailsSheet(
+                            card: detail.card,
+                            errorMessage: viewModel.errorMessage,
+                            isSaving: viewModel.isSaving,
+                            onSave: viewModel.setDetails,
                             onClose: { self.sheet = nil },
                         )
                     }
@@ -165,6 +174,13 @@ public struct DebitCardView: View {
                     value: CardDisplay.palette(for: detail.card.color).displayName,
                 ) {
                     sheet = .color
+                }
+                CardManageRow(
+                    String(localized: "Product and expiry", bundle: #bundle),
+                    icon: .creditCard,
+                    value: CardDisplay.detailsSummary(of: detail.card),
+                ) {
+                    sheet = .details
                 }
             }
         }

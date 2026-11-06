@@ -17,9 +17,14 @@ extension RootView {
                 onBack: settingsClosed,
                 onErased: returnToOnboarding,
                 onOpenCategories: { navigator.push(.categories(showsIncome: $0 == .income)) },
+                onOpenPaymentMethods: { navigator.push(.paymentMethods) },
             )
         case let .categories(showsIncome):
             CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: navigator.pop)
+        case .paymentMethods:
+            PaymentMethodsRoute(container: container, onBack: navigator.pop) { account in
+                navigator.push(account.kind == .credit ? .creditCard(accountID: account.id) : .bankAccount(accountID: account.id))
+            }
         case let .creditCard(accountID):
             CreditCardRoute(
                 container: container,

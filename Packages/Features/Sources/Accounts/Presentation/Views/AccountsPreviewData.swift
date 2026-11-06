@@ -10,8 +10,6 @@ enum AccountsPreviewData {
         let store = InMemoryStore(sample: .standard)
         return AccountsViewModel(
             getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
-            reconcileCash: DefaultReconcileCashUseCase(transactions: store, settings: store),
-            withdrawCash: DefaultWithdrawCashUseCase(transactions: store, cards: store, settings: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),
         )
     }
@@ -24,6 +22,7 @@ enum AccountsPreviewData {
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
+            setDetails: DefaultSetCardDetailsUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),

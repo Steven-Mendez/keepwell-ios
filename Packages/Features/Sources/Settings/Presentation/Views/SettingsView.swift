@@ -12,7 +12,9 @@ public struct SettingsView: View {
     private let onErased: () -> Void
     private let onSetUpPasscode: () -> Void
     private let onOpenCategories: (TransactionKind) -> Void
+    private let onOpenPaymentMethods: () -> Void
     @State private var isConfirmingErase = false
+    @State private var isConfirmingSwap = false
     @FocusState private var isEditingRate: Bool
     @Environment(\.openURL) private var openURL
 
@@ -23,12 +25,14 @@ public struct SettingsView: View {
         onErased: @escaping () -> Void,
         onSetUpPasscode: @escaping () -> Void = {},
         onOpenCategories: @escaping (TransactionKind) -> Void = { _ in },
+        onOpenPaymentMethods: @escaping () -> Void = {},
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onErased = onErased
         self.onSetUpPasscode = onSetUpPasscode
         self.onOpenCategories = onOpenCategories
+        self.onOpenPaymentMethods = onOpenPaymentMethods
     }
 
     public var body: some View {
@@ -101,6 +105,30 @@ public struct SettingsView: View {
                 currencyRow(String(localized: "Main currency", bundle: #bundle), code: settings.currencies.principal)
                 if let second = settings.currencies.second {
                     currencyRow(String(localized: "Second currency", bundle: #bundle), code: second)
+                    Button { isConfirmingSwap = true } label: {
+                        KWValueRow(
+                            String(localized: "Make \(second) the main currency", bundle: #bundle),
+                            value: "⇅",
+                            style: .navigation,
+                            verticalPadding: 14,
+                        )
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .confirmationDialog(
+                        String(localized: "Make \(second) the main currency?", bundle: #bundle),
+                        isPresented: $isConfirmingSwap,
+                        titleVisibility: .visible,
+                    ) {
+                        Button { Task { await viewModel.swapCurrencies() } } label: {
+                            Text("Swap currencies", bundle: #bundle)
+                        }
+                    } message: {
+                        Text(
+                            "Net worth, summaries and new movements will be in \(second), and the rate is turned around. Past movements keep the rate they were logged with.",
+                            bundle: #bundle,
+                        )
+                    }
                     rateRow(settings.currencies)
                     Text(viewModel.rateFootnote)
                         .font(KWTextStyle.captionSm.font.weight(.regular))
@@ -202,12 +230,16 @@ public struct SettingsView: View {
                     kind: .expense,
                 )
                 categoriesRow(String(localized: "Income categories", bundle: #bundle), count: overview.incomeCategoryCount, kind: .income)
-                KWValueRow(
-                    String(localized: "Payment methods", bundle: #bundle),
-                    value: "\(overview.paymentMethodCount)",
-                    style: .navigation,
-                    verticalPadding: 14,
-                )
+                Button(action: onOpenPaymentMethods) {
+                    KWValueRow(
+                        String(localized: "Payment methods", bundle: #bundle),
+                        value: "\(overview.paymentMethodCount) ›",
+                        style: .navigation,
+                        verticalPadding: 14,
+                    )
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
     }

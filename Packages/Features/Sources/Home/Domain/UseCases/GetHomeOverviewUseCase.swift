@@ -87,10 +87,18 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             cardDebt: accounts.contains { $0.kind == .credit } ? Money(cardDebt, currencies.principal) : nil,
             frequentExpenseCategoryIDs: frequentExpenseCategories(records),
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
+            cardSubscriptions: cardSubscriptions(records, calendar: calendar),
             accounts: accounts,
             cards: cards,
             categories: records.categories,
         )
+    }
+
+    /// Only plastics with an expiry: the reminder is the one place that lists them.
+    private static func cardSubscriptions(_ records: LedgerRecords, calendar: Calendar) -> [UUID: [String]] {
+        records.cards.filter { $0.expiry != nil }.reduce(into: [:]) { result, card in
+            result[card.id] = Subscriptions.charged(toCard: card.id, transactions: records.transactions, calendar: calendar)
+        }
     }
 
     /// Expense categories by how often they're used, most first; ties keep the default order.

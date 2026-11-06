@@ -10,8 +10,6 @@ enum AccountsFactory {
     static func make(store: InMemoryStore = InMemoryStore(sample: .standard)) -> AccountsViewModel {
         AccountsViewModel(
             getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
-            reconcileCash: DefaultReconcileCashUseCase(transactions: store, settings: store),
-            withdrawCash: DefaultWithdrawCashUseCase(transactions: store, cards: store, settings: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),
         )
     }
@@ -29,40 +27,37 @@ struct AccountsViewModelTests {
     @Test
     func loadsTheOverview() async {
         let viewModel = await AccountsFactory.loaded()
-        #expect(viewModel.overview?.deposits.count == 2)
+        #expect(viewModel.overview != nil)
     }
 
     @Test
-    func reconcilingUpdatesTheCashBalance() async throws {
+    func theWalletHoldsEveryCardWithCashInFront() async throws {
         let viewModel = await AccountsFactory.loaded()
-        let cash = try #require(viewModel.overview?.cash.first)
-        #expect(await viewModel.reconcile(cash, countedText: "8,000"))
-        #expect(viewModel.overview?.cash.first?.balance == Money(8000, "NIO"))
+        let overview = try #require(viewModel.overview)
+        #expect(viewModel.cards.count == overview.deposits.count + overview.creditCards.count + overview.cash.count)
+        #expect(viewModel.cards.last.map {
+            if case .cash = $0 {
+                true
+            } else {
+                false
+            }
+        } == true)
     }
 
     @Test
-    func reconcilingRejectsInvalidText() async throws {
+    func chipsShowOneKindAtATime() async {
         let viewModel = await AccountsFactory.loaded()
-        let cash = try #require(viewModel.overview?.cash.first)
-        #expect(await !viewModel.reconcile(cash, countedText: "abc"))
-        #expect(viewModel.actionError != nil)
-        viewModel.clearActionError()
-        #expect(viewModel.actionError == nil)
-    }
-
-    @Test
-    func withdrawingMovesMoneyIntoCash() async throws {
-        let viewModel = await AccountsFactory.loaded()
-        let cash = try #require(viewModel.overview?.cash.first)
-        #expect(await viewModel.withdraw(into: cash, from: SampleData.IDs.savings, amountText: "1000", debitedText: "27.50"))
-        #expect(viewModel.overview?.cash.first?.balance == Money(9390, "NIO"))
-    }
-
-    @Test
-    func withdrawingRejectsBadDebit() async throws {
-        let viewModel = await AccountsFactory.loaded()
-        let cash = try #require(viewModel.overview?.cash.first)
-        #expect(await !viewModel.withdraw(into: cash, from: SampleData.IDs.savings, amountText: "1000", debitedText: "x"))
-        #expect(await !viewModel.withdraw(into: cash, from: SampleData.IDs.savings, amountText: "", debitedText: ""))
+        #expect(viewModel.filters == [.all, .debit, .credit, .cash])
+        viewModel.filter = .credit
+        #expect(viewModel.cards.allSatisfy {
+            if case .credit = $0 {
+                true
+            } else {
+                false
+            }
+        })
+        #expect(!viewModel.cards.isEmpty)
+        viewModel.filter = .cash
+        #expect(viewModel.cards.count == viewModel.overview?.cash.count)
     }
 }

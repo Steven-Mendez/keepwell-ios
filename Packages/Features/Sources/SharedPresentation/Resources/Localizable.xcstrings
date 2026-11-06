@@ -736,6 +736,76 @@
           }
         }
       }
+    },
+    "Product and expiry" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Producto y vencimiento"
+          }
+        }
+      }
+    },
+    "Product name (e.g. Platinum)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del producto (ej. Platinum)"
+          }
+        }
+      }
+    },
+    "Expiry month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes de vencimiento"
+          }
+        }
+      }
+    },
+    "Expiry year" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Año de vencimiento"
+          }
+        }
+      }
+    },
+    "As printed on the card. We remind you a month before it expires, with what's charged to it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Como viene impreso en la tarjeta. Te avisamos un mes antes de que venza, con lo que tiene cargado."
+          }
+        }
+      }
+    },
+    "Choose both the month and the year." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige el mes y el año."
+          }
+        }
+      }
+    },
+    "Not set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin definir"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

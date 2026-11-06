@@ -97,7 +97,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     }
 
     static func validated(_ draft: TransactionDraft, context: TransactionContext) throws(DomainError) -> Transaction {
-        guard draft.amount > 0, (draft.actualDebitedPrincipal ?? 1) > 0 else { throw .invalidAmount }
+        try Transaction.checkAmounts(draft.amount, actualDebitedPrincipal: draft.actualDebitedPrincipal)
         let currencies = context.currencies
         guard draft.currency == currencies.principal || draft.currency == currencies.second else {
             throw .invalidCurrency(draft.currency)
@@ -125,7 +125,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
         return Transaction(
             id: draft.id,
             date: draft.date,
-            status: .confirmed,
+            status: draft.isDraft ? .planned : .confirmed,
             // Safety net only: the view model fills a localized description before saving.
             description: description.isEmpty ? (category?.name ?? "Transfer") : description,
             kind: draft.kind,

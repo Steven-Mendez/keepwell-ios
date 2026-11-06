@@ -128,6 +128,6 @@ public final class HomeViewModel {
 
     func plannedTitle(_ overview: HomeOverview) -> String {
         let count = overview.plannedSummary.count
-        return String(localized: "Planned · \(count)", bundle: #bundle)
+        return String(localized: "Drafts · \(count)", bundle: #bundle)
     }
 }
