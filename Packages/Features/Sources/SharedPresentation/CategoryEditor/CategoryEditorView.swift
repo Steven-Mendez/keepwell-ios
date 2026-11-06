@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import Domain
 import SwiftUI
@@ -11,6 +12,7 @@ public struct CategoryEditorView: View {
     private let onClose: () -> Void
     @State private var isConfirmingDelete = false
     @FocusState private var isNameFocused: Bool
+    @FocusState private var isBudgetFocused: Bool
 
     public init(
         viewModel: CategoryEditorViewModel,
@@ -55,6 +57,11 @@ public struct CategoryEditorView: View {
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
         .onAppear { isNameFocused = viewModel.isCreating && viewModel.name.isEmpty }
+        .onChange(of: isBudgetFocused) { _, isFocused in
+            if !isFocused {
+                viewModel.formatBudget()
+            }
+        }
         .confirmationDialog(
             String(localized: "Delete this category?", bundle: #bundle),
             isPresented: $isConfirmingDelete,
@@ -82,6 +89,9 @@ public struct CategoryEditorView: View {
                 Text(error)
                     .font(KWTextStyle.caption.font)
                     .foregroundStyle(KWColor.State.negative)
+            }
+            if viewModel.showsBudget {
+                budget
             }
             KWSectionHeader(String(localized: "Color", bundle: #bundle))
             colors
@@ -138,6 +148,24 @@ public struct CategoryEditorView: View {
         .padding(.horizontal, 14)
         .frame(height: 48)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.card))
+    }
+
+    private var budget: some View {
+        VStack(alignment: .leading, spacing: KWSpacing.xs) {
+            KWGroupedCard {
+                KWAmountFieldRow(
+                    String(localized: "Monthly budget", bundle: #bundle),
+                    symbol: viewModel.principalCurrency.map(CurrencyFormatter.symbol(for:)),
+                    placeholder: String(localized: "No limit", bundle: #bundle),
+                    text: $viewModel.budgetText,
+                )
+                .focused($isBudgetFocused)
+            }
+            Text(viewModel.budgetFooter)
+                .font(KWTextStyle.caption.font)
+                .foregroundStyle(KWColor.Text.muted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private var colors: some View {

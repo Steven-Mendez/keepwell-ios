@@ -98,4 +98,66 @@ struct CategoryEditorViewModelTests {
         #expect(viewModel.fallbackName == "Misc")
         #expect(await viewModel.delete() == false)
     }
+
+    @Test
+    func anExpenseBudgetIsSavedInThePrincipalCurrencyAndEmptyMeansNone() async throws {
+        let store = InMemoryStore()
+        let viewModel = CategoryEditorViewModel(
+            kind: .expense, name: "Boat", principalCurrency: "NIO", save: DefaultSaveCategoryUseCase(categories: store),
+        )
+        #expect(viewModel.showsBudget)
+        #expect(viewModel.budgetText.isEmpty)
+        #expect(viewModel.budgetFooter == "Summary shows how much is left, and Home warns you at 80% and 100%.")
+        viewModel.budgetText = "1,250.50"
+        let saved = try #require(await viewModel.save())
+        #expect(saved.monthlyBudget == Money(Decimal(string: "1250.5") ?? 0, "NIO"))
+
+        let editor = CategoryEditorViewModel(
+            editing: saved, principalCurrency: "NIO",
+            save: DefaultSaveCategoryUseCase(categories: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+        )
+        #expect(editor.budgetText == "1,250.50")
+        editor.budgetText = ""
+        #expect(try #require(await editor.save()).monthlyBudget == nil)
+    }
+
+    @Test
+    func aZeroOrUnreadableBudgetCantBeSaved() {
+        let viewModel = CategoryEditorViewModel(
+            kind: .expense, name: "Boat", principalCurrency: "USD", save: DefaultSaveCategoryUseCase(categories: InMemoryStore()),
+        )
+        viewModel.budgetText = "0"
+        #expect(!viewModel.canSave)
+        viewModel.budgetText = "12abc"
+        #expect(!viewModel.canSave)
+        viewModel.budgetText = "12"
+        #expect(viewModel.canSave)
+    }
+
+    @Test
+    func incomeCategoriesHaveNoBudget() {
+        let viewModel = CategoryEditorViewModel(
+            kind: .income, name: "Tips", principalCurrency: "USD", save: DefaultSaveCategoryUseCase(categories: InMemoryStore()),
+        )
+        #expect(!viewModel.showsBudget)
+    }
+
+    /// A budget set before the person changed their principal isn't shown as today's, and is
+    /// kept as it was unless they type a new one.
+    @Test
+    func aBudgetInAnEarlierPrincipalIsKeptUntilReplaced() async throws {
+        let old = Money(500, "USD")
+        let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense, monthlyBudget: old)
+        let store = InMemoryStore(categories: TransactionCategory.defaults + [boat])
+        let viewModel = CategoryEditorViewModel(
+            editing: boat, principalCurrency: "NIO",
+            save: DefaultSaveCategoryUseCase(categories: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+        )
+        #expect(viewModel.budgetText.isEmpty)
+        #expect(try #require(await viewModel.save()).monthlyBudget == old)
+        viewModel.budgetText = "18000"
+        #expect(try #require(await viewModel.save()).monthlyBudget == Money(18000, "NIO"))
+    }
 }

@@ -19,6 +19,8 @@ public struct SummaryReport: Hashable, Sendable {
     public let incomeBreakdowns: [CategoryBreakdown]
     /// Same order as `months`, each against the month before it.
     public let paces: [SpendingPace]
+    /// Same order as `months`: how each budgeted category did that month, closest to its limit first.
+    public let budgets: [[CategoryBudgetStatus]]
 
     public init(
         currency: String,
@@ -37,6 +39,8 @@ public struct SummaryReport: Hashable, Sendable {
         cashFlow = CashFlowTrend(months: months)
         expenseBreakdowns = months.map { CategoryBreakdown(totals: $0.categories) }
         incomeBreakdowns = months.map { CategoryBreakdown(totals: $0.incomeCategories) }
+        // Today's budgets measure past months too: the app keeps no history of budget changes.
+        budgets = months.map { CategoryBudgetStatus.statuses(of: $0, categories: categories) }
     }
 }
 

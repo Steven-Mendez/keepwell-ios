@@ -112,4 +112,55 @@ struct HomeOutsideTests {
         let reminders = await loadedViewModel(store).reminders(now: now)
         #expect(!reminders.contains { $0.kind == .cardExpiry(SampleData.IDs.visaHolder) })
     }
+
+    private func budgeting(_ store: InMemoryStore, _ id: String, _ amount: Decimal) async throws {
+        let category = try #require(await store.fetchCategories().first { $0.id == id })
+        await store.save(TransactionCategory(
+            id: category.id, name: category.name, kind: category.kind, icon: category.icon, color: category.color,
+            isRenamed: category.isRenamed, monthlyBudget: Money(amount, "USD"),
+        ))
+    }
+
+    @Test
+    func budgetsNearOrOverTheirLineAreAlertedOnceEachThisMonth() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let month = try #require(await loadedViewModel(store).overview?.month)
+        let spent = try #require(month.categories.first)
+        let quiet = try #require(TransactionCategory.defaultExpense.first { id in
+            !month.categories.contains { $0.categoryID == id.id }
+        })
+        try await budgeting(store, spent.categoryID, spent.amount)
+        try await budgeting(store, quiet.id, 100)
+
+        let viewModel = await loadedViewModel(store)
+        let alerts = viewModel.budgetAlerts
+        #expect(alerts.map(\.categoryID) == [spent.categoryID])
+        #expect(alerts.first?.level == .exceeded)
+        #expect(alerts.first?.title.hasSuffix("went over its budget") == true)
+        #expect(alerts.first?.body.hasSuffix("this month.") == true)
+
+        let reminders = viewModel.reminders(now: now).filter { $0.kind == .budget(spent.categoryID) }
+        #expect(reminders.count == 1)
+        #expect(reminders.first?.id.hasSuffix("-100") == true)
+        #expect(reminders.allSatisfy { $0.date > now })
+
+        try await budgeting(store, spent.categoryID, spent.amount / #require(Decimal(string: "0.85")))
+        let near = await loadedViewModel(store)
+        #expect(near.budgetAlerts.first?.level == .nearLimit)
+        #expect(near.budgetAlerts.first?.title.hasSuffix("is close to its budget") == true)
+        #expect(near.reminders(now: now).first { $0.kind == .budget(spent.categoryID) }?.id.hasSuffix("-80") == true)
+    }
+
+    @Test
+    func noBudgetsMeansNoAlerts() async {
+        let viewModel = await loadedViewModel()
+        #expect(viewModel.budgetAlerts.isEmpty)
+        #expect(!viewModel.reminders(now: now).contains {
+            if case .budget = $0.kind {
+                true
+            } else {
+                false
+            }
+        })
+    }
 }

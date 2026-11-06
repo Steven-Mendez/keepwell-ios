@@ -73,6 +73,12 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         let netWorth = try NetWorth.total(of: allBalances, settings: currencies)
         let planned = transactions.filter { !$0.isConfirmed }.sorted { $0.date < $1.date }
         let recent = transactions.filter(\.isConfirmed).sorted { $0.date > $1.date }.prefix(recentCount)
+        let month = MonthlySummary(
+            month: YearMonth(containing: now, calendar: calendar),
+            transactions: transactions,
+            currency: currencies.principal,
+            calendar: calendar,
+        )
 
         return HomeOverview(
             settings: currencies,
@@ -80,12 +86,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             netWorthInSecond: NetWorth.inSecondCurrency(netWorth, settings: currencies),
             accountCount: accounts.count { $0.kind != .credit },
             cardCount: cards.count { $0.kind != .transfer },
-            month: MonthlySummary(
-                month: YearMonth(containing: now, calendar: calendar),
-                transactions: transactions,
-                currency: currencies.principal,
-                calendar: calendar,
-            ),
+            month: month,
             hasTransactions: !transactions.isEmpty,
             recent: Array(recent),
             planned: planned,
@@ -96,6 +97,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
             cardSubscriptions: cardSubscriptions(records, rules: rules, calendar: calendar),
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
+            budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             accounts: accounts,
             cards: cards,
             categories: records.categories,
