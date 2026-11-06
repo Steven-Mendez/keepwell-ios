@@ -12,13 +12,21 @@ public struct TransactionsView: View {
     @Bindable private var viewModel: TransactionsViewModel
     private let onNewMovement: () -> Void
     private let onBack: (() -> Void)?
+    private let onOpenRecurringRule: ((UUID) -> Void)?
     @FocusState private var isSearchFocused: Bool
     @State private var pendingDeletion: Domain.Transaction?
     @State private var isPickingScope = false
 
-    public init(viewModel: TransactionsViewModel, onBack: (() -> Void)? = nil, onNewMovement: @escaping () -> Void) {
+    /// `onOpenRecurringRule` opens the rule that recorded a movement, from its menu.
+    public init(
+        viewModel: TransactionsViewModel,
+        onBack: (() -> Void)? = nil,
+        onOpenRecurringRule: ((UUID) -> Void)? = nil,
+        onNewMovement: @escaping () -> Void,
+    ) {
         self.viewModel = viewModel
         self.onBack = onBack
+        self.onOpenRecurringRule = onOpenRecurringRule
         self.onNewMovement = onNewMovement
     }
 
@@ -239,6 +247,11 @@ public struct TransactionsView: View {
         )
         .contentShape(Rectangle())
         .contextMenu {
+            if let rule = viewModel.list?.recurringRule(of: transaction), let onOpenRecurringRule {
+                Button { onOpenRecurringRule(rule.id) } label: {
+                    Label { Text(RecurringDisplay.badge(of: rule)) } icon: { Image(systemName: "repeat") }
+                }
+            }
             if !transaction.isConfirmed {
                 Button {
                     Task { await viewModel.confirm(transaction.id) }
