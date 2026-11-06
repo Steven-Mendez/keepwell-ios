@@ -1,6 +1,7 @@
 import AccountsPresentation
 import Core
 import Domain
+import Foundation
 import SettingsPresentation
 import SwiftUI
 import TransactionsPresentation
@@ -37,13 +38,9 @@ extension RootView {
                 onSeeAllMovements: { navigator.push(.transactions(accountID: $0)) },
             )
         case let .transactions(accountID):
-            TransactionsRoute(
-                container: container,
-                scope: accountID.map(TransactionScope.account) ?? .all,
-                onBack: navigator.pop,
-                onOpenRecurringRule: { navigator.push(.recurringRule(id: $0)) },
-                onNewMovement: { presentMovementMenu() },
-            )
+            transactionsRoute(accountID: accountID)
+        case let .transaction(id):
+            transactionDetailRoute(id: id)
         case .recurring:
             RecurringRoute(
                 container: container,
@@ -58,6 +55,27 @@ extension RootView {
         case .debts:
             DebtsRoute(container: container, onBack: navigator.pop)
         }
+    }
+
+    private func transactionsRoute(accountID: UUID?) -> some View {
+        TransactionsRoute(
+            container: container,
+            scope: accountID.map(TransactionScope.account) ?? .all,
+            onBack: navigator.pop,
+            onOpenTransaction: { navigator.push(.transaction(id: $0)) },
+            onOpenRecurringRule: { navigator.push(.recurringRule(id: $0)) },
+            onNewMovement: { presentMovementMenu() },
+        )
+    }
+
+    private func transactionDetailRoute(id: UUID) -> some View {
+        TransactionDetailRoute(
+            container: container,
+            id: id,
+            onBack: navigator.pop,
+            onOpenRecurringRule: { navigator.push(.recurringRule(id: $0)) },
+            onShowTag: showTag,
+        )
     }
 
     private var settingsRoute: some View {
