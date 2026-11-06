@@ -1,3 +1,4 @@
+import Core
 import Domain
 import Foundation
 import Observation
@@ -17,12 +18,15 @@ public final class CategoriesViewModel {
     public private(set) var errorMessage: String?
     public var editor: CategoryEditorViewModel?
     public var isReordering = false
+    /// What budgets are typed and shown in; `nil` until loaded, or before onboarding.
+    public private(set) var principalCurrency: String?
 
     private let getCategories: any GetCategoriesUseCase
     private let saveCategory: any SaveCategoryUseCase
     private let deleteCategory: any DeleteCategoryUseCase
     private let reorderCategories: any ReorderCategoriesUseCase
     private let restoreDefaults: any RestoreDefaultCategoriesUseCase
+    private let getPrincipalCurrency: (any GetPrincipalCurrencyUseCase)?
 
     public init(
         kind: TransactionKind = .expense,
@@ -31,6 +35,7 @@ public final class CategoriesViewModel {
         delete: any DeleteCategoryUseCase,
         reorder: any ReorderCategoriesUseCase,
         restoreDefaults: any RestoreDefaultCategoriesUseCase,
+        getPrincipalCurrency: (any GetPrincipalCurrencyUseCase)? = nil,
     ) {
         self.kind = kind == .income ? .income : .expense
         self.getCategories = getCategories
@@ -38,11 +43,13 @@ public final class CategoriesViewModel {
         deleteCategory = delete
         reorderCategories = reorder
         self.restoreDefaults = restoreDefaults
+        self.getPrincipalCurrency = getPrincipalCurrency
     }
 
     public func load() async {
         do {
             categories = try await getCategories.execute()
+            principalCurrency = try await getPrincipalCurrency?.execute()
             errorMessage = nil
         } catch {
             errorMessage = String(localized: "We couldn't load your categories.", bundle: #bundle)
@@ -60,16 +67,24 @@ public final class CategoriesViewModel {
     }
 
     public func startNew() {
-        editor = CategoryEditorViewModel(kind: kind, save: saveCategory)
+        editor = CategoryEditorViewModel(kind: kind, principalCurrency: principalCurrency, save: saveCategory)
     }
 
     public func edit(_ category: TransactionCategory) {
         editor = CategoryEditorViewModel(
             editing: category,
             fallbackName: fallbackName,
+            principalCurrency: principalCurrency,
             save: saveCategory,
             delete: deleteCategory,
         )
+    }
+
+    /// The budget under a category's name, only when it is in today's principal currency: one
+    /// left in an earlier principal no longer counts anywhere.
+    public func budgetLine(of category: TransactionCategory) -> String? {
+        guard let budget = category.monthlyBudget, budget.currency == principalCurrency else { return nil }
+        return CurrencyFormatter().string(from: budget.amount, currencyCode: budget.currency)
     }
 
     /// Called after the editor saved or deleted, so the list shows the stored result.

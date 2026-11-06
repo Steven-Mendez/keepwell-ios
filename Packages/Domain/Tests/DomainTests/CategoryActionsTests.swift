@@ -148,6 +148,33 @@ struct CategoryActionsTests {
     }
 
     @Test
+    func aBudgetIsKeptForExpensesDroppedForIncomeAndMustBePositive() async throws {
+        let useCase = DefaultSaveCategoryUseCase(categories: InMemoryStore())
+        let budget = Money(Decimal(string: "300.50") ?? 0, "USD")
+        let boat = try await useCase.execute(CategoryDraft(name: "Boat", kind: .expense, monthlyBudget: budget))
+        #expect(boat.monthlyBudget == budget)
+        let tips = try await useCase.execute(CategoryDraft(name: "Tips", kind: .income, monthlyBudget: budget))
+        #expect(tips.monthlyBudget == nil)
+        await #expect(throws: DomainError.invalidAmount) {
+            try await useCase.execute(CategoryDraft(name: "Kayak", kind: .expense, monthlyBudget: Money(0, "USD")))
+        }
+        await #expect(throws: DomainError.invalidAmount) {
+            try await useCase.execute(CategoryDraft(name: "Kayak", kind: .expense, monthlyBudget: Money(-5, "USD")))
+        }
+        let cleared = try await useCase.execute(CategoryDraft(id: boat.id, name: "Boat", kind: .expense))
+        #expect(cleared.monthlyBudget == nil)
+    }
+
+    @Test
+    func restoringDefaultsBringsThemBackWithoutBudgets() async throws {
+        let store = InMemoryStore()
+        let useCase = DefaultSaveCategoryUseCase(categories: store)
+        _ = try await useCase.execute(CategoryDraft(id: "groceries", name: "Groceries", kind: .expense, monthlyBudget: Money(200, "USD")))
+        try await DefaultRestoreDefaultCategoriesUseCase(categories: store).execute()
+        #expect(await store.fetchCategories().first { $0.id == "groceries" }?.monthlyBudget == nil)
+    }
+
+    @Test
     func reorderingKeepsTheNewOrder() async throws {
         let store = InMemoryStore()
         try await DefaultReorderCategoriesUseCase(categories: store).execute(ids: ["taxes", "groceries"])
@@ -160,6 +187,12 @@ struct CategoryActionsTests {
         let json = Data(#"{"id":"groceries","name":"Groceries","kind":"expense"}"#.utf8)
         let decoded = try JSONDecoder().decode(TransactionCategory.self, from: json)
         #expect(decoded == TransactionCategory(id: "groceries", name: "Groceries", kind: .expense))
+    }
+
+    @Test
+    func categoriesWithoutABudgetDecodeAsBefore() throws {
+        let json = Data(#"{"id":"groceries","name":"Groceries","kind":"expense","isRenamed":false}"#.utf8)
+        #expect(try JSONDecoder().decode(TransactionCategory.self, from: json).monthlyBudget == nil)
     }
 
     @Test

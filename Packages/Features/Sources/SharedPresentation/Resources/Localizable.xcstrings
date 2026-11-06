@@ -541,6 +541,16 @@
         }
       }
     },
+    "Monthly budget" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presupuesto mensual"
+          }
+        }
+      }
+    },
     "Movements from deleted categories land here, so this one can be renamed but not deleted." : {
       "localizations" : {
         "es" : {
@@ -567,6 +577,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nueva categoría"
+          }
+        }
+      }
+    },
+    "No limit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin límite"
           }
         }
       }
@@ -747,6 +767,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suscripciones"
+          }
+        }
+      }
+    },
+    "Summary shows how much is left, and Home warns you at 80% and 100%." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumen muestra cuánto queda, e Inicio te avisa al llegar al 80 % y al 100 %."
           }
         }
       }
