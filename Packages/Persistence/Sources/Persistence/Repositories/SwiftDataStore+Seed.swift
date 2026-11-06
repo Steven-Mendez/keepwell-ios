@@ -11,6 +11,8 @@ extension SwiftDataStore {
         categories: [TransactionCategory],
         recurringRules: [RecurringRule] = [],
         savingsGoals: [SavingsGoal] = [],
+        loans: [Loan] = [],
+        personalDebts: [PersonalDebt] = [],
     ) throws(DomainError) {
         try save(settings)
         for account in accounts {
@@ -30,6 +32,12 @@ extension SwiftDataStore {
         }
         for goal in savingsGoals {
             try save(goal)
+        }
+        for loan in loans {
+            try save(loan)
+        }
+        for debt in personalDebts {
+            try save(debt)
         }
     }
 }
