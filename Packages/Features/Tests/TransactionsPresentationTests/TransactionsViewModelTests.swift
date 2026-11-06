@@ -1,105 +1,83 @@
 import Domain
+import DomainSamples
 import Foundation
 import Testing
-@testable import TransactionsDomain
+import TransactionsDomain
 @testable import TransactionsPresentation
 
-private struct StubSummary: GetMonthlySummaryUseCase {
-    var error: DomainError?
-
-    func execute(month: YearMonth, currency: String) async throws(DomainError) -> MonthlySummary {
-        if let error {
-            throw error
-        }
-        return MonthlySummary(
-            month: month,
-            currency: currency,
-            totalIncome: 10,
-            totalExpense: 4,
-            netBalance: 6,
-            savingsRate: Decimal(string: "0.6"),
-        )
-    }
-}
-
-private struct StubTransactions: GetMonthlyTransactionsUseCase {
-    let transactions: [Transaction]
-
-    func execute(month _: YearMonth) async throws(DomainError) -> [Transaction] {
-        transactions
-    }
-}
-
-private actor SpyDelete: DeleteTransactionUseCase {
-    private(set) var deleted: [UUID] = []
-    func execute(id: UUID) async throws(DomainError) {
-        deleted.append(id)
-    }
-}
-
-@Suite("TransactionsViewModel")
+@Suite("Transactions view model")
 @MainActor
 struct TransactionsViewModelTests {
-    private let march = YearMonth(year: 2026, month: 3) ?? YearMonth(containing: .now, calendar: .current)
-    private let nioExpense = Transaction(
-        amount: 100,
-        currency: "NIO",
-        kind: .expense,
-        category: TransactionCategory(id: "groceries", name: "Supermercado", kind: .expense),
-        date: .now,
-    )
+    private typealias IDs = SampleData.IDs
 
-    private func makeSUT(summaryError: DomainError? = nil, delete: SpyDelete = SpyDelete()) -> TransactionsViewModel {
-        TransactionsViewModel(
-            getMonthlySummary: StubSummary(error: summaryError),
-            getMonthlyTransactions: StubTransactions(transactions: [nioExpense]),
-            deleteTransaction: delete,
-            month: march,
-            currency: "USD",
+    private func loaded() async -> TransactionsViewModel {
+        let store = InMemoryStore(sample: .standard)
+        let viewModel = TransactionsViewModel(
+            getList: DefaultGetTransactionListUseCase(
+                transactions: store, accounts: store, cards: store, categories: store, settings: store,
+            ),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
+            deleteTransaction: DefaultDeleteTransactionUseCase(transactions: store),
+            now: { SampleData.defaultReferenceDate },
         )
+        await viewModel.load()
+        return viewModel
+    }
+
+    private func rows(_ viewModel: TransactionsViewModel) -> [Transaction] {
+        viewModel.sections.flatMap(\.transactions)
     }
 
     @Test
-    func loadPublishesSummaryAndTransactions() async {
-        let sut = makeSUT()
-
-        await sut.load()
-
-        #expect(sut.state == .loaded)
-        #expect(sut.summary?.netBalance == 6)
-        #expect(sut.transactions == [nioExpense])
-        #expect(sut.availableCurrencies == ["NIO", "USD"])
+    func anAccountFilterNarrowsTheRowsAndNamesTheAccount() async {
+        let viewModel = await loaded()
+        viewModel.scope = .account(IDs.cash)
+        #expect(!rows(viewModel).isEmpty)
+        #expect(rows(viewModel).allSatisfy { $0.accountID == IDs.cash || $0.destinationAccountID == IDs.cash })
+        #expect(viewModel.scopeTitle == "Wallet")
+        #expect(viewModel.scopeBalance?.label == "Available balance")
+        // Cash in córdobas keeps its own currency instead of a converted total.
+        #expect(viewModel.scopeBalance?.amount.hasPrefix("C$") == true)
+        #expect(viewModel.scopeBalance?.details.isEmpty == true)
     }
 
     @Test
-    func loadFailureExposesDomainError() async {
-        let sut = makeSUT(summaryError: .persistence("x"))
-
-        await sut.load()
-
-        #expect(sut.state == .failed(.persistence("x")))
+    func aCreditCardFilterShowsWhatIsOwed() async {
+        let viewModel = await loaded()
+        viewModel.scope = .account(IDs.mastercard)
+        #expect(viewModel.scopeBalance?.label == "Current debt")
+        // Owed reads positive, with each currency of the dual card under the total.
+        #expect(viewModel.scopeBalance?.amount.hasPrefix("$") == true)
+        #expect(viewModel.scopeBalance?.details.count == 2)
     }
 
     @Test
-    func monthNavigationReloadsSummaryForThatMonth() async {
-        let sut = makeSUT()
-
-        await sut.showNextMonth()
-        #expect(sut.summary?.month == YearMonth(year: 2026, month: 4))
-
-        await sut.showPreviousMonth()
-        await sut.showPreviousMonth()
-        #expect(sut.summary?.month == YearMonth(year: 2026, month: 2))
+    func theMonthTotalsFollowTheAccountFilterButNotTheKindChips() async throws {
+        let viewModel = await loaded()
+        let everything = try #require(viewModel.monthTotals)
+        viewModel.scope = .account(IDs.cash)
+        let cash = try #require(viewModel.monthTotals)
+        #expect(cash.spent != everything.spent || cash.earned != everything.earned)
+        viewModel.filter = .income
+        #expect(viewModel.monthTotals?.spent == cash.spent)
+        #expect(viewModel.monthTotals?.earned == cash.earned)
     }
 
     @Test
-    func deleteCallsUseCase() async {
-        let spy = SpyDelete()
-        let sut = makeSUT(delete: spy)
+    func searchWorksInsideTheFilter() async {
+        let viewModel = await loaded()
+        viewModel.scope = .account(IDs.cash)
+        viewModel.query = "bus"
+        #expect(rows(viewModel).map(\.description) == ["Bus"])
+        viewModel.scope = .account(IDs.mastercard)
+        #expect(rows(viewModel).isEmpty)
+        #expect(!viewModel.isScopeEmpty)
+    }
 
-        await sut.delete(nioExpense)
-
-        #expect(await spy.deleted == [nioExpense.id])
-        #expect(sut.actionError == nil)
+    @Test
+    func withoutAFilterThereIsNoBalanceHeader() async {
+        let viewModel = await loaded()
+        #expect(viewModel.scopeTitle == "All accounts")
+        #expect(viewModel.scopeBalance == nil)
     }
 }

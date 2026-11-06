@@ -3,8 +3,7 @@
 Personal finance iOS app for two currencies. Data lives on device with SwiftData, with optional
 backup to the user's private iCloud (CloudKit). No accounts, no first-party servers.
 
-> Status: **in development**. First feature: Transactions (monthly summary per currency, add and
-> delete movements).
+> Status: **in development**. Screens are built feature by feature from `design/keepwell-design`.
 
 ## Requirements
 
@@ -32,7 +31,9 @@ make open              # open the project in Xcode
 - `Keepwell.xcodeproj` is **generated** from [`project.yml`](project.yml) and is not committed. Run
   `make generate` after changing `project.yml` or adding files.
 - To sign for a device, create `Configs/Local.xcconfig` (git-ignored) from
-  `Configs/Local.xcconfig.example` with your `DEVELOPMENT_TEAM`.
+  `Configs/Local.xcconfig.example` with your `DEVELOPMENT_TEAM`. With a personal (free) team, also
+  set `APP_ENTITLEMENTS` as that file shows: it drops iCloud and Push but keeps the App Group, which
+  the widgets need to read the app's data.
 - Design material lives in `design/` **locally only** and is never committed (it is git-ignored).
   Ask the team for it and place it under `design/keepwell-design/`.
 

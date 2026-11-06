@@ -17,7 +17,7 @@ public struct KWSurfaceCard<Content: View>: View {
 
 #Preview {
     KWSurfaceCard {
-        Text("Superficie").kwTextStyle(.body).foregroundStyle(KWColor.Text.primary)
+        Text("Surface").kwTextStyle(.body).foregroundStyle(KWColor.Text.primary)
     }
     .padding(KWLayout.gutter)
     .background(KWColor.Surface.bg)

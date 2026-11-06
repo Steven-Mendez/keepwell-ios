@@ -1,4 +1,5 @@
 import DesignSystem
+import OnboardingPresentation
 import OSLog
 import Persistence
 import SwiftData
@@ -6,31 +7,53 @@ import SwiftUI
 
 @main
 struct KeepwellApp: App {
-    private let container: AppContainer
+    @UIApplicationDelegateAdaptor(NotificationResponder.self) private var notifications
+    @State private var container: AppContainer?
+    /// Set before the first await so a second run of `.task` can't open a second store.
+    @State private var isBootstrapping = false
 
     init() {
         KWFonts.register()
-        container = AppContainer(modelContainer: Self.makeModelContainer())
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView(container: container)
-                .preferredColorScheme(.dark)
+            Group {
+                if let container {
+                    RootView(container: container, notifications: notifications)
+                } else {
+                    SplashView()
+                }
+            }
+            .preferredColorScheme(.dark)
+            .task { await bootstrap() }
         }
     }
 
-    /// CloudKit in the real app; in-memory for UI tests. Falls back to on-device storage when
-    /// CloudKit is unavailable (e.g. a build without a signing team).
-    private static func makeModelContainer() -> ModelContainer {
+    /// Opens the store while the splash shows. The splash stays at least briefly so it reads as
+    /// a deliberate screen rather than a flash.
+    private func bootstrap() async {
+        guard container == nil, !isBootstrapping else { return }
+        isBootstrapping = true
         let environment = AppEnvironment.current
-        let store: PersistenceStore = environment.isUITesting
-            ? .inMemory
-            : .cloudKit(containerIdentifier: environment.cloudKitContainer)
+        async let minimumSplash: Void = (try? Task.sleep(for: .milliseconds(800))) ?? ()
+        let store = await StoreSelector.store(for: environment)
+        let made = AppContainer(modelContainer: Self.makeModelContainer(store: store))
+        #if DEBUG
+        if environment.usesSampleData {
+            await made.seedSampleData()
+        }
+        #endif
+        await made.normalizeBankCards()
+        await minimumSplash
+        container = made
+    }
+
+    private static func makeModelContainer(store: PersistenceStore) -> ModelContainer {
         do {
             return try ModelContainerFactory.make(store: store)
         } catch {
-            Logger.app.error("CloudKit unavailable, falling back to local storage: \(error, privacy: .public)")
+            Logger.app.error("Store \(String(describing: store), privacy: .public) unavailable, using local: \(error, privacy: .public)")
             do {
                 return try ModelContainerFactory.make(store: .local)
             } catch {

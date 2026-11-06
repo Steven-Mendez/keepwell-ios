@@ -1,0 +1,57 @@
+import XCTest
+
+final class AccountsUITests: XCTestCase {
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    @MainActor
+    func testAccountsTabShowsEveryCardInOneWalletWithFilters() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-sample-data", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        XCTAssertTrue(app.buttons["Accounts"].waitForExistence(timeout: 10))
+        app.buttons["Accounts"].tap()
+        // Debit, credit and cash share one wallet, with a chip per kind.
+        XCTAssertTrue(app.buttons["All"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Debit"].exists)
+        XCTAssertTrue(app.buttons["Credit"].exists)
+        XCTAssertTrue(app.buttons["Cash"].exists)
+        XCTAssertFalse(app.buttons["Reconcile"].exists)
+        app.buttons["Credit"].tap()
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "debit card")).firstMatch.exists)
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "accounts"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    @MainActor
+    func testABankAccountAndItsCardShareOneScreen() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-sample-data", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        XCTAssertTrue(app.buttons["Accounts"].waitForExistence(timeout: 10))
+        app.buttons["Accounts"].tap()
+        let savings = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Bank One Savings debit card")).firstMatch
+        XCTAssertTrue(savings.waitForExistence(timeout: 5))
+        // The card sits behind others in the wallet; only its top strip shows.
+        savings.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+
+        XCTAssertTrue(app.staticTexts["Bank account"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Manage account"].exists)
+        XCTAssertFalse(app.buttons["Link another card"].exists)
+        let delete = app.buttons["Delete account"]
+        for _ in 0 ..< 4 where !delete.isHittable {
+            app.swipeUp()
+        }
+        delete.tap()
+        XCTAssertTrue(app.staticTexts["Delete Bank One Savings?"].waitForExistence(timeout: 5))
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "delete-account"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+}

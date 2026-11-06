@@ -9,11 +9,17 @@ SPACE = $(EMPTY) $(EMPTY)
 BASE_BUNDLE_ID = com.stevenmendez.keepwell
 APP_BUNDLE_ID = $(BASE_BUNDLE_ID)$(BUNDLE_ID_SUFFIX)
 WIDGETS_BUNDLE_ID = $(APP_BUNDLE_ID).widgets
+// Shared by the app and its widgets; per configuration so Debug never shows Release data.
+APP_GROUP_ID = group.$(APP_BUNDLE_ID)
 APP_DISPLAY_NAME = Keepwell$(APP_NAME_SUFFIX)
 
 // Versioning (MARKETING_VERSION = user-visible version; CURRENT_PROJECT_VERSION = build)
 MARKETING_VERSION = 0.1.0
 CURRENT_PROJECT_VERSION = 1
+
+// The app's entitlements. Personal (free) teams can't sign iCloud or Push, so Local.xcconfig can
+// point this at KeepwellPersonalTeam.entitlements, which keeps only the App Group the widgets need.
+APP_ENTITLEMENTS = App/Resources/Keepwell.entitlements
 
 // CloudKit: a single container for every environment. CloudKit keeps Development data
 // (development-signed builds) apart from Production (TestFlight/App Store).
