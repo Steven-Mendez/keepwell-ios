@@ -29,17 +29,7 @@ public struct TransactionsView: View {
                 if viewModel.list != nil, !viewModel.hasTransactions {
                     emptyState
                 } else {
-                    if onBack != nil, let balance = viewModel.scopeBalance {
-                        BalanceHeader(balance.label, amount: balance.amount, details: balance.details, alignment: .leading)
-                            .padding(.bottom, KWSpacing.xxs)
-                    }
-                    searchField
-                    chips
-                    monthTotals
-                    if let error = viewModel.actionError {
-                        Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
-                    }
-                    sections
+                    listContent
                 }
             }
             .padding(.horizontal, KWLayout.gutter)
@@ -65,11 +55,7 @@ public struct TransactionsView: View {
         }
         .confirmationDialog(
             String(localized: "Delete this transaction?", bundle: #bundle),
-            isPresented: Binding(get: { pendingDeletion != nil }, set: {
-                if !$0 {
-                    pendingDeletion = nil
-                }
-            }),
+            isPresented: isConfirmingDeletion,
             titleVisibility: .visible,
             presenting: pendingDeletion,
         ) { transaction in
@@ -81,6 +67,30 @@ public struct TransactionsView: View {
         } message: { _ in
             Text("Balances update as if it never happened.", bundle: #bundle)
         }
+    }
+
+    /// The scoped account's balance (when opened from an account), search, filters, totals and the days.
+    @ViewBuilder
+    private var listContent: some View {
+        if onBack != nil, let balance = viewModel.scopeBalance {
+            BalanceHeader(balance.label, amount: balance.amount, details: balance.details, alignment: .leading)
+                .padding(.bottom, KWSpacing.xxs)
+        }
+        searchField
+        chips
+        monthTotals
+        if let error = viewModel.actionError {
+            Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
+        }
+        sections
+    }
+
+    private var isConfirmingDeletion: Binding<Bool> {
+        Binding(get: { pendingDeletion != nil }, set: {
+            if !$0 {
+                pendingDeletion = nil
+            }
+        })
     }
 
     @ViewBuilder
