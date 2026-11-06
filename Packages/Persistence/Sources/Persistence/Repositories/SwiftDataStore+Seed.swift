@@ -13,6 +13,7 @@ extension SwiftDataStore {
         savingsGoals: [SavingsGoal] = [],
         loans: [Loan] = [],
         personalDebts: [PersonalDebt] = [],
+        categorizationRules: [CategorizationRule] = [],
     ) throws(DomainError) {
         try save(settings)
         for account in accounts {
@@ -38,6 +39,9 @@ extension SwiftDataStore {
         }
         for debt in personalDebts {
             try save(debt)
+        }
+        for rule in categorizationRules {
+            try save(rule)
         }
     }
 }

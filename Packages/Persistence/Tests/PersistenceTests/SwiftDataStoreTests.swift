@@ -321,6 +321,7 @@ struct SwiftDataStoreSeedTests {
             savingsGoals: sample.savingsGoals,
             loans: sample.loans,
             personalDebts: sample.personalDebts,
+            categorizationRules: sample.categorizationRules,
         )
         #expect(try await store.fetchRecurringRules().count == sample.recurringRules.count)
         #expect(try await store.fetchLoans().count == sample.loans.count)

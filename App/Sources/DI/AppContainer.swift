@@ -72,6 +72,7 @@ final class AppContainer {
                 savingsGoals: sample.savingsGoals,
                 loans: sample.loans,
                 personalDebts: sample.personalDebts,
+                categorizationRules: sample.categorizationRules,
             )
         } catch {
             Logger.app.error("Sample data could not be seeded: \(String(describing: error), privacy: .public)")
