@@ -26,7 +26,11 @@ public actor SwiftDataStore {
 extension SwiftDataStore: AccountRepository {
     public func fetchAccounts() throws(DomainError) -> [Account] {
         try perform { context in
-            try context.fetch(FetchDescriptor<AccountRecord>(sortBy: [SortDescriptor(\.createdAt)])).map { try $0.toDomain() }
+            try context.fetch(FetchDescriptor<AccountRecord>(
+                predicate: #Predicate { $0.deletedAt == nil },
+                sortBy: [SortDescriptor(\.createdAt)],
+            ))
+            .map { try $0.toDomain() }
         }
     }
 
@@ -36,16 +40,18 @@ extension SwiftDataStore: AccountRepository {
             let record = try context.fetch(FetchDescriptor<AccountRecord>(predicate: #Predicate { $0.id == id })).first
                 ?? AccountRecord(id: id).inserted(into: context)
             record.update(from: account)
+            record.stampSaved()
             try context.save()
         }
     }
 
     public func deleteAccount(id: UUID) throws(DomainError) {
         try perform { context in
-            guard let record = try context.fetch(FetchDescriptor<AccountRecord>(predicate: #Predicate { $0.id == id })).first else {
+            let alive = #Predicate<AccountRecord> { $0.id == id && $0.deletedAt == nil }
+            guard let record = try context.fetch(FetchDescriptor(predicate: alive)).first else {
                 throw DomainError.notFound(id)
             }
-            context.delete(record)
+            record.stampDeleted()
             try context.save()
         }
     }
@@ -54,9 +60,12 @@ extension SwiftDataStore: AccountRepository {
 extension SwiftDataStore: CardRepository {
     public func fetchCards() throws(DomainError) -> [Card] {
         try perform { context in
-            try context.fetch(FetchDescriptor<CardRecord>(sortBy: [SortDescriptor(\.createdAt)]))
-                .filter { !CardRecord.retiredKinds.contains($0.kindRaw) }
-                .map { try $0.toDomain() }
+            try context.fetch(FetchDescriptor<CardRecord>(
+                predicate: #Predicate { $0.deletedAt == nil },
+                sortBy: [SortDescriptor(\.createdAt)],
+            ))
+            .filter { !CardRecord.retiredKinds.contains($0.kindRaw) }
+            .map { try $0.toDomain() }
         }
     }
 
@@ -66,16 +75,18 @@ extension SwiftDataStore: CardRepository {
             let record = try context.fetch(FetchDescriptor<CardRecord>(predicate: #Predicate { $0.id == id })).first
                 ?? CardRecord(id: id).inserted(into: context)
             record.update(from: card)
+            record.stampSaved()
             try context.save()
         }
     }
 
     public func deleteCard(id: UUID) throws(DomainError) {
         try perform { context in
-            guard let record = try context.fetch(FetchDescriptor<CardRecord>(predicate: #Predicate { $0.id == id })).first else {
+            let alive = #Predicate<CardRecord> { $0.id == id && $0.deletedAt == nil }
+            guard let record = try context.fetch(FetchDescriptor(predicate: alive)).first else {
                 throw DomainError.notFound(id)
             }
-            context.delete(record)
+            record.stampDeleted()
             try context.save()
         }
     }
@@ -84,11 +95,14 @@ extension SwiftDataStore: CardRepository {
 extension SwiftDataStore: TransactionRepository {
     public func fetchTransactions(in period: DateInterval?) throws(DomainError) -> [Transaction] {
         try perform { context in
-            var descriptor = FetchDescriptor<TransactionRecord>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+            var descriptor = FetchDescriptor<TransactionRecord>(
+                predicate: #Predicate { $0.deletedAt == nil },
+                sortBy: [SortDescriptor(\.date, order: .reverse)],
+            )
             if let period {
                 let start = period.start
                 let end = period.end
-                descriptor.predicate = #Predicate { $0.date >= start && $0.date < end }
+                descriptor.predicate = #Predicate { $0.deletedAt == nil && $0.date >= start && $0.date < end }
             }
             return try context.fetch(descriptor).map { try $0.toDomain() }
         }
@@ -100,15 +114,18 @@ extension SwiftDataStore: TransactionRepository {
             let record = try context.fetch(FetchDescriptor<TransactionRecord>(predicate: #Predicate { $0.id == id })).first
                 ?? TransactionRecord(id: id).inserted(into: context)
             record.update(from: transaction)
+            record.stampSaved()
             try context.save()
         }
     }
 
     public func deleteTransaction(id: UUID) throws(DomainError) {
         try perform { context in
-            guard let record = try context.fetch(FetchDescriptor<TransactionRecord>(predicate: #Predicate { $0.id == id })).first
-            else { throw DomainError.notFound(id) }
-            context.delete(record)
+            let alive = #Predicate<TransactionRecord> { $0.id == id && $0.deletedAt == nil }
+            guard let record = try context.fetch(FetchDescriptor(predicate: alive)).first else {
+                throw DomainError.notFound(id)
+            }
+            record.stampDeleted()
             try context.save()
         }
     }
@@ -126,6 +143,7 @@ extension SwiftDataStore: CategoryRepository {
             for category in missing {
                 let record = CategoryRecord(id: category.id).inserted(into: context)
                 record.update(from: category, sortIndex: next)
+                record.stampSaved()
                 next += 1
                 rows.append((record, false))
             }
@@ -143,9 +161,11 @@ extension SwiftDataStore: CategoryRepository {
             let last = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])).first
             let record = existing.first ?? CategoryRecord(id: id).inserted(into: context)
             record.update(from: category, sortIndex: existing.first?.sortIndex ?? (last.map { $0.sortIndex + 1 } ?? 0))
+            record.stampSaved()
             // Saving a default that another device deleted brings it back on every row.
             for duplicate in existing.dropFirst() {
                 duplicate.isRemoved = false
+                duplicate.stampSaved()
             }
             try context.save()
         }
@@ -154,19 +174,19 @@ extension SwiftDataStore: CategoryRepository {
     public func deleteCategory(id: String) throws(DomainError) {
         try perform { context in
             let records = try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id }))
-            guard let shipped = TransactionCategory.shipped(id: id) else {
-                records.forEach(context.delete)
-                try context.save()
-                return
-            }
-            // A default deleted before it was ever seeded (restoring a backup) still needs its tombstone.
-            let tombstones = records.isEmpty ? [CategoryRecord(id: id).inserted(into: context)] : records
-            if records.isEmpty {
+            var tombstones = records
+            // A default deleted before it was ever seeded still needs its tombstone, or the next
+            // fetch would seed it back. A created category that isn't stored has nothing to delete.
+            if records.isEmpty, let shipped = TransactionCategory.shipped(id: id) {
                 let last = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])).first
-                tombstones[0].update(from: shipped, sortIndex: last.map { $0.sortIndex + 1 } ?? 0)
+                let record = CategoryRecord(id: id).inserted(into: context)
+                record.update(from: shipped, sortIndex: last.map { $0.sortIndex + 1 } ?? 0)
+                record.createdAt = .now
+                tombstones = [record]
             }
-            for record in tombstones {
+            for record in tombstones where !record.isTombstone {
                 record.isRemoved = true
+                record.stampDeleted()
             }
             try context.save()
         }
@@ -177,8 +197,9 @@ extension SwiftDataStore: CategoryRepository {
             let rank = Dictionary(ids.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
             let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
             let listed = records.filter { rank[$0.id] != nil }.sorted { rank[$0.id] ?? 0 < rank[$1.id] ?? 0 }
-            for (index, record) in (listed + records.filter { rank[$0.id] == nil }).enumerated() {
+            for (index, record) in (listed + records.filter { rank[$0.id] == nil }).enumerated() where record.sortIndex != index {
                 record.sortIndex = index
+                record.updatedAt = .now
             }
             try context.save()
         }
@@ -195,11 +216,13 @@ extension SwiftDataStore: CategoryRepository {
                 let rows = byID[category.id] ?? [CategoryRecord(id: category.id).inserted(into: context)]
                 for record in rows {
                     record.update(from: category, sortIndex: index)
+                    record.stampSaved()
                 }
             }
             let created = records.filter { TransactionCategory.shipped(id: $0.id) == nil }
-            for (offset, record) in created.enumerated() {
+            for (offset, record) in created.enumerated() where record.sortIndex != TransactionCategory.defaults.count + offset {
                 record.sortIndex = TransactionCategory.defaults.count + offset
+                record.updatedAt = .now
             }
             try context.save()
         }
@@ -210,7 +233,7 @@ extension SwiftDataStore: CategoryRepository {
     private func uniqueCategoryRows(in context: ModelContext) throws -> [(record: CategoryRecord, isRemoved: Bool)] {
         let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
         var removedIDs = Set<String>()
-        for record in records where record.isRemoved {
+        for record in records where record.isTombstone {
             removedIDs.insert(record.id)
         }
         var seen = Set<String>()
@@ -245,6 +268,7 @@ extension SwiftDataStore: SettingsRepository {
 }
 
 extension SwiftDataStore: DataEraser {
+    /// The one physical delete: the person asked for their data to be gone, so no tombstones stay.
     /// Deleting the records locally also deletes them from the CloudKit private database when
     /// mirroring is on, which erases the iCloud copy.
     public func eraseAll() throws(DomainError) {

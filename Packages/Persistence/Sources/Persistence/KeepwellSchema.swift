@@ -12,9 +12,9 @@ public enum KeepwellSchemaV1: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(1, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            AccountRecord.self,
+            KeepwellSchemaV4.AccountRecord.self,
             KeepwellSchemaV3.CardRecord.self,
-            TransactionRecord.self,
+            KeepwellSchemaV4.TransactionRecord.self,
             CategoryRecord.self,
             SettingsRecord.self,
         ]
@@ -42,9 +42,9 @@ public enum KeepwellSchemaV2: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(2, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            AccountRecord.self,
+            KeepwellSchemaV4.AccountRecord.self,
             KeepwellSchemaV3.CardRecord.self,
-            TransactionRecord.self,
+            KeepwellSchemaV4.TransactionRecord.self,
             CategoryRecord.self,
             SettingsRecord.self,
         ]
@@ -78,10 +78,10 @@ public enum KeepwellSchemaV3: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(3, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            AccountRecord.self,
+            KeepwellSchemaV4.AccountRecord.self,
             CardRecord.self,
-            TransactionRecord.self,
-            Persistence.CategoryRecord.self,
+            KeepwellSchemaV4.TransactionRecord.self,
+            KeepwellSchemaV4.CategoryRecord.self,
             SettingsRecord.self,
         ]
     }
@@ -121,8 +121,128 @@ public enum KeepwellSchemaV4: VersionedSchema {
     public static var models: [any PersistentModel.Type] {
         [
             AccountRecord.self,
-            Persistence.CardRecord.self,
+            CardRecord.self,
             TransactionRecord.self,
+            CategoryRecord.self,
+            SettingsRecord.self,
+        ]
+    }
+
+    /// The account row before records kept `updatedAt` and `deletedAt`. V1 to V3 share it.
+    @Model
+    public final class AccountRecord {
+        public var id = UUID()
+        var name = ""
+        var bank: String?
+        var kindRaw = "deposit"
+        var openingBalances = ""
+        var openingDate = Date.distantPast
+        var debtModeRaw: String?
+        var limitAmount: String?
+        var limitCurrency: String?
+        var cutoffDay: Int?
+        var dueDay: Int?
+        var createdAt = Date.now
+
+        init(id: UUID, name: String) {
+            self.id = id
+            self.name = name
+        }
+    }
+
+    /// The card row with product name and expiry, before audit dates.
+    @Model
+    public final class CardRecord {
+        public var id = UUID()
+        var accountID = UUID()
+        var kindRaw = "debit"
+        var networkRaw: String?
+        var lastFour: String?
+        var colorRaw: String?
+        var holderName: String?
+        var capAmount: String?
+        var capCurrency: String?
+        var allowedCategoryIDs = ""
+        var defaultCategoryID: String?
+        var alertEachPurchase = true
+        var alertNearCap = true
+        var isFrozen = false
+        var createdAt = Date.now
+        var productName: String?
+        var expiryMonth: Int?
+        var expiryYear: Int?
+
+        init(id: UUID, accountID: UUID, kindRaw: String) {
+            self.id = id
+            self.accountID = accountID
+            self.kindRaw = kindRaw
+        }
+    }
+
+    /// The movement row before audit dates. V1 to V3 share it.
+    @Model
+    public final class TransactionRecord {
+        public var id = UUID()
+        var date = Date.distantPast
+        var statusRaw = "confirmed"
+        var descriptionText = ""
+        var kindRaw = "expense"
+        var categoryID: String?
+        var amount = "0"
+        var currency = ""
+        var accountID = UUID()
+        var cardID: UUID?
+        var destinationAccountID: UUID?
+        var actualDebitedPrincipal: String?
+        var ratePrincipal = ""
+        var rateSecond = ""
+        var rate = "1"
+        var isShared = false
+        var note: String?
+
+        #Index<TransactionRecord>([\.date])
+
+        init(id: UUID, date: Date, amount: String, currency: String, accountID: UUID) {
+            self.id = id
+            self.date = date
+            self.amount = amount
+            self.currency = currency
+            self.accountID = accountID
+            ratePrincipal = currency
+            rateSecond = currency
+        }
+    }
+
+    /// The category row with rename and tombstone flags, before audit dates. V3 shares it.
+    @Model
+    public final class CategoryRecord {
+        public var id = ""
+        var name = ""
+        var kindRaw = "expense"
+        var sortIndex = 0
+        var icon: String?
+        var color: String?
+        var isRenamed = false
+        var isRemoved = false
+
+        init(id: String, name: String, kindRaw: String, sortIndex: Int) {
+            self.id = id
+            self.name = name
+            self.kindRaw = kindRaw
+            self.sortIndex = sortIndex
+        }
+    }
+}
+
+/// Records keep `createdAt`, `updatedAt` and `deletedAt`: deletes become tombstones, ready for a
+/// sync engine (CloudKit or Keepwell's own) to merge copies by their last change.
+public enum KeepwellSchemaV5: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(5, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        [
+            Persistence.AccountRecord.self,
+            Persistence.CardRecord.self,
+            Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
             SettingsRecord.self,
         ]
@@ -130,21 +250,23 @@ public enum KeepwellSchemaV4: VersionedSchema {
 }
 
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV4
+public typealias KeepwellCurrentSchema = KeepwellSchemaV5
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
-        [KeepwellSchemaV1.self, KeepwellSchemaV2.self, KeepwellSchemaV3.self, KeepwellSchemaV4.self]
+        [KeepwellSchemaV1.self, KeepwellSchemaV2.self, KeepwellSchemaV3.self, KeepwellSchemaV4.self, KeepwellSchemaV5.self]
     }
 
     /// Each step adds optional or defaulted attributes: SwiftData infers the mapping, and CloudKit
     /// accepts additive changes. Rows from V2 start not renamed and not removed, which is true:
     /// V2 couldn't do either to a default. Cards from V3 start with no product name or expiry.
+    /// Rows from V4 start alive (`deletedAt` nil), changed at the time of the migration.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
             .lightweight(fromVersion: KeepwellSchemaV2.self, toVersion: KeepwellSchemaV3.self),
             .lightweight(fromVersion: KeepwellSchemaV3.self, toVersion: KeepwellSchemaV4.self),
+            .lightweight(fromVersion: KeepwellSchemaV4.self, toVersion: KeepwellSchemaV5.self),
         ]
     }
 }

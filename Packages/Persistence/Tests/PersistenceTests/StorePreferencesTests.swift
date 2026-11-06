@@ -26,6 +26,18 @@ struct StorePreferencesTests {
         #expect(preferences.isICloudBackupEnabled)
     }
 
+    /// Keepwell's own sync replaces CloudKit: mirroring both would bring every record back twice.
+    @Test
+    func customSyncTurnsCloudKitOffEvenWithBackupOn() throws {
+        let preferences = try makePreferences()
+        #expect(preferences.syncMode == .localWithICloud)
+        preferences.syncMode = .customCloudSync
+        #expect(preferences.isICloudBackupEnabled)
+        #expect(preferences.store(cloudKitContainer: "iCloud.test") == .local)
+        preferences.syncMode = .localWithICloud
+        #expect(preferences.store(cloudKitContainer: "iCloud.test") == .cloudKit(containerIdentifier: "iCloud.test"))
+    }
+
     @Test
     func missingContainerFallsBackToLocal() throws {
         #expect(try makePreferences().store(cloudKitContainer: "") == .local)

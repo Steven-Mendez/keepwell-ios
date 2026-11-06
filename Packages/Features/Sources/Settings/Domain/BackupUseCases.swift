@@ -1,9 +1,9 @@
 import Domain
 import Foundation
 
-/// A complete copy of the person's data in one file: "Back up now" writes it wherever they choose
-/// (iCloud Drive, Files) and "Restore" brings it back. It complements the automatic iCloud sync
-/// with a copy the person holds and can move to another phone or keep before a big change.
+/// The backup file written before the portable format (`BackupSnapshot`, `schemaVersion`): it has
+/// `version: 1`, amounts as JSON numbers and no audit dates. Read only, so files people already
+/// keep still restore.
 public struct BackupDocument: Codable, Sendable, Equatable {
     /// Raised when the format changes, so an older app can refuse a file it doesn't understand.
     public static let currentVersion = 1
@@ -66,6 +66,23 @@ public struct BackupDocument: Codable, Sendable, Equatable {
         decoder.dateDecodingStrategy = .iso8601
         return decoder
     }()
+
+    /// Its records as they were on `createdAt`. A default category missing from the file was
+    /// deleted on purpose, so it becomes a tombstone instead of being seeded back.
+    var contents: BackupContents {
+        let stamp = RecordMetadata(createdAt: createdAt, updatedAt: createdAt)
+        let listed = Set(categories.map(\.id))
+        let deletedDefaults = TransactionCategory.defaults
+            .filter { !listed.contains($0.id) && !$0.isFallback }
+            .map { Stamped($0, RecordMetadata(createdAt: createdAt, updatedAt: createdAt, deletedAt: createdAt)) }
+        return BackupContents(
+            settings: Stamped(settings, stamp),
+            accounts: accounts.map { Stamped($0, stamp) },
+            cards: cards.map { Stamped($0, stamp) },
+            categories: categories.map { Stamped($0, stamp) } + deletedDefaults,
+            transactions: transactions.map { Stamped($0, stamp) },
+        )
+    }
 }
 
 /// A card as an older backup may hold it. Files written while cards could have additionals list
@@ -83,51 +100,27 @@ private struct StoredCard: Decodable {
     }
 }
 
+/// "Back up now": the whole store as a portable `BackupSnapshot` file (`schemaVersion` 1), which
+/// the person keeps wherever they choose (iCloud Drive, Files) and the web app can open too.
 public protocol CreateBackupUseCase: Sendable {
     /// The backup file's contents.
     func execute() async throws(DomainError) -> Data
 }
 
 public struct DefaultCreateBackupUseCase: CreateBackupUseCase {
-    private let settings: any SettingsRepository
-    private let accounts: any AccountRepository
-    private let cards: any CardRepository
-    private let categories: any CategoryRepository
-    private let transactions: any TransactionRepository
+    private let store: any BackupStore
     private let now: @Sendable () -> Date
 
-    public init(
-        settings: any SettingsRepository,
-        accounts: any AccountRepository,
-        cards: any CardRepository,
-        categories: any CategoryRepository,
-        transactions: any TransactionRepository,
-        now: @escaping @Sendable () -> Date = { .now },
-    ) {
-        self.settings = settings
-        self.accounts = accounts
-        self.cards = cards
-        self.categories = categories
-        self.transactions = transactions
+    public init(store: any BackupStore, now: @escaping @Sendable () -> Date = { .now }) {
+        self.store = store
         self.now = now
     }
 
     public func execute() async throws(DomainError) -> Data {
-        guard let current = try await settings.load() else { throw .persistence("Nothing to back up yet") }
-        let records = try await LedgerRecords.load(accounts: accounts, cards: cards, transactions: transactions, categories: categories)
-        let document = BackupDocument(
-            createdAt: now(),
-            settings: current,
-            accounts: records.accounts,
-            cards: records.cards,
-            categories: records.categories,
-            transactions: records.transactions,
-        )
-        do {
-            return try BackupDocument.encoder.encode(document)
-        } catch {
-            throw .persistence("Backup encoding: \(error)")
+        guard let snapshot = try await BackupSnapshot(contents: store.exportContents(), exportedAt: now()) else {
+            throw .persistence("Nothing to back up yet")
         }
+        return try snapshot.encoded()
     }
 }
 
@@ -144,61 +137,50 @@ public protocol RestoreBackupUseCase: Sendable {
 }
 
 public struct DefaultRestoreBackupUseCase: RestoreBackupUseCase {
-    private let eraser: any DataEraser
-    private let settings: any SettingsRepository
-    private let accounts: any AccountRepository
-    private let cards: any CardRepository
-    private let categories: any CategoryRepository
-    private let transactions: any TransactionRepository
+    private let store: any BackupStore
 
-    public init(
-        eraser: any DataEraser,
-        settings: any SettingsRepository,
-        accounts: any AccountRepository,
-        cards: any CardRepository,
-        categories: any CategoryRepository,
-        transactions: any TransactionRepository,
-    ) {
-        self.eraser = eraser
-        self.settings = settings
-        self.accounts = accounts
-        self.cards = cards
-        self.categories = categories
-        self.transactions = transactions
+    public init(store: any BackupStore) {
+        self.store = store
     }
 
     public func execute(_ data: Data) async throws(DomainError) -> RestoreSummary {
         // Decoded and validated in full first, so a wrong or damaged file never erases anything.
-        let document: BackupDocument
+        var (contents, backupDate) = try Self.read(data)
+        guard var settings = contents.settings?.value, let metadata = contents.settings?.metadata else {
+            throw .corruptedData("Backup without settings")
+        }
+        settings.hasCompletedOnboarding = true
+        contents.settings = Stamped(settings, metadata)
+        try await store.replaceAll(with: contents)
+        return RestoreSummary(
+            accounts: contents.accounts.count { !$0.metadata.isDeleted },
+            transactions: contents.transactions.count { !$0.metadata.isDeleted },
+            backupDate: backupDate,
+        )
+    }
+
+    /// The portable format names its `schemaVersion`; the earlier one only had `version`.
+    static func read(_ data: Data) throws(DomainError) -> (BackupContents, Date) {
+        struct Header: Decodable {
+            let schemaVersion: Int?
+            let version: Int?
+        }
+        guard let header = try? JSONDecoder().decode(Header.self, from: data) else {
+            throw .corruptedData("Not a Keepwell backup")
+        }
+        if header.schemaVersion != nil {
+            let snapshot = try BackupSnapshot.decode(data)
+            return try (snapshot.contents(), snapshot.exportedAt)
+        }
+        guard let version = header.version else { throw .corruptedData("Not a Keepwell backup") }
+        guard version <= BackupDocument.currentVersion else {
+            throw .corruptedData("Backup version \(version) is newer than this app")
+        }
         do {
-            document = try BackupDocument.decoder.decode(BackupDocument.self, from: data)
+            let document = try BackupDocument.decoder.decode(BackupDocument.self, from: data)
+            return (document.contents, document.createdAt)
         } catch {
             throw .corruptedData("Not a Keepwell backup: \(error)")
         }
-        guard document.version <= BackupDocument.currentVersion else {
-            throw .corruptedData("Backup version \(document.version) is newer than this app")
-        }
-        try await eraser.eraseAll()
-        var restoredSettings = document.settings
-        restoredSettings.hasCompletedOnboarding = true
-        try await settings.save(restoredSettings)
-        for category in document.categories {
-            try await categories.save(category)
-        }
-        // A default missing from the file was deleted on purpose; without this it would be seeded back.
-        let restoredIDs = Set(document.categories.map(\.id))
-        for category in TransactionCategory.defaults where !restoredIDs.contains(category.id) && !category.isFallback {
-            try await categories.deleteCategory(id: category.id)
-        }
-        for account in document.accounts {
-            try await accounts.save(account)
-        }
-        for card in document.cards {
-            try await cards.save(card)
-        }
-        for transaction in document.transactions {
-            try await transactions.save(transaction)
-        }
-        return RestoreSummary(accounts: document.accounts.count, transactions: document.transactions.count, backupDate: document.createdAt)
     }
 }

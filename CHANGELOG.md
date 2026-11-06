@@ -7,6 +7,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+
+- "Back up now" writes the new portable backup file (`schemaVersion` 1), which the upcoming web app
+  opens too: amounts and rates as exact text, and deleted records kept as deletions so they don't
+  come back on another device. Files from earlier versions still restore, and a restore now
+  replaces everything at once, so a damaged file leaves your data untouched.
+- Deleting an account, card, movement or category now keeps a hidden record of the deletion, ready
+  for syncing with other devices. "Delete all my data" still removes everything for good.
+
 ### Added
 
 - "Save as draft" on a movement's review: it's saved without counting toward balances until you

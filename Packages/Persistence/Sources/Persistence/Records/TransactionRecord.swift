@@ -3,7 +3,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class TransactionRecord {
+public final class TransactionRecord: AuditedRecord {
     public var id = UUID()
     /// Indexed: every screen filters movements by date range.
     var date = Date.distantPast
@@ -22,6 +22,10 @@ public final class TransactionRecord {
     var rate = "1"
     var isShared = false
     var note: String?
+    /// Added in V5; rows migrated from V4 get the migration's time, since earlier ones weren't kept.
+    var createdAt = Date.now
+    var updatedAt = Date.now
+    var deletedAt: Date?
 
     #Index<TransactionRecord>([\.date])
 

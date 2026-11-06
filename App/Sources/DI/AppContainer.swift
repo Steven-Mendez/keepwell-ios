@@ -160,13 +160,7 @@ final class AppContainer {
             setICloudBackup: DefaultSetICloudBackupUseCase(backup: preferences, settings: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
             importTransactions: makeImportTransactions(),
-            createBackup: DefaultCreateBackupUseCase(
-                settings: store,
-                accounts: store,
-                cards: store,
-                categories: store,
-                transactions: store,
-            ),
+            createBackup: DefaultCreateBackupUseCase(store: store),
             restoreBackup: makeRestoreBackup(),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store, cloud: makeCloudCopyEraser()),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
@@ -189,7 +183,7 @@ final class AppContainer {
     }
 
     func makeRestoreBackup() -> any RestoreBackupUseCase {
-        DefaultRestoreBackupUseCase(eraser: store, settings: store, accounts: store, cards: store, categories: store, transactions: store)
+        DefaultRestoreBackupUseCase(store: store)
     }
 
     func makePaymentMethodsViewModel() -> PaymentMethodsViewModel {

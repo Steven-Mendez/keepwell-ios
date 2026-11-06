@@ -3,7 +3,7 @@ import Foundation
 
 /// Repository implementations kept in memory, for previews, snapshot tests and use case tests.
 public actor InMemoryStore: AccountRepository, CardRepository, TransactionRepository, CategoryRepository,
-    SettingsRepository, DataEraser
+    SettingsRepository, DataEraser, BackupStore
 {
     private var accounts: [Account]
     private var cards: [Card]
@@ -110,6 +110,27 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         transactions = []
         categories = []
         settings = nil
+    }
+
+    /// Records here carry no history, so they export stamped with the moment of the export and a
+    /// restore keeps only the live ones.
+    public func exportContents() -> BackupContents {
+        let stamp = RecordMetadata(createdAt: .now, updatedAt: .now)
+        return BackupContents(
+            settings: settings.map { Stamped($0, stamp) },
+            accounts: accounts.map { Stamped($0, stamp) },
+            cards: cards.map { Stamped($0, stamp) },
+            categories: categories.map { Stamped($0, stamp) },
+            transactions: transactions.map { Stamped($0, stamp) },
+        )
+    }
+
+    public func replaceAll(with contents: BackupContents) {
+        settings = contents.settings?.value
+        accounts = contents.accounts.filter { !$0.metadata.isDeleted }.map(\.value)
+        cards = contents.cards.filter { !$0.metadata.isDeleted }.map(\.value)
+        categories = contents.categories.filter { !$0.metadata.isDeleted }.map(\.value)
+        transactions = contents.transactions.filter { !$0.metadata.isDeleted }.map(\.value)
     }
 
     private func upsert<T: Identifiable>(_ item: T, into list: inout [T]) {
