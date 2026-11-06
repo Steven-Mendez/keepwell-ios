@@ -1,0 +1,115 @@
+import Domain
+import Foundation
+
+/// A saved movement with what editing it, or showing its receipt again, needs.
+public struct StoredTransaction: Sendable {
+    public let transaction: Transaction
+    /// The flow's context for this movement: its own rate stands in for the settings' (an edit
+    /// keeps the rate it was recorded with), balances leave it out so its old version doesn't count
+    /// next to the new one, and no categorization rule applies.
+    public let context: TransactionContext
+    /// Its receipt as things stand now.
+    public let receipt: SavedTransaction
+
+    public init(transaction: Transaction, context: TransactionContext, receipt: SavedTransaction) {
+        self.transaction = transaction
+        self.context = context
+        self.receipt = receipt
+    }
+}
+
+public protocol GetStoredTransactionUseCase: Sendable {
+    func execute(id: UUID) async throws(DomainError) -> StoredTransaction
+}
+
+extension DefaultGetTransactionContextUseCase: GetStoredTransactionUseCase {
+    public func execute(id: UUID) async throws(DomainError) -> StoredTransaction {
+        let movements = try await transactions.fetchTransactions(in: nil)
+        guard let transaction = movements.first(where: { $0.id == id }) else { throw .notFound(id) }
+        let context = try await context(
+            of: movements,
+            excluding: id,
+            currencies: CurrencySettings(recordedWith: transaction.exchangeRate),
+            usesRules: false,
+        )
+        let receipt = try await DefaultSaveTransactionUseCase.receipt(
+            of: transaction,
+            accounts: context.accounts,
+            movements: movements,
+            principal: principalCurrency(),
+            calendar: calendar,
+        )
+        return StoredTransaction(transaction: transaction, context: context, receipt: receipt)
+    }
+}
+
+/// Saves the changes to a movement already stored, under the same rules as logging one. It keeps
+/// its id, the rate it was recorded with, whether it's shared and the recurring rule behind it;
+/// the account follows the payment method again and the description and note are trimmed again.
+/// An edit never starts a recurring rule.
+public protocol UpdateTransactionUseCase: Sendable {
+    func execute(_ draft: TransactionDraft) async throws(DomainError) -> SavedTransaction
+}
+
+public struct DefaultUpdateTransactionUseCase: UpdateTransactionUseCase {
+    private let stored: any GetStoredTransactionUseCase
+    private let transactions: any TransactionRepository
+    private let settings: any SettingsRepository
+    private let calendar: Calendar
+
+    public init(
+        stored: any GetStoredTransactionUseCase,
+        transactions: any TransactionRepository,
+        settings: any SettingsRepository,
+        calendar: Calendar = .current,
+    ) {
+        self.stored = stored
+        self.transactions = transactions
+        self.settings = settings
+        self.calendar = calendar
+    }
+
+    public func execute(_ draft: TransactionDraft) async throws(DomainError) -> SavedTransaction {
+        let current = try await stored.execute(id: draft.id)
+        var draft = draft
+        draft.repeatFrequency = nil
+        let transaction = try DefaultSaveTransactionUseCase.validated(draft, context: current.context, existing: current.transaction)
+        try await transactions.save(transaction)
+        let principal = try await settings.load()?.currencies.principal ?? current.context.currencies.principal
+        return try await DefaultSaveTransactionUseCase.receipt(
+            of: transaction,
+            accounts: current.context.accounts,
+            movements: transactions.fetchTransactions(in: nil),
+            principal: principal,
+            calendar: calendar,
+        )
+    }
+}
+
+extension TransactionDraft {
+    /// A draft that edits `transaction`, with every field as it was saved.
+    public init(editing transaction: Transaction) {
+        self.init(
+            id: transaction.id,
+            kind: transaction.kind,
+            amount: transaction.amount,
+            currency: transaction.currency,
+            categoryID: transaction.categoryID,
+            source: transaction.cardID.map(PaymentSource.card) ?? .account(transaction.accountID),
+            destinationAccountID: transaction.destinationAccountID,
+            description: transaction.description,
+            date: transaction.date,
+            actualDebitedPrincipal: transaction.actualDebitedPrincipal,
+            note: transaction.note ?? "",
+            isDraft: !transaction.isConfirmed,
+            tags: transaction.tags,
+        )
+    }
+}
+
+extension CurrencySettings {
+    /// The currencies a stored rate converts between, so an edit offers exactly those.
+    init(recordedWith rate: ExchangeRate) {
+        self = (try? CurrencySettings(principal: rate.principal, second: rate.second, rate: rate.rate)) ?? .fallbackForMovements
+    }
+}

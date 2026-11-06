@@ -35,6 +35,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - "Loan payments", a new default expense category ("Pagos de préstamos" in Spanish), placed before
   "Other" and added on existing installs too. "Pay installment" on a loan files the expense there
   unless you pick another category, or in "Other" if you deleted it.
+- Edit a saved movement: "Edit" on its detail opens the same steps on its review, where the amount,
+  category, payment method, accounts, description, date, note, tags and draft status can change.
+  It keeps the movement's reference, the rate it was logged with (so a later rate change in
+  settings doesn't rewrite it), whether it was split and the recurring rule behind it, and checks
+  everything logging checks. After moving it to another category, Keepwell offers "Always use
+  Transport for “Uber”?", which saves a categorization rule for that description.
+- Movement detail: tap a movement in Transactions, or a recent one on home, to see its amount, kind,
+  category, payment method or accounts, date, status, rate, note, tags (tap one to see every
+  movement with it) and the recurring rule behind it, with Confirm (drafts), Edit, Split
+  (expenses), Receipt and Delete.
+
 - "Net worth" on Summary: a line of your net worth at the end of each of the last twelve months
   (this month as of today, months before your first account are left out), with the latest value
   and how much it moved since the first month shown. Second-currency balances convert at each

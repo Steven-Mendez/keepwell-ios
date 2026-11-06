@@ -32,8 +32,10 @@ public struct SavedView: View {
             .contentMargins(.horizontal, KWLayout.gutter, for: .scrollContent)
             .contentMargins(.top, KWLayout.safeTop, for: .scrollContent)
             HStack(spacing: 10) {
-                Button { Task { await viewModel.startOver() } } label: { Text("Log another", bundle: #bundle) }
-                    .buttonStyle(.kw(.surface, size: .regular))
+                if !viewModel.isShowingStoredReceipt {
+                    Button { Task { await viewModel.startOver() } } label: { Text("Log another", bundle: #bundle) }
+                        .buttonStyle(.kw(.surface, size: .regular))
+                }
                 Button(action: onClose) { Text("Done", bundle: #bundle) }
                     .buttonStyle(.kw(.primary, size: .regular))
             }

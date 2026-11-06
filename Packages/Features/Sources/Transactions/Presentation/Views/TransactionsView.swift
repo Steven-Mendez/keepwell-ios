@@ -5,7 +5,8 @@ import SwiftUI
 import TransactionsDomain
 
 /// Movements: search, the account filter and kind chips, the month's totals, then planned
-/// movements and every confirmed one grouped by day. Long-press a row to confirm or delete it.
+/// movements and every confirmed one grouped by day. Tap a row for its detail; long-press it to
+/// confirm or delete it.
 /// Pushed from an account or card (`onBack` set), it opens already filtered and shows that
 /// account's balance on top.
 public struct TransactionsView: View {
@@ -14,21 +15,25 @@ public struct TransactionsView: View {
     private let onBack: (() -> Void)?
     private let onOpenRecurringRule: ((UUID) -> Void)?
     private let onSplit: ((Domain.Transaction) -> Void)?
+    private let onOpenTransaction: ((UUID) -> Void)?
     @FocusState private var isSearchFocused: Bool
     @State private var pendingDeletion: Domain.Transaction?
     @State private var isPickingScope = false
 
-    /// `onOpenRecurringRule` opens the rule that recorded a movement, from its menu; `onSplit`
-    /// splits an expense between the person and others, who then owe their share.
+    /// `onOpenTransaction` opens a movement's detail; `onOpenRecurringRule` opens the rule that
+    /// recorded a movement, from its menu; `onSplit` splits an expense between the person and
+    /// others, who then owe their share.
     public init(
         viewModel: TransactionsViewModel,
         onBack: (() -> Void)? = nil,
+        onOpenTransaction: ((UUID) -> Void)? = nil,
         onOpenRecurringRule: ((UUID) -> Void)? = nil,
         onSplit: ((Domain.Transaction) -> Void)? = nil,
         onNewMovement: @escaping () -> Void,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
+        self.onOpenTransaction = onOpenTransaction
         self.onOpenRecurringRule = onOpenRecurringRule
         self.onSplit = onSplit
         self.onNewMovement = onNewMovement
@@ -244,14 +249,17 @@ public struct TransactionsView: View {
 
 extension TransactionsView {
     private func row(_ transaction: Domain.Transaction, display: TransactionDisplay) -> some View {
-        KWTransactionRow(
-            display.style(of: transaction),
-            title: transaction.description,
-            subtitle: viewModel.subtitle(of: transaction, display: display),
-            amount: display.amount(of: transaction),
-            secondaryAmount: display.secondaryAmount(of: transaction),
-        )
-        .contentShape(Rectangle())
+        Button { onOpenTransaction?(transaction.id) } label: {
+            KWTransactionRow(
+                display.style(of: transaction),
+                title: transaction.description,
+                subtitle: viewModel.subtitle(of: transaction, display: display),
+                amount: display.amount(of: transaction),
+                secondaryAmount: display.secondaryAmount(of: transaction),
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
         .contextMenu {
             ForEach(transaction.tags, id: \.self) { tag in
                 Button { viewModel.show(tag: tag) } label: {

@@ -141,13 +141,7 @@ struct RootView: View {
     /// Keeps the picked CSV's text for after onboarding saves the accounts it refers to.
     private func readPickedCSV(_ result: Result<URL, any Error>) {
         guard case let .success(url) = result else { return }
-        let didAccess = url.startAccessingSecurityScopedResource()
-        defer {
-            if didAccess {
-                url.stopAccessingSecurityScopedResource()
-            }
-        }
-        pendingImport = (try? Data(contentsOf: url)).flatMap { String(data: $0, encoding: .utf8) }
+        pendingImport = PickedFile.data(at: url).flatMap { String(data: $0, encoding: .utf8) }
     }
 
     // MARK: - Main
@@ -198,6 +192,7 @@ struct RootView: View {
         case .transactions:
             TransactionsView(
                 viewModel: screens.transactions,
+                onOpenTransaction: { router.push(.transaction(id: $0)) },
                 onOpenRecurringRule: { router.push(.recurringRule(id: $0)) },
                 onSplit: { splitBill = container.makeSplitBillViewModel($0) },
                 onNewMovement: { presentMovementMenu() },
@@ -246,7 +241,15 @@ struct RootView: View {
             allRecurring: { router.push(.recurring) },
             goals: { router.push(.goals) },
             debts: { router.push(.debts) },
+            openTransaction: { router.push(.transaction(id: $0)) },
         )
+    }
+
+    /// A tag tapped in a movement's detail: Transactions, narrowed to it, as the web does.
+    func showTag(_ tag: String) {
+        router.path = NavigationPath()
+        screens?.transactions.showOnly(tag: tag)
+        tab = .transactions
     }
 }
 
@@ -291,12 +294,7 @@ extension RootView {
 
     /// A Keepwell backup brings accounts, cards and movements at once and marks onboarding done.
     private func restoreFromFile(_ url: URL) async {
-        let didAccess = url.startAccessingSecurityScopedResource()
-        let data = try? Data(contentsOf: url)
-        if didAccess {
-            url.stopAccessingSecurityScopedResource()
-        }
-        guard let data, let summary = try? await container.makeRestoreBackup().execute(data) else {
+        guard let data = PickedFile.data(at: url), let summary = try? await container.makeRestoreBackup().execute(data) else {
             banner = String(localized: "That file isn't a Keepwell backup.")
             return
         }
