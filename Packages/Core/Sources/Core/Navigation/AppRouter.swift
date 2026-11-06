@@ -19,6 +19,8 @@ public enum AppRoute: Hashable, Sendable {
     case recurring
     /// A recurring rule's editor; `nil` creates one.
     case recurringRule(id: UUID?)
+    /// Savings goals, reached from home.
+    case goals
 }
 
 /// Single owner of the navigation stack. Feature views don't see it: they expose navigation as

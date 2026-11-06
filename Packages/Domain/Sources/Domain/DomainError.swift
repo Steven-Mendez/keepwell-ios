@@ -16,6 +16,8 @@ public enum DomainError: Error, Equatable, Sendable {
     case invalidDayOfMonth(Int)
     /// A card's "valid thru" needs a month 1–12 and a four-digit year.
     case invalidExpiry
+    /// A savings goal's target month needs a month 1–12 and a year 2000–2199, like a card's expiry.
+    case invalidTargetMonth
     /// Another category of the same kind already has this name.
     case duplicateCategoryName(String)
     /// "Other" and "Other income" take the movements of deleted categories, so they stay.

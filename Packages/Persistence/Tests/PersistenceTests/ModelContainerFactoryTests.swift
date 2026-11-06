@@ -22,8 +22,9 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV5.versionIdentifier == Schema.Version(5, 0, 0))
         #expect(KeepwellSchemaV6.versionIdentifier == Schema.Version(6, 0, 0))
         #expect(KeepwellSchemaV7.versionIdentifier == Schema.Version(7, 0, 0))
-        #expect(KeepwellMigrationPlan.schemas.count == 7)
-        #expect(KeepwellMigrationPlan.stages.count == 6)
+        #expect(KeepwellSchemaV8.versionIdentifier == Schema.Version(8, 0, 0))
+        #expect(KeepwellMigrationPlan.schemas.count == 8)
+        #expect(KeepwellMigrationPlan.stages.count == 7)
         #expect(KeepwellSchemaV1.models.count == 5)
         #expect(KeepwellSchemaV2.models.count == 5)
         #expect(KeepwellSchemaV3.models.count == 5)
@@ -31,6 +32,7 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV5.models.count == 5)
         #expect(KeepwellSchemaV6.models.count == 6)
         #expect(KeepwellSchemaV7.models.count == 6)
+        #expect(KeepwellSchemaV8.models.count == 7)
     }
 
     /// A store written by V3 opens with today's schema: cards keep their digits and start with no
@@ -272,5 +274,43 @@ struct ModelContainerFactoryTests {
         #expect(boat.name == "Boat")
         #expect(boat.icon == "sailboat")
         #expect(boat.monthlyBudget == nil)
+    }
+}
+
+extension ModelContainerFactoryTests {
+    /// A store written by V7 opens with V8: everything stays, and there are no goals until the
+    /// person creates one.
+    @Test
+    func versionSevenStoreMigratesToVersionEight() async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Keepwell.store")
+
+        do {
+            let schema = Schema(versionedSchema: KeepwellSchemaV7.self)
+            let container = try ModelContainer(
+                for: schema,
+                configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+            )
+            let store = SwiftDataStore(modelContainer: container)
+            try await store.save(TransactionCategory(
+                id: "custom-boat", name: "Boat", kind: .expense, monthlyBudget: Money(250, "USD"),
+            ))
+        }
+
+        let schema = Schema(versionedSchema: KeepwellSchemaV8.self)
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: KeepwellMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+        )
+        let store = SwiftDataStore(modelContainer: container)
+        let boat = try #require(await store.fetchCategories().first { $0.id == "custom-boat" })
+        #expect(boat.monthlyBudget == Money(250, "USD"))
+        #expect(try await store.fetchSavingsGoals().isEmpty)
+        let goal = SavingsGoal(name: "Trip", target: Money(15000, "NIO"))
+        try await store.save(goal)
+        #expect(try await store.fetchSavingsGoals() == [goal])
     }
 }

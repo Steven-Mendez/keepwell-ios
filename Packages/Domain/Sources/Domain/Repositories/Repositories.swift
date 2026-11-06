@@ -37,6 +37,15 @@ public protocol RecurringRuleRepository: Sendable {
     func saveMaterialized(transactions: [Transaction], rules: [RecurringRule]) async throws(DomainError)
 }
 
+public protocol SavingsGoalRepository: Sendable {
+    /// Live goals only, in the order they were created.
+    func fetchSavingsGoals() async throws(DomainError) -> [SavingsGoal]
+    /// Inserts or replaces the goal with the same id.
+    func save(_ goal: SavingsGoal) async throws(DomainError)
+    /// Soft-deletes, like every other record. Throws `.notFound` for an unknown or deleted id.
+    func deleteSavingsGoal(id: UUID) async throws(DomainError)
+}
+
 public protocol CategoryRepository: Sendable {
     /// In the person's order. Includes every `TransactionCategory.defaults` entry, adding the ones
     /// a newer version ships, except the defaults the person deleted.

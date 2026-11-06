@@ -22,6 +22,7 @@ struct SwiftDataStoreSyncTests {
             transactions: sample.transactions,
             categories: sample.categories,
             recurringRules: sample.recurringRules,
+            savingsGoals: sample.savingsGoals,
         )
         return store
     }
@@ -114,6 +115,7 @@ struct SwiftDataStoreSyncTests {
         try await source.deleteTransaction(id: deletedID)
         try await source.deleteCategory(id: "pets")
         try await source.deleteRecurringRule(id: SampleData.IDs.cashRule)
+        try await source.deleteSavingsGoal(id: SampleData.IDs.phoneGoal)
         let contents = try await source.exportContents()
 
         let target = try makeStore()
@@ -130,6 +132,9 @@ struct SwiftDataStoreSyncTests {
         #expect(Set(restored.recurringRules) == Set(contents.recurringRules))
         #expect(restored.recurringRules.first { $0.value.id == SampleData.IDs.cashRule }?.metadata.isDeleted == true)
         #expect(try await target.fetchRecurringRules().count == sample.recurringRules.count - 1)
+        #expect(Set(restored.savingsGoals) == Set(contents.savingsGoals))
+        #expect(restored.savingsGoals.first { $0.value.id == SampleData.IDs.phoneGoal }?.metadata.isDeleted == true)
+        #expect(try await target.fetchSavingsGoals().count == sample.savingsGoals.count - 1)
         #expect(try await Set(target.fetchTransactions(in: nil)) == Set(sample.transactions.filter { $0.id != deletedID }))
         let categories = try await target.fetchCategories()
         #expect(!categories.contains { $0.id == "pets" || $0.id == "custom-old" })
@@ -143,5 +148,6 @@ struct SwiftDataStoreSyncTests {
         let contents = try await store.exportContents()
         #expect(contents.transactions.isEmpty && contents.accounts.isEmpty && contents.cards.isEmpty)
         #expect(contents.recurringRules.isEmpty)
+        #expect(contents.savingsGoals.isEmpty)
     }
 }

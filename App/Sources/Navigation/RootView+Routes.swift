@@ -12,14 +12,7 @@ extension RootView {
     func destination(_ route: AppRoute) -> some View {
         switch route {
         case .settings:
-            SettingsRoute(
-                container: container,
-                onBack: settingsClosed,
-                onErased: returnToOnboarding,
-                onOpenCategories: { navigator.push(.categories(showsIncome: $0 == .income)) },
-                onOpenPaymentMethods: { navigator.push(.paymentMethods) },
-                onOpenRecurring: { navigator.push(.recurring) },
-            )
+            settingsRoute
         case let .categories(showsIncome):
             CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: navigator.pop)
         case .paymentMethods:
@@ -58,6 +51,19 @@ extension RootView {
             )
         case let .recurringRule(id):
             RecurringRuleRoute(container: container, ruleID: id, onBack: navigator.pop)
+        case .goals:
+            GoalsRoute(container: container, onBack: navigator.pop)
         }
+    }
+
+    private var settingsRoute: some View {
+        SettingsRoute(
+            container: container,
+            onBack: settingsClosed,
+            onErased: returnToOnboarding,
+            onOpenCategories: { navigator.push(.categories(showsIncome: $0 == .income)) },
+            onOpenPaymentMethods: { navigator.push(.paymentMethods) },
+            onOpenRecurring: { navigator.push(.recurring) },
+        )
     }
 }

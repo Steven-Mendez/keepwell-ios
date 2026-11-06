@@ -11,9 +11,10 @@ import Foundation
 /// Version 2 added `recurringRules` and each movement's `recurringId`. A version 1 file has
 /// neither and still restores, with no rules. A category's optional `monthlyBudget` came later
 /// within version 2: it is additive, so older files restore without budgets and older apps skip it.
+/// Version 3 added `savingsGoals`; versions 1 and 2 still restore, with no goals.
 public struct BackupSnapshot: Codable, Sendable, Equatable {
     /// Raised on a breaking change, so an older app refuses a file it doesn't understand.
-    public static let currentSchemaVersion = 2
+    public static let currentSchemaVersion = 3
 
     public let schemaVersion: Int
     public let exportedAt: Date
@@ -23,6 +24,7 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
     public let categories: [CategoryBackup]
     public let transactions: [TransactionBackup]
     public let recurringRules: [RecurringRuleBackup]
+    public let savingsGoals: [SavingsGoalBackup]
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion
@@ -33,6 +35,7 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         case categories
         case transactions
         case recurringRules
+        case savingsGoals
     }
 
     /// `nil` when there are no settings yet: before onboarding there is nothing to back up.
@@ -46,6 +49,7 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         categories = contents.categories.enumerated().map { CategoryBackup($0.element, sortIndex: $0.offset) }
         transactions = contents.transactions.map(TransactionBackup.init)
         recurringRules = contents.recurringRules.map(RecurringRuleBackup.init)
+        savingsGoals = contents.savingsGoals.map(SavingsGoalBackup.init)
     }
 
     public init(from decoder: any Decoder) throws {
@@ -59,6 +63,8 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         transactions = try container.decode([TransactionBackup].self, forKey: .transactions)
         // Version 1 files were written before recurring rules existed.
         recurringRules = try container.decodeIfPresent([RecurringRuleBackup].self, forKey: .recurringRules) ?? []
+        // Versions 1 and 2 were written before savings goals existed.
+        savingsGoals = try container.decodeIfPresent([SavingsGoalBackup].self, forKey: .savingsGoals) ?? []
     }
 
     /// Converts and validates every record, so a damaged file fails here, before anything is replaced.
@@ -86,6 +92,10 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         for row in recurringRules {
             try rules.append(row.toDomain())
         }
+        var goals: [Stamped<SavingsGoal>] = []
+        for row in savingsGoals {
+            try goals.append(row.toDomain())
+        }
         return try BackupContents(
             settings: settings.toDomain(),
             accounts: accounts,
@@ -93,6 +103,7 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
             categories: categories,
             transactions: transactions,
             recurringRules: rules,
+            savingsGoals: goals,
         )
     }
 

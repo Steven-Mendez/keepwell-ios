@@ -18,6 +18,7 @@ public struct HomeView: View {
         public var allPlanned: () -> Void
         public var allTransactions: () -> Void
         public var allRecurring: () -> Void
+        public var goals: () -> Void
 
         public init(
             search: @escaping () -> Void,
@@ -29,6 +30,7 @@ public struct HomeView: View {
             allPlanned: @escaping () -> Void,
             allTransactions: @escaping () -> Void,
             allRecurring: @escaping () -> Void = {},
+            goals: @escaping () -> Void = {},
         ) {
             self.search = search
             self.summary = summary
@@ -39,6 +41,7 @@ public struct HomeView: View {
             self.allPlanned = allPlanned
             self.allTransactions = allTransactions
             self.allRecurring = allRecurring
+            self.goals = goals
         }
     }
 
@@ -105,6 +108,7 @@ public struct HomeView: View {
         if !overview.planned.isEmpty {
             plannedCard(overview)
         }
+        HomeGoalsCard(viewModel: viewModel, top: overview.goals.first, hidesBalances: hidesBalances, onOpen: actions.goals)
         balancesCard(overview)
     }
 

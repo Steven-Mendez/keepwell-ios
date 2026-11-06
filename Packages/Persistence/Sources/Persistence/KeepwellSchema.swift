@@ -339,8 +339,24 @@ public enum KeepwellSchemaV7: VersionedSchema {
     }
 }
 
+/// Savings goals (`SavingsGoalRecord`).
+public enum KeepwellSchemaV8: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(8, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        [
+            Persistence.AccountRecord.self,
+            Persistence.CardRecord.self,
+            Persistence.TransactionRecord.self,
+            Persistence.CategoryRecord.self,
+            SettingsRecord.self,
+            RecurringRuleRecord.self,
+            SavingsGoalRecord.self,
+        ]
+    }
+}
+
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV7
+public typealias KeepwellCurrentSchema = KeepwellSchemaV8
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -352,6 +368,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV5.self,
             KeepwellSchemaV6.self,
             KeepwellSchemaV7.self,
+            KeepwellSchemaV8.self,
         ]
     }
 
@@ -360,7 +377,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// V2 couldn't do either to a default. Cards from V3 start with no product name or expiry.
     /// Rows from V4 start alive (`deletedAt` nil), changed at the time of the migration. Movements
     /// from V5 start without a recurring rule, and there are no rules yet. Categories from V6 start
-    /// without a budget.
+    /// without a budget. V7 had no savings goals, so V8 starts with none.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -369,6 +386,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV4.self, toVersion: KeepwellSchemaV5.self),
             .lightweight(fromVersion: KeepwellSchemaV5.self, toVersion: KeepwellSchemaV6.self),
             .lightweight(fromVersion: KeepwellSchemaV6.self, toVersion: KeepwellSchemaV7.self),
+            .lightweight(fromVersion: KeepwellSchemaV7.self, toVersion: KeepwellSchemaV8.self),
         ]
     }
 }
