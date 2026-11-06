@@ -12,6 +12,7 @@ public struct SampleData: Sendable {
     public let transactions: [Transaction]
     public let categories: [TransactionCategory]
     public let recurringRules: [RecurringRule]
+    public let savingsGoals: [SavingsGoal]
 
     public enum IDs {
         public static let savings = UUID(uuidString: "00000000-0000-0000-0000-00000000A001") ?? UUID()
@@ -29,6 +30,9 @@ public struct SampleData: Sendable {
         public static let rentRule = UUID(uuidString: "00000000-0000-0000-0000-00000000D002") ?? UUID()
         public static let salaryRule = UUID(uuidString: "00000000-0000-0000-0000-00000000D003") ?? UUID()
         public static let cashRule = UUID(uuidString: "00000000-0000-0000-0000-00000000D004") ?? UUID()
+        public static let tripGoal = UUID(uuidString: "00000000-0000-0000-0000-00000000E001") ?? UUID()
+        public static let emergencyGoal = UUID(uuidString: "00000000-0000-0000-0000-00000000E002") ?? UUID()
+        public static let phoneGoal = UUID(uuidString: "00000000-0000-0000-0000-00000000E003") ?? UUID()
     }
 
     /// The sample's fixed "today": 22 October 2026.
@@ -59,6 +63,24 @@ public struct SampleData: Sendable {
         cards = Self.makeCards()
         transactions = Self.makeTransactions(rate: rate, day: day)
         recurringRules = Self.makeRecurringRules(day: day)
+        savingsGoals = Self.makeSavingsGoals(month: month)
+    }
+
+    /// A trip due in two months, an emergency fund without a date and a phone already paid for.
+    static func makeSavingsGoals(month: YearMonth) -> [SavingsGoal] {
+        [
+            SavingsGoal(
+                id: IDs.tripGoal, name: "Trip", target: Money(15000, "NIO"), saved: 4500,
+                targetMonth: try? TargetMonth(month.adding(months: 2)), icon: "airplane", color: "blue",
+            ),
+            SavingsGoal(
+                id: IDs.emergencyGoal, name: "Emergency fund", target: Money(3000, "USD"), saved: 1200,
+                icon: "umbrella", color: "green",
+            ),
+            SavingsGoal(
+                id: IDs.phoneGoal, name: "New phone", target: Money(800, "USD"), saved: 800, icon: "phone", color: "purple",
+            ),
+        ]
     }
 
     /// A subscription on the credit card, rent and a weekly cash top-up from savings, and the salary.

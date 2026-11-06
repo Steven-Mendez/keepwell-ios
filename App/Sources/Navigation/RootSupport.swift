@@ -5,6 +5,7 @@ import CreateTransactionPresentation
 import CreditCardPresentation
 import DesignSystem
 import Domain
+import GoalsPresentation
 import HomePresentation
 import LockPresentation
 import OnboardingPresentation
@@ -281,6 +282,22 @@ struct RecurringRoute: View {
 
     var body: some View {
         RecurringView(viewModel: viewModel, onBack: onBack, onAdd: onAdd, onOpen: onOpen)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+/// Savings goals. Its editor and add/withdraw sheets open on top of it, so it reloads by itself.
+struct GoalsRoute: View {
+    @State private var viewModel: GoalsViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeGoalsViewModel())
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        GoalsView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
     }
 }

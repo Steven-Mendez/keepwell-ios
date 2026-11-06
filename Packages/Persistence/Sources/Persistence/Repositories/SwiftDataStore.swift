@@ -190,6 +190,40 @@ extension SwiftDataStore: RecurringRuleRepository {
     }
 }
 
+extension SwiftDataStore: SavingsGoalRepository {
+    public func fetchSavingsGoals() throws(DomainError) -> [SavingsGoal] {
+        try perform { context in
+            try context.fetch(FetchDescriptor<SavingsGoalRecord>(
+                predicate: #Predicate { $0.deletedAt == nil },
+                sortBy: [SortDescriptor(\.createdAt)],
+            ))
+            .map { try $0.toDomain() }
+        }
+    }
+
+    public func save(_ goal: SavingsGoal) throws(DomainError) {
+        try perform { context in
+            let id = goal.id
+            let record = try context.fetch(FetchDescriptor<SavingsGoalRecord>(predicate: #Predicate { $0.id == id })).first
+                ?? SavingsGoalRecord(id: id).inserted(into: context)
+            record.update(from: goal)
+            record.stampSaved()
+            try context.save()
+        }
+    }
+
+    public func deleteSavingsGoal(id: UUID) throws(DomainError) {
+        try perform { context in
+            let alive = #Predicate<SavingsGoalRecord> { $0.id == id && $0.deletedAt == nil }
+            guard let record = try context.fetch(FetchDescriptor(predicate: alive)).first else {
+                throw DomainError.notFound(id)
+            }
+            record.stampDeleted()
+            try context.save()
+        }
+    }
+}
+
 extension SwiftDataStore: CategoryRepository {
     public func fetchCategories() throws(DomainError) -> [TransactionCategory] {
         try perform { context in
@@ -334,6 +368,7 @@ extension SwiftDataStore: DataEraser {
         try perform { context in
             try context.delete(model: TransactionRecord.self)
             try context.delete(model: RecurringRuleRecord.self)
+            try context.delete(model: SavingsGoalRecord.self)
             try context.delete(model: CardRecord.self)
             try context.delete(model: AccountRecord.self)
             try context.delete(model: CategoryRecord.self)

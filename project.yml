@@ -126,6 +126,10 @@ targets:
       - package: Features
         product: RecurringPresentation
       - package: Features
+        product: GoalsDomain
+      - package: Features
+        product: GoalsPresentation
+      - package: Features
         product: SharedPresentation
     preBuildScripts:
       - name: SwiftLint
@@ -206,6 +210,8 @@ schemes:
         - package: Features/LockPresentation
         - package: Features/RecurringDomain
         - package: Features/RecurringPresentation
+        - package: Features/GoalsDomain
+        - package: Features/GoalsPresentation
       targets:
         - package: Core/CoreTests
         - package: DesignSystem/DesignSystemTests
@@ -232,6 +238,8 @@ schemes:
         - package: Features/LockPresentationTests
         - package: Features/RecurringDomainTests
         - package: Features/RecurringPresentationTests
+        - package: Features/GoalsDomainTests
+        - package: Features/GoalsPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release

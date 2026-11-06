@@ -69,6 +69,7 @@ final class AppContainer {
                 transactions: sample.transactions,
                 categories: sample.categories,
                 recurringRules: sample.recurringRules,
+                savingsGoals: sample.savingsGoals,
             )
         } catch {
             Logger.app.error("Sample data could not be seeded: \(String(describing: error), privacy: .public)")
@@ -117,12 +118,8 @@ final class AppContainer {
     func makeHomeViewModel() -> HomeViewModel {
         HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
-                accounts: store,
-                cards: store,
-                transactions: store,
-                categories: store,
-                settings: store,
-                recurringRules: store,
+                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+                recurringRules: store, savingsGoals: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
