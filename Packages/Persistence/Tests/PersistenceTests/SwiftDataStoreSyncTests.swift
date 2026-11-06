@@ -23,6 +23,8 @@ struct SwiftDataStoreSyncTests {
             categories: sample.categories,
             recurringRules: sample.recurringRules,
             savingsGoals: sample.savingsGoals,
+            loans: sample.loans,
+            personalDebts: sample.personalDebts,
         )
         return store
     }
@@ -116,6 +118,7 @@ struct SwiftDataStoreSyncTests {
         try await source.deleteCategory(id: "pets")
         try await source.deleteRecurringRule(id: SampleData.IDs.cashRule)
         try await source.deleteSavingsGoal(id: SampleData.IDs.phoneGoal)
+        try await source.deletePersonalDebt(id: SampleData.IDs.settledDebt)
         let contents = try await source.exportContents()
 
         let target = try makeStore()
@@ -135,6 +138,11 @@ struct SwiftDataStoreSyncTests {
         #expect(Set(restored.savingsGoals) == Set(contents.savingsGoals))
         #expect(restored.savingsGoals.first { $0.value.id == SampleData.IDs.phoneGoal }?.metadata.isDeleted == true)
         #expect(try await target.fetchSavingsGoals().count == sample.savingsGoals.count - 1)
+        #expect(Set(restored.loans) == Set(contents.loans))
+        #expect(try await target.fetchLoans() == sample.loans)
+        #expect(Set(restored.personalDebts) == Set(contents.personalDebts))
+        #expect(restored.personalDebts.first { $0.value.id == SampleData.IDs.settledDebt }?.metadata.isDeleted == true)
+        #expect(try await target.fetchPersonalDebts().count == sample.personalDebts.count - 1)
         #expect(try await Set(target.fetchTransactions(in: nil)) == Set(sample.transactions.filter { $0.id != deletedID }))
         let categories = try await target.fetchCategories()
         #expect(!categories.contains { $0.id == "pets" || $0.id == "custom-old" })
@@ -149,5 +157,6 @@ struct SwiftDataStoreSyncTests {
         #expect(contents.transactions.isEmpty && contents.accounts.isEmpty && contents.cards.isEmpty)
         #expect(contents.recurringRules.isEmpty)
         #expect(contents.savingsGoals.isEmpty)
+        #expect(contents.loans.isEmpty && contents.personalDebts.isEmpty)
     }
 }

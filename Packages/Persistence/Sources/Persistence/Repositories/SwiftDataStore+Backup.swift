@@ -20,6 +20,10 @@ extension SwiftDataStore: BackupStore {
                 .map { try Stamped($0.toDomain(), $0.metadata) }
             let goals = try context.fetch(FetchDescriptor<SavingsGoalRecord>(sortBy: [SortDescriptor(\.createdAt)]))
                 .map { try Stamped($0.toDomain(), $0.metadata) }
+            let loans = try context.fetch(FetchDescriptor<LoanRecord>(sortBy: [SortDescriptor(\.createdAt)]))
+                .map { try Stamped($0.toDomain(), $0.metadata) }
+            let debts = try context.fetch(FetchDescriptor<PersonalDebtRecord>(sortBy: [SortDescriptor(\.createdAt)]))
+                .map { try Stamped($0.toDomain(), $0.metadata) }
             return try BackupContents(
                 settings: settings,
                 accounts: accounts,
@@ -28,6 +32,8 @@ extension SwiftDataStore: BackupStore {
                 transactions: transactions,
                 recurringRules: rules,
                 savingsGoals: goals,
+                loans: loans,
+                personalDebts: debts,
             )
         }
     }
@@ -74,7 +80,8 @@ extension SwiftDataStore: BackupStore {
         }
     }
 
-    /// Recurring rules and savings goals: what the person planned rather than what happened.
+    /// Recurring rules, savings goals, loans and personal debts: what the person planned or keeps
+    /// track of rather than the movements themselves.
     private func insertPlans(of contents: BackupContents, into context: ModelContext) {
         for rule in contents.recurringRules {
             let record = RecurringRuleRecord(id: rule.value.id).inserted(into: context)
@@ -85,6 +92,16 @@ extension SwiftDataStore: BackupStore {
             let record = SavingsGoalRecord(id: goal.value.id).inserted(into: context)
             record.update(from: goal.value)
             record.apply(goal.metadata)
+        }
+        for loan in contents.loans {
+            let record = LoanRecord(id: loan.value.id).inserted(into: context)
+            record.update(from: loan.value)
+            record.apply(loan.metadata)
+        }
+        for debt in contents.personalDebts {
+            let record = PersonalDebtRecord(id: debt.value.id).inserted(into: context)
+            record.update(from: debt.value)
+            record.apply(debt.metadata)
         }
     }
 
@@ -111,6 +128,8 @@ extension SwiftDataStore: BackupStore {
         try context.fetch(FetchDescriptor<TransactionRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<RecurringRuleRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<SavingsGoalRecord>()).forEach(context.delete)
+        try context.fetch(FetchDescriptor<LoanRecord>()).forEach(context.delete)
+        try context.fetch(FetchDescriptor<PersonalDebtRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CardRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<AccountRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CategoryRecord>()).forEach(context.delete)

@@ -18,6 +18,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     private let settings: any SettingsRepository
     private let recurringRules: (any RecurringRuleRepository)?
     private let savingsGoals: (any SavingsGoalRepository)?
+    private let loans: (any LoanRepository)?
+    private let personalDebts: (any PersonalDebtRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
@@ -29,6 +31,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         settings: any SettingsRepository,
         recurringRules: (any RecurringRuleRepository)? = nil,
         savingsGoals: (any SavingsGoalRepository)? = nil,
+        loans: (any LoanRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -39,6 +43,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         self.settings = settings
         self.recurringRules = recurringRules
         self.savingsGoals = savingsGoals
+        self.loans = loans
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.now = now
     }
@@ -48,13 +54,17 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         let records = try await LedgerRecords.load(accounts: accounts, cards: cards, transactions: transactions, categories: categories)
         let rules = try await recurringRules?.fetchRecurringRules() ?? []
         let goals = try await savingsGoals?.fetchSavingsGoals() ?? []
-        return try Self.overview(records, rules: rules, goals: goals, settings: stored, calendar: calendar, now: now())
+        let loanRows = try await loans?.fetchLoans() ?? []
+        let personalRows = try await personalDebts?.fetchPersonalDebts() ?? []
+        let debts = DebtRecords(loans: loanRows, personal: personalRows)
+        return try Self.overview(records, rules: rules, goals: goals, debts: debts, settings: stored, calendar: calendar, now: now())
     }
 
     static func overview(
         _ records: LedgerRecords,
         rules: [RecurringRule] = [],
         goals: [SavingsGoal] = [],
+        debts: DebtRecords = DebtRecords(),
         settings: Settings,
         calendar: Calendar,
         now: Date,
@@ -106,6 +116,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             goals: SavingsGoalProgress.ordered(goals, currentMonth: month.month),
             forecast: forecast(records, rules: rules, settings: currencies, calendar: calendar, now: now),
             priceIncreases: PriceIncrease.detect(in: transactions, now: now, calendar: calendar),
+            loans: LoanProgress.ordered(debts.loans, today: now, calendar: calendar),
+            debtTotals: DebtTotals(loans: debts.loans, debts: debts.personal),
             accounts: accounts,
             cards: cards,
             categories: records.categories,
@@ -151,4 +163,10 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             .prefix(3)
             .map(\.element)
     }
+}
+
+/// Loans and personal debts as home reads them, together so `overview` keeps one parameter for both.
+struct DebtRecords {
+    var loans: [Loan] = []
+    var personal: [PersonalDebt] = []
 }

@@ -44,6 +44,8 @@ public struct BackupContents: Hashable, Sendable {
     public var transactions: [Stamped<Transaction>]
     public var recurringRules: [Stamped<RecurringRule>]
     public var savingsGoals: [Stamped<SavingsGoal>]
+    public var loans: [Stamped<Loan>]
+    public var personalDebts: [Stamped<PersonalDebt>]
 
     public init(
         settings: Stamped<Settings>?,
@@ -53,6 +55,8 @@ public struct BackupContents: Hashable, Sendable {
         transactions: [Stamped<Transaction>],
         recurringRules: [Stamped<RecurringRule>] = [],
         savingsGoals: [Stamped<SavingsGoal>] = [],
+        loans: [Stamped<Loan>] = [],
+        personalDebts: [Stamped<PersonalDebt>] = [],
     ) {
         self.settings = settings
         self.accounts = accounts
@@ -61,5 +65,7 @@ public struct BackupContents: Hashable, Sendable {
         self.transactions = transactions
         self.recurringRules = recurringRules
         self.savingsGoals = savingsGoals
+        self.loans = loans
+        self.personalDebts = personalDebts
     }
 }

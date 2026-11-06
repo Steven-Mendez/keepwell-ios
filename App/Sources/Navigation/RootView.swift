@@ -4,6 +4,7 @@ import Core
 import CreateTransactionDomain
 import CreateTransactionPresentation
 import CreditCardPresentation
+import DebtsPresentation
 import DesignSystem
 import Domain
 import HomePresentation
@@ -40,6 +41,8 @@ struct RootView: View {
     @State private var movementMenu: PresentedFlow<NewMovementMenuViewModel>?
     /// Chosen in the menu sheet; the flow opens once the sheet has finished closing.
     @State private var chosenMovement: MovementType?
+    /// "Split" on an expense in the movement list.
+    @State private var splitBill: SplitBillViewModel?
     @State private var lock = LockState()
     /// A CSV picked during onboarding; it's imported once onboarding has saved the accounts.
     @State private var pendingImport: String?
@@ -171,6 +174,7 @@ struct RootView: View {
         .fullScreenCover(item: $newMovement, onDismiss: reloadScreens) { flow in
             CreateTransactionFlowView(viewModel: flow.viewModel) { newMovement = nil }
         }
+        .splitBillSheet($splitBill, onDismiss: reloadScreens)
         .sheet(item: $movementMenu, onDismiss: openChosenMovement) { menu in
             NewMovementSheet(
                 viewModel: menu.viewModel,
@@ -195,6 +199,7 @@ struct RootView: View {
             TransactionsView(
                 viewModel: screens.transactions,
                 onOpenRecurringRule: { router.push(.recurringRule(id: $0)) },
+                onSplit: { splitBill = container.makeSplitBillViewModel($0) },
                 onNewMovement: { presentMovementMenu() },
             )
         case .accounts:
@@ -240,6 +245,7 @@ struct RootView: View {
             },
             allRecurring: { router.push(.recurring) },
             goals: { router.push(.goals) },
+            debts: { router.push(.debts) },
         )
     }
 }

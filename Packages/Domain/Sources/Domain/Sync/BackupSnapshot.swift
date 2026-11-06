@@ -12,9 +12,10 @@ import Foundation
 /// neither and still restores, with no rules. A category's optional `monthlyBudget` came later
 /// within version 2: it is additive, so older files restore without budgets and older apps skip it.
 /// Version 3 added `savingsGoals`; versions 1 and 2 still restore, with no goals.
+/// Version 4 added `loans` and `personalDebts`; versions 1 to 3 still restore, with neither.
 public struct BackupSnapshot: Codable, Sendable, Equatable {
     /// Raised on a breaking change, so an older app refuses a file it doesn't understand.
-    public static let currentSchemaVersion = 3
+    public static let currentSchemaVersion = 4
 
     public let schemaVersion: Int
     public let exportedAt: Date
@@ -25,6 +26,8 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
     public let transactions: [TransactionBackup]
     public let recurringRules: [RecurringRuleBackup]
     public let savingsGoals: [SavingsGoalBackup]
+    public let loans: [LoanBackup]
+    public let personalDebts: [PersonalDebtBackup]
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion
@@ -36,6 +39,8 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         case transactions
         case recurringRules
         case savingsGoals
+        case loans
+        case personalDebts
     }
 
     /// `nil` when there are no settings yet: before onboarding there is nothing to back up.
@@ -50,6 +55,8 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         transactions = contents.transactions.map(TransactionBackup.init)
         recurringRules = contents.recurringRules.map(RecurringRuleBackup.init)
         savingsGoals = contents.savingsGoals.map(SavingsGoalBackup.init)
+        loans = contents.loans.map(LoanBackup.init)
+        personalDebts = contents.personalDebts.map(PersonalDebtBackup.init)
     }
 
     public init(from decoder: any Decoder) throws {
@@ -65,6 +72,9 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         recurringRules = try container.decodeIfPresent([RecurringRuleBackup].self, forKey: .recurringRules) ?? []
         // Versions 1 and 2 were written before savings goals existed.
         savingsGoals = try container.decodeIfPresent([SavingsGoalBackup].self, forKey: .savingsGoals) ?? []
+        // Versions 1 to 3 were written before loans and personal debts existed.
+        loans = try container.decodeIfPresent([LoanBackup].self, forKey: .loans) ?? []
+        personalDebts = try container.decodeIfPresent([PersonalDebtBackup].self, forKey: .personalDebts) ?? []
     }
 
     /// Converts and validates every record, so a damaged file fails here, before anything is replaced.
@@ -72,38 +82,16 @@ public struct BackupSnapshot: Codable, Sendable, Equatable {
         guard schemaVersion <= Self.currentSchemaVersion else {
             throw .corruptedData("Backup schema \(schemaVersion) is newer than this app")
         }
-        var accounts: [Stamped<Account>] = []
-        for row in self.accounts {
-            try accounts.append(row.toDomain())
-        }
-        var cards: [Stamped<Card>] = []
-        for row in self.cards {
-            try cards.append(row.toDomain())
-        }
-        var categories: [Stamped<TransactionCategory>] = []
-        for row in self.categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
-            try categories.append(row.toDomain())
-        }
-        var transactions: [Stamped<Transaction>] = []
-        for row in self.transactions {
-            try transactions.append(row.toDomain())
-        }
-        var rules: [Stamped<RecurringRule>] = []
-        for row in recurringRules {
-            try rules.append(row.toDomain())
-        }
-        var goals: [Stamped<SavingsGoal>] = []
-        for row in savingsGoals {
-            try goals.append(row.toDomain())
-        }
         return try BackupContents(
             settings: settings.toDomain(),
-            accounts: accounts,
-            cards: cards,
-            categories: categories,
-            transactions: transactions,
-            recurringRules: rules,
-            savingsGoals: goals,
+            accounts: accounts.stamped(),
+            cards: cards.stamped(),
+            categories: categories.sorted { $0.sortIndex < $1.sortIndex }.stamped(),
+            transactions: transactions.stamped(),
+            recurringRules: recurringRules.stamped(),
+            savingsGoals: savingsGoals.stamped(),
+            loans: loans.stamped(),
+            personalDebts: personalDebts.stamped(),
         )
     }
 

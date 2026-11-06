@@ -70,6 +70,8 @@ final class AppContainer {
                 categories: sample.categories,
                 recurringRules: sample.recurringRules,
                 savingsGoals: sample.savingsGoals,
+                loans: sample.loans,
+                personalDebts: sample.personalDebts,
             )
         } catch {
             Logger.app.error("Sample data could not be seeded: \(String(describing: error), privacy: .public)")
@@ -119,7 +121,7 @@ final class AppContainer {
         HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
-                recurringRules: store, savingsGoals: store,
+                recurringRules: store, savingsGoals: store, loans: store, personalDebts: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),

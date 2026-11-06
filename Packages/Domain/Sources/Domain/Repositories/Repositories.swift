@@ -46,6 +46,24 @@ public protocol SavingsGoalRepository: Sendable {
     func deleteSavingsGoal(id: UUID) async throws(DomainError)
 }
 
+public protocol LoanRepository: Sendable {
+    /// Live loans only, in the order they were created.
+    func fetchLoans() async throws(DomainError) -> [Loan]
+    /// Inserts or replaces the loan with the same id.
+    func save(_ loan: Loan) async throws(DomainError)
+    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    func deleteLoan(id: UUID) async throws(DomainError)
+}
+
+public protocol PersonalDebtRepository: Sendable {
+    /// Live debts only, in the order they were created.
+    func fetchPersonalDebts() async throws(DomainError) -> [PersonalDebt]
+    /// Inserts or replaces the debt with the same id.
+    func save(_ debt: PersonalDebt) async throws(DomainError)
+    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    func deletePersonalDebt(id: UUID) async throws(DomainError)
+}
+
 public protocol CategoryRepository: Sendable {
     /// In the person's order. Includes every `TransactionCategory.defaults` entry, adding the ones
     /// a newer version ships, except the defaults the person deleted.

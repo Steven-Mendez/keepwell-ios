@@ -3,6 +3,7 @@ import AddCardPresentation
 import Core
 import CreateTransactionPresentation
 import CreditCardPresentation
+import DebtsPresentation
 import DesignSystem
 import Domain
 import GoalsPresentation
@@ -299,6 +300,33 @@ struct GoalsRoute: View {
     var body: some View {
         GoalsView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
+    }
+}
+
+/// Loans and personal debts. Their sheets open on top of it, so it reloads by itself.
+struct DebtsRoute: View {
+    @State private var viewModel: DebtsViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeDebtsViewModel())
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        DebtsView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+extension View {
+    /// "Split" on an expense, over whichever tab listed it. It closes itself after splitting.
+    func splitBillSheet(_ item: Binding<SplitBillViewModel?>, onDismiss: @escaping () -> Void) -> some View {
+        sheet(item: item, onDismiss: onDismiss) { split in
+            SplitBillView(viewModel: split, onDone: { item.wrappedValue = nil }, onClose: { item.wrappedValue = nil })
+                .presentationDetents([.large])
+                .presentationBackground(KWColor.Surface.bg)
+        }
     }
 }
 

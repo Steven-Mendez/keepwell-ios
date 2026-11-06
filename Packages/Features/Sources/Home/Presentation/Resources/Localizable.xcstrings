@@ -91,12 +91,62 @@
         }
       }
     },
+    "%@ · %lld/%lld on %@ · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$lld/%3$lld el %4$@ · %5$@"
+          }
+        }
+      }
+    },
     "%@%% saved" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@%% ahorrado"
+          }
+        }
+      }
+    },
+    "%@: installment in %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: installment in %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: installment in %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: cuota en %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: cuota en %lld días"
+                }
+              }
+            }
           }
         }
       }
@@ -271,6 +321,16 @@
         }
       }
     },
+    "Debts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deudas"
+          }
+        }
+      }
+    },
     "Draft for today" : {
       "localizations" : {
         "es" : {
@@ -421,6 +481,16 @@
         }
       }
     },
+    "Installment %lld of %lld · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuota %1$lld de %2$lld · %3$@"
+          }
+        }
+      }
+    },
     "Log quickly" : {
       "localizations" : {
         "es" : {
@@ -481,6 +551,16 @@
         }
       }
     },
+    "No debts yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no tienes deudas"
+          }
+        }
+      }
+    },
     "No goals yet" : {
       "localizations" : {
         "es" : {
@@ -507,6 +587,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ahora %@, antes %@."
+          }
+        }
+      }
+    },
+    "Owed to you" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te deben"
           }
         }
       }
@@ -697,6 +787,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lo que tendrían tus cuentas y tu efectivo, contando lo previsto y tu gasto habitual."
+          }
+        }
+      }
+    },
+    "You owe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debes"
           }
         }
       }

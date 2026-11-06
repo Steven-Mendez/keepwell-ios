@@ -35,6 +35,8 @@ let package = Package(
         .library(name: "RecurringPresentation", targets: ["RecurringPresentation"]),
         .library(name: "GoalsDomain", targets: ["GoalsDomain"]),
         .library(name: "GoalsPresentation", targets: ["GoalsPresentation"]),
+        .library(name: "DebtsDomain", targets: ["DebtsDomain"]),
+        .library(name: "DebtsPresentation", targets: ["DebtsPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -512,6 +514,49 @@ let package = Package(
             dependencies: [
                 "GoalsPresentation",
                 "GoalsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+
+        // MARK: Debts
+
+        .target(
+            name: "DebtsDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Debts/Domain",
+        ),
+        .target(
+            name: "DebtsPresentation",
+            dependencies: [
+                "DebtsDomain",
+                // Paying an installment records the expense through the same use case as the flow.
+                "CreateTransactionDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                // `#Preview` sample data only.
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/Debts/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "DebtsDomainTests",
+            dependencies: [
+                "DebtsDomain",
+                "CreateTransactionDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "DebtsPresentationTests",
+            dependencies: [
+                "DebtsPresentation",
+                "DebtsDomain",
+                "CreateTransactionDomain",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],

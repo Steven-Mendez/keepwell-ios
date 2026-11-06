@@ -274,6 +274,37 @@ struct SwiftDataStoreTests {
     }
 }
 
+extension SwiftDataStoreTests {
+    @Test
+    func loansAndDebtsRoundTripExactlyAndDeleteAsTombstones() async throws {
+        let store = try makeStore()
+        let paidAt = Date(timeIntervalSince1970: 1_793_000_000.123)
+        let loan = Loan(
+            name: "Car", lender: "BAC", borrowed: Money(Decimal(string: "12345.67") ?? 0, "USD"),
+            installmentAmount: Decimal(string: "432.1") ?? 0, installmentCount: 36, frequency: .weekly,
+            firstDueDate: paidAt, payments: [LoanPayment(number: 1, paidAt: paidAt, transactionID: UUID())],
+        )
+        try await store.save(loan)
+        #expect(try await store.fetchLoans() == [loan])
+        let debt = PersonalDebt(
+            person: "Juan", direction: .theyOweMe, amount: Money(Decimal(string: "500.5") ?? 0, "NIO"), date: paidAt,
+            note: "Pizza", repayments: [DebtRepayment(amount: Decimal(string: "0.25") ?? 0, date: paidAt)],
+            settledAt: paidAt, transactionID: UUID(),
+        )
+        try await store.save(debt)
+        #expect(try await store.fetchPersonalDebts() == [debt])
+
+        try await store.deleteLoan(id: loan.id)
+        try await store.deletePersonalDebt(id: debt.id)
+        #expect(try await store.fetchLoans().isEmpty)
+        #expect(try await store.fetchPersonalDebts().isEmpty)
+        await #expect(throws: DomainError.notFound(loan.id)) { try await store.deleteLoan(id: loan.id) }
+        let exported = try await store.exportContents()
+        #expect(exported.loans.contains { $0.value == loan && $0.metadata.isDeleted })
+        #expect(exported.personalDebts.contains { $0.value == debt && $0.metadata.isDeleted })
+    }
+}
+
 @Suite("SwiftData store seeding")
 struct SwiftDataStoreSeedTests {
     @Test
@@ -288,8 +319,11 @@ struct SwiftDataStoreSeedTests {
             categories: sample.categories,
             recurringRules: sample.recurringRules,
             savingsGoals: sample.savingsGoals,
+            loans: sample.loans,
+            personalDebts: sample.personalDebts,
         )
         #expect(try await store.fetchRecurringRules().count == sample.recurringRules.count)
+        #expect(try await store.fetchLoans().count == sample.loans.count)
         #expect(try await store.fetchSavingsGoals().count == sample.savingsGoals.count)
         #expect(try await store.fetchAccounts().count == sample.accounts.count)
         #expect(try await store.fetchCards().count == sample.cards.count)

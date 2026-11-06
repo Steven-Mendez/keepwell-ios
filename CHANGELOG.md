@@ -39,6 +39,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   a notification arrives once for that charge. Charges count as one subscription when the same
   recurring movement recorded them, or when the same description was charged to the same card in
   two months or in the Subscriptions category.
+- Debts and loans, opened from home's new "Debts" card. A loan (bank or personal) has a lender,
+  the amount borrowed in your main or second currency, the installment, how many and whether they
+  fall monthly or weekly from the first due date. Its schedule shows each installment as paid or
+  due, what's left and the next one; "Pay installment" records a confirmed expense from the account
+  or card you pick ("Motorbike · 3/12", in the category you choose) and marks it paid. The next
+  installment is reminded as many days ahead as card payments. Personal debts track money you lent
+  ("they owe me") or borrowed ("I owe") with partial repayments and "Mark as settled"; like savings
+  goals they never record movements or change balances. "Split" in a movement's menu divides an
+  expense with other people (equal shares by default, editable), each of whom then owes you their
+  part. The screen totals "You owe" and "Owed to you" one currency at a time. Backups move to
+  `schemaVersion` 4 with `loans` and `personalDebts`; files from versions 1 to 3 still restore,
+  with neither.
 - Savings goals, like a pot or a vault but only on paper: give a goal a name, a target in your main
   or second currency, an optional target month, an icon and a color, then "Add money" or
   "Withdraw" as you set money aside. Nothing moves between your accounts and no movement is
