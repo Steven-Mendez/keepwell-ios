@@ -255,4 +255,22 @@ public final class LoanDetailViewModel: Identifiable {
             errorMessage = String(localized: "We couldn't record the payment. Try again.", bundle: #bundle)
         }
     }
+
+    /// "Mark unpaid": the installment is due again and the expense it recorded is deleted, so
+    /// paying it again doesn't count it twice.
+    public func markUnpaid(_ number: Int) async {
+        do {
+            let unpaid = try await useCases.payInstallment.markUnpaid(loanID: loan.id, number: number)
+            progress = LoanProgress(loan: unpaid, today: now(), calendar: calendar)
+            errorMessage = nil
+            didChange = true
+        } catch {
+            errorMessage = String(localized: "We couldn't mark it unpaid. Try again.", bundle: #bundle)
+        }
+    }
+
+    /// "Mark 3/12 unpaid?".
+    public func unpayTitle(_ number: Int) -> String {
+        String(localized: "Mark \(number)/\(loan.installmentCount) unpaid?", bundle: #bundle)
+    }
 }

@@ -3,17 +3,17 @@ import DebtsDomain
 import Domain
 import Foundation
 
-/// Pays an installment through the movement-saving use case, so it is validated, dated and rated
-/// exactly like a movement the person types and shows up confirmed in their list.
-public struct SaveTransactionInstallmentRecorder: InstallmentExpenseRecorder {
-    private let save: any SaveTransactionUseCase
+/// Builds an installment's expense through the movement-saving rules, so it is validated, dated and
+/// rated exactly like a movement the person types and shows up confirmed in their list.
+public struct InstallmentMovementRecorder: InstallmentExpenseRecorder {
+    private let prepare: any PrepareTransactionUseCase
 
-    public init(save: any SaveTransactionUseCase) {
-        self.save = save
+    public init(prepare: any PrepareTransactionUseCase) {
+        self.prepare = prepare
     }
 
-    public func record(_ expense: InstallmentExpense) async throws(DomainError) -> UUID {
-        let saved = try await save.execute(TransactionDraft(
+    public func prepare(_ expense: InstallmentExpense) async throws(DomainError) -> Transaction {
+        try await prepare.execute(TransactionDraft(
             kind: .expense,
             amount: expense.amount.amount,
             currency: expense.amount.currency,
@@ -22,7 +22,6 @@ public struct SaveTransactionInstallmentRecorder: InstallmentExpenseRecorder {
             description: expense.description,
             date: expense.date,
         ))
-        return saved.transaction.id
     }
 }
 

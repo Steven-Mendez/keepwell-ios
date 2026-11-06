@@ -95,10 +95,10 @@ public struct InstallmentExpense: Hashable, Sendable {
     }
 }
 
-/// Records an installment's expense and returns the movement's id. The app implements it with the
-/// same use case that saves a movement the person types, so the same rules apply to both.
+/// Builds an installment's expense, checked but not stored: the loan repository stores it with the
+/// loan in one write. The app implements it with the same rules as a movement the person types.
 public protocol InstallmentExpenseRecorder: Sendable {
-    func record(_ expense: InstallmentExpense) async throws(DomainError) -> UUID
+    func prepare(_ expense: InstallmentExpense) async throws(DomainError) -> Transaction
 }
 
 /// One person's share of a split expense.
