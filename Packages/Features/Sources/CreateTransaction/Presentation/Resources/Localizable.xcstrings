@@ -1422,6 +1422,86 @@
           }
         }
       }
+    },
+    "We couldn't load this movement." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar este movimiento."
+          }
+        }
+      }
+    },
+    "Rule saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regla guardada"
+          }
+        }
+      }
+    },
+    "We couldn't save the rule. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar la regla. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Always use %@ for “%@”?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Usar siempre %1$@ para “%2$@”?"
+          }
+        }
+      }
+    },
+    "Create rule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear regla"
+          }
+        }
+      }
+    },
+    "Edit transaction" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar movimiento"
+          }
+        }
+      }
+    },
+    "Save changes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar cambios"
+          }
+        }
+      }
+    },
+    "Edits keep the rate this transaction was logged with." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al editar se mantiene la tasa con la que se registró el movimiento."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
