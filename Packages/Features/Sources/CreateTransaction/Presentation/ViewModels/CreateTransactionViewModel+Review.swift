@@ -132,6 +132,18 @@ extension CreateTransactionViewModel {
         path = [.category]
     }
 
+    // MARK: Repeat
+
+    /// None, or every week, month or year from this movement's date.
+    public var repeatOptions: [(value: RecurringFrequency?, title: String)] {
+        [(nil, String(localized: "repeat.none", defaultValue: "None", bundle: #bundle))]
+            + RecurringFrequency.allCases.map { ($0, RecurringDisplay.frequency($0)) }
+    }
+
+    public var repeatTitle: String {
+        repeatOptions.first { $0.value == repeatFrequency }?.title ?? ""
+    }
+
     // MARK: Receipt
 
     public var receiptHeadline: String {

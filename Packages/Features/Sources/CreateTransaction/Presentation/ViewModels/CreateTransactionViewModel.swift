@@ -49,6 +49,8 @@ public final class CreateTransactionViewModel {
     public var date: Date
     public var debitedText = ""
     public var note = ""
+    /// "Repeat": `nil` records this movement once.
+    public var repeatFrequency: RecurringFrequency?
     public private(set) var saved: SavedTransaction?
     public private(set) var isSaving = false
     public private(set) var errorMessage: String?
@@ -56,6 +58,8 @@ public final class CreateTransactionViewModel {
     public internal(set) var receiptImageStatus: ReceiptImageStatus = .idle
     /// The id the next saved movement gets.
     private var movementID: UUID
+    /// The id of the rule "Repeat" saves with it.
+    private var recurringRuleID: UUID
 
     let formatter = CurrencyFormatter()
     let calendar: Calendar
@@ -90,6 +94,7 @@ public final class CreateTransactionViewModel {
         self.makeID = makeID
         date = now()
         movementID = makeID()
+        recurringRuleID = UUID()
     }
 
     public var kind: TransactionKind {
@@ -238,6 +243,8 @@ public final class CreateTransactionViewModel {
             date: date,
             actualDebitedPrincipal: debited,
             note: note,
+            repeatFrequency: repeatFrequency,
+            recurringRuleID: recurringRuleID,
         )
     }
 
@@ -268,6 +275,8 @@ public final class CreateTransactionViewModel {
         debitedText = ""
         date = now()
         movementID = makeID()
+        recurringRuleID = UUID()
+        repeatFrequency = nil
         saved = nil
         receiptImageStatus = .idle
         categoryQuery = ""
