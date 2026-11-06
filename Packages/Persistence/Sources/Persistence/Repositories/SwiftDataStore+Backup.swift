@@ -18,6 +18,8 @@ extension SwiftDataStore: BackupStore {
                 .map { try Stamped($0.toDomain(), $0.metadata) }
             let rules = try context.fetch(FetchDescriptor<RecurringRuleRecord>(sortBy: [SortDescriptor(\.createdAt)]))
                 .map { try Stamped($0.toDomain(), $0.metadata) }
+            let goals = try context.fetch(FetchDescriptor<SavingsGoalRecord>(sortBy: [SortDescriptor(\.createdAt)]))
+                .map { try Stamped($0.toDomain(), $0.metadata) }
             return try BackupContents(
                 settings: settings,
                 accounts: accounts,
@@ -25,6 +27,7 @@ extension SwiftDataStore: BackupStore {
                 categories: exportedCategories(in: context),
                 transactions: transactions,
                 recurringRules: rules,
+                savingsGoals: goals,
             )
         }
     }
@@ -62,16 +65,26 @@ extension SwiftDataStore: BackupStore {
                     record.update(from: transaction.value)
                     record.apply(transaction.metadata)
                 }
-                for rule in contents.recurringRules {
-                    let record = RecurringRuleRecord(id: rule.value.id).inserted(into: context)
-                    record.update(from: rule.value)
-                    record.apply(rule.metadata)
-                }
+                insertPlans(of: contents, into: context)
                 try context.save()
             } catch {
                 context.rollback()
                 throw error
             }
+        }
+    }
+
+    /// Recurring rules and savings goals: what the person planned rather than what happened.
+    private func insertPlans(of contents: BackupContents, into context: ModelContext) {
+        for rule in contents.recurringRules {
+            let record = RecurringRuleRecord(id: rule.value.id).inserted(into: context)
+            record.update(from: rule.value)
+            record.apply(rule.metadata)
+        }
+        for goal in contents.savingsGoals {
+            let record = SavingsGoalRecord(id: goal.value.id).inserted(into: context)
+            record.update(from: goal.value)
+            record.apply(goal.metadata)
         }
     }
 
@@ -97,6 +110,7 @@ extension SwiftDataStore: BackupStore {
     private func deleteEveryRecord(in context: ModelContext) throws {
         try context.fetch(FetchDescriptor<TransactionRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<RecurringRuleRecord>()).forEach(context.delete)
+        try context.fetch(FetchDescriptor<SavingsGoalRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CardRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<AccountRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<CategoryRecord>()).forEach(context.delete)

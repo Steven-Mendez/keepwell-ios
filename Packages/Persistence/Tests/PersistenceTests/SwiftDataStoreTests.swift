@@ -240,6 +240,28 @@ struct SwiftDataStoreTests {
     }
 
     @Test
+    func savingsGoalsRoundTripExactlyAndDeleteAsTombstones() async throws {
+        let store = try makeStore()
+        for goal in sample.savingsGoals {
+            try await store.save(goal)
+        }
+        #expect(try await store.fetchSavingsGoals() == sample.savingsGoals)
+        let exact = try SavingsGoal(
+            name: "Car", target: Money(Decimal(string: "12345.67") ?? 0, "USD"), saved: Decimal(string: "2500.5") ?? 0,
+            targetMonth: TargetMonth(month: 12, year: 2026), icon: "car", color: "cyan",
+        )
+        try await store.save(exact)
+        #expect(try await store.fetchSavingsGoals().last == exact)
+        try await store.save(exact.with(saved: 3000))
+        #expect(try await store.fetchSavingsGoals().last?.saved == 3000)
+
+        try await store.deleteSavingsGoal(id: exact.id)
+        #expect(try await !store.fetchSavingsGoals().contains { $0.id == exact.id })
+        await #expect(throws: DomainError.notFound(exact.id)) { try await store.deleteSavingsGoal(id: exact.id) }
+        #expect(try await store.exportContents().savingsGoals.contains { $0.value.id == exact.id && $0.metadata.isDeleted })
+    }
+
+    @Test
     func materializingSavesMovementsAndRulesTogether() async throws {
         let store = try makeStore()
         let rule = try #require(sample.recurringRules.first)
@@ -265,8 +287,10 @@ struct SwiftDataStoreSeedTests {
             transactions: sample.transactions,
             categories: sample.categories,
             recurringRules: sample.recurringRules,
+            savingsGoals: sample.savingsGoals,
         )
         #expect(try await store.fetchRecurringRules().count == sample.recurringRules.count)
+        #expect(try await store.fetchSavingsGoals().count == sample.savingsGoals.count)
         #expect(try await store.fetchAccounts().count == sample.accounts.count)
         #expect(try await store.fetchCards().count == sample.cards.count)
         #expect(try await store.fetchTransactions(in: nil).count == sample.transactions.count)
