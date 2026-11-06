@@ -68,45 +68,48 @@ public struct CreditCardView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
         .sheet(item: $sheet, onDismiss: viewModel.clearError) { sheet in
-            Group {
-                switch sheet {
-                case .terms:
-                    if let detail = viewModel.detail {
-                        TermsSheet(viewModel: viewModel, detail: detail) { self.sheet = nil }
-                    }
-                case .name:
-                    if let detail = viewModel.detail {
-                        CardNameSheet(
-                            name: detail.account.name,
-                            errorMessage: viewModel.errorMessage,
-                            isSaving: viewModel.isSaving,
-                            onSave: viewModel.rename(to:),
-                            onClose: { self.sheet = nil },
-                        )
-                    }
-                case .details:
-                    if let holder = viewModel.detail?.holder {
-                        CardDetailsSheet(
-                            card: holder,
-                            errorMessage: viewModel.errorMessage,
-                            isSaving: viewModel.isSaving,
-                            onSave: viewModel.setHolderDetails,
-                            onClose: { self.sheet = nil },
-                        )
-                    }
-                case .color:
-                    if let detail = viewModel.detail, let holder = detail.holder {
-                        CardColorSheet(
-                            color: holder.color,
-                            preview: { color in colorPreview(holder.with(color: color), detail) },
-                            onSave: viewModel.setHolderColor,
-                            onClose: { self.sheet = nil },
-                        )
-                    }
-                }
+            sheetContent(sheet)
+                .presentationDetents([.large])
+                .presentationBackground(KWColor.Surface.bg)
+        }
+    }
+
+    @ViewBuilder
+    private func sheetContent(_ sheet: Sheet) -> some View {
+        switch sheet {
+        case .terms:
+            if let detail = viewModel.detail {
+                TermsSheet(viewModel: viewModel, detail: detail) { self.sheet = nil }
             }
-            .presentationDetents([.large])
-            .presentationBackground(KWColor.Surface.bg)
+        case .name:
+            if let detail = viewModel.detail {
+                CardNameSheet(
+                    name: detail.account.name,
+                    errorMessage: viewModel.errorMessage,
+                    isSaving: viewModel.isSaving,
+                    onSave: viewModel.rename(to:),
+                    onClose: { self.sheet = nil },
+                )
+            }
+        case .details:
+            if let holder = viewModel.detail?.holder {
+                CardDetailsSheet(
+                    card: holder,
+                    errorMessage: viewModel.errorMessage,
+                    isSaving: viewModel.isSaving,
+                    onSave: viewModel.setHolderDetails,
+                    onClose: { self.sheet = nil },
+                )
+            }
+        case .color:
+            if let detail = viewModel.detail, let holder = detail.holder {
+                CardColorSheet(
+                    color: holder.color,
+                    preview: { color in colorPreview(holder.with(color: color), detail) },
+                    onSave: viewModel.setHolderColor,
+                    onClose: { self.sheet = nil },
+                )
+            }
         }
     }
 
