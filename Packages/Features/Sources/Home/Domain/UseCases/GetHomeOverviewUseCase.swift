@@ -71,20 +71,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     ) throws(DomainError) -> HomeOverview {
         let currencies = settings.currencies
         let (accounts, cards, transactions) = (records.accounts, records.cards, records.transactions)
-        var allBalances: [Money] = []
-        var balances: [HomeOverview.Balance] = []
-        var cardDebt = Decimal(0)
-        for account in accounts {
-            let accountBalances = Balances.balance(of: account, transactions: transactions, calendar: calendar)
-            allBalances += accountBalances
-            if account.kind == .credit {
-                cardDebt += try NetWorth.total(of: accountBalances, settings: currencies).amount
-            } else if let balance = accountBalances.first {
-                balances.append(HomeOverview.Balance(account: account, balance: balance))
-            }
-        }
-        // Deposits before cash, keeping the order the person created them in.
-        balances = balances.filter { $0.account.kind != .cash } + balances.filter { $0.account.kind == .cash }
+        let (allBalances, balances, cardDebt) = try accountBalances(records, settings: currencies, calendar: calendar)
         let netWorth = try NetWorth.total(of: allBalances, settings: currencies)
         let planned = transactions.filter { !$0.isConfirmed }.sorted { $0.date < $1.date }
         let recent = transactions.filter(\.isConfirmed).sorted { $0.date > $1.date }.prefix(recentCount)
@@ -122,6 +109,30 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             cards: cards,
             categories: records.categories,
         )
+    }
+
+    /// Every balance (for net worth), the bank and cash ones shown on home, and what the cards owe in
+    /// the principal currency.
+    private static func accountBalances(
+        _ records: LedgerRecords,
+        settings currencies: CurrencySettings,
+        calendar: Calendar,
+    ) throws(DomainError) -> ([Money], [HomeOverview.Balance], Decimal) {
+        var allBalances: [Money] = []
+        var balances: [HomeOverview.Balance] = []
+        var cardDebt = Decimal(0)
+        for account in records.accounts {
+            let accountBalances = Balances.balance(of: account, transactions: records.transactions, calendar: calendar)
+            allBalances += accountBalances
+            if account.kind == .credit {
+                cardDebt += try NetWorth.total(of: accountBalances, settings: currencies).amount
+            } else if let balance = accountBalances.first {
+                balances.append(HomeOverview.Balance(account: account, balance: balance))
+            }
+        }
+        // Deposits before cash, keeping the order the person created them in.
+        balances = balances.filter { $0.account.kind != .cash } + balances.filter { $0.account.kind == .cash }
+        return (allBalances, balances, cardDebt)
     }
 
     /// Only with a bank or cash account: the forecast is about the money that can be spent.
