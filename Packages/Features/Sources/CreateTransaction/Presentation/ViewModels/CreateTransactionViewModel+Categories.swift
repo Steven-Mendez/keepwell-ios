@@ -49,7 +49,12 @@ extension CreateTransactionViewModel {
     /// Opens the editor, named after what the person searched for when nothing matched it.
     public func startNewCategory() {
         guard let saveCategory, kind != .transfer else { return }
-        categoryEditor = CategoryEditorViewModel(kind: kind, name: categoryQuery.trimmingCharacters(in: .whitespaces), save: saveCategory)
+        categoryEditor = CategoryEditorViewModel(
+            kind: kind,
+            name: categoryQuery.trimmingCharacters(in: .whitespaces),
+            principalCurrency: context?.currencies.principal,
+            save: saveCategory,
+        )
     }
 
     /// The new category joins the grid and is chosen, the way picking any tile moves on.

@@ -125,6 +125,17 @@ struct SwiftDataStoreTests {
     }
 
     @Test
+    func aMonthlyBudgetKeepsItsExactAmountAndCurrency() async throws {
+        let store = try makeStore()
+        let budget = Money(Decimal(string: "1234.5678") ?? 0, "NIO")
+        try await store.save(TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense, monthlyBudget: budget))
+        #expect(try await store.fetchCategories().first { $0.id == "custom-boat" }?.monthlyBudget == budget)
+
+        try await store.save(TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense))
+        #expect(try await store.fetchCategories().first { $0.id == "custom-boat" }?.monthlyBudget == nil)
+    }
+
+    @Test
     func defaultsAddedInANewVersionAppearForExistingData() async throws {
         let store = try makeStore()
         for category in TransactionCategory.defaults.prefix(5) {
@@ -168,7 +179,10 @@ struct SwiftDataStoreTests {
         _ = try await store.fetchCategories()
         let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
         try await store.save(boat)
-        let market = TransactionCategory(id: "groceries", name: "Market", kind: .expense, icon: "basket", color: "green", isRenamed: true)
+        let market = TransactionCategory(
+            id: "groceries", name: "Market", kind: .expense, icon: "basket", color: "green", isRenamed: true,
+            monthlyBudget: Money(Decimal(string: "250.75") ?? 0, "USD"),
+        )
         try await store.save(market)
         try await store.deleteCategory(id: "transport")
         try await store.reorderCategories(ids: ["custom-boat", "taxes"])

@@ -22,6 +22,9 @@ public final class CategoryRecord: AuditedRecord {
     var createdAt = Date.now
     var updatedAt = Date.now
     var deletedAt: Date?
+    /// Added in V7. The monthly budget as exact decimal text and its currency, both `nil` without one.
+    var budgetAmount: String?
+    var budgetCurrency: String?
 
     init(id: String) {
         self.id = id
@@ -40,12 +43,26 @@ public final class CategoryRecord: AuditedRecord {
         icon = category.icon
         color = category.color
         isRenamed = category.isRenamed
+        budgetAmount = category.monthlyBudget.map { DecimalCoding.string($0.amount) }
+        budgetCurrency = category.monthlyBudget?.currency
         isRemoved = false
         self.sortIndex = sortIndex
     }
 
     func toDomain() throws(DomainCorruption) -> TransactionCategory {
         guard let kind = TransactionKind(rawValue: kindRaw) else { throw DomainCorruption("TransactionCategory kind \(kindRaw)") }
-        return TransactionCategory(id: id, name: name, kind: kind, icon: icon, color: color, isRenamed: isRenamed)
+        var budget: Money?
+        if let budgetAmount, let budgetCurrency {
+            budget = try Money(DecimalCoding.decimal(budgetAmount), budgetCurrency)
+        }
+        return TransactionCategory(
+            id: id,
+            name: name,
+            kind: kind,
+            icon: icon,
+            color: color,
+            isRenamed: isRenamed,
+            monthlyBudget: budget,
+        )
     }
 }

@@ -22,6 +22,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Monthly budgets per expense category: set one in the category editor (in your main currency;
+  empty means no limit). Summary › Categories lists each budget for the selected month with how
+  much is spent, left or over, and home warns about a category at 80% and again at 100% of its
+  budget, with a notification once per category, threshold and month. A budget set in an earlier
+  main currency is ignored, never converted. Backups carry the budget as an optional
+  `monthlyBudget` on each category (still `schemaVersion` 2), and "Restore default categories"
+  brings defaults back without one.
 - Recurring movements and subscriptions: rent, salaries, transfers and subscriptions repeat every
   N weeks, months or years from their start date (the 31st stays the 31st in months that have
   one). Each time one comes due it's recorded on its date, as a draft to confirm or, with "Record

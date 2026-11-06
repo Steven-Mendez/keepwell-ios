@@ -11,6 +11,16 @@
         }
       }
     },
+    "%@ is close to its budget" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ está cerca de su presupuesto"
+          }
+        }
+      }
+    },
     "%@ on %@" : {
       "localizations" : {
         "es" : {
@@ -27,6 +37,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ se renueva mañana"
+          }
+        }
+      }
+    },
+    "%@ spent of %@ this month." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llevas %@ de %@ este mes."
+          }
+        }
+      }
+    },
+    "%@ went over its budget" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ superó su presupuesto"
           }
         }
       }

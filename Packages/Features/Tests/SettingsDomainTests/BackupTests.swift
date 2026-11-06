@@ -68,6 +68,48 @@ struct BackupTests {
         #expect((settings["currencies"] as? [String: Any])?["rate"] is String)
     }
 
+    /// Budgets travel like every other amount: exact text with its currency, and no key without one.
+    @Test
+    func aMonthlyBudgetRoundTripsAsExactTextAndIsLeftOutWhenNone() async throws {
+        let budget = Money(Decimal(string: "1250.05") ?? 0, "USD")
+        let categories = sample.categories.map { category in
+            guard category.id == "groceries" else { return category }
+            return TransactionCategory(
+                id: category.id, name: category.name, kind: category.kind, icon: category.icon, color: category.color,
+                isRenamed: category.isRenamed, monthlyBudget: budget,
+            )
+        }
+        let original = InMemoryStore(
+            accounts: sample.accounts, cards: sample.cards, transactions: sample.transactions,
+            categories: categories, settings: sample.settings, recurringRules: sample.recurringRules,
+        )
+        let backup = try await create(original)
+
+        let rows = try #require(json(backup)["categories"] as? [[String: Any]])
+        let groceries = try #require(rows.first { $0["id"] as? String == "groceries" })
+        let encoded = try #require(groceries["monthlyBudget"] as? [String: Any])
+        #expect(encoded["amount"] as? String == "1250.05")
+        #expect(encoded["currency"] as? String == "USD")
+        #expect(rows.filter { $0["id"] as? String != "groceries" }.allSatisfy { $0["monthlyBudget"] == nil })
+
+        let restored = InMemoryStore()
+        _ = try await restore(backup, into: restored)
+        let back = await restored.fetchCategories()
+        #expect(back.first { $0.id == "groceries" }?.monthlyBudget == budget)
+        #expect(back.filter { $0.id != "groceries" }.allSatisfy { $0.monthlyBudget == nil })
+    }
+
+    @Test
+    func aNonPositiveBudgetInAFileIsRefused() async throws {
+        var backup = try await json(create(InMemoryStore(sample: sample)))
+        var rows = try #require(backup["categories"] as? [[String: Any]])
+        rows[0]["monthlyBudget"] = ["amount": "0", "currency": "USD"]
+        backup["categories"] = rows
+        await #expect(throws: DomainError.self) {
+            _ = try await restore(JSONSerialization.data(withJSONObject: backup), into: InMemoryStore())
+        }
+    }
+
     @Test
     func aFileFromTheWebAppWithMillisecondsAndLowercaseIDsRestores() async throws {
         let accountID = UUID()

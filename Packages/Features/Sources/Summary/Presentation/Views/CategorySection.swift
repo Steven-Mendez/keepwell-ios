@@ -46,7 +46,60 @@ struct CategorySection: View {
                     }
                 }
             }
+            budgets
         }
+    }
+
+    /// Budgets only cap spending, so the income side has nothing to show here.
+    @ViewBuilder
+    private var budgets: some View {
+        let rows = viewModel.mode == .expenses ? viewModel.budgetRows : []
+        if !rows.isEmpty {
+            KWSectionHeader(String(localized: "Budgets", bundle: #bundle), style: .large)
+                .padding(.top, KWSpacing.xs)
+            KWGroupedCard(verticalPadding: 6) {
+                ForEach(rows) { row in
+                    budgetRow(row)
+                }
+            }
+        }
+    }
+
+    private func budgetRow(_ row: SummaryViewModel.BudgetRow) -> some View {
+        let tint = CategoryDisplay.color(for: row.category)
+        let fill = switch row.level {
+        case .onTrack: KWColor.Brand.accent
+        case .nearLimit: KWColor.State.pending
+        case .exceeded: KWColor.State.negative
+        }
+        return HStack(spacing: KWSpacing.sm) {
+            CategorySymbol(row.category, size: 20)
+                .foregroundStyle(tint)
+                .frame(width: 38, height: 38)
+                .background(tint.opacity(0.15), in: Circle())
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(row.name).font(.kw(15, weight: 600, relativeTo: .subheadline)).lineLimit(2)
+                    Spacer(minLength: KWSpacing.xs)
+                    Text(row.remaining)
+                        .font(.kw(13, weight: 700, relativeTo: .footnote))
+                        .foregroundStyle(row.level == .exceeded ? KWColor.State.negative : KWColor.Text.secondary)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .fixedSize()
+                }
+                KWProgressBar(row.fraction, fill: fill)
+                Text(row.progress)
+                    .font(KWTextStyle.captionSm.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.muted)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+        }
+        .padding(.vertical, KWSpacing.sm)
+        .accessibilityElement(children: .combine)
     }
 
     private func color(of row: SummaryViewModel.CategoryRow) -> Color {
