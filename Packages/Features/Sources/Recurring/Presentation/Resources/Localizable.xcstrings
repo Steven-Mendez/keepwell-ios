@@ -1,0 +1,576 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add recurring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar recurrente"
+          }
+        }
+      }
+    },
+    "Add rent, a salary or a subscription once. Each time it's due, a draft waits on that day for you to confirm." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega el alquiler, un salario o una suscripción una sola vez. Cada vez que toque, un borrador te espera ese día para que lo confirmes."
+          }
+        }
+      }
+    },
+    "Amount" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monto"
+          }
+        }
+      }
+    },
+    "Bills and other expenses" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Facturas y otros gastos"
+          }
+        }
+      }
+    },
+    "Category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría"
+          }
+        }
+      }
+    },
+    "Check the amount." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisa el monto."
+          }
+        }
+      }
+    },
+    "Choose" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir"
+          }
+        }
+      }
+    },
+    "Choose a different destination account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige otra cuenta de destino."
+          }
+        }
+      }
+    },
+    "Currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        }
+      }
+    },
+    "Delete this recurring movement?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar este movimiento recurrente?"
+          }
+        }
+      }
+    },
+    "Draft" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrador"
+          }
+        }
+      }
+    },
+    "Edit recurring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar recurrente"
+          }
+        }
+      }
+    },
+    "Ended" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminado"
+          }
+        }
+      }
+    },
+    "Ends" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termina"
+          }
+        }
+      }
+    },
+    "Every" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada"
+          }
+        }
+      }
+    },
+    "Expense" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto"
+          }
+        }
+      }
+    },
+    "From" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde"
+          }
+        }
+      }
+    },
+    "Give it a name." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponle un nombre."
+          }
+        }
+      }
+    },
+    "Hide amounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar montos"
+          }
+        }
+      }
+    },
+    "Income" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresos"
+          }
+        }
+      }
+    },
+    "It can repeat every 1 to 99." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puede repetirse cada 1 a 99."
+          }
+        }
+      }
+    },
+    "It can't end before it starts." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No puede terminar antes de empezar."
+          }
+        }
+      }
+    },
+    "Its drafts waiting for confirmation are deleted too. Movements already confirmed stay." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "También se eliminan sus borradores pendientes de confirmar. Los movimientos ya confirmados se quedan."
+          }
+        }
+      }
+    },
+    "Last day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Último día"
+          }
+        }
+      }
+    },
+    "Monthly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensual"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        }
+      }
+    },
+    "New recurring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo recurrente"
+          }
+        }
+      }
+    },
+    "Next dates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximas fechas"
+          }
+        }
+      }
+    },
+    "Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota"
+          }
+        }
+      }
+    },
+    "Nothing recurring yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay recurrentes"
+          }
+        }
+      }
+    },
+    "Off: it waits as a draft for you to confirm." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagado: espera como borrador hasta que lo confirmes."
+          }
+        }
+      }
+    },
+    "Optional" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcional"
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausar"
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pausa"
+          }
+        }
+      }
+    },
+    "Payment method" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Método de pago"
+          }
+        }
+      }
+    },
+    "Record automatically" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar automáticamente"
+          }
+        }
+      }
+    },
+    "Recorded" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrados"
+          }
+        }
+      }
+    },
+    "Recurring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurrentes"
+          }
+        }
+      }
+    },
+    "Rent, Netflix…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alquiler, Netflix…"
+          }
+        }
+      }
+    },
+    "Repeats" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se repite"
+          }
+        }
+      }
+    },
+    "Resume" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reanudar"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        }
+      }
+    },
+    "Show amounts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar montos"
+          }
+        }
+      }
+    },
+    "Starts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza"
+          }
+        }
+      }
+    },
+    "Subscription" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscripción"
+          }
+        }
+      }
+    },
+    "Subscriptions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscripciones"
+          }
+        }
+      }
+    },
+    "Subscriptions per month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscripciones al mes"
+          }
+        }
+      }
+    },
+    "To" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacia"
+          }
+        }
+      }
+    },
+    "Transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia"
+          }
+        }
+      }
+    },
+    "Transfers" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencias"
+          }
+        }
+      }
+    },
+    "We couldn't delete it. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos eliminarlo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't load your recurring movements." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus movimientos recurrentes."
+          }
+        }
+      }
+    },
+    "We couldn't save it. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardarlo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Weekly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semanal"
+          }
+        }
+      }
+    },
+    "Yearly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anual"
+          }
+        }
+      }
+    },
+    "≈ %@ per year" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈ %@ al año"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
