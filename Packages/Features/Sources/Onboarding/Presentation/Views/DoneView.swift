@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 5 · Done.
+/// Step 7 · Done.
 public struct DoneView: View {
     private let viewModel: OnboardingViewModel
     private let onLogFirstExpense: () -> Void
@@ -22,7 +22,7 @@ public struct DoneView: View {
                     .foregroundStyle(KWColor.Text.onPositive)
                     .frame(width: 88, height: 88)
                     .background(KWColor.State.positive, in: Circle())
-                Text("All set", bundle: #bundle)
+                Text(viewModel.doneTitle)
                     .kwTextStyle(.title)
                     .padding(.top, 28)
                     .padding(.bottom, 10)

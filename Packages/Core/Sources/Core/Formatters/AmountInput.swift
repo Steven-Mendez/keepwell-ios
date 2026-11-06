@@ -19,4 +19,12 @@ public enum AmountInput {
         guard value.range(of: #"^\d+(\.\d*)?$|^\.\d+$"#, options: .regularExpression) != nil else { return nil }
         return Decimal(string: value, locale: Locale(identifier: "en_US_POSIX"))
     }
+
+    /// Text people typed, rewritten with grouping and two decimals ("10000" → "10,000.00") once
+    /// they leave the field, so a misplaced zero is visible before saving. `nil` keeps what they
+    /// typed: empty or invalid text is left for validation to point out.
+    public static func formatted(_ text: String) -> String? {
+        guard let amount = decimal(from: text) else { return nil }
+        return CurrencyFormatter().number(amount)
+    }
 }

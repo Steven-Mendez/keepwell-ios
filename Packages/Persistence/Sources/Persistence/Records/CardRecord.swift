@@ -4,12 +4,19 @@ import SwiftData
 
 @Model
 public final class CardRecord {
+    /// Kinds the app no longer has. Their rows are skipped when reading rather than migrated away:
+    /// CloudKit-backed stores can't drop an attribute or a row type in a schema change, and an
+    /// additional card's purchases already belong to its credit account, so they stay listed there.
+    static let retiredKinds = ["creditAdditional"]
+
     public var id = UUID()
     var accountID = UUID()
     var kindRaw = CardKind.debit.rawValue
     var networkRaw: String?
     var lastFour: String?
     var colorRaw: String?
+    // Additional-card controls, from when cards could have additionals. Kept in the schema
+    // because CloudKit can't remove attributes; nothing reads or writes them anymore.
     var holderName: String?
     var capAmount: String?
     var capCurrency: String?
@@ -18,6 +25,7 @@ public final class CardRecord {
     var defaultCategoryID: String?
     var alertEachPurchase = true
     var alertNearCap = true
+    /// From when cards could be frozen; kept because CloudKit can't remove attributes.
     var isFrozen = false
     var createdAt = Date.now
 
@@ -31,35 +39,10 @@ public final class CardRecord {
         networkRaw = card.network?.rawValue
         lastFour = card.lastFour
         colorRaw = card.color?.rawValue
-        let controls = card.additional
-        holderName = controls?.holderName
-        capAmount = controls?.cycleCap.map { DecimalCoding.string($0.amount) }
-        capCurrency = controls?.cycleCap?.currency
-        allowedCategoryIDs = controls?.allowedCategoryIDs.joined(separator: ",") ?? ""
-        defaultCategoryID = controls?.defaultCategoryID
-        alertEachPurchase = controls?.alertEachPurchase ?? true
-        alertNearCap = controls?.alertNearCap ?? true
-        isFrozen = controls?.isFrozen ?? false
     }
 
     func toDomain() throws(DomainCorruption) -> Card {
         guard let kind = CardKind(rawValue: kindRaw) else { throw DomainCorruption("Card kind \(kindRaw)") }
-        var controls: AdditionalCardControls?
-        if kind == .creditAdditional {
-            var cap: Money?
-            if let capAmount, let capCurrency {
-                cap = try Money(DecimalCoding.decimal(capAmount), capCurrency)
-            }
-            controls = AdditionalCardControls(
-                holderName: holderName ?? "",
-                cycleCap: cap,
-                allowedCategoryIDs: allowedCategoryIDs.split(separator: ",").map(String.init),
-                defaultCategoryID: defaultCategoryID,
-                alertEachPurchase: alertEachPurchase,
-                alertNearCap: alertNearCap,
-                isFrozen: isFrozen,
-            )
-        }
         do {
             return try Card(
                 id: id,
@@ -68,7 +51,6 @@ public final class CardRecord {
                 network: networkRaw.flatMap(CardNetwork.init(rawValue:)),
                 lastFour: lastFour,
                 color: colorRaw.flatMap(CardColor.init(rawValue:)),
-                additional: controls,
             )
         } catch {
             throw DomainCorruption("Card: \(error)")

@@ -31,16 +31,6 @@
         }
       }
     },
-    "Accounts" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuentas"
-          }
-        }
-      }
-    },
     "Add" : {
       "localizations" : {
         "es" : {
@@ -71,32 +61,12 @@
         }
       }
     },
-    "Add it with its limit and categories" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agrégala con su tope y categorías"
-          }
-        }
-      }
-    },
     "Bank" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Banco"
-          }
-        }
-      }
-    },
-    "Bank account" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuenta de banco"
           }
         }
       }
@@ -241,16 +211,6 @@
         }
       }
     },
-    "Did you give someone an additional card?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Le diste una adicional a alguien?"
-          }
-        }
-      }
-    },
     "Due day" : {
       "localizations" : {
         "es" : {
@@ -347,26 +307,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Límite"
-          }
-        }
-      }
-    },
-    "Linked to %@." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vinculada a %@."
-          }
-        }
-      }
-    },
-    "Linked to a bank account; an account can have several" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se vincula a una cuenta de banco; puede haber varias por cuenta"
           }
         }
       }
@@ -577,6 +517,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu tarjeta de débito"
+          }
+        }
+      }
+    },
+    "Your bank account, shown as its card: balance, bank and last 4" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu cuenta de banco, vista como su tarjeta: saldo, banco y últimos 4"
+          }
+        }
+      }
+    },
+    "Without a card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin tarjeta"
+          }
+        }
+      }
+    },
+    "%@ is ready: this card is the account, with its balance and movements." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ está lista: esta tarjeta es la cuenta, con su saldo y sus movimientos."
           }
         }
       }

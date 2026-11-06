@@ -41,17 +41,22 @@ public enum KWColor {
         public static let positive = Color(hex: Hex.State.positive)
         public static let pending = Color(hex: Hex.State.pending)
         public static let negative = Color(hex: Hex.State.negative)
-        public static let transfer = Color(hex: Hex.State.transfer)
+        /// Movements that don't change what the person has, like a transfer between their own
+        /// accounts, so they carry no gain or loss color.
+        public static let neutral = KWColor.Text.secondary
         public static let extra = Color(hex: Hex.State.extra)
     }
 
-    /// Card art (two-stop gradients).
+    /// Card art (two-stop gradients). `violeta`, `coral` and `lima` are no longer offered but still
+    /// draw cards saved with them.
     public enum CardArt: String, CaseIterable, Sendable {
         case azul
         case grafito
+        case platino
         case verde
         case violeta
         case coral
+        case rojo
         case oro
         case lima
         case chip
@@ -60,10 +65,12 @@ public enum KWColor {
             switch self {
             case .azul: (0x4A74FF, 0x1A33A8)
             case .grafito: (0x3A3A44, 0x121216)
+            case .platino: (0xE4E6EA, 0x8C919B)
             case .verde: (0x1FC28E, 0x0B6B4F)
             case .violeta: (0xA47BFF, 0x5A2FD0)
             case .coral: (0xFF7A50, 0xC93A12)
-            case .oro: (0xE2C27A, 0x8E6B26)
+            case .rojo: (0xD8323F, 0x6E0B17)
+            case .oro: (0xEDD596, 0x9A7429)
             case .lima: (0xE4FC98, 0x9CD228)
             case .chip: (0xF3E6BC, 0xB99A5C)
             }
@@ -95,6 +102,25 @@ public enum KWColor {
 
     public static func category(id: String) -> Color {
         Color(hex: category[id] ?? Hex.Text.faint)
+    }
+
+    /// The colors a person can give a category they create, by key so the stored value stays a
+    /// name rather than a UI color. Same hues as `category`, so their rows sit with the defaults.
+    public static let categoryPalette: [(key: String, hex: UInt32)] = [
+        ("blue", 0x5B7CFF),
+        ("purple", 0xC77DFF),
+        ("pink", 0xFF7A90),
+        ("orange", 0xFF8A50),
+        ("amber", 0xFFB547),
+        ("yellow", 0xF2D16B),
+        ("lime", 0xA3E635),
+        ("green", 0x3FD69A),
+        ("cyan", 0x4FD1E8),
+        ("gray", 0x8A8A96),
+    ]
+
+    public static func categoryPalette(key: String) -> Color? {
+        categoryPalette.first { $0.key == key }.map { Color(hex: $0.hex) }
     }
 
     enum Hex {
@@ -133,7 +159,6 @@ public enum KWColor {
             static let positive: UInt32 = 0x3FD69A
             static let pending: UInt32 = 0xFFB547
             static let negative: UInt32 = 0xFF8A7F
-            static let transfer: UInt32 = 0x8FA8FF
             static let extra: UInt32 = 0xC8F560
         }
     }

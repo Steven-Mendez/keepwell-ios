@@ -61,6 +61,11 @@ public struct OnboardingDraft: Sendable {
     public var locksWithBiometrics: Bool
     public var backsUpToICloud: Bool
     public var hidesAmountsInAppSwitcher: Bool
+    /// What to call the person; `nil` when they skipped the step.
+    public var preferredName: String?
+    /// A Keepwell passcode was created during this onboarding. The passcode itself is already in
+    /// the Keychain, saved by the passcode setup screen.
+    public var hasPasscode: Bool
 
     public init(
         currencies: CurrencySettings,
@@ -68,11 +73,27 @@ public struct OnboardingDraft: Sendable {
         locksWithBiometrics: Bool = true,
         backsUpToICloud: Bool = true,
         hidesAmountsInAppSwitcher: Bool = true,
+        preferredName: String? = nil,
+        hasPasscode: Bool = false,
     ) {
         self.currencies = currencies
         self.accounts = accounts
         self.locksWithBiometrics = locksWithBiometrics
         self.backsUpToICloud = backsUpToICloud
         self.hidesAmountsInAppSwitcher = hidesAmountsInAppSwitcher
+        self.preferredName = preferredName
+        self.hasPasscode = hasPasscode
+    }
+
+    /// Face ID on top whenever it's wanted; a passcode on its own still locks the app, so a person
+    /// who made one never ends up with the lock off.
+    public var unlockMethod: UnlockMethod {
+        if locksWithBiometrics {
+            .biometrics
+        } else if hasPasscode {
+            .passcode
+        } else {
+            .disabled
+        }
     }
 }

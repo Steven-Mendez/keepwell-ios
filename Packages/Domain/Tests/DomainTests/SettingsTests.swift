@@ -39,6 +39,5 @@ struct SettingsTests {
         #expect(settings.hidesAmountsInAppSwitcher)
         #expect(settings.isICloudBackupEnabled)
         #expect(settings.paymentReminderDaysBefore == 3)
-        #expect(settings.additionalCapAlertThreshold == Fixtures.decimal("0.8"))
     }
 }

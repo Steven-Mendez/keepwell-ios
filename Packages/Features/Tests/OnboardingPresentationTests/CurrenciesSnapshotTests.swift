@@ -7,14 +7,12 @@ import Testing
 @MainActor
 struct CurrenciesSnapshotTests {
     @Test
-    func nioSelectedWithDefaultRate() {
+    func oneCurrencyByDefault() {
         assertScreenSnapshot(of: CurrenciesView(viewModel: OnboardingFactory.make()) {})
     }
 
     @Test
-    func singleCurrencyHidesTheRate() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.selectSecond(nil)
-        assertScreenSnapshot(of: CurrenciesView(viewModel: viewModel) {})
+    func twoCurrenciesShowTheSwapAndTheRate() {
+        assertScreenSnapshot(of: CurrenciesView(viewModel: OnboardingFactory.usdAndNIO(rate: "36.6243")) {})
     }
 }

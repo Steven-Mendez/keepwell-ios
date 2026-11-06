@@ -5,9 +5,8 @@ import Foundation
 public struct AccountsOverview: Hashable, Sendable {
     public struct CreditCard: Identifiable, Hashable, Sendable {
         public let account: Account
-        /// The holder plastic, which gives the card its art, network and digits.
+        /// The plastic, which gives the card its art, network and digits.
         public let holder: Card?
-        public let plasticCount: Int
         /// Debts per currency, negative, second currency first as the cards show them.
         public let balances: [Money]
         public var id: UUID { account.id }
@@ -16,9 +15,16 @@ public struct AccountsOverview: Hashable, Sendable {
     public struct Deposit: Identifiable, Hashable, Sendable {
         public let account: Account
         public let balance: Money
-        /// Debit cards first, then transfer methods.
-        public let methods: [Card]
+        /// The account's one card, its face on screen. `nil` only for the moment between a sync
+        /// bringing an account and the launch check giving it its card.
+        public let debitCard: Card?
         public var id: UUID { account.id }
+
+        public init(account: Account, balance: Money, debitCard: Card?) {
+            self.account = account
+            self.balance = balance
+            self.debitCard = debitCard
+        }
     }
 
     public struct Cash: Identifiable, Hashable, Sendable {

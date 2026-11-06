@@ -8,10 +8,13 @@ import Testing
 @MainActor
 enum CreateTransactionFactory {
     nonisolated static let now = SampleData.defaultReferenceDate
+    /// Fixed so the receipt's reference doesn't change between snapshot runs.
+    nonisolated static let movementID = UUID(uuidString: "7E1A2B3C-0000-4000-8000-000000000001") ?? UUID()
 
     static func make(
-        kind: TransactionKind = .expense,
+        type: MovementType = .expense,
         store: InMemoryStore = InMemoryStore(sample: .standard),
+        receiptSaver: (any ReceiptImageSaving)? = nil,
     ) -> CreateTransactionViewModel {
         let context = DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: store, now: { now },
@@ -19,13 +22,16 @@ enum CreateTransactionFactory {
         return CreateTransactionViewModel(
             getContext: context,
             save: DefaultSaveTransactionUseCase(context: context, transactions: store),
-            kind: kind,
+            saveCategory: DefaultSaveCategoryUseCase(categories: store),
+            receiptSaver: receiptSaver,
+            type: type,
             now: { now },
+            makeID: { movementID },
         )
     }
 
-    static func loaded(kind: TransactionKind = .expense) async -> CreateTransactionViewModel {
-        let viewModel = make(kind: kind)
+    static func loaded(_ type: MovementType = .expense) async -> CreateTransactionViewModel {
+        let viewModel = make(type: type)
         await viewModel.load()
         return viewModel
     }
@@ -68,10 +74,11 @@ struct CreateTransactionViewModelTests {
         #expect(viewModel.currency == "NIO")
         #expect(viewModel.amountDisplay == "−C$879")
         #expect(viewModel.conversionLine == "≈ $24.00 · 1 USD = 36.6243 NIO")
-        viewModel.setKind(.income)
-        #expect(viewModel.amountDisplay == "+C$879")
-        viewModel.currency = "USD"
-        #expect(viewModel.conversionLine == "≈ C$32,192.76 · 1 USD = 36.6243 NIO")
+        let income = await CreateTransactionFactory.loaded(.income)
+        type(income, "879")
+        #expect(income.amountDisplay == "+C$879")
+        income.currency = "USD"
+        #expect(income.conversionLine == "≈ C$32,192.76 · 1 USD = 36.6243 NIO")
     }
 
     @Test
@@ -83,27 +90,77 @@ struct CreateTransactionViewModelTests {
     }
 
     @Test
-    func categoriesShowEightMostUsedThenAllOrSearch() async {
+    func categoriesShowTheMostUsedThenAllOrSearch() async {
         let viewModel = await CreateTransactionFactory.loaded()
-        #expect(viewModel.visibleCategories.count == 8)
+        // Ten categories, then "See all" and "New category" fill four rows of three.
+        #expect(viewModel.visibleCategories.count == 10)
         #expect(viewModel.hasMoreCategories)
+        #expect(viewModel.canCreateCategory)
         viewModel.showsAllCategories = true
-        #expect(viewModel.visibleCategories.count == 16)
+        #expect(viewModel.visibleCategories.count == TransactionCategory.defaultExpense.count)
         viewModel.categoryQuery = "groc"
         #expect(viewModel.visibleCategories.map(\.id) == ["groceries"])
     }
 
     @Test
-    func methodGroupsPutRecentAccountsFirstAndHideBlockedAdditionals() async {
+    func aShortListShowsEverythingWithoutSeeAll() async {
+        let viewModel = await CreateTransactionFactory.loaded(.income)
+        #expect(!viewModel.hasMoreCategories)
+        #expect(viewModel.visibleCategories.count == TransactionCategory.defaultIncome.count)
+    }
+
+    @Test
+    func aNewCategoryStartsFromTheSearchAndIsChosenOnceCreated() async throws {
+        let viewModel = await CreateTransactionFactory.loaded()
+        type(viewModel, "12")
+        viewModel.continueFromAmount()
+        viewModel.categoryQuery = "Boat"
+        #expect(viewModel.visibleCategories.isEmpty)
+        viewModel.startNewCategory()
+        let editor = try #require(viewModel.categoryEditor)
+        #expect(editor.name == "Boat")
+        #expect(editor.kind == .expense)
+        let created = try #require(await editor.save())
+        viewModel.categoryCreated(created)
+        #expect(viewModel.categoryEditor == nil)
+        #expect(viewModel.categoryQuery.isEmpty)
+        #expect(viewModel.categoryID == created.id)
+        #expect(viewModel.categories.contains(created))
+        #expect(viewModel.path == [.category, .method])
+    }
+
+    @Test
+    func transfersCantCreateCategories() async {
+        let viewModel = await CreateTransactionFactory.loaded(.transfer)
+        #expect(!viewModel.canCreateCategory)
+        viewModel.startNewCategory()
+        #expect(viewModel.categoryEditor == nil)
+    }
+
+    @Test
+    func methodGroupsPutRecentAccountsFirst() async {
         let viewModel = await CreateTransactionFactory.loaded()
         viewModel.selectCategory("restaurants")
-        let sources = viewModel.methodGroups.flatMap(\.rows).map(\.source)
-        #expect(!sources.contains(.card(SampleData.IDs.mastercardAdditional)))
-        #expect(viewModel.methodGroups.last?.title == "Other")
-        #expect(viewModel.methodGroups.count == 3)
-        viewModel.path = [.category]
-        viewModel.selectCategory("groceries")
-        #expect(viewModel.methodGroups.flatMap(\.rows).contains { $0.source == .card(SampleData.IDs.mastercardAdditional) })
+        #expect(viewModel.methodGroups.dropFirst(2).map(\.title) == ["Cash", "Credit cards"])
+        #expect(viewModel.methodGroups.flatMap(\.rows).contains { $0.source == .card(SampleData.IDs.mastercardHolder) })
+    }
+
+    @Test
+    func aBankAccountOffersOnlyItsCard() async {
+        for kind in [MovementType.expense, .income] {
+            let viewModel = await CreateTransactionFactory.loaded(kind)
+            let sources = viewModel.methodGroups.flatMap(\.rows).map(\.source)
+            #expect(sources.contains(.card(SampleData.IDs.savingsDebit)))
+            #expect(!sources.contains(.card(SampleData.IDs.savingsTransfer)))
+        }
+    }
+
+    @Test
+    func aMovementLastPaidByTransferPreselectsTheAccountsCard() async throws {
+        let viewModel = await CreateTransactionFactory.loaded()
+        let context = try #require(viewModel.context)
+        #expect(viewModel.pickerSource(for: .card(SampleData.IDs.savingsTransfer), in: context) == .card(SampleData.IDs.savingsDebit))
+        #expect(viewModel.pickerSource(for: .card(SampleData.IDs.savingsDebit), in: context) == .card(SampleData.IDs.savingsDebit))
     }
 
     @Test
@@ -124,28 +181,6 @@ struct CreateTransactionViewModelTests {
         let saved = try #require(viewModel.saved)
         #expect(saved.transaction.actualDebitedPrincipal == Decimal(string: "24.28"))
         #expect(saved.transaction.status == .confirmed)
-    }
-
-    @Test
-    func plannedChangesTheCopy() async {
-        let viewModel = await CreateTransactionFactory.loaded()
-        #expect(viewModel.saveTitle == "Save expense")
-        #expect(viewModel.plannedHint == "Already happened: counts in balances")
-        viewModel.isPlanned = true
-        #expect(viewModel.saveTitle == "Save as planned")
-        #expect(viewModel.plannedHint == "Doesn't count until confirmed")
-    }
-
-    @Test
-    func transferPicksADestinationThenExcludesItAsSource() async {
-        let viewModel = await CreateTransactionFactory.loaded(kind: .transfer)
-        type(viewModel, "500")
-        viewModel.continueFromAmount()
-        viewModel.selectDestination(SampleData.IDs.cash)
-        #expect(!viewModel.methodGroups.flatMap(\.rows).contains { $0.source == .account(SampleData.IDs.cash) })
-        viewModel.selectSource(.card(SampleData.IDs.savingsTransfer))
-        await viewModel.save()
-        #expect(viewModel.saved?.transaction.destinationAccountID == SampleData.IDs.cash)
     }
 
     @Test

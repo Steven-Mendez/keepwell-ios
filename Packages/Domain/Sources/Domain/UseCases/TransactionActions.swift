@@ -1,0 +1,56 @@
+import Foundation
+
+// Actions on a single movement shared by several screens (home, the movement list, a card's
+// cycle). They live in the kernel because features can't depend on each other.
+
+/// Turns a planned movement into a confirmed one, so it starts counting toward balances (rule 1).
+public protocol ConfirmPlannedTransactionUseCase: Sendable {
+    func execute(id: UUID) async throws(DomainError)
+}
+
+public struct DefaultConfirmPlannedTransactionUseCase: ConfirmPlannedTransactionUseCase {
+    private let transactions: any TransactionRepository
+    private let now: @Sendable () -> Date
+
+    /// `now` dates a planned movement that was due in the future to the day it actually happened.
+    public init(transactions: any TransactionRepository, now: @escaping @Sendable () -> Date = { .now }) {
+        self.transactions = transactions
+        self.now = now
+    }
+
+    public func execute(id: UUID) async throws(DomainError) {
+        guard let planned = try await transactions.fetchTransactions(in: nil).first(where: { $0.id == id }) else {
+            throw .notFound(id)
+        }
+        guard !planned.isConfirmed else { return }
+        let today = now()
+        try await transactions.save(planned.date > today ? planned.confirmed().with(date: today) : planned.confirmed())
+    }
+}
+
+public protocol DeleteTransactionUseCase: Sendable {
+    func execute(id: UUID) async throws(DomainError)
+}
+
+public struct DefaultDeleteTransactionUseCase: DeleteTransactionUseCase {
+    private let transactions: any TransactionRepository
+
+    public init(transactions: any TransactionRepository) {
+        self.transactions = transactions
+    }
+
+    public func execute(id: UUID) async throws(DomainError) {
+        try await transactions.deleteTransaction(id: id)
+    }
+}
+
+extension Transaction {
+    public func with(date: Date) -> Self {
+        Self(
+            id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
+            amount: amount, currency: currency, accountID: accountID, cardID: cardID,
+            destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
+            exchangeRate: exchangeRate, isShared: isShared, note: note,
+        )
+    }
+}

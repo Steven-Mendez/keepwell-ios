@@ -3,7 +3,7 @@ import DesignSystem
 import SharedPresentation
 import SwiftUI
 
-/// Step 3 · Payment method. The method decides which account moves.
+/// Expenses and income · How did you pay? The method decides which account moves.
 public struct MethodView: View {
     private let viewModel: CreateTransactionViewModel
     private let onBack: () -> Void
@@ -16,7 +16,7 @@ public struct MethodView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: KWSpacing.sm) {
-                KWFlowHeader(.back, progress: (4, 3), action: onBack)
+                KWFlowHeader(.back, progress: viewModel.progress(of: .method), action: onBack)
                 Text(viewModel.methodTitle)
                     .kwTextStyle(.titleSm)
                     .padding(.top, KWSpacing.xxs)
@@ -50,7 +50,7 @@ public struct MethodView: View {
 
     private func content(_ row: MethodRow) -> some View {
         HStack(spacing: KWSpacing.sm) {
-            thumbnail(row.thumbnail)
+            SourceThumbnail(thumbnail: row.thumbnail)
             VStack(alignment: .leading, spacing: 1) {
                 Text(row.title).font(.kw(15, weight: 600))
                 if let subtitle = row.subtitle, !subtitle.isEmpty {
@@ -65,14 +65,5 @@ public struct MethodView: View {
         }
         .padding(.vertical, KWSpacing.sm)
         .contentShape(Rectangle())
-    }
-
-    @ViewBuilder
-    private func thumbnail(_ thumbnail: MethodRow.Thumbnail) -> some View {
-        switch thumbnail {
-        case let .card(color): KWMiniCard(.palette(CardDisplay.palette(for: color)))
-        case .transfer: KWMiniCard(.neutral)
-        case .cash: KWMiniCard(.solid(KWColor.State.positive))
-        }
     }
 }

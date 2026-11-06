@@ -16,4 +16,21 @@ struct AmountInputTests {
     func rejectsInvalidText(text: String) {
         #expect(AmountInput.decimal(from: text) == nil)
     }
+
+    @Test(arguments: [("10000", "10,000.00"), ("1234,5", "1,234.50"), ("0.5", "0.50"), ("8,000", "8,000.00")])
+    func formatsTypedAmountsForDisplay(text: String, expected: String) {
+        #expect(AmountInput.formatted(text) == expected)
+    }
+
+    @Test
+    func formattedTextParsesBackToTheSameAmount() throws {
+        let formatted = try #require(AmountInput.formatted("1250000.5"))
+        #expect(AmountInput.decimal(from: formatted) == Decimal(string: "1250000.5"))
+    }
+
+    @Test
+    func leavesEmptyOrInvalidTextAlone() {
+        #expect(AmountInput.formatted("") == nil)
+        #expect(AmountInput.formatted("12abc") == nil)
+    }
 }

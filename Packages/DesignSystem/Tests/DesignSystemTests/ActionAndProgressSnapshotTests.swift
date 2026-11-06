@@ -9,8 +9,8 @@ struct ActionAndProgressSnapshotTests {
     func actionButtons() {
         let view = HStack(spacing: KWSpacing.xs) {
             KWActionButton("Pay", icon: .arrowUp, style: .prominent) {}
-            KWActionButton("Additional", icon: .addCard) {}
-            KWActionButton("Unfreeze", icon: .freeze, style: .active) {}
+            KWActionButton("Edit name", icon: .pencil) {}
+            KWActionButton("Color", icon: .droplet, style: .active) {}
             KWActionButton("Expense", icon: .plus, style: .translucent, captionSize: 13) {}
         }
         .padding(KWLayout.gutter)
@@ -27,5 +27,23 @@ struct ActionAndProgressSnapshotTests {
         }
         .padding(KWLayout.gutter)
         assertComponentSnapshot(of: view, height: 100)
+    }
+
+    @Test
+    func swipeToConfirm() {
+        let view = VStack(spacing: KWSpacing.md) {
+            KWSwipeToConfirm("Slide to save expense") {}
+            KWSwipeToConfirm("Slide to move") {}.disabled(true)
+        }
+        .padding(KWLayout.gutter)
+        assertComponentSnapshot(of: view, height: 170)
+    }
+
+    @Test
+    func ticket() {
+        let view = KWTicketShape()
+            .fill(KWColor.Surface.surface)
+            .padding(KWLayout.gutter)
+        assertComponentSnapshot(of: view, height: 160)
     }
 }

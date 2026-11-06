@@ -61,14 +61,13 @@ public struct DefaultGetAccountsOverviewUseCase: GetAccountsOverviewUseCase {
                 creditCards.append(AccountsOverview.CreditCard(
                     account: account,
                     holder: accountCards.first { $0.kind == .creditHolder },
-                    plasticCount: accountCards.count { $0.kind == .creditHolder || $0.kind == .creditAdditional },
                     balances: balances.reversed(),
                 ))
             case .deposit:
                 deposits.append(AccountsOverview.Deposit(
                     account: account,
                     balance: balances.first ?? .zero(currencies.principal),
-                    methods: accountCards.filter { $0.kind == .debit } + accountCards.filter { $0.kind == .transfer },
+                    debitCard: accountCards.first { $0.kind == .debit },
                 ))
             case .cash:
                 let balance = balances.first ?? .zero(currencies.principal)

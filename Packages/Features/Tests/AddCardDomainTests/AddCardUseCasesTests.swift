@@ -46,21 +46,44 @@ struct AddCardUseCasesTests {
     }
 
     @Test
-    func debitCardLinksToABankAccountOnly() async throws {
-        let useCase = DefaultAddDebitCardUseCase(accounts: store, cards: store)
-        let card = try await useCase.execute(accountID: SampleData.IDs.payroll, lastFour: "1357", network: .visa, color: .verde)
-        #expect(card.kind == .debit)
-        #expect(card.accountID == SampleData.IDs.payroll)
-        await #expect(throws: DomainError.invalidTransferDestination) {
-            _ = try await useCase.execute(accountID: SampleData.IDs.mastercard, lastFour: "1357", network: .visa, color: .verde)
-        }
+    func aBankAccountIsCreatedWithItsOneDebitCard() async throws {
+        let account = try await DefaultAddAccountUseCase(accounts: store, cards: store).execute(
+            kind: .deposit, name: "Checking", bank: "Bank Three", balance: Money(50, "USD"),
+            debitCard: DebitCardDraft(lastFour: "1357", network: .visa, color: .verde),
+        )
+        let cards = await store.fetchCards().filter { $0.accountID == account.id }
+        let debit = try #require(cards.first { $0.kind == .debit })
+        #expect(cards.count { $0.kind == .debit } == 1)
+        #expect(debit.lastFour == "1357")
+        #expect(debit.color == .verde)
+        #expect(cards.contains { $0.kind == .transfer })
     }
 
     @Test
-    func bankAccountGetsATransferMethod() async throws {
+    func aBankAccountWithoutDigitsStillGetsItsCard() async throws {
         let account = try await DefaultAddAccountUseCase(accounts: store, cards: store)
-            .execute(kind: .deposit, name: "Checking", bank: "Bank Three", balance: Money(50, "USD"))
-        #expect(await store.fetchCards().contains { $0.accountID == account.id && $0.kind == .transfer })
+            .execute(kind: .deposit, name: "Checking", bank: nil, balance: Money(0, "USD"))
+        let debit = await store.fetchCards().first { $0.accountID == account.id && $0.kind == .debit }
+        #expect(debit != nil)
+        #expect(debit?.lastFour == nil)
+    }
+
+    @Test
+    func badDigitsLeaveNoAccountBehind() async {
+        let before = await store.fetchAccounts().count
+        await #expect(throws: DomainError.invalidLastFour("12")) {
+            _ = try await DefaultAddAccountUseCase(accounts: store, cards: store).execute(
+                kind: .deposit, name: "Checking", bank: nil, balance: Money(0, "USD"), debitCard: DebitCardDraft(lastFour: "12"),
+            )
+        }
+        #expect(await store.fetchAccounts().count == before)
+    }
+
+    @Test
+    func cashHasNoCard() async throws {
+        let account = try await DefaultAddAccountUseCase(accounts: store, cards: store)
+            .execute(kind: .cash, name: "Envelope", bank: nil, balance: Money(10, "NIO"))
+        #expect(await !store.fetchCards().contains { $0.accountID == account.id })
     }
 
     @Test
@@ -69,7 +92,7 @@ struct AddCardUseCasesTests {
         await #expect(throws: DomainError.invalidAmount) {
             _ = try await useCase.execute(kind: .cash, name: "Envelope", bank: nil, balance: Money(-1, "NIO"))
         }
-        await #expect(throws: DomainError.corruptedData("Empty account name")) {
+        await #expect(throws: DomainError.missingName) {
             _ = try await useCase.execute(kind: .cash, name: " ", bank: nil, balance: Money(1, "NIO"))
         }
     }
@@ -78,10 +101,9 @@ struct AddCardUseCasesTests {
 @Suite("Add card context")
 struct AddCardContextTests {
     @Test
-    func listsBankAccountsAndSettings() async throws {
+    func readsTheSettings() async throws {
         let store = InMemoryStore(sample: .standard)
-        let context = try await DefaultGetAddCardContextUseCase(settings: store, accounts: store).execute()
-        #expect(context.depositAccounts.map(\.id) == [SampleData.IDs.savings, SampleData.IDs.payroll])
+        let context = try await DefaultGetAddCardContextUseCase(settings: store).execute()
         #expect(context.currencies.second == "NIO")
         #expect(context.paymentReminderDaysBefore == 3)
     }

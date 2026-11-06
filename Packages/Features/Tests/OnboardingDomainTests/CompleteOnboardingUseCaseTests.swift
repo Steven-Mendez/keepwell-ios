@@ -20,10 +20,15 @@ struct CompleteOnboardingUseCaseTests {
         try CurrencySettings(principal: "USD", second: "NIO", rate: Decimal(string: "36.6243") ?? 1)
     }
 
-    private func run(_ draft: OnboardingDraft) async throws -> (InMemoryStore, BackupSpy, Settings) {
+    private func run(
+        _ draft: OnboardingDraft,
+        profile: InMemoryPasscodeStore = InMemoryPasscodeStore(),
+    ) async throws -> (InMemoryStore, BackupSpy, Settings) {
         let store = InMemoryStore()
         let backup = BackupSpy()
-        let useCase = DefaultCompleteOnboardingUseCase(settings: store, accounts: store, cards: store, backup: backup) { [date] in date }
+        let useCase = DefaultCompleteOnboardingUseCase(
+            settings: store, accounts: store, cards: store, backup: backup, profile: profile, passcodes: profile,
+        ) { [date] in date }
         let settings = try await useCase.execute(draft)
         return (store, backup, settings)
     }
@@ -36,6 +41,46 @@ struct CompleteOnboardingUseCaseTests {
         #expect(settings.unlockMethod == .disabled)
         #expect(await store.load() == settings)
         #expect(!backup.isICloudBackupEnabled)
+    }
+
+    @Test
+    func savesTheTrimmedNameForTheLockHomeAndCards() async throws {
+        let profile = InMemoryPasscodeStore()
+        var draft = try OnboardingDraft(currencies: currencies(), accounts: [])
+        draft.preferredName = "  Steven \n"
+        _ = try await run(draft, profile: profile)
+        #expect(await profile.preferredName() == "Steven")
+    }
+
+    @Test
+    func skippedNameLeavesNoName() async throws {
+        let profile = InMemoryPasscodeStore(name: "Old")
+        var draft = try OnboardingDraft(currencies: currencies(), accounts: [])
+        draft.preferredName = "   "
+        _ = try await run(draft, profile: profile)
+        #expect(await profile.preferredName() == nil)
+    }
+
+    @Test(arguments: [
+        (true, true, UnlockMethod.biometrics),
+        (true, false, .biometrics),
+        (false, true, .passcode),
+        (false, false, .disabled),
+    ])
+    func lockFollowsFaceIDAndPasscodeChoices(biometrics: Bool, passcode: Bool, expected: UnlockMethod) async throws {
+        let profile = try InMemoryPasscodeStore(passcode: passcode ? Passcode("135790") : nil)
+        let draft = try OnboardingDraft(currencies: currencies(), accounts: [], locksWithBiometrics: biometrics, hasPasscode: passcode)
+        let (_, _, settings) = try await run(draft, profile: profile)
+        #expect(settings.unlockMethod == expected)
+        #expect(await profile.hasPasscode() == passcode)
+    }
+
+    @Test
+    func leftoverPasscodeIsRemovedWhenNoneWasCreated() async throws {
+        let profile = try InMemoryPasscodeStore(passcode: Passcode("135790"))
+        let draft = try OnboardingDraft(currencies: currencies(), accounts: [], hasPasscode: false)
+        _ = try await run(draft, profile: profile)
+        #expect(await profile.hasPasscode() == false)
     }
 
     @Test
@@ -56,6 +101,15 @@ struct CompleteOnboardingUseCaseTests {
         let cards = await store.fetchCards()
         #expect(cards.map(\.kind) == [.debit, .transfer])
         #expect(cards.first?.lastFour == "1234")
+    }
+
+    @Test
+    func bankAccountWithoutDigitsStillGetsItsCard() async throws {
+        let bank = OnboardingAccountDraft(kind: .bank, name: "Savings", bank: "Bank One", currency: "USD", balance: 10)
+        let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [bank]))
+        let cards = await store.fetchCards()
+        #expect(cards.map(\.kind) == [.debit, .transfer])
+        #expect(cards.first?.lastFour == nil)
     }
 
     @Test

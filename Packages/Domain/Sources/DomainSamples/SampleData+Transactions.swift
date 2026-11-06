@@ -165,7 +165,7 @@ extension SampleData {
                 amount: "2150",
                 currency: "NIO",
                 account: IDs.mastercard,
-                card: IDs.mastercardAdditional,
+                card: IDs.mastercardHolder,
             ),
             Row(
                 date: day(2, 0),

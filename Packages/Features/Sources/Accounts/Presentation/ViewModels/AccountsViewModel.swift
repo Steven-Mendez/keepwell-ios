@@ -16,16 +16,21 @@ public final class AccountsViewModel {
     public private(set) var state = State.loading
     /// Shown inside the cash sheets when saving fails.
     public private(set) var actionError: String?
+    /// The person's own name, printed on their main cards.
+    public private(set) var ownerName: String?
 
     private let getOverview: any GetAccountsOverviewUseCase
     private let reconcileCash: any ReconcileCashUseCase
     private let withdrawCash: any WithdrawCashUseCase
+    private let getPreferredName: any GetPreferredNameUseCase
 
     public init(
         getOverview: any GetAccountsOverviewUseCase,
         reconcileCash: any ReconcileCashUseCase,
         withdrawCash: any WithdrawCashUseCase,
+        getPreferredName: any GetPreferredNameUseCase,
     ) {
+        self.getPreferredName = getPreferredName
         self.getOverview = getOverview
         self.reconcileCash = reconcileCash
         self.withdrawCash = withdrawCash
@@ -40,6 +45,7 @@ public final class AccountsViewModel {
     }
 
     public func load() async {
+        ownerName = await getPreferredName.execute()
         do {
             state = try await .loaded(getOverview.execute())
         } catch {

@@ -1,12 +1,19 @@
+import Core
 import DesignSystem
 import Domain
-import SharedPresentation
 import SwiftUI
 
 /// Step 3 · Debt and cycle (credit cards).
 public struct DebtView: View {
     @Bindable private var viewModel: AddCardViewModel
     private let onBack: () -> Void
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case debt
+        case secondDebt
+        case limit
+    }
 
     public init(viewModel: AddCardViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -14,33 +21,29 @@ public struct DebtView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                form
-                    .padding(.horizontal, KWLayout.gutter)
-                    .padding(.top, KWLayout.safeTop)
-                    .padding(.bottom, KWSpacing.md)
+        KWFormScreen {
+            form
+        } footer: {
+            Button {
+                focus = nil
+                Task { await viewModel.addCreditCard() }
+            } label: {
+                Text("Add card", bundle: #bundle)
             }
-            .scrollIndicators(.hidden)
-            Button { Task { await viewModel.addCreditCard() } } label: { Text("Add card", bundle: #bundle) }
-                .buttonStyle(.kw())
-                .disabled(!viewModel.canAddCreditCard || viewModel.isSaving)
-                .padding(.horizontal, KWLayout.gutter)
-                .padding(.top, KWSpacing.sm)
-                .padding(.bottom, 34)
+            .buttonStyle(.kw())
+            .disabled(!viewModel.canAddCreditCard || viewModel.isSaving)
         }
-        .ignoresSafeArea(edges: [.top, .bottom])
-        .background(KWColor.Surface.bg)
-        .foregroundStyle(KWColor.Text.primary)
+        .kwKeyboardToolbar($focus, order: focusOrder)
+    }
+
+    private var focusOrder: [Field] {
+        viewModel.debtMode == .dual && viewModel.second != nil ? [.debt, .secondDebt, .limit] : [.debt, .limit]
     }
 
     private var form: some View {
         VStack(alignment: .leading, spacing: 14) {
             KWFlowHeader(.back, progress: (2, 2), action: onBack)
-            HStack(spacing: KWSpacing.sm) {
-                KWMiniCard(.palette(CardDisplay.palette(for: viewModel.color)), size: .medium)
-                Text("How the debt works", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
-            }
+            Text("How the debt works", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
             if viewModel.second != nil {
                 KWSectionHeader(String(localized: "Which currencies does it charge you in?", bundle: #bundle)).padding(.top, KWSpacing.xxs)
                 VStack(spacing: KWSpacing.xs) {
@@ -51,25 +54,36 @@ public struct DebtView: View {
             }
             KWSectionHeader(String(localized: "What you owe today", bundle: #bundle)).padding(.top, KWSpacing.xxs)
             KWGroupedCard {
-                FormAmountRow(label: debtLabel(debtCurrency), text: $viewModel.principalDebtText)
+                KWAmountFieldRow(
+                    debtLabel(debtCurrency),
+                    symbol: CurrencyFormatter.symbol(for: debtCurrency),
+                    text: $viewModel.principalDebtText,
+                )
+                .kwFocused($focus, equals: .debt)
                 if viewModel.debtMode == .dual, let second = viewModel.second {
-                    FormAmountRow(label: debtLabel(second), text: $viewModel.secondDebtText)
+                    KWAmountFieldRow(debtLabel(second), symbol: CurrencyFormatter.symbol(for: second), text: $viewModel.secondDebtText)
+                        .kwFocused($focus, equals: .secondDebt)
                 }
             }
             KWSectionHeader(String(localized: "Cycle (optional)", bundle: #bundle)).padding(.top, KWSpacing.xxs)
-            KWGroupedCard {
-                FormAmountRow(
-                    label: String(localized: "Limit", bundle: #bundle),
-                    text: $viewModel.limitText,
-                    placeholder: String(localized: "Not set", bundle: #bundle),
-                    filled: false,
-                )
-                stepper(String(localized: "Cutoff day", bundle: #bundle), value: viewModel.cutoffDay) { viewModel.stepCutoff(by: $0) }
-                stepper(String(localized: "Due day", bundle: #bundle), value: viewModel.dueDay) { viewModel.stepDue(by: $0) }
-            }
+            cycle
             if let error = viewModel.errorMessage {
                 Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
             }
+        }
+    }
+
+    private var cycle: some View {
+        KWGroupedCard {
+            KWAmountFieldRow(
+                String(localized: "Limit", bundle: #bundle),
+                symbol: CurrencyFormatter.symbol(for: debtCurrency),
+                placeholder: String(localized: "Not set", bundle: #bundle),
+                text: $viewModel.limitText,
+            )
+            .kwFocused($focus, equals: .limit)
+            stepper(String(localized: "Cutoff day", bundle: #bundle), value: viewModel.cutoffDay) { viewModel.stepCutoff(by: $0) }
+            stepper(String(localized: "Due day", bundle: #bundle), value: viewModel.dueDay) { viewModel.stepDue(by: $0) }
         }
     }
 

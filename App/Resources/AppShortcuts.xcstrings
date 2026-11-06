@@ -1,0 +1,26 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Log an expense in ${applicationName}" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anota un gasto en ${applicationName}"
+          }
+        }
+      }
+    },
+    "Log a ${category} expense in ${applicationName}" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anota un gasto de ${category} en ${applicationName}"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

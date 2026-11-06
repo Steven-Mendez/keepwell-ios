@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Selectable pill. `filled` is the list filter chip, `outlined` the currency chooser and `extra`
-/// the lima chip for an additional card's allowed categories.
+/// the lima chip for a highlighted choice.
 public struct KWChip: View {
     public enum Style: Sendable {
         case filled

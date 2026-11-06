@@ -15,6 +15,12 @@ public struct CurrencySettings: Hashable, Sendable, Codable {
         self.rate = self.second == nil ? 1 : rate
     }
 
+    /// USD alone at rate 1: what screens assume before onboarding has saved real settings.
+    public static let initial: CurrencySettings = {
+        guard let settings = try? Self() else { preconditionFailure("The default currency settings are valid") }
+        return settings
+    }()
+
     /// The rate new transactions store.
     public var exchangeRate: ExchangeRate {
         guard let second, let rate = try? ExchangeRate(principal: principal, second: second, rate: rate) else {
@@ -39,8 +45,6 @@ public struct Settings: Hashable, Sendable, Codable {
     public var hidesAmountsInAppSwitcher: Bool
     public var isICloudBackupEnabled: Bool
     public var paymentReminderDaysBefore: Int
-    /// Fraction of an additional card's cap that triggers the alert.
-    public var additionalCapAlertThreshold: Decimal
     public var hasCompletedOnboarding: Bool
 
     public init(
@@ -50,7 +54,6 @@ public struct Settings: Hashable, Sendable, Codable {
         hidesAmountsInAppSwitcher: Bool = true,
         isICloudBackupEnabled: Bool = true,
         paymentReminderDaysBefore: Int = 3,
-        additionalCapAlertThreshold: Decimal = Decimal(string: "0.8") ?? 1,
         hasCompletedOnboarding: Bool = false,
     ) {
         self.currencies = currencies
@@ -59,7 +62,6 @@ public struct Settings: Hashable, Sendable, Codable {
         self.hidesAmountsInAppSwitcher = hidesAmountsInAppSwitcher
         self.isICloudBackupEnabled = isICloudBackupEnabled
         self.paymentReminderDaysBefore = paymentReminderDaysBefore
-        self.additionalCapAlertThreshold = additionalCapAlertThreshold
         self.hasCompletedOnboarding = hasCompletedOnboarding
     }
 }

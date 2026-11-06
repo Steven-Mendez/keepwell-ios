@@ -7,8 +7,19 @@ public enum PaymentSource: Hashable, Sendable {
     case account(UUID)
 }
 
+extension PaymentSource {
+    var cardID: UUID? {
+        if case let .card(id) = self {
+            return id
+        }
+        return nil
+    }
+}
+
 /// A movement as the five steps build it.
 public struct TransactionDraft: Sendable {
+    /// Chosen when the flow starts, so the receipt can show its reference before anything reloads.
+    public var id: UUID
     public var kind: TransactionKind
     public var amount: Decimal
     public var currency: String
@@ -18,13 +29,12 @@ public struct TransactionDraft: Sendable {
     public var destinationAccountID: UUID?
     public var description: String
     public var date: Date
-    public var isPlanned: Bool
-    public var isShared: Bool
     /// "USD charged by the bank".
     public var actualDebitedPrincipal: Decimal?
     public var note: String
 
     public init(
+        id: UUID = UUID(),
         kind: TransactionKind = .expense,
         amount: Decimal = 0,
         currency: String,
@@ -33,11 +43,10 @@ public struct TransactionDraft: Sendable {
         destinationAccountID: UUID? = nil,
         description: String = "",
         date: Date = .now,
-        isPlanned: Bool = false,
-        isShared: Bool = false,
         actualDebitedPrincipal: Decimal? = nil,
         note: String = "",
     ) {
+        self.id = id
         self.kind = kind
         self.amount = amount
         self.currency = currency
@@ -46,8 +55,6 @@ public struct TransactionDraft: Sendable {
         self.destinationAccountID = destinationAccountID
         self.description = description
         self.date = date
-        self.isPlanned = isPlanned
-        self.isShared = isShared
         self.actualDebitedPrincipal = actualDebitedPrincipal
         self.note = note
     }
@@ -64,8 +71,6 @@ public struct TransactionContext: Sendable {
     public let lastUsed: [PaymentSource: Date]
     /// How many movements each category has, to put the usual ones first.
     public let categoryUsage: [String: Int]
-    /// Cap usage of additional cards in their current cycle.
-    public let additionalUsage: [UUID: AdditionalCardUsage]
 
     public init(
         currencies: CurrencySettings,
@@ -75,7 +80,6 @@ public struct TransactionContext: Sendable {
         balances: [UUID: [Money]],
         lastUsed: [PaymentSource: Date],
         categoryUsage: [String: Int],
-        additionalUsage: [UUID: AdditionalCardUsage],
     ) {
         self.currencies = currencies
         self.categories = categories
@@ -84,7 +88,6 @@ public struct TransactionContext: Sendable {
         self.balances = balances
         self.lastUsed = lastUsed
         self.categoryUsage = categoryUsage
-        self.additionalUsage = additionalUsage
     }
 
     public func account(_ id: UUID?) -> Account? {
@@ -103,6 +106,20 @@ public struct TransactionContext: Sendable {
         }
     }
 
+    /// The same context with a category the person just created, so the flow can pick it without
+    /// reloading and losing the currency and payment method already chosen.
+    public func adding(_ category: TransactionCategory) -> Self {
+        Self(
+            currencies: currencies,
+            categories: categories.filter { $0.id != category.id } + [category],
+            accounts: accounts,
+            cards: cards,
+            balances: balances,
+            lastUsed: lastUsed,
+            categoryUsage: categoryUsage,
+        )
+    }
+
     /// The most recently used source, the flow's default.
     public var lastUsedSource: PaymentSource? {
         lastUsed.max { $0.value < $1.value }?.key
@@ -113,7 +130,7 @@ public struct TransactionContext: Sendable {
 public struct SavedTransaction: Sendable {
     public let transaction: Transaction
     public let account: Account
-    /// The source account's balances after the movement (planned movements leave them unchanged).
+    /// The source account's balances after the movement.
     public let newBalances: [Money]
     /// Spending in the movement's category this month, in the principal currency.
     public let categoryMonthTotal: Money?

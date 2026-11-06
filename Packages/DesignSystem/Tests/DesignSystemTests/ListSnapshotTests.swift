@@ -14,7 +14,7 @@ struct ListSnapshotTests {
                 KWValueRow("Expense categories", value: "15 ›", style: .navigation, verticalPadding: 14)
             }
             KWSectionHeader("Cards", style: .large) {
-                Text("+ Additional").font(KWTextStyle.label.font).foregroundStyle(KWColor.Brand.link)
+                Text("+ Add").font(KWTextStyle.label.font).foregroundStyle(KWColor.Brand.link)
             }
             KWGroupedCard(verticalPadding: 4) {
                 KWValueRow("Credit limit", value: "Not set", style: .placeholder)

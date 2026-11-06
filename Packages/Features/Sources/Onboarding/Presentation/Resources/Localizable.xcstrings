@@ -51,12 +51,32 @@
         }
       }
     },
+    "All currencies" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las monedas"
+          }
+        }
+      }
+    },
     "All set" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todo listo"
+          }
+        }
+      }
+    },
+    "All set, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo listo, %@"
           }
         }
       }
@@ -141,12 +161,52 @@
         }
       }
     },
+    "Cash %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efectivo %@"
+          }
+        }
+      }
+    },
+    "Choose your main currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige tu moneda principal"
+          }
+        }
+      }
+    },
+    "Common" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más usadas"
+          }
+        }
+      }
+    },
     "Continue" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continuar"
+          }
+        }
+      }
+    },
+    "Create passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear código"
           }
         }
       }
@@ -201,16 +261,6 @@
         }
       }
     },
-    "Córdoba" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Córdoba"
-          }
-        }
-      }
-    },
     "Debit, last 4" : {
       "localizations" : {
         "es" : {
@@ -231,12 +281,22 @@
         }
       }
     },
-    "Euro" : {
+    "Enter all 4 digits or leave it empty." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Euro"
+            "value" : "Escribe los 4 dígitos o déjalo vacío."
+          }
+        }
+      }
+    },
+    "Enter an amount like 1,250.50." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe un monto como 1,250.50."
           }
         }
       }
@@ -311,16 +371,6 @@
         }
       }
     },
-    "iCloud backup" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Respaldo en iCloud"
-          }
-        }
-      }
-    },
     "Import transactions from CSV" : {
       "localizations" : {
         "es" : {
@@ -351,22 +401,22 @@
         }
       }
     },
+    "Keepwell passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de Keepwell"
+          }
+        }
+      }
+    },
     "Last 4 digits" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Últimos 4 dígitos"
-          }
-        }
-      }
-    },
-    "Limits on additional cards" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Topes de tarjetas adicionales"
           }
         }
       }
@@ -421,16 +471,6 @@
         }
       }
     },
-    "Nicaragua example: 1 USD = 36.6243 NIO" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ejemplo Nicaragua: 1 USD = 36.6243 NIO"
-          }
-        }
-      }
-    },
     "No account and no servers of ours. Your data lives on your iPhone and, if you want, in your iCloud." : {
       "localizations" : {
         "es" : {
@@ -471,12 +511,42 @@
         }
       }
     },
+    "On" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado"
+          }
+        }
+      }
+    },
     "On your iPhone, backed up to your iCloud" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "En tu iPhone, con respaldo en tu iCloud"
+          }
+        }
+      }
+    },
+    "On · tap to choose another" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado · toca para elegir otro"
+          }
+        }
+      }
+    },
+    "One currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una moneda"
           }
         }
       }
@@ -511,22 +581,12 @@
         }
       }
     },
-    "Peso" : {
+    "Protect Keepwell" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Peso"
-          }
-        }
-      }
-    },
-    "Protect your data" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protege tus datos"
+            "value" : "Protege Keepwell"
           }
         }
       }
@@ -621,12 +681,22 @@
         }
       }
     },
-    "Single currency only" : {
+    "Six digits, kept only on this iPhone" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Solo una moneda"
+            "value" : "Seis dígitos, guardados solo en este iPhone"
+          }
+        }
+      }
+    },
+    "Skip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir"
           }
         }
       }
@@ -651,12 +721,42 @@
         }
       }
     },
-    "Today's balance (%@)" : {
+    "Swap" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saldo de hoy (%@)"
+            "value" : "Intercambiar"
+          }
+        }
+      }
+    },
+    "Swap main and second currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intercambiar moneda principal y segunda"
+          }
+        }
+      }
+    },
+    "Swipe an account left to remove it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza una cuenta a la izquierda para quitarla."
+          }
+        }
+      }
+    },
+    "Today's balance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saldo de hoy"
           }
         }
       }
@@ -701,6 +801,26 @@
         }
       }
     },
+    "We'll use it to greet you and show it on your cards. It's only stored on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo usaremos para saludarte y mostrarlo en tus tarjetas. Solo se guarda en este iPhone."
+          }
+        }
+      }
+    },
+    "What's your name?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo te llamas?"
+          }
+        }
+      }
+    },
     "Which currencies do you use?" : {
       "localizations" : {
         "es" : {
@@ -721,12 +841,12 @@
         }
       }
     },
-    "Whichever your iPhone has; if it fails, your passcode" : {
+    "Whichever your iPhone has" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El que tenga tu iPhone; si falla, tu código"
+            "value" : "El que tenga tu iPhone"
           }
         }
       }
@@ -741,12 +861,32 @@
         }
       }
     },
-    "You can link more cards and add extra ones later." : {
+    "Your balances are yours alone. Lock the app so only you can open it." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Podrás vincular más tarjetas y agregar adicionales después."
+            "value" : "Tus saldos son solo tuyos. Bloquea la app para que solo tú puedas abrirla."
+          }
+        }
+      }
+    },
+    "Your data stays yours" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos son tuyos"
+          }
+        }
+      }
+    },
+    "Your first name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu nombre"
           }
         }
       }
@@ -757,6 +897,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu dinero claro, en una o dos monedas"
+          }
+        }
+      }
+    },
+    "Your name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu nombre"
+          }
+        }
+      }
+    },
+    "iCloud backup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respaldo en iCloud"
           }
         }
       }

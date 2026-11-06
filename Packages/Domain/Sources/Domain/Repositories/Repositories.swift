@@ -25,9 +25,19 @@ public protocol TransactionRepository: Sendable {
 }
 
 public protocol CategoryRepository: Sendable {
-    /// Seeded with `TransactionCategory.defaults` the first time.
+    /// In the person's order. Includes every `TransactionCategory.defaults` entry, adding the ones
+    /// a newer version ships, except the defaults the person deleted.
     func fetchCategories() async throws(DomainError) -> [TransactionCategory]
+    /// A new id goes after the existing ones; an existing one keeps its place.
     func save(_ category: TransactionCategory) async throws(DomainError)
+    /// A missing id succeeds: the same delete may already have arrived from another device.
+    /// A default leaves a tombstone, so the next fetch doesn't add it back.
+    func deleteCategory(id: String) async throws(DomainError)
+    /// Stores this order; ids it leaves out keep their relative order after the listed ones.
+    func reorderCategories(ids: [String]) async throws(DomainError)
+    /// Every default back as shipped (name, icon, color and order), deleted ones included. The
+    /// person's own categories stay, after the defaults.
+    func restoreDefaultCategories() async throws(DomainError)
 }
 
 public protocol SettingsRepository: Sendable {
@@ -46,4 +56,23 @@ public protocol DataEraser: Sendable {
 public protocol BackupPreference: Sendable {
     var isICloudBackupEnabled: Bool { get }
     func setICloudBackupEnabled(_ isEnabled: Bool)
+}
+
+/// The app passcode, kept on this device only (never in the synced store or a backup). The
+/// implementation stores a salted hash, so the code itself can't be read back.
+public protocol PasscodeRepository: Sendable {
+    func hasPasscode() async -> Bool
+    func setPasscode(_ passcode: Passcode) async throws(DomainError)
+    func verify(_ passcode: Passcode) async -> Bool
+    /// Also clears the failed attempts.
+    func removePasscode() async
+    func attempts() async -> PasscodeAttempts
+    func setAttempts(_ attempts: PasscodeAttempts) async
+}
+
+/// How the lock screen greets the person. Device-local, like the passcode it sits next to.
+public protocol ProfileRepository: Sendable {
+    /// `nil` when the person hasn't given one.
+    func preferredName() async -> String?
+    func setPreferredName(_ name: String?) async
 }

@@ -25,6 +25,7 @@ extension KWColor {
         public static let positive = KWColor.State.positive.opacity(0.14)
         public static let pending = KWColor.State.pending.opacity(0.14)
         public static let negative = KWColor.State.negative.opacity(0.14)
+        public static let neutral = KWColor.State.neutral.opacity(0.14)
         public static let extra = KWColor.State.extra.opacity(0.14)
         public static let accent = KWColor.Brand.accent.opacity(0.18)
     }

@@ -10,8 +10,10 @@ import OnboardingDomain
 @Observable
 public final class OnboardingViewModel {
     public enum Step: Hashable, Sendable {
+        case name
         case currencies
         case accounts
+        case protect
         case privacy
         case done
     }
@@ -22,20 +24,25 @@ public final class OnboardingViewModel {
         case notFound
     }
 
-    public struct CurrencyOption: Identifiable, Hashable, Sendable {
-        /// `nil` is "Single currency only".
-        public let code: String?
-        public let label: String
-        public var id: String { code ?? "single" }
+    /// One currency, or a main one plus a second with a rate between them.
+    public enum CurrencyMode: Hashable, Sendable {
+        case single
+        case dual
     }
 
     /// Pushed steps after the welcome screen.
     public var path: [Step] = []
-    public private(set) var principal = "USD"
-    public private(set) var second: String? = "NIO"
+    /// What to call the person; saved with everything else at the end.
+    public var nameText = ""
+    public private(set) var currencyMode = CurrencyMode.single
+    public private(set) var principal: String
+    /// Kept while the person is on one currency, so going back to two restores their pick.
+    public private(set) var secondChoice: String
     public var rateText = OnboardingViewModel.defaultRateText
     public private(set) var accounts: [OnboardingAccountDraft]
     public var locksWithBiometrics = true
+    /// A Keepwell passcode was created on the protect step.
+    public private(set) var hasPasscode = false
     public var backsUpToICloud = true
     public var hidesAmountsInAppSwitcher = true
     public private(set) var restoreState = RestoreState.idle
@@ -49,34 +56,47 @@ public final class OnboardingViewModel {
     private let notifications: any NotificationAuthorizing
 
     static let defaultRateText = "1.0000"
-    static let featuredSecondCurrencies = [
-        ("NIO", String(localized: "Córdoba", bundle: #bundle)),
-        ("MXN", String(localized: "Peso", bundle: #bundle)),
-        ("COP", String(localized: "Peso", bundle: #bundle)),
-        ("EUR", String(localized: "Euro", bundle: #bundle)),
-    ]
+    /// The most used currencies, offered before "Search…" so most people pick with one tap.
+    static let commonCurrencies = ["USD", "EUR", "GBP", "MXN", "CAD", "JPY", "CHF", "BRL"]
 
     public init(
         completeOnboarding: any CompleteOnboardingUseCase,
         restoreFromBackup: any RestoreFromBackupUseCase,
         notifications: any NotificationAuthorizing,
+        regionCurrency: String? = Locale.current.currency?.identifier,
     ) {
         self.completeOnboarding = completeOnboarding
         self.restoreFromBackup = restoreFromBackup
         self.notifications = notifications
-        accounts = [OnboardingAccountDraft(kind: .cash, name: String(localized: "Cash", bundle: #bundle), currency: "NIO")]
+        // The region's currency is the likeliest main one; anything unknown falls back to USD.
+        let principal = regionCurrency.flatMap { code in
+            Locale.commonISOCurrencyCodes.contains(code) ? code : nil
+        } ?? "USD"
+        self.principal = principal
+        secondChoice = Self.commonCurrencies.first { $0 != principal } ?? "EUR"
+        accounts = [OnboardingAccountDraft(kind: .cash, name: String(localized: "Cash", bundle: #bundle), currency: principal)]
     }
 
     // MARK: Currencies
 
-    public var secondCurrencyOptions: [CurrencyOption] {
-        let featured = Self.featuredSecondCurrencies
-            .filter { $0.0 != principal }
-            .map { CurrencyOption(code: $0.0, label: "\($0.0) · \($0.1)") }
-        let searched = searchedCurrencies
-            .filter { code in code != principal && !featured.contains { $0.code == code } }
-            .map { CurrencyOption(code: $0, label: "\($0) · \(Self.shortName(for: $0))") }
-        return featured + searched + [CurrencyOption(code: nil, label: String(localized: "Single currency only", bundle: #bundle))]
+    /// The second currency, or `nil` on one currency.
+    public var second: String? {
+        currencyMode == .dual ? secondChoice : nil
+    }
+
+    /// Quick picks for the second currency: the common ones, then anything found with "Search…".
+    public var secondCurrencyOptions: [String] {
+        (Self.commonCurrencies + searchedCurrencies + [secondChoice])
+            .reduce(into: [String]()) { codes, code in
+                if code != principal, !codes.contains(code) {
+                    codes.append(code)
+                }
+            }
+    }
+
+    /// The main currency's quick picks: the current one first, then the common ones.
+    public var principalOptions: [String] {
+        [principal] + Self.commonCurrencies.filter { $0 != principal }
     }
 
     public var principalLabel: String {
@@ -92,29 +112,46 @@ public final class OnboardingViewModel {
         second == nil || rate != nil
     }
 
+    public func setCurrencyMode(_ mode: CurrencyMode) {
+        currencyMode = mode
+        syncAccountCurrencies()
+    }
+
+    /// Picking the current second currency as the main one swaps them, so the two never match
+    /// and the second isn't silently dropped.
     public func selectPrincipal(_ code: String) {
-        principal = code
-        if second == code {
-            second = nil
+        guard code != principal else { return }
+        guard code != secondChoice else {
+            swapCurrencies()
+            return
         }
+        principal = code
         rateText = Self.defaultRateText
-        syncCashCurrency()
+        syncAccountCurrencies()
     }
 
     /// Choosing a currency resets the rate to 1, as the design does: the old rate belonged to
     /// another currency.
-    public func selectSecond(_ code: String?) {
-        if let code, !Self.featuredSecondCurrencies.contains(where: { $0.0 == code }), !searchedCurrencies.contains(code) {
+    public func selectSecond(_ code: String) {
+        guard code != principal else { return }
+        if !Self.commonCurrencies.contains(code), !searchedCurrencies.contains(code) {
             searchedCurrencies.append(code)
         }
-        second = code
-        rateText = Self.defaultRateText
-        syncCashCurrency()
+        if code != secondChoice {
+            secondChoice = code
+            rateText = Self.defaultRateText
+        }
+        syncAccountCurrencies()
     }
 
-    public func useNicaraguaExample() {
-        selectSecond("NIO")
-        rateText = "36.6243"
+    /// The rate keeps describing the same exchange, so it's inverted: 1 USD = 36.6243 NIO
+    /// becomes 1 NIO = 0.027304 USD.
+    public func swapCurrencies() {
+        (principal, secondChoice) = (secondChoice, principal)
+        if let rate, rate != 1 {
+            rateText = Self.rateText(for: 1 / rate)
+        }
+        syncAccountCurrencies()
     }
 
     // MARK: Accounts
@@ -129,11 +166,18 @@ public final class OnboardingViewModel {
                 network: .visa,
                 debtMode: second == nil ? .principal : .dual,
             )
-        case .cash: accounts.first { $0.kind == .cash } ?? OnboardingAccountDraft(
-                kind: .cash,
-                name: String(localized: "Cash", bundle: #bundle),
-                currency: second ?? principal,
-            )
+        case .cash:
+            // One cash account per currency: a new one takes the first currency without one, and
+            // once every currency has its cash the tile opens the existing one instead.
+            if let currency = freeCashCurrencies(excluding: nil).first {
+                OnboardingAccountDraft(kind: .cash, name: String(localized: "Cash", bundle: #bundle), currency: currency)
+            } else {
+                accounts.first { $0.kind == .cash } ?? OnboardingAccountDraft(
+                    kind: .cash,
+                    name: String(localized: "Cash", bundle: #bundle),
+                    currency: principal,
+                )
+            }
         }
     }
 
@@ -146,13 +190,29 @@ public final class OnboardingViewModel {
     }
 
     public func removeAccount(id: UUID) {
-        accounts.removeAll { $0.id == id && $0.kind != .cash }
+        accounts.removeAll { $0.id == id }
     }
 
     // MARK: Navigation
 
     public func start() {
-        path = [.currencies]
+        path = [.name]
+    }
+
+    /// The trimmed name, or `nil` while the field is blank.
+    public var preferredName: String? {
+        PreferredName.normalized(nameText)
+    }
+
+    public func continueFromName() {
+        nameText = String(nameText.prefix(PreferredName.maxLength))
+        path.append(.currencies)
+    }
+
+    /// "Skip": the greeting and the cards simply go without a name.
+    public func skipName() {
+        nameText = ""
+        path.append(.currencies)
     }
 
     public func continueFromCurrencies() {
@@ -161,6 +221,22 @@ public final class OnboardingViewModel {
     }
 
     public func continueFromAccounts() {
+        path.append(.protect)
+    }
+
+    /// The passcode setup screen saved a code; it's already in the Keychain.
+    public func passcodeCreated() {
+        hasPasscode = true
+    }
+
+    public func continueFromProtect() {
+        path.append(.privacy)
+    }
+
+    /// "Not now": no Keepwell passcode. Face ID, if left on, still locks the app with the
+    /// iPhone passcode behind it.
+    public func skipPasscode() {
+        hasPasscode = false
         path.append(.privacy)
     }
 
@@ -183,6 +259,12 @@ public final class OnboardingViewModel {
 
     // MARK: Done summary
 
+    /// "All set, Steven" once there's a name to say.
+    public var doneTitle: String {
+        guard let name = preferredName else { return String(localized: "All set", bundle: #bundle) }
+        return String(localized: "All set, \(name)", bundle: #bundle)
+    }
+
     public var currenciesSummary: String {
         [principal, second].compactMap(\.self).joined(separator: " + ")
     }
@@ -201,10 +283,12 @@ public final class OnboardingViewModel {
         defer { isSaving = false }
         let draft = OnboardingDraft(
             currencies: currencies,
-            accounts: accounts,
+            accounts: accountsToSave,
             locksWithBiometrics: locksWithBiometrics,
             backsUpToICloud: backsUpToICloud,
             hidesAmountsInAppSwitcher: hidesAmountsInAppSwitcher,
+            preferredName: preferredName,
+            hasPasscode: hasPasscode,
         )
         do {
             completedSettings = try await completeOnboarding.execute(draft)
@@ -214,12 +298,14 @@ public final class OnboardingViewModel {
         }
     }
 
-    private func syncCashCurrency() {
-        let currency = second ?? principal
-        for index in accounts.indices where accounts[index].kind == .cash {
-            accounts[index].currency = currency
-        }
-        for index in accounts.indices where accounts[index].kind == .bank && accounts[index].currency != second {
+    /// Cash and bank accounts keep the currency they were given while it's still one of the
+    /// chosen ones; a dropped currency falls back to the main one. Cash in a dropped currency goes
+    /// when the main one already has cash, since there's one cash account per currency.
+    private func syncAccountCurrencies() {
+        let chosen = currencies
+        let principalHasCash = accounts.contains { $0.kind == .cash && $0.currency == principal }
+        accounts.removeAll { $0.kind == .cash && !chosen.contains($0.currency) && principalHasCash }
+        for index in accounts.indices where accounts[index].kind != .credit && !chosen.contains(accounts[index].currency) {
             accounts[index].currency = principal
         }
     }
@@ -229,7 +315,11 @@ public final class OnboardingViewModel {
         return name.prefix(1).uppercased() + name.dropFirst()
     }
 
-    static func shortName(for code: String) -> String {
-        fullName(for: code).split(separator: " ").first.map(String.init) ?? code
+    /// Six decimals keep an inverted rate like 1 / 36.6243 meaningful; trailing zeros go.
+    static func rateText(for rate: Decimal) -> String {
+        var value = rate
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, 6, .plain)
+        return "\(rounded)"
     }
 }

@@ -10,7 +10,7 @@ public struct KWButtonStyle: ButtonStyle {
         case secondary
         /// `surface` fill, as "Log another".
         case surface
-        /// `surface` fill with the negative color: "Remove additional card", "Eliminar todos mis datos".
+        /// `surface` fill with the negative color: "Delete account", "Eliminar todos mis datos".
         case destructive
         /// `surface2` fill with the link color: "Complete card details".
         case link
@@ -136,7 +136,7 @@ extension ButtonStyle where Self == KWButtonStyle {
         Button("Continue") {}.buttonStyle(.kw())
         Button("ATM withdrawal") {}.buttonStyle(.kw(.secondary))
         Button("Log another") {}.buttonStyle(.kw(.surface, size: .regular))
-        Button("Remove additional card") {}.buttonStyle(.kw(.destructive, size: .row))
+        Button("Delete account") {}.buttonStyle(.kw(.destructive, size: .row))
         Button("Complete card details") {}.buttonStyle(.kw(.link, size: .medium))
         Button("Not now") {}.buttonStyle(.kw(.plain, size: .text))
         HStack {

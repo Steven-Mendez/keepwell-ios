@@ -13,9 +13,8 @@ DESTINATION   = $(shell scripts/simulator-destination.sh)
 RESOLVED      := Package.resolved
 PROJECT_RESOLVED := $(PROJECT)/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
-# -testLanguage/-testRegion: tests assert the English source strings, so they must not depend on the machine's language.
 # -skipMacroValidation: the Point-Free packages depend on swift-syntax (macros) and CI has no trust prompt.
-XCODEBUILD = set -o pipefail && xcodebuild \
+XCODEBUILD = xcodebuild \
 	-project $(PROJECT) \
 	-scheme "$(SCHEME)" \
 	-configuration $(CONFIG) \
@@ -23,10 +22,11 @@ XCODEBUILD = set -o pipefail && xcodebuild \
 	-derivedDataPath $(DERIVED_DATA) \
 	-skipMacroValidation \
 	-skipPackagePluginValidation \
-	-testLanguage en \
-	-testRegion US \
 	-quiet \
 	$(XCODEBUILD_FLAGS)
+# Tests assert the English source strings, so they must not depend on the machine's language.
+# xcodebuild rejects these flags for any action other than `test`, so `build` must not get them.
+XCODEBUILD_TEST = $(XCODEBUILD) -testLanguage en -testRegion US
 
 APP_PATH      := $(DERIVED_DATA)/Build/Products/$(CONFIG)-iphonesimulator/Keepwell.app
 DEVICE_HUB    := $(shell xcode-select -p)/../Applications/DeviceHub.app
@@ -81,19 +81,25 @@ build: generate ## Build the app for the simulator
 
 test: generate ## Package unit tests + UI tests, with coverage
 	rm -rf $(RESULTS)/All.xcresult
-	$(XCODEBUILD) -resultBundlePath $(RESULTS)/All.xcresult test
+	$(XCODEBUILD_TEST) -resultBundlePath $(RESULTS)/All.xcresult test
 
 test-unit: generate ## Package unit tests only (used by pre-push)
 	rm -rf $(RESULTS)/Unit.xcresult
-	$(XCODEBUILD) -resultBundlePath $(RESULTS)/Unit.xcresult -skip-testing:KeepwellUITests test
+	$(XCODEBUILD_TEST) -resultBundlePath $(RESULTS)/Unit.xcresult -skip-testing:KeepwellUITests test
 
 test-ui: generate ## UI tests only
 	rm -rf $(RESULTS)/UI.xcresult
-	$(XCODEBUILD) -resultBundlePath $(RESULTS)/UI.xcresult -only-testing:KeepwellUITests test
+	$(XCODEBUILD_TEST) -resultBundlePath $(RESULTS)/UI.xcresult -only-testing:KeepwellUITests test
 
-test-record-snapshots: generate ## Re-record snapshot test reference images
-	SNAPSHOT_TESTING_RECORD=all TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all \
-		$(XCODEBUILD) -only-testing:DesignSystemTests test || true
+# Snapshot suites live in DesignSystemTests and in the feature *PresentationTests, so the record pass
+# runs every unit bundle. `failed` rewrites only references that no longer match (and adds missing
+# ones) instead of churning every PNG. Recording always reports the rewritten snapshots as failures,
+# so that pass may fail; the second pass must then succeed against the new references, which also
+# surfaces real failures (build errors, broken tests) that a bare `|| true` would swallow.
+test-record-snapshots: generate ## Re-record snapshot reference images that changed, then verify them
+	-SNAPSHOT_TESTING_RECORD=failed TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed \
+		$(XCODEBUILD_TEST) -skip-testing:KeepwellUITests test
+	$(XCODEBUILD_TEST) -skip-testing:KeepwellUITests test
 	@echo "Review and commit the changes under Packages/*/Tests/**/__Snapshots__."
 
 clean: ## Delete build artifacts and the generated project

@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import Domain
 import SharedPresentation
@@ -7,6 +8,14 @@ import SwiftUI
 public struct PlasticView: View {
     @Bindable private var viewModel: AddCardViewModel
     private let onBack: () -> Void
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case bank
+        case accountName
+        case lastFour
+        case balance
+    }
 
     public init(viewModel: AddCardViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -18,30 +27,19 @@ public struct PlasticView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                form
-                    .padding(.horizontal, KWLayout.gutter)
-                    .padding(.top, KWLayout.safeTop)
-                    .padding(.bottom, KWSpacing.md)
-            }
-            .scrollIndicators(.hidden)
-            .scrollDismissesKeyboard(.interactively)
+        KWFormScreen {
+            form
+        } footer: {
             Button {
-                KWKeyboard.dismiss()
+                focus = nil
                 Task { await viewModel.continueFromPlastic() }
             } label: {
                 Text(viewModel.kind == .credit ? "Continue" : "Add card", bundle: #bundle)
             }
             .buttonStyle(.kw())
             .disabled(!viewModel.canContinueFromPlastic || viewModel.isSaving)
-            .padding(.horizontal, KWLayout.gutter)
-            .padding(.top, KWSpacing.sm)
-            .padding(.bottom, 34)
         }
-        .ignoresSafeArea(.container, edges: [.top, .bottom])
-        .background(KWColor.Surface.bg)
-        .foregroundStyle(KWColor.Text.primary)
+        .kwKeyboardToolbar($focus, order: viewModel.kind == .debit ? [.bank, .accountName, .lastFour, .balance] : [.bank, .lastFour])
     }
 
     private var form: some View {
@@ -51,29 +49,17 @@ public struct PlasticView: View {
             KWCardArt(
                 palette: CardDisplay.palette(for: viewModel.color),
                 bank: viewModel.bank.isEmpty ? bankPlaceholder : viewModel.bank,
-                badge: .tag(kindBadge),
                 showsContactless: false,
+                holder: viewModel.printedName,
                 lastFour: viewModel.lastFour.isEmpty ? "0000" : viewModel.lastFour,
-                network: CardDisplay.wordmark(for: viewModel.network),
+                numberGroups: CardDisplay.numberGroups(for: viewModel.network),
+                network: CardDisplay.networkMark(for: viewModel.network),
+                kindLabel: kindBadge,
             )
             swatches
-            KWGroupedCard {
-                if viewModel.kind == .debit {
-                    accountPicker
-                }
-                FormTextRow(
-                    label: String(localized: "Bank", bundle: #bundle),
-                    placeholder: String(localized: "Bank name", bundle: #bundle),
-                    text: $viewModel.bank,
-                )
-                FormTextRow(
-                    label: String(localized: "Last 4 digits", bundle: #bundle),
-                    placeholder: "0000",
-                    text: lastFourBinding,
-                    width: 90,
-                    numeric: true,
-                )
-                networkPicker
+            plasticFields
+            if viewModel.kind == .debit {
+                balanceFields
             }
             Text("We never ask for the full number or the CVV.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font)
@@ -84,15 +70,39 @@ public struct PlasticView: View {
         }
     }
 
-    private var bankPlaceholder: String {
-        let fallback = String(localized: "Bank", bundle: #bundle)
-        return viewModel.kind == .debit
-            ? viewModel.context?.depositAccounts.first { $0.id == viewModel.linkedAccountID }?.bank ?? fallback
-            : fallback
+    private var plasticFields: some View {
+        KWGroupedCard {
+            KWTextFieldRow(
+                String(localized: "Bank", bundle: #bundle),
+                placeholder: String(localized: "Bank name", bundle: #bundle),
+                text: $viewModel.bank,
+            )
+            .textInputAutocapitalization(.words)
+            .autocorrectionDisabled()
+            .kwFocused($focus, equals: .bank)
+            if viewModel.kind == .debit {
+                KWTextFieldRow(
+                    String(localized: "Account", bundle: #bundle),
+                    placeholder: String(localized: "Savings", bundle: #bundle),
+                    text: $viewModel.accountName,
+                )
+                .textInputAutocapitalization(.words)
+                .kwFocused($focus, equals: .accountName)
+            }
+            KWTextFieldRow(
+                String(localized: "Last 4 digits", bundle: #bundle),
+                placeholder: "0000",
+                text: $viewModel.lastFour,
+                digitLimit: 4,
+                width: 110,
+            )
+            .kwFocused($focus, equals: .lastFour)
+            networkPicker
+        }
     }
 
-    private var lastFourBinding: Binding<String> {
-        Binding(get: { viewModel.lastFour }, set: { viewModel.lastFour = String($0.filter(\.isNumber).prefix(4)) })
+    private var bankPlaceholder: String {
+        String(localized: "Bank", bundle: #bundle)
     }
 
     private var swatches: some View {
@@ -101,7 +111,9 @@ public struct PlasticView: View {
                 let isSelected = CardDisplay.cardColor(for: palette) == viewModel.color
                 Button { viewModel.color = CardDisplay.cardColor(for: palette) } label: {
                     Circle()
-                        .fill(palette.gradient)
+                        .fill(palette.largeGradient)
+                        // Keeps the black swatch from disappearing into the black screen.
+                        .overlay { Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1) }
                         .frame(width: 36, height: 36)
                         .padding(isSelected ? 3 : 0)
                         .background(isSelected ? Color.black : .clear, in: Circle())
@@ -139,17 +151,28 @@ public struct PlasticView: View {
         .padding(.vertical, KWSpacing.sm)
     }
 
-    private var accountPicker: some View {
-        VStack(alignment: .leading, spacing: KWSpacing.xs) {
-            Text("Account", bundle: #bundle).foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
-            KWFlowLayout(spacing: 6) {
-                ForEach(viewModel.context?.depositAccounts ?? []) { account in
-                    KWChip(CardDisplay.name(of: account), isSelected: account.id == viewModel.linkedAccountID) {
-                        viewModel.linkedAccountID = account.id
-                    }
+    /// The debit card is the bank account, so its balance is asked here rather than in a second form.
+    private var balanceFields: some View {
+        KWGroupedCard {
+            if let second = viewModel.second {
+                HStack {
+                    Text("Currency", bundle: #bundle).foregroundStyle(KWColor.Text.secondary)
+                    Spacer()
+                    KWSegmentedControl(
+                        [(value: viewModel.principal, title: viewModel.principal), (value: second, title: second)],
+                        selection: Binding(get: { viewModel.accountCurrencyCode }, set: { viewModel.accountCurrency = $0 }),
+                        style: .accent,
+                    )
                 }
+                .font(KWTextStyle.body.font)
+                .padding(.vertical, 10)
             }
+            KWAmountFieldRow(
+                String(localized: "Today's balance", bundle: #bundle),
+                symbol: CurrencyFormatter.symbol(for: viewModel.accountCurrencyCode),
+                text: $viewModel.balanceText,
+            )
+            .kwFocused($focus, equals: .balance)
         }
-        .padding(.vertical, KWSpacing.sm)
     }
 }

@@ -51,12 +51,6 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
                 categoryUsage[category, default: 0] += 1
             }
         }
-        var usage: [UUID: AdditionalCardUsage] = [:]
-        for card in allCards where card.kind == .creditAdditional {
-            let cutoff = allAccounts.first { $0.id == card.accountID }?.creditTerms?.cutoffDay
-            guard let cycle = BillingCycle.cycle(containing: now(), cutoffDay: cutoff, calendar: calendar) else { continue }
-            usage[card.id] = AdditionalCardUsage(card: card, transactions: movements, cycle: cycle, fallbackCurrency: currencies.principal)
-        }
         return try await TransactionContext(
             currencies: currencies,
             categories: categories.fetchCategories(),
@@ -65,7 +59,6 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
             balances: balances,
             lastUsed: lastUsed,
             categoryUsage: categoryUsage,
-            additionalUsage: usage,
         )
     }
 }
@@ -127,20 +120,12 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             category = found
         }
 
-        if case let .card(cardID) = source, let controls = context.card(cardID)?.additional {
-            guard controls.allows(categoryID: draft.categoryID ?? "") else { throw .paymentMethodUnavailable(cardID) }
-        }
-
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
         let note = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cardID: UUID? = if case let .card(id) = source {
-            id
-        } else {
-            nil
-        }
         return Transaction(
+            id: draft.id,
             date: draft.date,
-            status: draft.isPlanned ? .planned : .confirmed,
+            status: .confirmed,
             // Safety net only: the view model fills a localized description before saving.
             description: description.isEmpty ? (category?.name ?? "Transfer") : description,
             kind: draft.kind,
@@ -148,12 +133,11 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             amount: draft.amount,
             currency: draft.currency,
             accountID: accountID,
-            cardID: cardID,
+            cardID: source.cardID,
             destinationAccountID: draft.kind == .transfer ? draft.destinationAccountID : nil,
             actualDebitedPrincipal: draft.currency == currencies.principal ? nil : draft.actualDebitedPrincipal,
             // The rate in force now travels with the movement, so later rate edits don't rewrite it.
             exchangeRate: currencies.exchangeRate,
-            isShared: draft.isShared,
             note: note.isEmpty ? nil : note,
         )
     }

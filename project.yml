@@ -61,7 +61,8 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UIUserInterfaceStyle: Dark
         INFOPLIST_KEY_NSFaceIDUsageDescription: Keepwell uses Face ID to protect your financial data.
-        CODE_SIGN_ENTITLEMENTS: App/Resources/Keepwell.entitlements
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: Keepwell saves the receipts you choose to your photo library.
+        CODE_SIGN_ENTITLEMENTS: $(APP_ENTITLEMENTS)
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
@@ -96,6 +97,32 @@ targets:
         product: CreateTransactionDomain
       - package: Features
         product: CreateTransactionPresentation
+      - package: Features
+        product: HomeDomain
+      - package: Features
+        product: HomePresentation
+      - package: Features
+        product: TransactionsDomain
+      - package: Features
+        product: TransactionsPresentation
+      - package: Features
+        product: SummaryDomain
+      - package: Features
+        product: SummaryPresentation
+      - package: Features
+        product: SettingsDomain
+      - package: Features
+        product: SettingsPresentation
+      - package: Features
+        product: CreditCardDomain
+      - package: Features
+        product: CreditCardPresentation
+      - package: Features
+        product: LockDomain
+      - package: Features
+        product: LockPresentation
+      - package: Features
+        product: SharedPresentation
     preBuildScripts:
       - name: SwiftLint
         basedOnDependencyAnalysis: false
@@ -111,6 +138,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: $(WIDGETS_BUNDLE_ID)
         PRODUCT_NAME: KeepwellWidgets
         INFOPLIST_FILE: Widgets/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Widgets/KeepwellWidgets.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)
         SKIP_INSTALL: YES
@@ -118,6 +146,7 @@ targets:
         SWIFT_APPROACHABLE_CONCURRENCY: YES
     dependencies:
       - package: DesignSystem
+      - package: Core
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework
 
@@ -159,6 +188,18 @@ schemes:
         - package: Features/AddCardPresentation
         - package: Features/CreateTransactionDomain
         - package: Features/CreateTransactionPresentation
+        - package: Features/HomeDomain
+        - package: Features/HomePresentation
+        - package: Features/TransactionsDomain
+        - package: Features/TransactionsPresentation
+        - package: Features/SummaryDomain
+        - package: Features/SummaryPresentation
+        - package: Features/SettingsDomain
+        - package: Features/SettingsPresentation
+        - package: Features/CreditCardDomain
+        - package: Features/CreditCardPresentation
+        - package: Features/LockDomain
+        - package: Features/LockPresentation
       targets:
         - package: Core/CoreTests
         - package: DesignSystem/DesignSystemTests
@@ -173,6 +214,16 @@ schemes:
         - package: Features/CreateTransactionDomainTests
         - package: Features/CreateTransactionPresentationTests
         - package: Features/SharedPresentationTests
+        - package: Features/HomeDomainTests
+        - package: Features/HomePresentationTests
+        - package: Features/TransactionsDomainTests
+        - package: Features/TransactionsPresentationTests
+        - package: Features/SummaryDomainTests
+        - package: Features/SettingsDomainTests
+        - package: Features/SettingsPresentationTests
+        - package: Features/CreditCardDomainTests
+        - package: Features/LockDomainTests
+        - package: Features/LockPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release

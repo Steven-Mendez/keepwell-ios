@@ -17,6 +17,7 @@ let package = Package(
         .library(name: "AddCardPresentation", targets: ["AddCardPresentation"]),
         .library(name: "CreateTransactionDomain", targets: ["CreateTransactionDomain"]),
         .library(name: "CreateTransactionPresentation", targets: ["CreateTransactionPresentation"]),
+        .library(name: "SharedPresentation", targets: ["SharedPresentation"]),
         .library(name: "HomeDomain", targets: ["HomeDomain"]),
         .library(name: "HomePresentation", targets: ["HomePresentation"]),
         .library(name: "TransactionsDomain", targets: ["TransactionsDomain"]),
@@ -60,7 +61,13 @@ let package = Package(
         ),
         .testTarget(
             name: "SharedPresentationTests",
-            dependencies: ["SharedPresentation", .product(name: "Domain", package: "Domain"), .product(name: "Core", package: "Core")],
+            dependencies: [
+                "SharedPresentation",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+            ],
         ),
 
         // MARK: Onboarding
@@ -209,6 +216,7 @@ let package = Package(
                 "CreateTransactionPresentation",
                 "CreateTransactionDomain",
                 "FeatureTestSupport",
+                .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
@@ -243,6 +251,15 @@ let package = Package(
             resources: [.process("Resources")],
         ),
         .testTarget(
+            name: "HomePresentationTests",
+            dependencies: [
+                "HomePresentation",
+                "HomeDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
             name: "HomeDomainTests",
             dependencies: [
                 "HomeDomain",
@@ -273,6 +290,15 @@ let package = Package(
         .testTarget(
             name: "TransactionsDomainTests",
             dependencies: [
+                "TransactionsDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "TransactionsPresentationTests",
+            dependencies: [
+                "TransactionsPresentation",
                 "TransactionsDomain",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
@@ -327,6 +353,14 @@ let package = Package(
             resources: [.process("Resources")],
         ),
         .testTarget(
+            name: "SettingsPresentationTests",
+            dependencies: [
+                "SettingsPresentation",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
             name: "SettingsDomainTests",
             dependencies: [
                 "SettingsDomain",
@@ -379,6 +413,23 @@ let package = Package(
             ],
             path: "Sources/Lock/Presentation",
             resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "LockDomainTests",
+            dependencies: [
+                "LockDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "LockPresentationTests",
+            dependencies: [
+                "LockPresentation",
+                "LockDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
     ],
     swiftLanguageModes: [.v6],

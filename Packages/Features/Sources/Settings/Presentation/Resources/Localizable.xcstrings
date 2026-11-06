@@ -1,0 +1,956 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld rows skipped" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld row skipped"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rows skipped"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fila omitida"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld filas omitidas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld transactions imported" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transaction imported"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld transactions imported"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimiento importado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimientos importados"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "App language" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma de la app"
+          }
+        }
+      }
+    },
+    "Ask again after" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pedirlo al volver después de"
+          }
+        }
+      }
+    },
+    "Back up now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respaldar ahora"
+          }
+        }
+      }
+    },
+    "Backup ready · %@. Save it in iCloud Drive or Files." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respaldo listo · %@. Guárdalo en iCloud Drive o en Archivos."
+          }
+        }
+      }
+    },
+    "Categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        }
+      }
+    },
+    "Change passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar código"
+          }
+        }
+      }
+    },
+    "Credit cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjetas de crédito"
+          }
+        }
+      }
+    },
+    "Currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda"
+          }
+        }
+      }
+    },
+    "Data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos"
+          }
+        }
+      }
+    },
+    "Delete all my data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todos mis datos"
+          }
+        }
+      }
+    },
+    "Delete all your data?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar todos tus datos?"
+          }
+        }
+      }
+    },
+    "Delete everything" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todo"
+          }
+        }
+      }
+    },
+    "Deleted defaults come back and edits to them are undone. Your own categories and movements stay." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelven las predeterminadas que eliminaste y se deshacen sus cambios. Tus categorías y movimientos se quedan como están."
+          }
+        }
+      }
+    },
+    "Deletes the data on this iPhone and the iCloud backup." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borra los datos de este iPhone y el respaldo de iCloud."
+          }
+        }
+      }
+    },
+    "Deleting a category moves its movements to “%@”, which stays so they always have a place." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al eliminar una categoría, sus movimientos pasan a “%@”, que no se puede eliminar para que siempre tengan un lugar."
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        }
+      }
+    },
+    "Expense categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías de gasto"
+          }
+        }
+      }
+    },
+    "Expenses" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastos"
+          }
+        }
+      }
+    },
+    "Export CSV" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar CSV"
+          }
+        }
+      }
+    },
+    "Face ID /\nTouch ID" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID /\nTouch ID"
+          }
+        }
+      }
+    },
+    "For the greeting" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para el saludo"
+          }
+        }
+      }
+    },
+    "Hide amounts when leaving" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar montos al salir"
+          }
+        }
+      }
+    },
+    "Immediately" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De inmediato"
+          }
+        }
+      }
+    },
+    "Import CSV" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar CSV"
+          }
+        }
+      }
+    },
+    "In your own iCloud, encrypted. We don't see anything." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En tu propio iCloud, cifrado. Nosotros no vemos nada."
+          }
+        }
+      }
+    },
+    "Income" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresos"
+          }
+        }
+      }
+    },
+    "Income categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías de ingreso"
+          }
+        }
+      }
+    },
+    "Keepwell passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de Keepwell"
+          }
+        }
+      }
+    },
+    "Keepwell uses your iPhone's language. To use another one only here, choose it in iPhone Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell usa el idioma de tu iPhone. Para usar otro solo aquí, elígelo en Ajustes del iPhone."
+          }
+        }
+      }
+    },
+    "Keepwell will ask for your iPhone passcode instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell te pedirá el código de tu iPhone en su lugar."
+          }
+        }
+      }
+    },
+    "Language" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
+          }
+        }
+      }
+    },
+    "Last backup: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Último respaldo: %@"
+          }
+        }
+      }
+    },
+    "Main currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneda principal"
+          }
+        }
+      }
+    },
+    "Manual · default 1" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual · por defecto 1"
+          }
+        }
+      }
+    },
+    "Move down" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajar"
+          }
+        }
+      }
+    },
+    "Move up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subir"
+          }
+        }
+      }
+    },
+    "New category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva categoría"
+          }
+        }
+      }
+    },
+    "No lock" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin bloqueo"
+          }
+        }
+      }
+    },
+    "Off: your data stays only on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagado: tus datos quedan solo en este iPhone."
+          }
+        }
+      }
+    },
+    "On ›" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado ›"
+          }
+        }
+      }
+    },
+    "Organization" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organización"
+          }
+        }
+      }
+    },
+    "Passcode\nonly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo\ncódigo"
+          }
+        }
+      }
+    },
+    "Payment methods" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medios de pago"
+          }
+        }
+      }
+    },
+    "Rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasa"
+          }
+        }
+      }
+    },
+    "Remind me to pay" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordar pago antes de"
+          }
+        }
+      }
+    },
+    "Reorder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reordenar"
+          }
+        }
+      }
+    },
+    "Replace your data with this backup?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Reemplazar tus datos con este respaldo?"
+          }
+        }
+      }
+    },
+    "Restore" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar"
+          }
+        }
+      }
+    },
+    "Restore default categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar categorías predeterminadas"
+          }
+        }
+      }
+    },
+    "Restore default categories?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Restaurar las categorías predeterminadas?"
+          }
+        }
+      }
+    },
+    "Restored the backup from %@ · %lld transactions" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Restored the backup from %@ · %lld transaction"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Restored the backup from %@ · %lld transactions"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Respaldo del %@ restaurado · %lld movimiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Respaldo del %@ restaurado · %lld movimientos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Second currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segunda moneda"
+          }
+        }
+      }
+    },
+    "Security and privacy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguridad y privacidad"
+          }
+        }
+      }
+    },
+    "Set up ›" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar ›"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes"
+          }
+        }
+      }
+    },
+    "Six digits, kept only on this iPhone. Without one, the lock uses your iPhone passcode." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seis dígitos, guardados solo en este iPhone. Sin él, el bloqueo usa el código de tu iPhone."
+          }
+        }
+      }
+    },
+    "Syncs on its own while you have iCloud on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se sincroniza solo mientras tengas iCloud en este iPhone."
+          }
+        }
+      }
+    },
+    "That file isn't a Keepwell backup, so nothing was changed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese archivo no es un respaldo de Keepwell, así que no cambió nada."
+          }
+        }
+      }
+    },
+    "The change applies the next time you open Keepwell." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El cambio se aplica la próxima vez que abras Keepwell."
+          }
+        }
+      }
+    },
+    "The rate has to be a number greater than zero." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La tasa tiene que ser un número mayor que cero."
+          }
+        }
+      }
+    },
+    "Turn off passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivar código"
+          }
+        }
+      }
+    },
+    "Turn off the Keepwell passcode?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Desactivar el código de Keepwell?"
+          }
+        }
+      }
+    },
+    "Unlock the app with" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear la app con"
+          }
+        }
+      }
+    },
+    "Update it whenever you like by replacing the value. Each transaction keeps the rate it was logged with, so your history doesn't change." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualízala cuando quieras reemplazando el valor. Cada movimiento guarda la tasa con la que se anotó, así tu historial no cambia."
+          }
+        }
+      }
+    },
+    "We couldn't create the backup. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos crear el respaldo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't create the file. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos crear el archivo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't delete your data. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos eliminar tus datos. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't import the file. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos importar el archivo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't load your categories." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus categorías."
+          }
+        }
+      }
+    },
+    "We couldn't read that file." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos leer ese archivo."
+          }
+        }
+      }
+    },
+    "We couldn't read that file. Export it again as CSV (UTF-8)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos leer ese archivo. Expórtalo de nuevo como CSV (UTF-8)."
+          }
+        }
+      }
+    },
+    "We couldn't restore the backup. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos restaurar el respaldo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't restore the default categories. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos restaurar las categorías predeterminadas. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't save the change. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar el cambio. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't save the new order. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar el nuevo orden. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We use Face ID or Touch ID, whichever your iPhone has" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usamos Face ID o Touch ID según tu iPhone"
+          }
+        }
+      }
+    },
+    "What's on this iPhone now is replaced by the backup." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que hay ahora en este iPhone se reemplaza por el respaldo."
+          }
+        }
+      }
+    },
+    "Your accounts, cards and transactions are deleted from this iPhone and from iCloud. This can't be undone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus cuentas, tarjetas y movimientos se borran de este iPhone y de iCloud. No se puede deshacer."
+          }
+        }
+      }
+    },
+    "Your name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu nombre"
+          }
+        }
+      }
+    },
+    "iCloud backup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respaldo en iCloud"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

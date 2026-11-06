@@ -14,8 +14,13 @@ final class EmptyStateUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
         app.buttons["Start"].tap()
+        XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 5))
+        app.buttons["Skip"].tap()
         app.buttons["Continue"].tap()
         app.buttons["Continue"].tap()
+        XCTAssertTrue(app.staticTexts["Protect Keepwell"].waitForExistence(timeout: 5))
+        app.buttons["Not now"].tap()
+        XCTAssertTrue(app.staticTexts["Your data stays yours"].waitForExistence(timeout: 5))
         app.buttons["Not now"].tap()
         XCTAssertTrue(app.buttons["Go to home"].waitForExistence(timeout: 5))
         app.buttons["Go to home"].tap()
@@ -30,6 +35,8 @@ final class EmptyStateUITests: XCTestCase {
         attach("resumen")
 
         app.buttons["Log transaction"].tap()
+        XCTAssertTrue(app.staticTexts["What are you recording?"].waitForExistence(timeout: 5))
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Expense")).firstMatch.tap()
         XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 5))
     }
 

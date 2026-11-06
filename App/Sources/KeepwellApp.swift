@@ -7,6 +7,7 @@ import SwiftUI
 
 @main
 struct KeepwellApp: App {
+    @UIApplicationDelegateAdaptor(NotificationResponder.self) private var notifications
     @State private var container: AppContainer?
     /// Set before the first await so a second run of `.task` can't open a second store.
     @State private var isBootstrapping = false
@@ -19,7 +20,7 @@ struct KeepwellApp: App {
         WindowGroup {
             Group {
                 if let container {
-                    RootView(container: container)
+                    RootView(container: container, notifications: notifications)
                 } else {
                     SplashView()
                 }
@@ -43,6 +44,7 @@ struct KeepwellApp: App {
             await made.seedSampleData()
         }
         #endif
+        await made.normalizeBankCards()
         await minimumSplash
         container = made
     }

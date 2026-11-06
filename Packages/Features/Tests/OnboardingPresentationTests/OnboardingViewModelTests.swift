@@ -42,8 +42,23 @@ enum OnboardingFactory {
         complete: CompleteOnboardingStub = CompleteOnboardingStub(),
         restore: RestoreStub = RestoreStub(),
         notifications: NotificationsSpy = NotificationsSpy(),
+        regionCurrency: String? = "USD",
     ) -> OnboardingViewModel {
-        OnboardingViewModel(completeOnboarding: complete, restoreFromBackup: restore, notifications: notifications)
+        OnboardingViewModel(
+            completeOnboarding: complete,
+            restoreFromBackup: restore,
+            notifications: notifications,
+            regionCurrency: regionCurrency,
+        )
+    }
+
+    /// Main USD and second NIO, the setup most screens were designed with.
+    static func usdAndNIO(rate: String = "1.0000") -> OnboardingViewModel {
+        let viewModel = make()
+        viewModel.setCurrencyMode(.dual)
+        viewModel.selectSecond("NIO")
+        viewModel.rateText = rate
+        return viewModel
     }
 }
 
@@ -51,72 +66,7 @@ enum OnboardingFactory {
 @MainActor
 struct OnboardingViewModelTests {
     @Test
-    func startsWithNIOSelectedRateOneAndCashIncluded() {
-        let viewModel = OnboardingFactory.make()
-        #expect(viewModel.second == "NIO")
-        #expect(viewModel.rateText == "1.0000")
-        #expect(viewModel.rate == 1)
-        #expect(viewModel.accounts.map(\.kind) == [.cash])
-        #expect(viewModel.accounts.first?.currency == "NIO")
-        #expect(viewModel.principalLabel == "USD · US Dollar")
-    }
-
-    @Test
-    func choosingACurrencyResetsTheRate() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.rateText = "36.6243"
-        viewModel.selectSecond("EUR")
-        #expect(viewModel.rateText == "1.0000")
-        #expect(viewModel.accounts.first?.currency == "EUR")
-    }
-
-    @Test
-    func nicaraguaExampleFillsTheRate() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.selectSecond("MXN")
-        viewModel.useNicaraguaExample()
-        #expect(viewModel.second == "NIO")
-        #expect(viewModel.rate == Decimal(string: "36.6243"))
-        #expect(viewModel.rateSummary == "1 USD = 36.6243 NIO")
-    }
-
-    @Test
-    func singleCurrencyHidesTheRateAndMovesCashToPrincipal() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.selectSecond(nil)
-        #expect(viewModel.rateSummary == nil)
-        #expect(viewModel.currenciesSummary == "USD")
-        #expect(viewModel.accounts.first?.currency == "USD")
-        #expect(viewModel.canContinueFromCurrencies)
-    }
-
-    @Test
-    func invalidRateBlocksContinuing() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.rateText = "0"
-        #expect(!viewModel.canContinueFromCurrencies)
-        viewModel.rateText = "36,5"
-        #expect(viewModel.rate == Decimal(string: "36.5"))
-    }
-
-    @Test
-    func searchedCurrencyBecomesAnOption() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.selectSecond("CRC")
-        #expect(viewModel.secondCurrencyOptions.map(\.code).contains("CRC"))
-        #expect(viewModel.secondCurrencyOptions.last?.label == "Single currency only")
-    }
-
-    @Test
-    func principalCannotAlsoBeSecond() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.selectPrincipal("NIO")
-        #expect(viewModel.second == nil)
-        #expect(!viewModel.secondCurrencyOptions.map(\.code).contains("NIO"))
-    }
-
-    @Test
-    func accountsCanBeAddedEditedAndRemovedButCashStays() {
+    func accountsCanBeAddedEditedAndRemoved() {
         let viewModel = OnboardingFactory.make()
         var bank = viewModel.newAccount(.bank)
         bank.name = "Savings"
@@ -127,16 +77,82 @@ struct OnboardingViewModelTests {
         #expect(viewModel.accounts.last?.balance == 100)
         viewModel.removeAccount(id: bank.id)
         viewModel.removeAccount(id: viewModel.accounts[0].id)
-        #expect(viewModel.accounts.map(\.kind) == [.cash])
+        #expect(viewModel.accounts.isEmpty)
     }
 
     @Test
     func stepsAdvanceInOrder() {
         let viewModel = OnboardingFactory.make()
         viewModel.start()
+        viewModel.nameText = "Steven"
+        viewModel.continueFromName()
         viewModel.continueFromCurrencies()
         viewModel.continueFromAccounts()
-        #expect(viewModel.path == [.currencies, .accounts, .privacy])
+        viewModel.continueFromProtect()
+        #expect(viewModel.path == [.name, .currencies, .accounts, .protect, .privacy])
+    }
+
+    @Test
+    func nameIsTrimmedAndSavedWithTheDraft() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.start()
+        viewModel.nameText = "  Steven  "
+        viewModel.continueFromName()
+        #expect(viewModel.preferredName == "Steven")
+        #expect(viewModel.doneTitle == "All set, Steven")
+        await viewModel.skipNotifications()
+        #expect(complete.received.draft?.preferredName == "Steven")
+    }
+
+    @Test
+    func skippingTheNameLeavesItOut() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.start()
+        viewModel.nameText = "Typo"
+        viewModel.skipName()
+        #expect(viewModel.path == [.name, .currencies])
+        #expect(viewModel.preferredName == nil)
+        #expect(viewModel.doneTitle == "All set")
+        await viewModel.skipNotifications()
+        #expect(complete.received.draft?.preferredName == nil)
+    }
+
+    @Test
+    func blankNameCountsAsNoName() {
+        let viewModel = OnboardingFactory.make()
+        viewModel.nameText = "   "
+        #expect(viewModel.preferredName == nil)
+    }
+
+    @Test
+    func createdPasscodeLocksTheAppEvenWithoutFaceID() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.path = [.name, .currencies, .accounts, .protect]
+        viewModel.locksWithBiometrics = false
+        viewModel.passcodeCreated()
+        #expect(viewModel.hasPasscode)
+        viewModel.continueFromProtect()
+        #expect(viewModel.path.last == .privacy)
+        await viewModel.skipNotifications()
+        let draft = complete.received.draft
+        #expect(draft?.hasPasscode == true)
+        #expect(draft?.unlockMethod == .passcode)
+    }
+
+    @Test
+    func notNowSkipsThePasscodeButKeepsFaceID() async {
+        let complete = CompleteOnboardingStub()
+        let viewModel = OnboardingFactory.make(complete: complete)
+        viewModel.path = [.name, .currencies, .accounts, .protect]
+        viewModel.skipPasscode()
+        #expect(viewModel.path.last == .privacy)
+        await viewModel.skipNotifications()
+        let draft = complete.received.draft
+        #expect(draft?.hasPasscode == false)
+        #expect(draft?.unlockMethod == .biometrics)
     }
 
     @Test
@@ -144,12 +160,18 @@ struct OnboardingViewModelTests {
         let complete = CompleteOnboardingStub()
         let notifications = NotificationsSpy()
         let viewModel = OnboardingFactory.make(complete: complete, notifications: notifications)
-        viewModel.useNicaraguaExample()
+        viewModel.setCurrencyMode(.dual)
+        viewModel.selectSecond("NIO")
+        viewModel.swapCurrencies()
+        viewModel.rateText = "0.0273"
         viewModel.backsUpToICloud = false
         viewModel.path = [.currencies, .accounts, .privacy]
         await viewModel.allowNotifications()
         #expect(notifications.asked)
-        #expect(complete.received.draft?.currencies.rate == Decimal(string: "36.6243"))
+        let currencies = complete.received.draft?.currencies
+        #expect(currencies?.principal == "NIO")
+        #expect(currencies?.second == "USD")
+        #expect(currencies?.rate == Decimal(string: "0.0273"))
         #expect(complete.received.draft?.backsUpToICloud == false)
         #expect(viewModel.path.last == .done)
         #expect(viewModel.completedSettings != nil)

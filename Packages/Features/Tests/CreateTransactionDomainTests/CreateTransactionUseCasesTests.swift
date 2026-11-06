@@ -24,11 +24,10 @@ struct CreateTransactionUseCasesTests {
     }
 
     @Test
-    func contextKnowsBalancesLastUsedAndCaps() async throws {
+    func contextKnowsBalancesAndLastUsed() async throws {
         let context = try await contextUseCase().execute()
         #expect(context.balances[SampleData.IDs.cash]?.first?.currency == "NIO")
         #expect(context.lastUsedSource != nil)
-        #expect(context.additionalUsage[SampleData.IDs.mastercardAdditional]?.cap == Money(4000, "NIO"))
         #expect(context.accountID(for: .card(SampleData.IDs.savingsDebit)) == SampleData.IDs.savings)
     }
 
@@ -47,15 +46,12 @@ struct CreateTransactionUseCasesTests {
     }
 
     @Test
-    func newBalanceReflectsTheMovementUnlessPlanned() async throws {
+    func newBalanceReflectsTheMovement() async throws {
         let before = try await contextUseCase().execute().balances[SampleData.IDs.cash]?.first?.amount ?? 0
         let saved = try await save(expense(100, source: .account(SampleData.IDs.cash)))
+        #expect(saved.transaction.status == .confirmed)
+        #expect(!saved.transaction.isShared)
         #expect(saved.newBalances.first?.amount == before - 100)
-        var planned = expense(50, source: .account(SampleData.IDs.cash))
-        planned.isPlanned = true
-        let plannedSaved = try await save(planned)
-        #expect(plannedSaved.transaction.status == .planned)
-        #expect(plannedSaved.newBalances.first?.amount == before - 100)
     }
 
     @Test
@@ -73,13 +69,6 @@ struct CreateTransactionUseCasesTests {
         var income = expense(source: .account(SampleData.IDs.cash))
         income.kind = .income
         await #expect(throws: DomainError.categoryKindMismatch(expected: .income, actual: .expense)) { _ = try await save(income) }
-    }
-
-    @Test
-    func additionalCardOnlyAcceptsItsCategories() async {
-        await #expect(throws: DomainError.paymentMethodUnavailable(SampleData.IDs.mastercardAdditional)) {
-            _ = try await save(expense(source: .card(SampleData.IDs.mastercardAdditional)))
-        }
     }
 
     @Test

@@ -81,6 +81,21 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         upsert(category, into: &categories)
     }
 
+    /// Nothing re-adds missing defaults here, so removing the row is the whole tombstone.
+    public func deleteCategory(id: String) {
+        categories.removeAll { $0.id == id }
+    }
+
+    public func reorderCategories(ids: [String]) {
+        let rank = Dictionary(ids.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
+        let listed = categories.filter { rank[$0.id] != nil }.sorted { rank[$0.id] ?? 0 < rank[$1.id] ?? 0 }
+        categories = listed + categories.filter { rank[$0.id] == nil }
+    }
+
+    public func restoreDefaultCategories() {
+        categories = TransactionCategory.defaults + categories.filter { !$0.isDefault }
+    }
+
     public func load() -> Settings? {
         settings
     }

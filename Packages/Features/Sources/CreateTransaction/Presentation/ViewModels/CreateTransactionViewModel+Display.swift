@@ -25,8 +25,8 @@ public struct MethodGroup: Identifiable, Hashable, Sendable {
 }
 
 extension CreateTransactionViewModel {
-    /// The two most recently used accounts get their own section with every method; the rest
-    /// share "Other", one row per method.
+    /// The two most recently used accounts get their own section with every method; the rest are
+    /// grouped by what they are (bank accounts, cash, credit cards), one row per method.
     public var methodGroups: [MethodGroup] {
         guard let context else { return [] }
         let ranked = context.accounts
@@ -36,10 +36,13 @@ extension CreateTransactionViewModel {
             let rows = sources(of: account, in: context).filter(isUsable).map { row(for: $0, in: context, grouped: true) }
             return rows.isEmpty ? nil : MethodGroup(title: groupTitle(account, context: context), rows: rows)
         }
-        let others = ranked.dropFirst(2).flatMap { sources(of: $0, in: context) }.filter(isUsable)
-            .map { row(for: $0, in: context, grouped: false) }
-        if !others.isEmpty {
-            groups.append(MethodGroup(title: String(localized: "Other", bundle: #bundle), rows: others))
+        let others = Array(ranked.dropFirst(2))
+        for accountKind in [AccountKind.deposit, .cash, .credit] {
+            let rows = others.filter { $0.kind == accountKind }.flatMap { sources(of: $0, in: context) }.filter(isUsable)
+                .map { row(for: $0, in: context, grouped: false) }
+            if !rows.isEmpty {
+                groups.append(MethodGroup(title: otherGroupTitle(accountKind), rows: rows))
+            }
         }
         return groups
     }
@@ -68,31 +71,20 @@ extension CreateTransactionViewModel {
 
     public var sourceTitle: String? {
         guard let context, let source else { return nil }
+        // Same wording the movement will have in lists once saved.
+        if case let .card(id) = source, let card = context.card(id) {
+            return CardDisplay.methodTitle(card, account: context.account(card.accountID))
+        }
         return row(for: source, in: context, grouped: false).title
     }
 
-    public var plannedLabel: String {
-        switch kind {
-        case .income: String(localized: "It's a planned income", bundle: #bundle)
-        case .transfer: String(localized: "It's a planned transfer", bundle: #bundle)
-        case .expense: String(localized: "It's a planned expense", bundle: #bundle)
-        }
-    }
-
-    public var plannedHint: String {
-        isPlanned
-            ? String(localized: "Doesn't count until confirmed", bundle: #bundle)
-            : String(localized: "Already happened: counts in balances", bundle: #bundle)
-    }
-
     public var saveTitle: String {
-        if isPlanned {
-            return String(localized: "Save as planned", bundle: #bundle)
-        }
-        return switch kind {
+        switch type {
         case .expense: String(localized: "Save expense", bundle: #bundle)
         case .income: String(localized: "Save income", bundle: #bundle)
         case .transfer: String(localized: "Save transfer", bundle: #bundle)
+        case .withdrawal: String(localized: "Save withdrawal", bundle: #bundle)
+        case .cardPayment: String(localized: "Save card payment", bundle: #bundle)
         }
     }
 
@@ -122,20 +114,36 @@ extension CreateTransactionViewModel {
 
     // MARK: Private
 
-    private func lastUse(of account: Account, in context: TransactionContext) -> Date {
-        sources(of: account, in: context).compactMap { context.lastUsed[$0] }.max() ?? .distantPast
+    private func sources(of account: Account, in context: TransactionContext) -> [PaymentSource] {
+        let all = context.cards.filter { $0.accountID == account.id }
+        guard !all.isEmpty else { return [.account(account.id)] }
+        // A bank account is its card: paying "without the card" moves the very same balance, so
+        // the account's transfer method only shows when nothing else stands for the account.
+        let cards = all.contains { $0.kind != .transfer } ? all.filter { $0.kind != .transfer } : all
+        let order: [CardKind] = [.debit, .creditHolder, .transfer]
+        return cards.sorted { (order.firstIndex(of: $0.kind) ?? 0) < (order.firstIndex(of: $1.kind) ?? 0) }.map { .card($0.id) }
     }
 
-    private func sources(of account: Account, in context: TransactionContext) -> [PaymentSource] {
-        let cards = context.cards.filter { $0.accountID == account.id }
-        guard !cards.isEmpty else { return [.account(account.id)] }
-        let order: [CardKind] = [.debit, .creditHolder, .creditAdditional, .transfer]
-        return cards.sorted { (order.firstIndex(of: $0.kind) ?? 0) < (order.firstIndex(of: $1.kind) ?? 0) }.map { .card($0.id) }
+    /// A movement last paid through the account's hidden transfer method preselects its card,
+    /// which the picker shows in its place.
+    func pickerSource(for source: PaymentSource, in context: TransactionContext) -> PaymentSource {
+        guard case let .card(id) = source, let card = context.card(id), card.kind == .transfer,
+              let sibling = context.cards.first(where: { $0.accountID == card.accountID && $0.kind != .transfer })
+        else { return source }
+        return .card(sibling.id)
     }
 
     /// "USD and NIO" / "USD y NIO": the list joiner follows the person's language.
     private func currencyList(_ account: Account) -> String {
         account.currencies.formatted(.list(type: .and))
+    }
+
+    private func otherGroupTitle(_ kind: AccountKind) -> String {
+        switch kind {
+        case .deposit: String(localized: "Bank accounts", bundle: #bundle)
+        case .cash: String(localized: "Cash", bundle: #bundle)
+        case .credit: String(localized: "Credit cards", bundle: #bundle)
+        }
     }
 
     private func groupTitle(_ account: Account, context: TransactionContext) -> String {
@@ -147,66 +155,70 @@ extension CreateTransactionViewModel {
         return "\(CardDisplay.name(of: account)) · \(currencyList(account))"
     }
 
-    private func additionalRow(source: PaymentSource, card: Card, context: TransactionContext) -> MethodRow {
-        let additional = String(localized: "Additional", bundle: #bundle)
-        let remaining = context.additionalUsage[card.id]?.remaining.map {
-            let amount = formatter.string($0, fractionDigits: 0)
-            return String(localized: "\(amount) left", bundle: #bundle)
-        }
-        return MethodRow(
-            source: source,
-            title: card.additional?.holderName ?? additional,
-            subtitle: [additional, remaining].compactMap(\.self).joined(separator: " · "),
-            thumbnail: .card(card.color),
-        )
-    }
-
     private func row(for source: PaymentSource, in context: TransactionContext, grouped: Bool) -> MethodRow {
         switch source {
         case let .account(id):
-            let account = context.account(id)
+            // Named like the movement will read in lists; the subtitle adds what's in it rather
+            // than repeating the section header.
             let balance = context.balances[id]?.first.map { formatter.string($0, fractionDigits: 0) }
             return MethodRow(
                 source: source,
-                title: String(localized: "Cash", bundle: #bundle),
-                subtitle: [account?.name, balance].compactMap(\.self).joined(separator: " · "),
+                title: context.account(id).map(CardDisplay.name(of:)) ?? String(localized: "Cash", bundle: #bundle),
+                subtitle: balance.map { String(localized: "\($0) available", bundle: #bundle) },
                 thumbnail: .cash,
             )
         case let .card(id):
             guard let card = context.card(id) else { return MethodRow(source: source, title: "", subtitle: nil, thumbnail: .transfer) }
             let account = context.account(card.accountID)
-            let lastFour = card.lastFour ?? ""
             switch card.kind {
             case .debit:
                 let subtitle = grouped
                     ? usedLabel(context.lastUsed[source])
                     : account.map { "\(CardDisplay.name(of: $0)) · \(currencyList($0))" }
-                return MethodRow(
-                    source: source,
-                    title: String(localized: "Debit •••• \(lastFour)", bundle: #bundle),
-                    subtitle: subtitle,
-                    thumbnail: .card(card.color),
-                )
+                return MethodRow(source: source, title: CardDisplay.debitTitle(card), subtitle: subtitle, thumbnail: .card(card.color))
             case .transfer:
-                return MethodRow(
-                    source: source, title: String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle),
-                    subtitle: grouped ? nil : account.map(CardDisplay.name(of:)), thumbnail: .transfer,
-                )
+                return accountMethodRow(source: source, account: account, grouped: grouped)
             case .creditHolder:
-                let network = CardDisplay.networkName(card.network)
+                // Inside its own section, under a header that already names the card, it needn't repeat the number.
                 return grouped
                     ? MethodRow(
-                        source: source, title: String(localized: "Holder", bundle: #bundle),
-                        subtitle: holderSubtitle(account), thumbnail: .card(card.color),
+                        source: source, title: String(localized: "Card", bundle: #bundle),
+                        subtitle: holderSubtitle(account) ?? usedLabel(context.lastUsed[source]), thumbnail: .card(card.color),
                     )
                     : MethodRow(
-                        source: source, title: "\(network) •••• \(lastFour)",
-                        subtitle: String(localized: "Credit · holder", bundle: #bundle), thumbnail: .card(card.color),
+                        source: source, title: CardDisplay.cardNumber(card),
+                        subtitle: holderSubtitle(account) ?? account.map(CardDisplay.name(of:)), thumbnail: .card(card.color),
                     )
-            case .creditAdditional:
-                return additionalRow(source: source, card: card, context: context)
             }
         }
+    }
+
+    /// The bank account's other way to move money, next to its card: rent paid by transfer, a
+    /// direct debit, a salary deposit. Worded by what the movement does, since "charged" only fits
+    /// money that leaves.
+    private func accountMethodRow(source: PaymentSource, account: Account?, grouped: Bool) -> MethodRow {
+        let name = account.map(CardDisplay.name(of:)) ?? ""
+        let (title, subtitle): (String, String) = switch kind {
+        case .expense: (
+                String(localized: "Transfer or direct debit", bundle: #bundle),
+                grouped
+                    ? String(localized: "Without the card, straight from the account", bundle: #bundle)
+                    : String(localized: "Without the card, from \(name)", bundle: #bundle),
+            )
+        case .income: (
+                String(localized: "Transfer or deposit", bundle: #bundle),
+                grouped
+                    ? String(localized: "Straight into the account", bundle: #bundle)
+                    : String(localized: "Straight into \(name)", bundle: #bundle),
+            )
+        case .transfer: (
+                String(localized: "Bank transfer", bundle: #bundle),
+                grouped
+                    ? String(localized: "Straight from the account", bundle: #bundle)
+                    : String(localized: "Straight from \(name)", bundle: #bundle),
+            )
+        }
+        return MethodRow(source: source, title: title, subtitle: subtitle, thumbnail: .transfer)
     }
 
     /// "Purchase in NIO → debt in NIO" on dual cards, where the currency picks the debt.

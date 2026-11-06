@@ -28,14 +28,26 @@ struct AccountsOverviewTests {
         let card = try #require(try await overview().creditCards.first { $0.account.id == SampleData.IDs.mastercard })
         #expect(card.balances.map(\.currency) == ["NIO", "USD"])
         #expect(card.balances.allSatisfy { $0.amount < 0 })
-        #expect(card.plasticCount == 2)
         #expect(card.holder?.lastFour == "4321")
     }
 
     @Test
-    func depositListsDebitBeforeTransfer() async throws {
+    func depositShowsItsOneDebitCard() async throws {
         let deposit = try #require(try await overview().deposits.first { $0.account.id == SampleData.IDs.savings })
-        #expect(deposit.methods.map(\.kind) == [.debit, .transfer])
+        #expect(deposit.debitCard?.id == SampleData.IDs.savingsDebit)
+    }
+
+    @Test
+    func depositWithOnlyATransferChannelHasNoCardYet() throws {
+        let account = Account(name: "Savings", bank: "Bank", kind: .deposit, openingBalances: [Money(10, "USD")], openingDate: .now)
+        let result = try DefaultGetAccountsOverviewUseCase.overview(
+            accounts: [account],
+            cards: [Card(accountID: account.id, kind: .transfer)],
+            transactions: [],
+            currencies: sample.settings.currencies,
+            calendar: .current,
+        )
+        #expect(result.deposits.first?.debitCard == nil)
     }
 
     @Test
