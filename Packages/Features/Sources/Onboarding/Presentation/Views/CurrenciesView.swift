@@ -53,27 +53,32 @@ public struct CurrenciesView: View {
             .disabled(!viewModel.canContinueFromCurrencies)
         }
         .sheet(item: $picking) { target in
-            switch target {
-            case .principal:
-                CurrencyPickerView(
-                    title: String(localized: "Main currency", bundle: #bundle),
-                    common: viewModel.principalOptions,
-                    selected: viewModel.principal,
-                    excluding: nil,
-                ) { code in
-                    viewModel.selectPrincipal(code)
-                    picking = nil
-                }
-            case .second:
-                CurrencyPickerView(
-                    title: String(localized: "Second currency", bundle: #bundle),
-                    common: viewModel.secondCurrencyOptions,
-                    selected: viewModel.secondChoice,
-                    excluding: viewModel.principal,
-                ) { code in
-                    viewModel.selectSecond(code)
-                    picking = nil
-                }
+            currencyPicker(for: target)
+        }
+    }
+
+    @ViewBuilder
+    private func currencyPicker(for target: PickerTarget) -> some View {
+        switch target {
+        case .principal:
+            CurrencyPickerView(
+                title: String(localized: "Main currency", bundle: #bundle),
+                common: viewModel.principalOptions,
+                selected: viewModel.principal,
+                excluding: nil,
+            ) { code in
+                viewModel.selectPrincipal(code)
+                picking = nil
+            }
+        case .second:
+            CurrencyPickerView(
+                title: String(localized: "Second currency", bundle: #bundle),
+                common: viewModel.secondCurrencyOptions,
+                selected: viewModel.secondChoice,
+                excluding: viewModel.principal,
+            ) { code in
+                viewModel.selectSecond(code)
+                picking = nil
             }
         }
     }
