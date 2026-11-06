@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 4 · Privacidad y avisos.
+/// Step 4 · Privacy and notifications.
 public struct PrivacyView: View {
     @Bindable private var viewModel: OnboardingViewModel
     private let onBack: () -> Void
@@ -16,14 +16,13 @@ public struct PrivacyView: View {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.back, progress: (3, 3), action: onBack)
                 OnboardingHeading(
-                    title: "Protege tus datos",
-                    message: "Sin cuenta y sin nuestros servidores. Tus datos viven en tu iPhone y, si quieres, en tu iCloud.",
+                    title: String(localized: "Protect your data", bundle: #bundle),
+                    message: String(
+                        localized: "No account and no servers of ours. Your data lives on your iPhone and, if you want, in your iCloud.",
+                        bundle: #bundle,
+                    ),
                 )
-                KWGroupedCard {
-                    toggle("Face ID o Touch ID", "El que tenga tu iPhone; si falla, tu código", isOn: $viewModel.locksWithBiometrics)
-                    toggle("Respaldo en iCloud", "Recupera todo si cambias de iPhone", isOn: $viewModel.backsUpToICloud)
-                    toggle("Ocultar montos al salir", "En el selector de apps", isOn: $viewModel.hidesAmountsInAppSwitcher)
-                }
+                protectionToggles
                 notificationsCard
                 Spacer(minLength: 0)
                 if let message = viewModel.errorMessage {
@@ -33,13 +32,33 @@ public struct PrivacyView: View {
                         .frame(maxWidth: .infinity)
                 }
                 VStack(spacing: KWSpacing.md) {
-                    Button("Permitir avisos") { Task { await viewModel.allowNotifications() } }
+                    Button { Task { await viewModel.allowNotifications() } } label: { Text("Allow notifications", bundle: #bundle) }
                         .buttonStyle(.kw())
-                    Button("Ahora no") { Task { await viewModel.skipNotifications() } }
+                    Button { Task { await viewModel.skipNotifications() } } label: { Text("Not now", bundle: #bundle) }
                         .buttonStyle(.kw(.plain, size: .text))
                 }
                 .disabled(viewModel.isSaving)
             }
+        }
+    }
+
+    private var protectionToggles: some View {
+        KWGroupedCard {
+            toggle(
+                String(localized: "Face ID or Touch ID", bundle: #bundle),
+                String(localized: "Whichever your iPhone has; if it fails, your passcode", bundle: #bundle),
+                isOn: $viewModel.locksWithBiometrics,
+            )
+            toggle(
+                String(localized: "iCloud backup", bundle: #bundle),
+                String(localized: "Recover everything if you change iPhone", bundle: #bundle),
+                isOn: $viewModel.backsUpToICloud,
+            )
+            toggle(
+                String(localized: "Hide amounts when leaving", bundle: #bundle),
+                String(localized: "In the app switcher", bundle: #bundle),
+                isOn: $viewModel.hidesAmountsInAppSwitcher,
+            )
         }
     }
 
@@ -53,11 +72,11 @@ public struct PrivacyView: View {
 
     private var notificationsCard: some View {
         VStack(alignment: .leading, spacing: KWSpacing.sm) {
-            Text("Avisos útiles, sin spam").font(.kw(15, weight: 700))
+            Text("Useful notifications, no spam", bundle: #bundle).font(.kw(15, weight: 700))
             VStack(alignment: .leading, spacing: 10) {
-                bullet(KWColor.State.pending, "Gastos previstos que vencen hoy")
-                bullet(KWColor.Brand.accent, "Corte y pago de tus tarjetas")
-                bullet(KWColor.State.extra, "Topes de tarjetas adicionales")
+                bullet(KWColor.State.pending, String(localized: "Expected expenses due today", bundle: #bundle))
+                bullet(KWColor.Brand.accent, String(localized: "Statement and payment dates for your cards", bundle: #bundle))
+                bullet(KWColor.State.extra, String(localized: "Limits on additional cards", bundle: #bundle))
             }
             .font(KWTextStyle.label.font.weight(.regular))
             .foregroundStyle(KWColor.Text.secondary)

@@ -50,9 +50,9 @@ public struct KWEmptyState: View {
 #Preview {
     KWEmptyState(
         icon: .list,
-        title: "Aún no tienes movimientos",
-        message: "Anota tu primer gasto, ingreso o transferencia y aparece aquí.",
-        actionTitle: "Anotar movimiento",
+        title: "No transactions yet",
+        message: "Log your first expense, income or transfer and it shows up here.",
+        actionTitle: "Log transaction",
     ) {}
         .padding(KWLayout.gutter)
         .background(KWColor.Surface.bg)

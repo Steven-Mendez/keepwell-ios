@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import Foundation
 
 /// How cards and accounts read on screen, shared by every feature that lists them.
 public enum CardDisplay {
@@ -34,11 +35,11 @@ public enum CardDisplay {
         case .visa: "Visa"
         case .mastercard: "Mastercard"
         case .amex: "Amex"
-        case .other, nil: "Otra"
+        case .other, nil: String(localized: "network.other", defaultValue: "Other", bundle: #bundle)
         }
     }
 
-    /// "Banco Uno Ahorro": the bank followed by the account's own name.
+    /// "Bank One Ahorro": the bank followed by the account's own name.
     public static func name(of account: Account) -> String {
         [account.bank, account.name].compactMap { $0?.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
@@ -50,13 +51,15 @@ public enum CardDisplay {
         [networkName(card.network), card.lastFour.map { "··\($0)" }].compactMap(\.self).joined(separator: " ")
     }
 
-    /// Title of a payment method row ("Débito •••• 3922", "Transferencias Banco Uno").
+    /// Title of a payment method row ("Debit •••• 3922", "Transfers Bank One").
     public static func methodTitle(_ card: Card, account: Account?) -> String {
-        switch card.kind {
-        case .debit: "Débito •••• \(card.lastFour ?? "")"
-        case .transfer: "Transferencias \(account?.bank ?? account?.name ?? "")".trimmingCharacters(in: .whitespaces)
-        case .creditHolder: "Titular"
-        case .creditAdditional: card.additional?.holderName ?? "Adicional"
+        let lastFour = card.lastFour ?? ""
+        let owner = account?.bank ?? account?.name ?? ""
+        return switch card.kind {
+        case .debit: String(localized: "Debit •••• \(lastFour)", bundle: #bundle)
+        case .transfer: String(localized: "Transfers \(owner)", bundle: #bundle).trimmingCharacters(in: .whitespaces)
+        case .creditHolder: String(localized: "Holder", bundle: #bundle)
+        case .creditAdditional: card.additional?.holderName ?? String(localized: "Additional", bundle: #bundle)
         }
     }
 

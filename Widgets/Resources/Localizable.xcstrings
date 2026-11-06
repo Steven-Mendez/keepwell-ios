@@ -1,0 +1,16 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Example widget." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget de ejemplo."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -7,6 +7,7 @@ options:
   deploymentTarget:
     iOS: "26.0"
   xcodeVersion: "27.1"
+  developmentLanguage: en
   createIntermediateGroups: true
   groupSortPosition: top
   generateEmptyDirectories: true
@@ -59,7 +60,7 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UIUserInterfaceStyle: Dark
-        INFOPLIST_KEY_NSFaceIDUsageDescription: Keepwell usa Face ID para proteger tus datos financieros.
+        INFOPLIST_KEY_NSFaceIDUsageDescription: Keepwell uses Face ID to protect your financial data.
         CODE_SIGN_ENTITLEMENTS: App/Resources/Keepwell.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

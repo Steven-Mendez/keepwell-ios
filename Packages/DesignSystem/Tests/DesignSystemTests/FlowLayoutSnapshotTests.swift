@@ -8,7 +8,7 @@ struct FlowLayoutSnapshotTests {
     @Test
     func flowLayoutWrapsChips() {
         let view = KWFlowLayout {
-            ForEach(["NIO · Córdoba", "MXN · Peso", "COP · Peso", "EUR · Euro", "Solo una moneda", "Buscar…"], id: \.self) { title in
+            ForEach(["NIO · Córdoba", "MXN · Peso", "COP · Peso", "EUR · Euro", "Single currency", "Search…"], id: \.self) { title in
                 KWChip(title, isSelected: title.hasPrefix("NIO"), style: .outlined, height: 38) {}
             }
         }

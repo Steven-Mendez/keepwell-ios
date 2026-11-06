@@ -75,16 +75,16 @@ public struct KWChip: View {
 #Preview {
     VStack(alignment: .leading, spacing: KWSpacing.sm) {
         HStack(spacing: KWSpacing.xs) {
-            KWChip("Todos", isSelected: true) {}
-            KWChip("Gastos", isSelected: false) {}
+            KWChip("All", isSelected: true) {}
+            KWChip("Expenses", isSelected: false) {}
         }
         HStack(spacing: KWSpacing.xs) {
             KWChip("NIO · Córdoba", isSelected: true, style: .outlined, height: 38) {}
             KWChip("EUR · Euro", isSelected: false, style: .outlined, height: 38) {}
         }
         HStack(spacing: KWSpacing.xs) {
-            KWChip("Supermercado", isSelected: true, style: .extra) {}
-            KWChip("Compras", isSelected: false, style: .extra) {}
+            KWChip("Groceries", isSelected: true, style: .extra) {}
+            KWChip("Shopping", isSelected: false, style: .extra) {}
         }
     }
     .padding(KWLayout.gutter)

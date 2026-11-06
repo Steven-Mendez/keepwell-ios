@@ -9,28 +9,28 @@ final class EmptyStateUITests: XCTestCase {
     @MainActor
     func testTabsWithoutDataSayItAndOfferToLogAMovement() {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing"]
+        app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        XCTAssertTrue(app.buttons["Empezar"].waitForExistence(timeout: 10))
-        app.buttons["Empezar"].tap()
-        app.buttons["Continuar"].tap()
-        app.buttons["Continuar"].tap()
-        app.buttons["Ahora no"].tap()
-        XCTAssertTrue(app.buttons["Ir al inicio"].waitForExistence(timeout: 5))
-        app.buttons["Ir al inicio"].tap()
+        XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
+        app.buttons["Start"].tap()
+        app.buttons["Continue"].tap()
+        app.buttons["Continue"].tap()
+        app.buttons["Not now"].tap()
+        XCTAssertTrue(app.buttons["Go to home"].waitForExistence(timeout: 5))
+        app.buttons["Go to home"].tap()
 
-        XCTAssertTrue(app.staticTexts["Aún no tienes movimientos"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["No transactions yet"].waitForExistence(timeout: 5))
         attach("inicio")
-        app.buttons["Movimientos"].tap()
-        XCTAssertTrue(app.staticTexts["Aún no tienes movimientos"].waitForExistence(timeout: 5))
+        app.buttons["Transactions"].tap()
+        XCTAssertTrue(app.staticTexts["No transactions yet"].waitForExistence(timeout: 5))
         attach("movimientos")
-        app.buttons["Resumen"].tap()
-        XCTAssertTrue(app.staticTexts["Tu resumen empieza con un movimiento"].waitForExistence(timeout: 5))
+        app.buttons["Summary"].tap()
+        XCTAssertTrue(app.staticTexts["Your summary starts with one transaction"].waitForExistence(timeout: 5))
         attach("resumen")
 
-        app.buttons["Anotar movimiento"].tap()
-        XCTAssertTrue(app.buttons["Siguiente"].waitForExistence(timeout: 5))
+        app.buttons["Log transaction"].tap()
+        XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 5))
     }
 
     private func attach(_ name: String) {

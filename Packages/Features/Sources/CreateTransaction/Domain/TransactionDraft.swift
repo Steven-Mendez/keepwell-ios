@@ -20,7 +20,7 @@ public struct TransactionDraft: Sendable {
     public var date: Date
     public var isPlanned: Bool
     public var isShared: Bool
-    /// "USD que te cobró el banco".
+    /// "USD charged by the bank".
     public var actualDebitedPrincipal: Decimal?
     public var note: String
 
@@ -60,7 +60,7 @@ public struct TransactionContext: Sendable {
     public let accounts: [Account]
     public let cards: [Card]
     public let balances: [UUID: [Money]]
-    /// When each payment source was last used, for ordering and "Usado hace 2 días".
+    /// When each payment source was last used, for ordering and "Used 2 days ago".
     public let lastUsed: [PaymentSource: Date]
     /// How many movements each category has, to put the usual ones first.
     public let categoryUsage: [String: Int]

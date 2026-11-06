@@ -2,7 +2,7 @@ import DesignSystem
 import SharedPresentation
 import SwiftUI
 
-/// Step 4 · Revisar: description, date, real debit, planned, shared and note.
+/// Step 4 · Review: description, date, real debit, planned, shared and note.
 public struct ReviewView: View {
     @Bindable private var viewModel: CreateTransactionViewModel
     private let onBack: () -> Void
@@ -34,15 +34,17 @@ public struct ReviewView: View {
             .padding(.bottom, 34)
         }
         .ignoresSafeArea(.container, edges: [.top, .bottom])
+        .onAppear { viewModel.prefillDescription() }
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
         .sheet(isPresented: $isPickingDate) {
-            DatePicker("Fecha", selection: $viewModel.date, displayedComponents: [.date])
-                .datePickerStyle(.graphical)
-                .environment(\.locale, Locale(identifier: "es"))
-                .padding(KWLayout.gutter)
-                .presentationDetents([.medium])
-                .presentationBackground(KWColor.Surface.surface)
+            DatePicker(selection: $viewModel.date, displayedComponents: [.date]) {
+                Text("Date", bundle: #bundle)
+            }
+            .datePickerStyle(.graphical)
+            .padding(KWLayout.gutter)
+            .presentationDetents([.medium])
+            .presentationBackground(KWColor.Surface.surface)
         }
     }
 
@@ -51,15 +53,20 @@ public struct ReviewView: View {
             KWFlowHeader(.back, progress: (4, 4), action: onBack)
             summary
             labeledField(
-                "Descripción",
+                String(localized: "Description", bundle: #bundle),
                 text: $viewModel.description,
-                placeholder: viewModel.category?.name ?? "Transferencia",
+                placeholder: viewModel.descriptionPlaceholder,
                 font: .kw(17, weight: 600),
             )
             KWGroupedCard {
                 details
             }
-            labeledField("Nota", text: $viewModel.note, placeholder: "Agrega un detalle", font: KWTextStyle.body.font)
+            labeledField(
+                String(localized: "Note", bundle: #bundle),
+                text: $viewModel.note,
+                placeholder: String(localized: "Add a detail", bundle: #bundle),
+                font: KWTextStyle.body.font,
+            )
             if let error = viewModel.errorMessage {
                 Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
             }
@@ -86,13 +93,13 @@ public struct ReviewView: View {
     @ViewBuilder
     private var details: some View {
         if viewModel.kind == .transfer {
-            KWValueRow("Sale de", value: viewModel.accountLabel(viewModel.sourceAccount))
-            KWValueRow("Entra a", value: viewModel.accountLabel(viewModel.destinationAccount))
+            KWValueRow(String(localized: "Leaves from", bundle: #bundle), value: viewModel.accountLabel(viewModel.sourceAccount))
+            KWValueRow(String(localized: "Goes into", bundle: #bundle), value: viewModel.accountLabel(viewModel.destinationAccount))
         } else {
-            KWValueRow(viewModel.kind == .income ? "Entra a" : "Se descuenta de", value: viewModel.accountLabel(viewModel.sourceAccount))
+            KWValueRow(sourceRowTitle, value: viewModel.accountLabel(viewModel.sourceAccount))
         }
         Button { isPickingDate = true } label: {
-            KWValueRow("Fecha", value: "\(viewModel.dayLabel(viewModel.date)) ›")
+            KWValueRow(String(localized: "Date", bundle: #bundle), value: "\(viewModel.dayLabel(viewModel.date)) ›")
         }
         .buttonStyle(.plain)
         if viewModel.showsDebitedField {
@@ -105,16 +112,27 @@ public struct ReviewView: View {
         .padding(.vertical, 11)
         if viewModel.kind == .expense {
             Toggle(isOn: $viewModel.isShared) {
-                hint("Compartido", "Otros te deben una parte")
+                hint(String(localized: "Shared", bundle: #bundle), String(localized: "Others owe you a share", bundle: #bundle))
             }
             .toggleStyle(.kw)
             .padding(.vertical, 11)
         }
     }
 
+    private var sourceRowTitle: String {
+        viewModel.kind == .income
+            ? String(localized: "Goes into", bundle: #bundle)
+            : String(localized: "Charged to", bundle: #bundle)
+    }
+
+    private var debitedTitle: String {
+        let principal = viewModel.context?.currencies.principal ?? "USD"
+        return String(localized: "\(principal) charged by the bank", bundle: #bundle)
+    }
+
     private var debitedRow: some View {
         HStack(spacing: KWSpacing.sm) {
-            hint("\(viewModel.context?.currencies.principal ?? "USD") que te cobró el banco", "Opcional · si usó otra tasa")
+            hint(debitedTitle, String(localized: "Optional · if a different rate was used", bundle: #bundle))
             Spacer()
             TextField(viewModel.suggestedDebit, text: $viewModel.debitedText)
                 .keyboardType(.decimalPad)

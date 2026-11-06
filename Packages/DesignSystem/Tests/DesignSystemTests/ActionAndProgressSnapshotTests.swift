@@ -8,10 +8,10 @@ struct ActionAndProgressSnapshotTests {
     @Test
     func actionButtons() {
         let view = HStack(spacing: KWSpacing.xs) {
-            KWActionButton("Pagar", icon: .arrowUp, style: .prominent) {}
-            KWActionButton("Adicionales", icon: .addCard) {}
-            KWActionButton("Descongelar", icon: .freeze, style: .active) {}
-            KWActionButton("Gasto", icon: .plus, style: .translucent, captionSize: 13) {}
+            KWActionButton("Pay", icon: .arrowUp, style: .prominent) {}
+            KWActionButton("Additional", icon: .addCard) {}
+            KWActionButton("Unfreeze", icon: .freeze, style: .active) {}
+            KWActionButton("Expense", icon: .plus, style: .translucent, captionSize: 13) {}
         }
         .padding(KWLayout.gutter)
         .background(KWColor.Brand.b900)

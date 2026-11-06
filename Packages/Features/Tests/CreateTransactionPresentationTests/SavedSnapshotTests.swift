@@ -20,7 +20,7 @@ struct SavedSnapshotTests {
         let viewModel = await filled()
         viewModel.selectCategory("restaurants")
         viewModel.selectSource(.card(SampleData.IDs.savingsDebit))
-        viewModel.description = "Pollo (a domicilio)"
+        viewModel.description = "Chicken (delivery)"
         viewModel.debitedText = "24.28"
         await viewModel.save()
         assertScreenSnapshot(of: SavedView(viewModel: viewModel) {})

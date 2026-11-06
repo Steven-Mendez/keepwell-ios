@@ -5,7 +5,7 @@ import SwiftUI
 /// contactless mark, the detail card adds a role tag.
 public struct KWCardArt: View {
     public enum Badge: Sendable, Equatable {
-        /// Pill such as "Titular", "Adicional", "Crédito" or "Congelada".
+        /// Pill such as "Holder", "Additional", "Credit" or "Frozen".
         case tag(String)
         /// Balance in the top-right corner, as on the accounts stack.
         case amount(String)
@@ -229,8 +229,8 @@ struct TopHighlight<S: InsettableShape>: View {
 
 #Preview {
     VStack(spacing: KWSpacing.xl) {
-        KWCardArt(palette: .azul, bank: "Banco Uno", badge: .tag("Titular"), caption: "Crédito", lastFour: "1234", network: "mastercard")
-        KWCardArt(palette: .lima, bank: "Banco Uno", badge: .tag("Adicional"), caption: "Familiar", lastFour: "5678", network: "mastercard")
+        KWCardArt(palette: .azul, bank: "Bank One", badge: .tag("Holder"), caption: "Credit", lastFour: "1234", network: "mastercard")
+        KWCardArt(palette: .lima, bank: "Bank One", badge: .tag("Additional"), caption: "Family", lastFour: "5678", network: "mastercard")
     }
     .padding(KWLayout.gutter)
     .background(KWColor.Surface.bg)

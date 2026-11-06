@@ -3,8 +3,9 @@ import CreateTransactionDomain
 import Domain
 import Foundation
 import Observation
+import SharedPresentation
 
-/// Drives "Crear movimiento": amount and type → category (or destination for transfers) →
+/// Drives "Create movement": amount and type → category (or destination for transfers) →
 /// payment method → review → saved.
 @MainActor
 @Observable
@@ -33,6 +34,8 @@ public final class CreateTransactionViewModel {
     public var categoryQuery = ""
     public var showsAllCategories = false
     public var description = ""
+    /// The suggestion last written into `description`, so a later category change can replace it.
+    private var prefilledDescription: String?
     public var date: Date
     public var isPlanned = false
     public var isShared = false
@@ -66,7 +69,7 @@ public final class CreateTransactionViewModel {
 
     public func load() async {
         guard let loaded = try? await getContext.execute() else {
-            errorMessage = "No pudimos cargar tus cuentas."
+            errorMessage = String(localized: "We couldn't load your accounts.", bundle: #bundle)
             return
         }
         context = loaded
@@ -152,11 +155,11 @@ public final class CreateTransactionViewModel {
         context?.categories.filter { $0.kind == kind } ?? []
     }
 
-    /// The grid: search results, everything after "Ver las N", or the eight most used.
+    /// The grid: search results, everything after "See all N", or the eight most used.
     public var visibleCategories: [TransactionCategory] {
         let query = categoryQuery.trimmingCharacters(in: .whitespaces)
         if !query.isEmpty {
-            return categories.filter { $0.name.localizedStandardContains(query) }
+            return categories.filter { CategoryDisplay.name(of: $0).localizedStandardContains(query) }
         }
         let usage = context?.categoryUsage ?? [:]
         let ranked = categories.enumerated()
@@ -225,7 +228,7 @@ public final class CreateTransactionViewModel {
         context?.account(destinationAccountID)
     }
 
-    /// "USD que te cobró el banco" applies when paying in the second currency from an account
+    /// "USD charged by the bank" applies when paying in the second currency from an account
     /// kept in the principal currency.
     public var showsDebitedField: Bool {
         guard let principal = context?.currencies.principal, currency != principal, let account = sourceAccount else { return false }
@@ -251,7 +254,7 @@ public final class CreateTransactionViewModel {
             categoryID: categoryID,
             source: source,
             destinationAccountID: destinationAccountID,
-            description: description,
+            description: resolvedDescription,
             date: date,
             isPlanned: isPlanned,
             isShared: kind == .expense && isShared,
@@ -268,12 +271,13 @@ public final class CreateTransactionViewModel {
         }
     }
 
-    /// "Anotar otro": a fresh movement of the same type, keeping the payment method.
+    /// "Log another": a fresh movement of the same type, keeping the payment method.
     public func startOver() async {
         amountText = "0"
         categoryID = nil
         destinationAccountID = nil
         description = ""
+        prefilledDescription = nil
         note = ""
         debitedText = ""
         isPlanned = false
@@ -286,12 +290,31 @@ public final class CreateTransactionViewModel {
         await load()
     }
 
+    /// What gets stored when the person leaves the description empty. Resolved here, not in the use
+    /// case, so the persisted text is in the language they were using at creation time.
+    var descriptionPlaceholder: String {
+        category.map(CategoryDisplay.name(of:)) ?? String(localized: "transfer.noun", defaultValue: "Transfer", bundle: #bundle)
+    }
+
+    /// Shows the suggested description as real, editable text on the review step, as the design
+    /// does. It follows the category while the person hasn't typed anything of their own.
+    func prefillDescription() {
+        let current = description.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard current.isEmpty || current == prefilledDescription else { return }
+        description = descriptionPlaceholder
+        prefilledDescription = description
+    }
+
+    private var resolvedDescription: String {
+        description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? descriptionPlaceholder : description
+    }
+
     static func message(for error: DomainError) -> String {
         switch error {
-        case .invalidAmount: "Revisa el monto."
-        case .paymentMethodUnavailable: "Esa tarjeta no se puede usar para esta categoría."
-        case .invalidTransferDestination: "Elige una cuenta de destino distinta."
-        default: "No pudimos guardar el movimiento. Intenta de nuevo."
+        case .invalidAmount: String(localized: "Check the amount.", bundle: #bundle)
+        case .paymentMethodUnavailable: String(localized: "That card can't be used for this category.", bundle: #bundle)
+        case .invalidTransferDestination: String(localized: "Choose a different destination account.", bundle: #bundle)
+        default: String(localized: "We couldn't save the movement. Try again.", bundle: #bundle)
         }
     }
 }

@@ -3,7 +3,7 @@ import SwiftUI
 /// Single-choice segmented control in the three looks the screens use.
 public struct KWSegmentedControl<Value: Hashable>: View {
     public enum Style: Sendable {
-        /// Equal-width segments, 38pt, white selection: "Gasto / Ingreso / Transferir".
+        /// Equal-width segments, 38pt, white selection: "Expense / Income / Transfer".
         case large
         /// Hugging 30pt segments, white selection: "Gastos / Ingresos" in the summary header.
         case compact
@@ -72,15 +72,15 @@ public struct KWSegmentedControl<Value: Hashable>: View {
 }
 
 #Preview {
-    @Previewable @State var kind = "gasto"
+    @Previewable @State var kind = "expense"
     @Previewable @State var view = 0
     @Previewable @State var currency = "NIO"
     VStack(spacing: KWSpacing.md) {
         KWSegmentedControl(
-            [(value: "gasto", title: "Gasto"), (value: "ingreso", title: "Ingreso"), (value: "transfer", title: "Transferir")],
+            [(value: "expense", title: "Expense"), (value: "income", title: "Income"), (value: "transfer", title: "Transfer")],
             selection: $kind,
         )
-        KWSegmentedControl([(value: 0, title: "Gastos"), (value: 1, title: "Ingresos")], selection: $view, style: .compact)
+        KWSegmentedControl([(value: 0, title: "Expenses"), (value: 1, title: "Income")], selection: $view, style: .compact)
         KWSegmentedControl([(value: "NIO", title: "NIO"), (value: "USD", title: "USD")], selection: $currency, style: .accent)
     }
     .padding(KWLayout.gutter)

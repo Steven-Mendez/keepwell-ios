@@ -42,8 +42,8 @@ struct CompleteOnboardingUseCaseTests {
     func bankAccountGetsDebitAndTransferMethods() async throws {
         let bank = OnboardingAccountDraft(
             kind: .bank,
-            name: "Ahorro",
-            bank: "Banco Uno",
+            name: "Savings",
+            bank: "Bank One",
             currency: "USD",
             balance: 9443.6,
             lastFour: "1234",
@@ -61,7 +61,7 @@ struct CompleteOnboardingUseCaseTests {
     @Test
     func creditCardDebtStartsNegativeInBothCurrencies() async throws {
         let card = OnboardingAccountDraft(
-            kind: .credit, name: "Mastercard", bank: "Banco Uno", currency: "USD",
+            kind: .credit, name: "Mastercard", bank: "Bank One", currency: "USD",
             balance: 16.79, secondBalance: 197.02, lastFour: "4321", network: .mastercard, debtMode: .dual,
         )
         let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [card]))
@@ -82,7 +82,7 @@ struct CompleteOnboardingUseCaseTests {
 
     @Test
     func cashAccountHasNoCards() async throws {
-        let cash = OnboardingAccountDraft(kind: .cash, name: "Efectivo", currency: "NIO", balance: 560)
+        let cash = OnboardingAccountDraft(kind: .cash, name: "Cash", currency: "NIO", balance: 560)
         let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [cash]))
         #expect(await store.fetchAccounts().first?.kind == .cash)
         #expect(await store.fetchCards().isEmpty)
@@ -90,7 +90,7 @@ struct CompleteOnboardingUseCaseTests {
 
     @Test
     func negativeBalancesAreRejected() async throws {
-        let cash = OnboardingAccountDraft(kind: .cash, name: "Efectivo", currency: "NIO", balance: -1)
+        let cash = OnboardingAccountDraft(kind: .cash, name: "Cash", currency: "NIO", balance: -1)
         await #expect(throws: DomainError.invalidAmount) {
             _ = try await run(OnboardingDraft(currencies: currencies(), accounts: [cash]))
         }
@@ -98,7 +98,7 @@ struct CompleteOnboardingUseCaseTests {
 
     @Test
     func invalidLastFourIsRejected() async throws {
-        let bank = OnboardingAccountDraft(kind: .bank, name: "Ahorro", currency: "USD", lastFour: "12")
+        let bank = OnboardingAccountDraft(kind: .bank, name: "Savings", currency: "USD", lastFour: "12")
         await #expect(throws: DomainError.invalidLastFour("12")) {
             _ = try await run(OnboardingDraft(currencies: currencies(), accounts: [bank]))
         }
@@ -106,8 +106,8 @@ struct CompleteOnboardingUseCaseTests {
 
     @Test
     func displayNameJoinsBankAndName() {
-        #expect(OnboardingAccountDraft(kind: .bank, name: "Ahorro", bank: "Banco Uno", currency: "USD").displayName == "Banco Uno Ahorro")
-        #expect(OnboardingAccountDraft(kind: .cash, name: "Efectivo", currency: "NIO").displayName == "Efectivo")
+        #expect(OnboardingAccountDraft(kind: .bank, name: "Savings", bank: "Bank One", currency: "USD").displayName == "Bank One Savings")
+        #expect(OnboardingAccountDraft(kind: .cash, name: "Cash", currency: "NIO").displayName == "Cash")
     }
 }
 

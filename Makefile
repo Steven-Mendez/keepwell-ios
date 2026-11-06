@@ -13,6 +13,7 @@ DESTINATION   = $(shell scripts/simulator-destination.sh)
 RESOLVED      := Package.resolved
 PROJECT_RESOLVED := $(PROJECT)/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
+# -testLanguage/-testRegion: tests assert the English source strings, so they must not depend on the machine's language.
 # -skipMacroValidation: the Point-Free packages depend on swift-syntax (macros) and CI has no trust prompt.
 XCODEBUILD = set -o pipefail && xcodebuild \
 	-project $(PROJECT) \
@@ -22,6 +23,8 @@ XCODEBUILD = set -o pipefail && xcodebuild \
 	-derivedDataPath $(DERIVED_DATA) \
 	-skipMacroValidation \
 	-skipPackagePluginValidation \
+	-testLanguage en \
+	-testRegion US \
 	-quiet \
 	$(XCODEBUILD_FLAGS)
 

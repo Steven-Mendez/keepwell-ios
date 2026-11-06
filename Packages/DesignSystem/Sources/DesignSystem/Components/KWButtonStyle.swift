@@ -8,13 +8,13 @@ public struct KWButtonStyle: ButtonStyle {
         case primary
         /// `surface2` fill.
         case secondary
-        /// `surface` fill, as "Anotar otro".
+        /// `surface` fill, as "Log another".
         case surface
-        /// `surface` fill with the negative color: "Quitar adicional", "Eliminar todos mis datos".
+        /// `surface` fill with the negative color: "Remove additional card", "Eliminar todos mis datos".
         case destructive
-        /// `surface2` fill with the link color: "Completar datos de la tarjeta".
+        /// `surface2` fill with the link color: "Complete card details".
         case link
-        /// No fill, white label: "Ahora no", "Ir al inicio".
+        /// No fill, white label: "Not now", "Ir al inicio".
         case plain
     }
 
@@ -27,11 +27,11 @@ public struct KWButtonStyle: ButtonStyle {
         case row
         /// 44pt, 15/600. Text-only secondary actions.
         case text
-        /// 40pt, 14/700. Inline card actions ("Cuadrar").
+        /// 40pt, 14/700. Inline card actions ("Reconcile").
         case medium
-        /// 34pt, 14/600. Compact actions ("Respaldar ahora").
+        /// 34pt, 14/600. Compact actions ("Back up now").
         case small
-        /// 32pt, 13/600. Row actions ("Confirmar").
+        /// 32pt, 13/600. Row actions ("Confirm").
         case mini
 
         var height: CGFloat {
@@ -133,15 +133,15 @@ extension ButtonStyle where Self == KWButtonStyle {
 
 #Preview {
     VStack(spacing: KWSpacing.sm) {
-        Button("Continuar") {}.buttonStyle(.kw())
-        Button("Retiro de cajero") {}.buttonStyle(.kw(.secondary))
-        Button("Anotar otro") {}.buttonStyle(.kw(.surface, size: .regular))
-        Button("Quitar adicional") {}.buttonStyle(.kw(.destructive, size: .row))
-        Button("Completar datos de la tarjeta") {}.buttonStyle(.kw(.link, size: .medium))
-        Button("Ahora no") {}.buttonStyle(.kw(.plain, size: .text))
+        Button("Continue") {}.buttonStyle(.kw())
+        Button("ATM withdrawal") {}.buttonStyle(.kw(.secondary))
+        Button("Log another") {}.buttonStyle(.kw(.surface, size: .regular))
+        Button("Remove additional card") {}.buttonStyle(.kw(.destructive, size: .row))
+        Button("Complete card details") {}.buttonStyle(.kw(.link, size: .medium))
+        Button("Not now") {}.buttonStyle(.kw(.plain, size: .text))
         HStack {
-            Button("Respaldar ahora") {}.buttonStyle(.kw(.primary, size: .small))
-            Button("Confirmar") {}.buttonStyle(.kw(.primary, size: .mini))
+            Button("Back up now") {}.buttonStyle(.kw(.primary, size: .small))
+            Button("Confirm") {}.buttonStyle(.kw(.primary, size: .mini))
         }
     }
     .padding(KWLayout.gutter)

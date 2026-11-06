@@ -3,7 +3,7 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// Step 3 · Deuda y ciclo (credit cards).
+/// Step 3 · Debt and cycle (credit cards).
 public struct DebtView: View {
     @Bindable private var viewModel: AddCardViewModel
     private let onBack: () -> Void
@@ -22,7 +22,7 @@ public struct DebtView: View {
                     .padding(.bottom, KWSpacing.md)
             }
             .scrollIndicators(.hidden)
-            Button("Agregar tarjeta") { Task { await viewModel.addCreditCard() } }
+            Button { Task { await viewModel.addCreditCard() } } label: { Text("Add card", bundle: #bundle) }
                 .buttonStyle(.kw())
                 .disabled(!viewModel.canAddCreditCard || viewModel.isSaving)
                 .padding(.horizontal, KWLayout.gutter)
@@ -39,28 +39,33 @@ public struct DebtView: View {
             KWFlowHeader(.back, progress: (2, 2), action: onBack)
             HStack(spacing: KWSpacing.sm) {
                 KWMiniCard(.palette(CardDisplay.palette(for: viewModel.color)), size: .medium)
-                Text("Cómo funciona la deuda").kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
+                Text("How the debt works", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
             }
             if viewModel.second != nil {
-                KWSectionHeader("¿En qué monedas te cobra?").padding(.top, KWSpacing.xxs)
+                KWSectionHeader(String(localized: "Which currencies does it charge you in?", bundle: #bundle)).padding(.top, KWSpacing.xxs)
                 VStack(spacing: KWSpacing.xs) {
                     ForEach([DebtMode.dual, .principal, .second], id: \.self) { mode in
                         modeButton(mode)
                     }
                 }
             }
-            KWSectionHeader("Lo que debes hoy").padding(.top, KWSpacing.xxs)
+            KWSectionHeader(String(localized: "What you owe today", bundle: #bundle)).padding(.top, KWSpacing.xxs)
             KWGroupedCard {
-                FormAmountRow(label: "Deuda en \(debtCurrency)", text: $viewModel.principalDebtText)
+                FormAmountRow(label: debtLabel(debtCurrency), text: $viewModel.principalDebtText)
                 if viewModel.debtMode == .dual, let second = viewModel.second {
-                    FormAmountRow(label: "Deuda en \(second)", text: $viewModel.secondDebtText)
+                    FormAmountRow(label: debtLabel(second), text: $viewModel.secondDebtText)
                 }
             }
-            KWSectionHeader("Ciclo (opcional)").padding(.top, KWSpacing.xxs)
+            KWSectionHeader(String(localized: "Cycle (optional)", bundle: #bundle)).padding(.top, KWSpacing.xxs)
             KWGroupedCard {
-                FormAmountRow(label: "Límite", text: $viewModel.limitText, placeholder: "Sin definir", filled: false)
-                stepper("Día de corte", value: viewModel.cutoffDay) { viewModel.stepCutoff(by: $0) }
-                stepper("Día de pago", value: viewModel.dueDay) { viewModel.stepDue(by: $0) }
+                FormAmountRow(
+                    label: String(localized: "Limit", bundle: #bundle),
+                    text: $viewModel.limitText,
+                    placeholder: String(localized: "Not set", bundle: #bundle),
+                    filled: false,
+                )
+                stepper(String(localized: "Cutoff day", bundle: #bundle), value: viewModel.cutoffDay) { viewModel.stepCutoff(by: $0) }
+                stepper(String(localized: "Due day", bundle: #bundle), value: viewModel.dueDay) { viewModel.stepDue(by: $0) }
             }
             if let error = viewModel.errorMessage {
                 Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
@@ -70,6 +75,10 @@ public struct DebtView: View {
 
     private var debtCurrency: String {
         viewModel.debtMode == .second ? viewModel.second ?? viewModel.principal : viewModel.principal
+    }
+
+    private func debtLabel(_ currency: String) -> String {
+        String(localized: "Debt in \(currency)", bundle: #bundle)
     }
 
     private func modeButton(_ mode: DebtMode) -> some View {
@@ -97,12 +106,12 @@ public struct DebtView: View {
             Text(label).foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
             Spacer()
             HStack(spacing: 10) {
-                stepButton("−", label: "Menos") { step(-1) }
+                stepButton("−", label: String(localized: "Decrease", bundle: #bundle)) { step(-1) }
                 Text("\(value)")
                     .font(KWTextStyle.heading.font)
                     .monospacedDigit()
                     .frame(width: 28)
-                stepButton("+", label: "Más") { step(1) }
+                stepButton("+", label: String(localized: "Increase", bundle: #bundle)) { step(1) }
             }
         }
         .padding(.vertical, 10)

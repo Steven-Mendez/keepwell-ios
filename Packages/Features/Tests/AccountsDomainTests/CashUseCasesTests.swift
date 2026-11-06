@@ -14,7 +14,7 @@ struct CashUseCasesTests {
         let cash = AccountsOverview.Cash(
             account: Account(
                 id: SampleData.IDs.cash,
-                name: "Billetera",
+                name: "Wallet",
                 kind: .cash,
                 openingBalances: [Money(0, "NIO")],
                 openingDate: date,

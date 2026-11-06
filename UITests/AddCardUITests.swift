@@ -8,36 +8,36 @@ final class AddCardUITests: XCTestCase {
     @MainActor
     func testAddingACreditCardShowsItOnAccounts() {
         let app = XCUIApplication()
-        app.launchArguments = ["-sample-data"]
+        app.launchArguments = ["-sample-data", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        XCTAssertTrue(app.buttons["Cuentas"].waitForExistence(timeout: 10))
-        app.buttons["Cuentas"].tap()
-        app.buttons["Agregar cuenta o tarjeta"].tap()
-        XCTAssertTrue(app.staticTexts["¿Qué quieres agregar?"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Accounts"].waitForExistence(timeout: 10))
+        app.buttons["Accounts"].tap()
+        app.buttons["Add account or card"].tap()
+        XCTAssertTrue(app.staticTexts["What do you want to add?"].waitForExistence(timeout: 5))
         attach("1-type")
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Tarjeta de crédito")).firstMatch.tap()
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Credit card")).firstMatch.tap()
 
-        XCTAssertTrue(app.staticTexts["Tu tarjeta de crédito"].waitForExistence(timeout: 5))
-        let bank = app.textFields["Nombre del banco"]
+        XCTAssertTrue(app.staticTexts["Your credit card"].waitForExistence(timeout: 5))
+        let bank = app.textFields["Bank name"]
         bank.tap()
-        bank.typeText("Banco Tres")
+        bank.typeText("Bank Three")
         let digits = app.textFields["0000"]
         digits.tap()
         digits.typeText("2468")
-        app.buttons["Violeta"].tap()
+        app.buttons["Violet"].tap()
         attach("2-plastic")
-        app.buttons["Continuar"].tap()
+        app.buttons["Continue"].tap()
 
-        XCTAssertTrue(app.staticTexts["Cómo funciona la deuda"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["How the debt works"].waitForExistence(timeout: 5))
         attach("3-debt")
-        app.buttons["Agregar tarjeta"].tap()
+        app.buttons["Add card"].tap()
 
-        XCTAssertTrue(app.staticTexts["Tarjeta agregada"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Card added"].waitForExistence(timeout: 5))
         attach("4-added")
-        app.buttons["Ver tarjeta"].tap()
+        app.buttons["View card"].tap()
 
-        XCTAssertTrue(app.staticTexts["Banco Tres"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Bank Three"].waitForExistence(timeout: 5))
     }
 
     private func attach(_ name: String) {

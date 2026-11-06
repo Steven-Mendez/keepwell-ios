@@ -3,7 +3,7 @@ import DesignSystem
 import OnboardingDomain
 import SwiftUI
 
-/// Step 3 · Cuentas.
+/// Step 3 · Accounts.
 public struct AccountsView: View {
     private let viewModel: OnboardingViewModel
     private let onBack: () -> Void
@@ -22,13 +22,13 @@ public struct AccountsView: View {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 KWFlowHeader(.back, progress: (3, 2), action: onBack)
                 OnboardingHeading(
-                    title: "Agrega tus cuentas",
-                    message: "Con su saldo de hoy. Las tarjetas de crédito empiezan con lo que debes.",
+                    title: String(localized: "Add your accounts", bundle: #bundle),
+                    message: String(localized: "With today's balance. Credit cards start with what you owe.", bundle: #bundle),
                 )
                 HStack(spacing: KWSpacing.xs) {
-                    tile(.bank, "Banco") { editing = viewModel.newAccount(.bank) }
-                    tile(.creditCard, "Tarjeta de crédito") { editing = viewModel.newAccount(.credit) }
-                    tile(.cash, "Efectivo") { editing = viewModel.newAccount(.cash) }
+                    tile(.bank, String(localized: "Bank", bundle: #bundle)) { editing = viewModel.newAccount(.bank) }
+                    tile(.creditCard, String(localized: "Credit card", bundle: #bundle)) { editing = viewModel.newAccount(.credit) }
+                    tile(.cash, String(localized: "Cash", bundle: #bundle)) { editing = viewModel.newAccount(.cash) }
                 }
                 KWGroupedCard(verticalPadding: KWSpacing.xxs) {
                     ForEach(viewModel.accounts) { account in
@@ -36,13 +36,13 @@ public struct AccountsView: View {
                             .buttonStyle(.plain)
                     }
                 }
-                Text("Podrás vincular más tarjetas y agregar adicionales después.")
+                Text("You can link more cards and add extra ones later.", bundle: #bundle)
                     .font(KWTextStyle.caption.font)
                     .foregroundStyle(KWColor.Text.muted)
                 Spacer(minLength: 0)
-                Button("Continuar") { viewModel.continueFromAccounts() }
+                Button { viewModel.continueFromAccounts() } label: { Text("Continue", bundle: #bundle) }
                     .buttonStyle(.kw())
-                Button("Importar movimientos desde CSV", action: onImportCSV)
+                Button(action: onImportCSV) { Text("Import transactions from CSV", bundle: #bundle) }
                     .buttonStyle(KWButtonStyle(.plain, size: .text, height: 40))
             }
         }
@@ -80,7 +80,7 @@ public struct AccountsView: View {
     private func row(_ account: OnboardingAccountDraft) -> some View {
         HStack(spacing: KWSpacing.sm) {
             leadingIcon(account)
-            KWTitleSubtitle(account.displayName.isEmpty ? "Cuenta" : account.displayName, subtitle: subtitle(account))
+            KWTitleSubtitle(title(of: account), subtitle: subtitle(account))
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(formatter.number(account.kind == .credit && account.debtMode == .second ? account.secondBalance : account.balance))
                 .font(.kw(15, weight: 700))
@@ -109,24 +109,37 @@ public struct AccountsView: View {
         }
     }
 
+    private func title(of account: OnboardingAccountDraft) -> String {
+        account.displayName.isEmpty ? String(localized: "Account", bundle: #bundle) : account.displayName
+    }
+
     private func subtitle(_ account: OnboardingAccountDraft) -> String {
         switch account.kind {
         case .cash:
-            return "\(account.currency) · ya incluida"
+            let currency = account.currency
+            return String(localized: "\(currency) · already included", bundle: #bundle)
         case .bank:
-            let debit = account.lastFour.map { $0.isEmpty ? "" : " · Débito ··\($0)" } ?? ""
-            return "Banco · \(account.currency)\(debit)"
-        case .credit:
-            let currencies = switch account.debtMode {
-            case .dual: [viewModel.second, viewModel.principal].compactMap(\.self).joined(separator: " y ")
-            case .second: viewModel.second ?? viewModel.principal
-            default: viewModel.principal
+            let currency = account.currency
+            guard let lastFour = account.lastFour, !lastFour.isEmpty else {
+                return String(localized: "Bank · \(currency)", bundle: #bundle)
             }
-            return "Crédito · \(currencies)"
+            return String(localized: "Bank · \(currency) · Debit ··\(lastFour)", bundle: #bundle)
+        case .credit:
+            let principal = viewModel.principal
+            switch account.debtMode {
+            case .dual:
+                guard let second = viewModel.second else { return String(localized: "Credit · \(principal)", bundle: #bundle) }
+                return String(localized: "Credit · \(second) and \(principal)", bundle: #bundle)
+            case .second:
+                let currency = viewModel.second ?? principal
+                return String(localized: "Credit · \(currency)", bundle: #bundle)
+            default:
+                return String(localized: "Credit · \(principal)", bundle: #bundle)
+            }
         }
     }
 
-    /// First letters of the first two words ("Banco Uno" → "BU"), or the first two letters.
+    /// First letters of the first two words ("Bank One" → "BO"), or the first two letters.
     static func initials(_ name: String) -> String {
         let words = name.split(separator: " ")
         let letters = words.count > 1 ? words.prefix(2).compactMap(\.first).map(String.init).joined() : String(name.prefix(2))

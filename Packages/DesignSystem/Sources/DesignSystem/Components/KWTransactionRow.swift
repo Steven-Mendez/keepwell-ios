@@ -135,16 +135,16 @@ public struct KWTransactionAmounts: View {
 
 #Preview {
     KWGroupedCard(horizontalPadding: 14, verticalPadding: 4) {
-        KWTransactionRow(.planned, title: "Renta", subtitle: "Vivienda · Débito 1234", amount: "−C$3,500.00", secondaryAmount: "≈ $95.56")
-        KWTransactionRow(.expense, title: "Almuerzo", subtitle: "Restaurantes · Efectivo", amount: "−C$250.00", secondaryAmount: "$6.83")
+        KWTransactionRow(.planned, title: "Rent", subtitle: "Housing · Debit 1234", amount: "−C$3,500.00", secondaryAmount: "≈ $95.56")
+        KWTransactionRow(.expense, title: "Lunch", subtitle: "Restaurants · Cash", amount: "−C$250.00", secondaryAmount: "$6.83")
         KWTransactionRow(
             .transfer,
-            title: "Retiro",
-            subtitle: "Ahorro → Efectivo",
+            title: "Withdrawal",
+            subtitle: "Savings → Cash",
             amount: "C$1,200.00",
-            secondaryAmount: "$33.15 debitado",
+            secondaryAmount: "$33.15 debited",
         )
-        KWTransactionRow(.income, title: "Intereses", subtitle: "Intereses · Ahorro", amount: "+$3.02", secondaryAmount: "C$110.61")
+        KWTransactionRow(.income, title: "Interest", subtitle: "Interest · Savings", amount: "+$3.02", secondaryAmount: "C$110.61")
     }
     .padding(KWLayout.gutter)
     .background(KWColor.Surface.bg)

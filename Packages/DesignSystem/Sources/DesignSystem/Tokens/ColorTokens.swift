@@ -78,22 +78,23 @@ public enum KWColor {
         }
     }
 
-    /// Per-category colors. Categories without their own color use `faint`.
+    /// Per-category colors, keyed by the stable category id so a color doesn't depend on the
+    /// language of the name. Categories without their own color use `faint`.
     public static let category: [String: UInt32] = [
-        "Herramientas": 0x5B7CFF,
-        "Restaurantes": 0xFFB547,
-        "Comisiones": 0x3FD69A,
-        "Transporte": 0xC77DFF,
-        "Servicios": 0x4FD1E8,
-        "Ocio": 0xFF7A90,
-        "Compras": 0xFF8A50,
-        "Suscripciones": 0xA3E635,
-        "Educación": 0xF2D16B,
-        "Otros": 0x8A8A96,
+        "tools": 0x5B7CFF,
+        "restaurants": 0xFFB547,
+        "fees": 0x3FD69A,
+        "transport": 0xC77DFF,
+        "utilities": 0x4FD1E8,
+        "leisure": 0xFF7A90,
+        "shopping": 0xFF8A50,
+        "subscriptions": 0xA3E635,
+        "education": 0xF2D16B,
+        "other-expense": 0x8A8A96,
     ]
 
-    public static func category(named name: String) -> Color {
-        Color(hex: category[name] ?? Hex.Text.faint)
+    public static func category(id: String) -> Color {
+        Color(hex: category[id] ?? Hex.Text.faint)
     }
 
     enum Hex {

@@ -36,11 +36,11 @@ struct CreateTransactionUseCasesTests {
     func savingDerivesTheAccountAndStoresTheCurrentRate() async throws {
         var draft = expense(source: .card(SampleData.IDs.savingsDebit))
         draft.actualDebitedPrincipal = 24.28
-        draft.description = "  Cena  "
+        draft.description = "  Dinner  "
         let saved = try await save(draft)
         #expect(saved.transaction.accountID == SampleData.IDs.savings)
         #expect(saved.transaction.exchangeRate == SampleData.standard.settings.currencies.exchangeRate)
-        #expect(saved.transaction.description == "Cena")
+        #expect(saved.transaction.description == "Dinner")
         #expect(saved.transaction.bankRate.map { $0.rounded(scale: 2) } == Decimal(string: "36.20"))
         #expect(saved.account.id == SampleData.IDs.savings)
         #expect(saved.categoryMonthTotal?.currency == "USD")
@@ -61,7 +61,7 @@ struct CreateTransactionUseCasesTests {
     @Test
     func emptyDescriptionFallsBackToTheCategory() async throws {
         let saved = try await save(expense(source: .account(SampleData.IDs.cash)))
-        #expect(saved.transaction.description == "Restaurantes")
+        #expect(saved.transaction.description == "Restaurants")
     }
 
     @Test
@@ -94,7 +94,7 @@ struct CreateTransactionUseCasesTests {
         transfer.categoryID = "restaurants"
         let saved = try await save(transfer)
         #expect(saved.transaction.categoryID == nil)
-        #expect(saved.transaction.description == "Transferencia")
+        #expect(saved.transaction.description == "Transfer")
         #expect(saved.categoryMonthTotal == nil)
     }
 

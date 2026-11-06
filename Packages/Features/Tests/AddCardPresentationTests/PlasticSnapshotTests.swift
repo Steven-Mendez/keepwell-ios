@@ -9,7 +9,7 @@ struct PlasticSnapshotTests {
     private func creditViewModel() async -> AddCardViewModel {
         let viewModel = await AddCardFactory.loaded()
         viewModel.choose(.credit)
-        viewModel.bank = "Banco Uno"
+        viewModel.bank = "Bank One"
         viewModel.lastFour = "4321"
         return viewModel
     }

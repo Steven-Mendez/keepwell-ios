@@ -2,7 +2,7 @@ import DesignSystem
 import Domain
 import SwiftUI
 
-/// Step 1 · Monto y tipo, with the app's own keypad.
+/// Step 1 · Amount and type, with the app's own keypad.
 public struct AmountView: View {
     @Bindable private var viewModel: CreateTransactionViewModel
     private let onClose: () -> Void
@@ -18,9 +18,9 @@ public struct AmountView: View {
                 KWFlowHeader(.close, progress: (4, 1), action: onClose)
                 KWSegmentedControl(
                     [
-                        (value: TransactionKind.expense, title: "Gasto"),
-                        (value: .income, title: "Ingreso"),
-                        (value: .transfer, title: "Transferir"),
+                        (value: TransactionKind.expense, title: String(localized: "Expense", bundle: #bundle)),
+                        (value: .income, title: String(localized: "Income", bundle: #bundle)),
+                        (value: .transfer, title: String(localized: "Transfer", bundle: #bundle)),
                     ],
                     selection: Binding(get: { viewModel.kind }, set: { viewModel.setKind($0) }),
                 )
@@ -32,7 +32,7 @@ public struct AmountView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                         .contentTransition(.numericText())
-                        .accessibilityLabel("Monto \(viewModel.amountDisplay)")
+                        .accessibilityLabel(amountAccessibilityLabel)
                     if viewModel.currencyOptions.count > 1 {
                         KWSegmentedControl(
                             viewModel.currencyOptions.map { (value: $0, title: $0) },
@@ -49,7 +49,7 @@ public struct AmountView: View {
                 }
                 .frame(maxHeight: .infinity)
                 keypad
-                Button("Siguiente") { viewModel.continueFromAmount() }
+                Button { viewModel.continueFromAmount() } label: { Text("Next", bundle: #bundle) }
                     .buttonStyle(.kw())
                     .disabled(!viewModel.canContinueFromAmount)
             }
@@ -59,6 +59,11 @@ public struct AmountView: View {
                 await viewModel.load()
             }
         }
+    }
+
+    private var amountAccessibilityLabel: String {
+        let display = viewModel.amountDisplay
+        return String(localized: "Amount \(display)", bundle: #bundle)
     }
 
     private var keypad: some View {
@@ -74,7 +79,7 @@ public struct AmountView: View {
                         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWSpacing.md))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(key == .delete ? "Borrar" : label(key))
+                .accessibilityLabel(key == .delete ? String(localized: "Delete", bundle: #bundle) : label(key))
             }
         }
     }

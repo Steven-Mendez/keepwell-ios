@@ -4,9 +4,9 @@ import SwiftUI
 /// default is the detail look (secondary label).
 public struct KWValueRow: View {
     public enum Style: Sendable {
-        /// Secondary label, semibold white value: "Estado · Confirmado".
+        /// Secondary label, semibold white value: "Status · Confirmed".
         case detail
-        /// Secondary label, faint value: "Límite de crédito · Sin definir".
+        /// Secondary label, faint value: "Credit limit · Not set".
         case placeholder
         /// White label, semibold value: settings rows.
         case setting
@@ -83,7 +83,7 @@ public struct KWTitleSubtitle: View {
 }
 
 /// Section titles above cards. `small` is the muted 14pt label ("Moneda"), `large` the 17pt
-/// heading ("Tarjetas de crédito") with an optional trailing accessory.
+/// heading ("Credit cards") with an optional trailing accessory.
 public struct KWSectionHeader<Accessory: View>: View {
     public enum Style: Sendable {
         case small
@@ -120,17 +120,17 @@ extension KWSectionHeader where Accessory == EmptyView {
 
 #Preview {
     VStack(alignment: .leading, spacing: KWSpacing.xs) {
-        KWSectionHeader("Moneda")
+        KWSectionHeader("Currency")
         KWGroupedCard {
-            KWValueRow("Moneda principal", value: "USD · Dólar ›", style: .setting, verticalPadding: 14)
-            KWValueRow("Categorías de gasto", value: "15 ›", style: .navigation, verticalPadding: 14)
+            KWValueRow("Main currency", value: "USD · US dollar ›", style: .setting, verticalPadding: 14)
+            KWValueRow("Expense categories", value: "15 ›", style: .navigation, verticalPadding: 14)
         }
-        KWSectionHeader("Plásticos", style: .large) {
-            Text("+ Adicional").font(KWTextStyle.label.font).foregroundStyle(KWColor.Brand.link)
+        KWSectionHeader("Cards", style: .large) {
+            Text("+ Additional").font(KWTextStyle.label.font).foregroundStyle(KWColor.Brand.link)
         }
         KWGroupedCard(verticalPadding: 4) {
-            KWValueRow("Límite de crédito", value: "Sin definir", style: .placeholder)
-            KWValueRow("Estado", value: "Confirmado", valueColor: KWColor.State.positive)
+            KWValueRow("Credit limit", value: "Not set", style: .placeholder)
+            KWValueRow("Status", value: "Confirmed", valueColor: KWColor.State.positive)
         }
     }
     .padding(KWLayout.gutter)

@@ -3,7 +3,7 @@ import Domain
 import SharedPresentation
 import SwiftUI
 
-/// Step 2 · Plástico: art preview, color, bank, last digits and network.
+/// Step 2 · Plastic: art preview, color, bank, last digits and network.
 public struct PlasticView: View {
     @Bindable private var viewModel: AddCardViewModel
     private let onBack: () -> Void
@@ -11,6 +11,10 @@ public struct PlasticView: View {
     public init(viewModel: AddCardViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onBack = onBack
+    }
+
+    private var kindBadge: String {
+        viewModel.kind == .credit ? String(localized: "Credit", bundle: #bundle) : String(localized: "Debit", bundle: #bundle)
     }
 
     public var body: some View {
@@ -23,9 +27,11 @@ public struct PlasticView: View {
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
-            Button(viewModel.kind == .credit ? "Continuar" : "Agregar tarjeta") {
+            Button {
                 KWKeyboard.dismiss()
                 Task { await viewModel.continueFromPlastic() }
+            } label: {
+                Text(viewModel.kind == .credit ? "Continue" : "Add card", bundle: #bundle)
             }
             .buttonStyle(.kw())
             .disabled(!viewModel.canContinueFromPlastic || viewModel.isSaving)
@@ -45,7 +51,7 @@ public struct PlasticView: View {
             KWCardArt(
                 palette: CardDisplay.palette(for: viewModel.color),
                 bank: viewModel.bank.isEmpty ? bankPlaceholder : viewModel.bank,
-                badge: .tag(viewModel.kind == .credit ? "Crédito" : "Débito"),
+                badge: .tag(kindBadge),
                 showsContactless: false,
                 lastFour: viewModel.lastFour.isEmpty ? "0000" : viewModel.lastFour,
                 network: CardDisplay.wordmark(for: viewModel.network),
@@ -55,11 +61,21 @@ public struct PlasticView: View {
                 if viewModel.kind == .debit {
                     accountPicker
                 }
-                FormTextRow(label: "Banco", placeholder: "Nombre del banco", text: $viewModel.bank)
-                FormTextRow(label: "Últimos 4 dígitos", placeholder: "0000", text: lastFourBinding, width: 90, numeric: true)
+                FormTextRow(
+                    label: String(localized: "Bank", bundle: #bundle),
+                    placeholder: String(localized: "Bank name", bundle: #bundle),
+                    text: $viewModel.bank,
+                )
+                FormTextRow(
+                    label: String(localized: "Last 4 digits", bundle: #bundle),
+                    placeholder: "0000",
+                    text: lastFourBinding,
+                    width: 90,
+                    numeric: true,
+                )
                 networkPicker
             }
-            Text("Nunca pedimos el número completo ni el CVV.")
+            Text("We never ask for the full number or the CVV.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font)
                 .foregroundStyle(KWColor.Text.muted)
             if let error = viewModel.errorMessage {
@@ -69,9 +85,10 @@ public struct PlasticView: View {
     }
 
     private var bankPlaceholder: String {
-        viewModel.kind == .debit
-            ? viewModel.context?.depositAccounts.first { $0.id == viewModel.linkedAccountID }?.bank ?? "Banco"
-            : "Banco"
+        let fallback = String(localized: "Bank", bundle: #bundle)
+        return viewModel.kind == .debit
+            ? viewModel.context?.depositAccounts.first { $0.id == viewModel.linkedAccountID }?.bank ?? fallback
+            : fallback
     }
 
     private var lastFourBinding: Binding<String> {
@@ -102,7 +119,7 @@ public struct PlasticView: View {
 
     private var networkPicker: some View {
         VStack(alignment: .leading, spacing: KWSpacing.xs) {
-            Text("Red").foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
+            Text("Network", bundle: #bundle).foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
             HStack(spacing: 6) {
                 ForEach(CardNetwork.allCases, id: \.self) { network in
                     let isSelected = network == viewModel.network
@@ -124,7 +141,7 @@ public struct PlasticView: View {
 
     private var accountPicker: some View {
         VStack(alignment: .leading, spacing: KWSpacing.xs) {
-            Text("Cuenta").foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
+            Text("Account", bundle: #bundle).foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
             KWFlowLayout(spacing: 6) {
                 ForEach(viewModel.context?.depositAccounts ?? []) { account in
                     KWChip(CardDisplay.name(of: account), isSelected: account.id == viewModel.linkedAccountID) {

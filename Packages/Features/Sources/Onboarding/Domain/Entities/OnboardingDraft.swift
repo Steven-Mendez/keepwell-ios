@@ -48,7 +48,7 @@ public struct OnboardingAccountDraft: Identifiable, Hashable, Sendable {
         self.debtMode = debtMode
     }
 
-    /// "Banco Ahorro": the bank followed by the account's own name, as the lists show it.
+    /// "Bank Savings": the bank followed by the account's own name, as the lists show it.
     public var displayName: String {
         [bank, name].compactMap { $0?.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }.joined(separator: " ")
     }

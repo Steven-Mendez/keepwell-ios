@@ -32,7 +32,7 @@ struct AddCardViewModelTests {
         let viewModel = AddCardFactory.make(store: store)
         await viewModel.load()
         viewModel.choose(.credit)
-        viewModel.bank = "Banco Tres"
+        viewModel.bank = "Bank Three"
         viewModel.lastFour = "2468"
         await viewModel.continueFromPlastic()
         #expect(viewModel.path == [.plastic, .debt])
@@ -40,7 +40,7 @@ struct AddCardViewModelTests {
         await viewModel.addCreditCard()
         #expect(viewModel.path.last == .done)
         #expect(viewModel.createdAccount?.openingBalances == [Money(0, "USD"), Money(-250, "NIO")])
-        #expect(viewModel.summary == "Deuda en USD y NIO · corte día 28 · pago día 15. Te avisamos 3 días antes del pago.")
+        #expect(viewModel.summary == "Debt in USD and NIO · cutoff day 28 · due day 15. We'll remind you 3 days before the due date.")
     }
 
     @Test
@@ -61,7 +61,7 @@ struct AddCardViewModelTests {
         await viewModel.continueFromPlastic()
         #expect(viewModel.path == [.plastic, .done])
         #expect(viewModel.createdCard?.accountID == SampleData.IDs.payroll)
-        #expect(viewModel.summary == "Vinculada a Banco Dos Nómina.")
+        #expect(viewModel.summary == "Linked to Bank Two Payroll.")
     }
 
     @Test
@@ -86,18 +86,18 @@ struct AddCardViewModelTests {
     @Test
     func modeCopyFollowsTheCurrencies() async {
         let viewModel = await AddCardFactory.loaded()
-        #expect(viewModel.modeTitle(.dual) == "Dos monedas")
-        #expect(viewModel.modeSubtitle(.dual) == "USD y NIO por separado, se pagan aparte")
-        #expect(viewModel.modeTitle(.second) == "Solo NIO")
-        #expect(viewModel.modeSubtitle(.principal) == "Todo se convierte a dólares")
+        #expect(viewModel.modeTitle(.dual) == "Two currencies")
+        #expect(viewModel.modeSubtitle(.dual) == "USD and NIO, paid separately")
+        #expect(viewModel.modeTitle(.second) == "Only NIO")
+        #expect(viewModel.modeSubtitle(.principal) == "Everything is converted to dollars")
     }
 
     @Test
     func creatingAWalletReloadsTheContext() async {
         let viewModel = await AddCardFactory.loaded()
-        #expect(await viewModel.createAccount(kind: .deposit, name: "Corriente", bank: "Banco Tres", currency: "USD", balanceText: "40"))
+        #expect(await viewModel.createAccount(kind: .deposit, name: "Checking", bank: "Bank Three", currency: "USD", balanceText: "40"))
         #expect(viewModel.context?.depositAccounts.count == 3)
-        #expect(await !viewModel.createAccount(kind: .cash, name: "Sobre", bank: nil, currency: "NIO", balanceText: "abc"))
+        #expect(await !viewModel.createAccount(kind: .cash, name: "Envelope", bank: nil, currency: "NIO", balanceText: "abc"))
     }
 
     @Test

@@ -8,18 +8,18 @@ struct ButtonSnapshotTests {
     @Test
     func variantsAndSizes() {
         let view = VStack(spacing: KWSpacing.sm) {
-            Button("Continuar") {}.buttonStyle(.kw())
-            Button("Retiro de cajero") {}.buttonStyle(.kw(.secondary))
-            Button("Anotar otro") {}.buttonStyle(.kw(.surface, size: .regular))
-            Button("Quitar adicional") {}.buttonStyle(.kw(.destructive, size: .row))
-            Button("Completar datos de la tarjeta") {}.buttonStyle(.kw(.link, size: .medium))
-            Button("Ahora no") {}.buttonStyle(.kw(.plain, size: .text))
+            Button("Continue") {}.buttonStyle(.kw())
+            Button("ATM withdrawal") {}.buttonStyle(.kw(.secondary))
+            Button("Log another") {}.buttonStyle(.kw(.surface, size: .regular))
+            Button("Remove additional card") {}.buttonStyle(.kw(.destructive, size: .row))
+            Button("Complete card details") {}.buttonStyle(.kw(.link, size: .medium))
+            Button("Not now") {}.buttonStyle(.kw(.plain, size: .text))
             HStack {
-                Button("Respaldar ahora") {}.buttonStyle(.kw(.primary, size: .small))
-                Button("Restaurar") {}.buttonStyle(.kw(.secondary, size: .small))
-                Button("Confirmar") {}.buttonStyle(.kw(.primary, size: .mini))
+                Button("Back up now") {}.buttonStyle(.kw(.primary, size: .small))
+                Button("Restore") {}.buttonStyle(.kw(.secondary, size: .small))
+                Button("Confirm") {}.buttonStyle(.kw(.primary, size: .mini))
             }
-            Button("Desactivado") {}.buttonStyle(.kw()).disabled(true)
+            Button("Disabled") {}.buttonStyle(.kw()).disabled(true)
         }
         .padding(KWLayout.gutter)
         assertComponentSnapshot(of: view, height: 560)

@@ -7,7 +7,7 @@ struct BalancesTests {
     private let opening = Fixtures.date(2026, 9, 1)
 
     private func deposit(_ amount: String, _ currency: String = "USD") -> Account {
-        Account(name: "Ahorro", kind: .deposit, openingBalances: [Money(Fixtures.decimal(amount), currency)], openingDate: opening)
+        Account(name: "Savings", kind: .deposit, openingBalances: [Money(Fixtures.decimal(amount), currency)], openingDate: opening)
     }
 
     private func balance(_ account: Account, _ transactions: [Transaction]) -> [Money] {

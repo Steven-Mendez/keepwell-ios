@@ -58,13 +58,13 @@ public struct KWWordmark: View {
     public var body: some View {
         HStack(spacing: 10) {
             KWLogoMark(size: markSize)
-            Text("keepwell")
+            Text(verbatim: "keepwell")
                 .font(.kw(fontSize, weight: 800, relativeTo: .largeTitle))
                 .tracking(-2)
         }
         .foregroundStyle(.white)
         .accessibilityElement()
-        .accessibilityLabel("keepwell")
+        .accessibilityLabel(Text(verbatim: "keepwell"))
     }
 }
 

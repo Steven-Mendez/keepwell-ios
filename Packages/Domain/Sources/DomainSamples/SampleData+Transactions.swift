@@ -23,7 +23,7 @@ extension SampleData {
             Row(
                 date: day(28, 0),
                 status: .planned,
-                description: "Comida del mes",
+                description: "Monthly groceries",
                 kind: .expense,
                 category: "groceries",
                 amount: "3500",
@@ -34,7 +34,7 @@ extension SampleData {
             Row(
                 date: day(28, 0),
                 status: .planned,
-                description: "Ayuda familiar",
+                description: "Family support",
                 kind: .expense,
                 category: "family",
                 amount: "2000",
@@ -45,7 +45,7 @@ extension SampleData {
             Row(
                 date: day(25, 0),
                 status: .planned,
-                description: "Luz (estimado)",
+                description: "Electricity (estimate)",
                 kind: .expense,
                 category: "utilities",
                 amount: "1300",
@@ -56,7 +56,7 @@ extension SampleData {
             Row(
                 date: day(24, 0),
                 status: .planned,
-                description: "Teléfono",
+                description: "Phone",
                 kind: .expense,
                 category: "utilities",
                 amount: "700",
@@ -67,7 +67,7 @@ extension SampleData {
             Row(
                 date: day(22, 0),
                 status: .confirmed,
-                description: "Software de diseño",
+                description: "Design software",
                 kind: .expense,
                 category: "tools",
                 amount: "200",
@@ -78,7 +78,7 @@ extension SampleData {
             Row(
                 date: day(19, 0),
                 status: .confirmed,
-                description: "Internet hogar",
+                description: "Home internet",
                 kind: .expense,
                 category: "utilities",
                 amount: "23.18",
@@ -89,7 +89,7 @@ extension SampleData {
             Row(
                 date: day(15, 0),
                 status: .confirmed,
-                description: "Salario",
+                description: "Salary",
                 kind: .income,
                 category: "salary",
                 amount: "2452.24",
@@ -100,7 +100,7 @@ extension SampleData {
             Row(
                 date: day(5, 0),
                 status: .confirmed,
-                description: "Reposición de tarjeta",
+                description: "Card replacement",
                 kind: .expense,
                 category: "fees",
                 amount: "7",
@@ -111,7 +111,7 @@ extension SampleData {
             Row(
                 date: day(5, 0),
                 status: .confirmed,
-                description: "Almuerzo",
+                description: "Lunch",
                 kind: .expense,
                 category: "restaurants",
                 amount: "250",
@@ -133,7 +133,7 @@ extension SampleData {
             Row(
                 date: day(4, 0),
                 status: .confirmed,
-                description: "Cine",
+                description: "Movies",
                 kind: .expense,
                 category: "leisure",
                 amount: "739.32",
@@ -146,7 +146,7 @@ extension SampleData {
             Row(
                 date: day(4, 0),
                 status: .confirmed,
-                description: "Retiro sin tarjeta",
+                description: "Cardless withdrawal",
                 kind: .transfer,
                 category: nil,
                 amount: "1200",
@@ -159,7 +159,7 @@ extension SampleData {
             Row(
                 date: day(3, 0),
                 status: .confirmed,
-                description: "Supermercado",
+                description: "Groceries",
                 kind: .expense,
                 category: "groceries",
                 amount: "2150",
@@ -181,7 +181,7 @@ extension SampleData {
             Row(
                 date: day(1, 0),
                 status: .confirmed,
-                description: "Música",
+                description: "Music",
                 kind: .expense,
                 category: "subscriptions",
                 amount: "16.79",
@@ -192,7 +192,7 @@ extension SampleData {
             Row(
                 date: day(30, -1),
                 status: .confirmed,
-                description: "Intereses",
+                description: "Interest",
                 kind: .income,
                 category: "interest",
                 amount: "3.02",
@@ -203,7 +203,7 @@ extension SampleData {
             Row(
                 date: day(12, -1),
                 status: .confirmed,
-                description: "Cena",
+                description: "Dinner",
                 kind: .expense,
                 category: "restaurants",
                 amount: "1360",
@@ -214,7 +214,7 @@ extension SampleData {
             Row(
                 date: day(8, -1),
                 status: .confirmed,
-                description: "Curso en línea",
+                description: "Online course",
                 kind: .expense,
                 category: "tools",
                 amount: "10",

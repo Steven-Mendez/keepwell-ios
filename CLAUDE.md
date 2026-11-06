@@ -30,6 +30,13 @@ Each feature lives in `Packages/Features/Sources/<Feature>/` as three SwiftPM ta
 - Dependencies injected through `init` as protocols. No singletons.
 - Tests use Swift Testing (`@Test`, `#expect`); XCTest only for UI tests.
 - Comments explain *why*. No comments that restate code or say "sample/placeholder".
+- Localization: English is the source language in code, with Spanish as the first translation
+  (`en` + `es`). Every user-visible string lives in a `Localizable.xcstrings` catalog next to the
+  target that uses it, keyed by its English text. Use `Text("…", bundle: #bundle)` in views and
+  `String(localized: "…", bundle: #bundle)` wherever a `String` is needed. Domain never localizes;
+  Presentation does. Default categories are stored in English and translated by id
+  (`CategoryDisplay.name(of:)`). Dates and names follow `Locale.current`; money stays locale
+  independent (`CurrencyFormatter`). New strings need their `es` entry before merging.
 - Before committing: `make lint` and `make test-unit` pass.
 
 ## Git

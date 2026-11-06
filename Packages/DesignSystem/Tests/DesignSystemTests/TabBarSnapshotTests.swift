@@ -9,10 +9,10 @@ struct TabBarSnapshotTests {
     func homeSelected() {
         let bar = KWTabBar(
             items: [
-                KWTabItem(id: 0, icon: .home, title: "Inicio"),
-                KWTabItem(id: 1, icon: .list, title: "Movimientos"),
-                KWTabItem(id: 2, icon: .tabAccounts, title: "Cuentas"),
-                KWTabItem(id: 3, icon: .chartBars, title: "Resumen"),
+                KWTabItem(id: 0, icon: .home, title: "Home"),
+                KWTabItem(id: 1, icon: .list, title: "Transactions"),
+                KWTabItem(id: 2, icon: .tabAccounts, title: "Accounts"),
+                KWTabItem(id: 3, icon: .chartBars, title: "Summary"),
             ],
             selection: .constant(0),
         )

@@ -9,9 +9,9 @@ struct CardArtSnapshotTests {
     func holderCardHasCreditCardRatio() {
         let card = KWCardArt(
             palette: .azul,
-            bank: "Banco Uno",
+            bank: "Bank One",
             badge: .amount("−C$197.02 · −$16.79"),
-            caption: "Crédito · 2 plásticos",
+            caption: "Credit · 2 cards",
             lastFour: "1234",
             network: "mastercard",
         )
@@ -23,26 +23,26 @@ struct CardArtSnapshotTests {
         let view = VStack(spacing: KWSpacing.xl) {
             KWCardArt(
                 palette: .lima,
-                bank: "Banco Uno",
-                badge: .tag("Adicional"),
-                caption: "Familiar",
+                bank: "Bank One",
+                badge: .tag("Additional"),
+                caption: "Family",
                 lastFour: "5678",
                 network: "mastercard",
             )
             KWCardArt(
                 palette: .lima,
-                bank: "Banco Uno",
-                badge: .tag("Congelada"),
-                caption: "Familiar",
+                bank: "Bank One",
+                badge: .tag("Frozen"),
+                caption: "Family",
                 lastFour: "5678",
                 network: "mastercard",
                 isFrozen: true,
             )
-            KWCardArt(palette: .grafito, bank: "Banco Dos", badge: .amount("−C$941.30"), showsChip: false)
+            KWCardArt(palette: .grafito, bank: "Bank Two", badge: .amount("−C$941.30"), showsChip: false)
             KWCardArt(
                 palette: .violeta,
-                bank: "Banco Uno",
-                badge: .tag("Crédito"),
+                bank: "Bank One",
+                badge: .tag("Credit"),
                 showsContactless: false,
                 lastFour: "1234",
                 network: "VISA",

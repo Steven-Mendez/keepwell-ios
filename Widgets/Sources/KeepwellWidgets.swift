@@ -16,13 +16,13 @@ struct KeepwellWidgetsBundle: WidgetBundle {
 struct PlaceholderWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "com.keepwell.placeholder", provider: PlaceholderProvider()) { _ in
-            Text("Keepwell")
+            Text(verbatim: "Keepwell")
                 .kwTextStyle(.heading)
                 .foregroundStyle(KWColor.Text.primary)
                 .containerBackground(KWColor.Surface.bg, for: .widget)
         }
         .configurationDisplayName("Keepwell")
-        .description("Widget de ejemplo.")
+        .description("Example widget.")
         .supportedFamilies([.systemSmall])
     }
 }

@@ -6,23 +6,23 @@ extension SampleData {
         [
             Account(
                 id: IDs.savings,
-                name: "Ahorro",
-                bank: "Banco Uno",
+                name: "Savings",
+                bank: "Bank One",
                 kind: .deposit,
                 openingBalances: [Money(9520, "USD")],
                 openingDate: opening,
             ),
             Account(
                 id: IDs.payroll,
-                name: "Nómina",
-                bank: "Banco Dos",
+                name: "Payroll",
+                bank: "Bank Two",
                 kind: .deposit,
                 openingBalances: [Money(Decimal(string: "-480.10") ?? 0, "USD")],
                 openingDate: opening,
             ),
             Account(
                 id: IDs.cash,
-                name: "Billetera",
+                name: "Wallet",
                 kind: .cash,
                 openingBalances: [Money(7500, "NIO")],
                 openingDate: opening,
@@ -30,7 +30,7 @@ extension SampleData {
             Account(
                 id: IDs.mastercard,
                 name: "Mastercard",
-                bank: "Banco Uno",
+                bank: "Bank One",
                 kind: .credit,
                 openingBalances: [Money(0, "USD"), Money(0, "NIO")],
                 openingDate: opening,
@@ -39,7 +39,7 @@ extension SampleData {
             Account(
                 id: IDs.visa,
                 name: "Visa",
-                bank: "Banco Dos",
+                bank: "Bank Two",
                 kind: .credit,
                 openingBalances: [Money(-880, "NIO")],
                 openingDate: opening,
@@ -55,7 +55,7 @@ extension SampleData {
 
     static func makeCards() -> [Card] {
         let additional = AdditionalCardControls(
-            holderName: "Súper familiar",
+            holderName: "Super family",
             cycleCap: Money(4000, "NIO"),
             allowedCategoryIDs: ["groceries", "health"],
             defaultCategoryID: "groceries",
