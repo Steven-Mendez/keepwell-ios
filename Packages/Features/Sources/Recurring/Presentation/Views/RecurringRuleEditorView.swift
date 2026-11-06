@@ -141,8 +141,10 @@ public struct RecurringRuleEditorView: View {
                 }
             }
             Stepper(value: $viewModel.interval, in: viewModel.intervalRange) {
-                Text("Every", bundle: #bundle).font(KWTextStyle.body.font).foregroundStyle(KWColor.Text.secondary)
-                    + Text(verbatim: " \(viewModel.interval)").font(.kw(15, weight: 600))
+                HStack(spacing: KWSpacing.xxs) {
+                    Text("Every", bundle: #bundle).font(KWTextStyle.body.font).foregroundStyle(KWColor.Text.secondary)
+                    Text(verbatim: "\(viewModel.interval)").font(.kw(15, weight: 600))
+                }
             }
             .padding(.vertical, KWSpacing.xs)
             DatePicker(selection: $viewModel.startDate, displayedComponents: [.date]) {

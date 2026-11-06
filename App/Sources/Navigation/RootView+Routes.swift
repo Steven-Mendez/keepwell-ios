@@ -18,6 +18,7 @@ extension RootView {
                 onErased: returnToOnboarding,
                 onOpenCategories: { navigator.push(.categories(showsIncome: $0 == .income)) },
                 onOpenPaymentMethods: { navigator.push(.paymentMethods) },
+                onOpenRecurring: { navigator.push(.recurring) },
             )
         case let .categories(showsIncome):
             CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: navigator.pop)
@@ -45,8 +46,18 @@ extension RootView {
                 container: container,
                 scope: accountID.map(TransactionScope.account) ?? .all,
                 onBack: navigator.pop,
+                onOpenRecurringRule: { navigator.push(.recurringRule(id: $0)) },
                 onNewMovement: { presentMovementMenu() },
             )
+        case .recurring:
+            RecurringRoute(
+                container: container,
+                onBack: navigator.pop,
+                onAdd: { navigator.push(.recurringRule(id: nil)) },
+                onOpen: { navigator.push(.recurringRule(id: $0)) },
+            )
+        case let .recurringRule(id):
+            RecurringRuleRoute(container: container, ruleID: id, onBack: navigator.pop)
         }
     }
 }
