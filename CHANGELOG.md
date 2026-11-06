@@ -22,6 +22,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- "Export CSV" adds a last `tags` column ("#viaje-mexico #boda"), and "Import CSV" reads it back
+  (tags split on spaces or commas, normalized like the ones you type). Files without the column
+  still import; the web app writes and reads the same column.
 ### Added
 
 - "Loan payments", a new default expense category ("Pagos de préstamos" in Spanish), placed before
