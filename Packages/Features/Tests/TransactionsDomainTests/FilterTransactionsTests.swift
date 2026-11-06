@@ -81,3 +81,36 @@ struct FilterTransactionsTests {
         #expect(total.currency == list.settings.principal)
     }
 }
+
+extension FilterTransactionsTests {
+    @Test
+    func aHashSearchKeepsOnlyThatTagAndTotalsItInThePrincipalCurrency() throws {
+        let rate = try ExchangeRate(principal: "USD", second: "NIO", rate: 36)
+        func movement(
+            _ kind: TransactionKind,
+            _ amount: Decimal,
+            _ currency: String,
+            tags: [String],
+            status: TransactionStatus = .confirmed,
+        ) -> Transaction {
+            Transaction(
+                date: SampleData.defaultReferenceDate, status: status, description: "x", kind: kind,
+                categoryID: kind == .income ? "salary" : "travel", amount: amount, currency: currency,
+                accountID: IDs.cash, exchangeRate: rate, tags: tags,
+            )
+        }
+        let movements = [
+            movement(.expense, 100, "USD", tags: ["boda"]),
+            movement(.expense, 360, "NIO", tags: ["viaje", "boda"]),
+            movement(.income, 50, "USD", tags: ["boda"]),
+            movement(.expense, 999, "USD", tags: ["boda"], status: .planned),
+            movement(.expense, 7, "USD", tags: ["viaje"]),
+        ]
+        let found = filter.execute(movements, matching: TransactionQuery(text: " #Boda ")) { $0.description }
+        #expect(found.count == 4)
+        let totals = TagTotals(tag: "boda", transactions: found, currency: "USD")
+        #expect(totals.expense == 110)
+        #expect(totals.income == 50)
+        #expect(TransactionQuery(text: "boda").tag == nil)
+    }
+}

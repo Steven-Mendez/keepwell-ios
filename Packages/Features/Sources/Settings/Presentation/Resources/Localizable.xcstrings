@@ -71,6 +71,46 @@
         }
       }
     },
+    "%lld movements updated." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movement updated."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movements updated."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimiento actualizado."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimientos actualizados."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld rows skipped" : {
       "localizations" : {
         "en" : {
@@ -171,6 +211,26 @@
         }
       }
     },
+    "Apply" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar"
+          }
+        }
+      }
+    },
+    "Apply to past movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar a movimientos anteriores"
+          }
+        }
+      }
+    },
     "Ask again after" : {
       "localizations" : {
         "es" : {
@@ -211,12 +271,32 @@
         }
       }
     },
+    "Capitals and accents don't matter." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No importan las mayúsculas ni las tildes."
+          }
+        }
+      }
+    },
     "Categories" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Categorías"
+          }
+        }
+      }
+    },
+    "Category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría"
           }
         }
       }
@@ -237,6 +317,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se cobra directo de la cuenta"
+          }
+        }
+      }
+    },
+    "Choose" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir"
+          }
+        }
+      }
+    },
+    "Create rule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear regla"
           }
         }
       }
@@ -291,6 +391,16 @@
         }
       }
     },
+    "Delete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        }
+      }
+    },
     "Delete all my data" : {
       "localizations" : {
         "es" : {
@@ -317,6 +427,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar todo"
+          }
+        }
+      }
+    },
+    "Delete rule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar regla"
+          }
+        }
+      }
+    },
+    "Delete this rule?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar esta regla?"
+          }
+        }
+      }
+    },
+    "Deleted category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría eliminada"
           }
         }
       }
@@ -357,6 +497,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Listo"
+          }
+        }
+      }
+    },
+    "Edit rule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar regla"
           }
         }
       }
@@ -417,6 +567,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocultar montos al salir"
+          }
+        }
+      }
+    },
+    "If the description or note contains" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si la descripción o la nota contiene"
           }
         }
       }
@@ -561,6 +721,46 @@
         }
       }
     },
+    "Move %lld movements to %@?" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Move %lld movement to %@?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Move %lld movements to %@?"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Mover %lld movimiento a %@?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Mover %lld movimientos a %@?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Move down" : {
       "localizations" : {
         "es" : {
@@ -577,6 +777,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subir"
+          }
+        }
+      }
+    },
+    "Movements it already categorized stay as they are." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los movimientos que ya categorizó no cambian."
           }
         }
       }
@@ -601,12 +811,52 @@
         }
       }
     },
+    "New movements take the category of the first rule that matches, unless you pick one. Past ones stay as they are." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los movimientos nuevos toman la categoría de la primera regla que coincida, salvo que elijas una. Los anteriores no cambian."
+          }
+        }
+      }
+    },
+    "New rule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva regla"
+          }
+        }
+      }
+    },
     "No lock" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin bloqueo"
+          }
+        }
+      }
+    },
+    "No past movements to change." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay movimientos anteriores que cambiar."
+          }
+        }
+      }
+    },
+    "No rules yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no tienes reglas"
           }
         }
       }
@@ -627,6 +877,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activado ›"
+          }
+        }
+      }
+    },
+    "Only movements without a category or in “Other” that match change." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo cambian los movimientos que coinciden y no tienen categoría o están en “Otros”."
           }
         }
       }
@@ -781,6 +1041,26 @@
         }
       }
     },
+    "Rules" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        }
+      }
+    },
     "Second currency" : {
       "localizations" : {
         "es" : {
@@ -851,6 +1131,36 @@
         }
       }
     },
+    "Tags to add" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etiquetas para agregar"
+          }
+        }
+      }
+    },
+    "Teach Keepwell that “Uber” is Transport, and new movements that say so get it on their own." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enséñale a Keepwell que “Uber” es Transporte, y los movimientos nuevos que lo digan lo tendrán solos."
+          }
+        }
+      }
+    },
+    "Text to look for" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto a buscar"
+          }
+        }
+      }
+    },
     "That file isn't a Keepwell backup, so nothing was changed." : {
       "localizations" : {
         "es" : {
@@ -901,6 +1211,16 @@
         }
       }
     },
+    "Uber" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uber"
+          }
+        }
+      }
+    },
     "Unlock the app with" : {
       "localizations" : {
         "es" : {
@@ -941,6 +1261,16 @@
         }
       }
     },
+    "We couldn't delete the rule. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos eliminar la regla. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
     "We couldn't delete your data. Try again." : {
       "localizations" : {
         "es" : {
@@ -977,6 +1307,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos cargar tus medios de pago."
+          }
+        }
+      }
+    },
+    "We couldn't load your rules." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus reglas."
+          }
+        }
+      }
+    },
+    "We couldn't look at your movements. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos revisar tus movimientos. Inténtalo de nuevo."
           }
         }
       }
@@ -1041,6 +1391,26 @@
         }
       }
     },
+    "We couldn't save the rule. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar la regla. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't update your movements. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos actualizar tus movimientos. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
     "We use Face ID or Touch ID, whichever your iPhone has" : {
       "localizations" : {
         "es" : {
@@ -1087,6 +1457,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Respaldo en iCloud"
+          }
+        }
+      }
+    },
+    "“%@” → %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” → %2$@"
           }
         }
       }

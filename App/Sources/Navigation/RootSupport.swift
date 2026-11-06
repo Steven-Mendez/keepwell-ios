@@ -3,6 +3,7 @@ import AddCardPresentation
 import Core
 import CreateTransactionPresentation
 import CreditCardPresentation
+import DebtsPresentation
 import DesignSystem
 import Domain
 import GoalsPresentation
@@ -117,6 +118,7 @@ struct SettingsRoute: View {
     let onOpenCategories: (TransactionKind) -> Void
     let onOpenPaymentMethods: () -> Void
     let onOpenRecurring: () -> Void
+    let onOpenRules: () -> Void
 
     init(
         container: AppContainer,
@@ -125,6 +127,7 @@ struct SettingsRoute: View {
         onOpenCategories: @escaping (TransactionKind) -> Void,
         onOpenPaymentMethods: @escaping () -> Void,
         onOpenRecurring: @escaping () -> Void,
+        onOpenRules: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         self.container = container
@@ -133,6 +136,7 @@ struct SettingsRoute: View {
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
         self.onOpenRecurring = onOpenRecurring
+        self.onOpenRules = onOpenRules
     }
 
     var body: some View {
@@ -144,6 +148,7 @@ struct SettingsRoute: View {
             onOpenCategories: onOpenCategories,
             onOpenPaymentMethods: onOpenPaymentMethods,
             onOpenRecurring: onOpenRecurring,
+            onOpenRules: onOpenRules,
         )
         .navigationBarBackButtonHidden()
         .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in
@@ -169,6 +174,21 @@ struct CategoriesRoute: View {
 
     var body: some View {
         CategoriesView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+struct RulesRoute: View {
+    @State private var viewModel: RulesViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeRulesViewModel())
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        RulesView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
     }
 }
@@ -299,6 +319,33 @@ struct GoalsRoute: View {
     var body: some View {
         GoalsView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
+    }
+}
+
+/// Loans and personal debts. Their sheets open on top of it, so it reloads by itself.
+struct DebtsRoute: View {
+    @State private var viewModel: DebtsViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeDebtsViewModel())
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        DebtsView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+extension View {
+    /// "Split" on an expense, over whichever tab listed it. It closes itself after splitting.
+    func splitBillSheet(_ item: Binding<SplitBillViewModel?>, onDismiss: @escaping () -> Void) -> some View {
+        sheet(item: item, onDismiss: onDismiss) { split in
+            SplitBillView(viewModel: split, onDone: { item.wrappedValue = nil }, onClose: { item.wrappedValue = nil })
+                .presentationDetents([.large])
+                .presentationBackground(KWColor.Surface.bg)
+        }
     }
 }
 

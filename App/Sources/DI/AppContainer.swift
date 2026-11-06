@@ -70,6 +70,9 @@ final class AppContainer {
                 categories: sample.categories,
                 recurringRules: sample.recurringRules,
                 savingsGoals: sample.savingsGoals,
+                loans: sample.loans,
+                personalDebts: sample.personalDebts,
+                categorizationRules: sample.categorizationRules,
             )
         } catch {
             Logger.app.error("Sample data could not be seeded: \(String(describing: error), privacy: .public)")
@@ -119,7 +122,7 @@ final class AppContainer {
         HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
-                recurringRules: store, savingsGoals: store,
+                recurringRules: store, savingsGoals: store, loans: store, personalDebts: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
@@ -147,7 +150,8 @@ final class AppContainer {
     }
 
     func makeSummaryViewModel() -> SummaryViewModel {
-        SummaryViewModel(getReport: DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store))
+        let report = DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store, accounts: store)
+        return SummaryViewModel(getReport: report)
     }
 
     // MARK: - Settings and lock
@@ -235,10 +239,6 @@ final class AppContainer {
         widgetSnapshots.clear()
         WidgetCenter.shared.reloadAllTimelines()
         await reminders.removeAll()
-    }
-
-    func makeImportTransactions() -> any ImportTransactionsUseCase {
-        DefaultImportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store, settings: store)
     }
 
     /// Sample-data and UI-test runs keep an in-memory store, so erasing them must never reach the
@@ -344,6 +344,8 @@ final class AppContainer {
     }
 
     private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
-        DefaultGetTransactionContextUseCase(settings: store, categories: store, accounts: store, cards: store, transactions: store)
+        DefaultGetTransactionContextUseCase(
+            settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
+        )
     }
 }

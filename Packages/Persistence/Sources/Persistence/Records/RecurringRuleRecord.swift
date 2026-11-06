@@ -25,6 +25,8 @@ public final class RecurringRuleRecord: AuditedRecord {
     var autoConfirm = false
     var isPaused = false
     var note: String?
+    /// Added in V9, one tag per line like a movement's.
+    var tagsText = ""
     var createdAt = Date.now
     var updatedAt = Date.now
     var deletedAt: Date?
@@ -53,6 +55,7 @@ public final class RecurringRuleRecord: AuditedRecord {
         autoConfirm = rule.autoConfirm
         isPaused = rule.isPaused
         note = rule.note
+        tagsText = TagsText.encode(rule.tags)
     }
 
     func toDomain() throws(DomainCorruption) -> RecurringRule {
@@ -78,6 +81,7 @@ public final class RecurringRuleRecord: AuditedRecord {
             autoConfirm: autoConfirm,
             isPaused: isPaused,
             note: note,
+            tags: TagsText.decode(tagsText),
         )
     }
 }

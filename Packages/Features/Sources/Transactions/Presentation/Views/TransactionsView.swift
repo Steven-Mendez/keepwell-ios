@@ -13,20 +13,24 @@ public struct TransactionsView: View {
     private let onNewMovement: () -> Void
     private let onBack: (() -> Void)?
     private let onOpenRecurringRule: ((UUID) -> Void)?
+    private let onSplit: ((Domain.Transaction) -> Void)?
     @FocusState private var isSearchFocused: Bool
     @State private var pendingDeletion: Domain.Transaction?
     @State private var isPickingScope = false
 
-    /// `onOpenRecurringRule` opens the rule that recorded a movement, from its menu.
+    /// `onOpenRecurringRule` opens the rule that recorded a movement, from its menu; `onSplit`
+    /// splits an expense between the person and others, who then owe their share.
     public init(
         viewModel: TransactionsViewModel,
         onBack: (() -> Void)? = nil,
         onOpenRecurringRule: ((UUID) -> Void)? = nil,
+        onSplit: ((Domain.Transaction) -> Void)? = nil,
         onNewMovement: @escaping () -> Void,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onOpenRecurringRule = onOpenRecurringRule
+        self.onSplit = onSplit
         self.onNewMovement = onNewMovement
     }
 
@@ -158,7 +162,7 @@ public struct TransactionsView: View {
             TextField(
                 String(localized: "Search", bundle: #bundle),
                 text: $viewModel.query,
-                prompt: Text("Search merchant, note or category", bundle: #bundle).foregroundStyle(KWColor.Text.muted),
+                prompt: Text("Search merchant, note, category or #tag", bundle: #bundle).foregroundStyle(KWColor.Text.muted),
             )
             .font(KWTextStyle.body.font)
             .focused($isSearchFocused)
@@ -236,20 +240,32 @@ public struct TransactionsView: View {
             }
         }
     }
+}
 
+extension TransactionsView {
     private func row(_ transaction: Domain.Transaction, display: TransactionDisplay) -> some View {
         KWTransactionRow(
             display.style(of: transaction),
             title: transaction.description,
-            subtitle: display.subtitle(of: transaction),
+            subtitle: viewModel.subtitle(of: transaction, display: display),
             amount: display.amount(of: transaction),
             secondaryAmount: display.secondaryAmount(of: transaction),
         )
         .contentShape(Rectangle())
         .contextMenu {
+            ForEach(transaction.tags, id: \.self) { tag in
+                Button { viewModel.show(tag: tag) } label: {
+                    Label { Text("Show \(TagDisplay.label(tag))", bundle: #bundle) } icon: { Image(systemName: "number") }
+                }
+            }
             if let rule = viewModel.list?.recurringRule(of: transaction), let onOpenRecurringRule {
                 Button { onOpenRecurringRule(rule.id) } label: {
                     Label { Text(RecurringDisplay.badge(of: rule)) } icon: { Image(systemName: "repeat") }
+                }
+            }
+            if transaction.kind == .expense, let onSplit {
+                Button { onSplit(transaction) } label: {
+                    Label { Text("Split", bundle: #bundle) } icon: { Image(systemName: "person.2") }
                 }
             }
             if !transaction.isConfirmed {

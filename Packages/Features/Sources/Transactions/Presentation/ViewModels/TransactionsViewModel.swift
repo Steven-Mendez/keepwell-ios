@@ -109,7 +109,33 @@ public final class TransactionsViewModel {
         if ignoringKind {
             query.kind = .all
         }
-        return filterTransactions.execute(list.transactions, matching: query, searchableText: display.searchableText(of:))
+        // Tags are searchable as text too: "boda" finds "#boda" among everything else it matches.
+        return filterTransactions.execute(list.transactions, matching: query) { transaction in
+            ([display.searchableText(of: transaction)] + transaction.tags.map(TagDisplay.label)).joined(separator: " ")
+        }
+    }
+
+    /// The subtitle under a movement: its usual line, then its tags ("#boda #viaje").
+    func subtitle(of transaction: Transaction, display: TransactionDisplay) -> String {
+        [display.subtitle(of: transaction), TagDisplay.line(transaction.tags)].compactMap(\.self).joined(separator: " · ")
+    }
+
+    /// Narrows the list to a tag, as typing "#boda" in the search does.
+    public func show(tag: String) {
+        query = TagDisplay.label(tag)
+    }
+
+    /// "#boda · All time", "−$1,240.00" and "+$300.00" while the search is a tag: what that tag
+    /// came to in the chosen account, in the principal currency, never mixed. Replaces the month's
+    /// totals, since a trip or a wedding rarely fits in one month.
+    var tagTotals: (title: String, spent: String, earned: String)? {
+        guard let list, let tag = transactionQuery.tag else { return nil }
+        let totals = TagTotals(tag: tag, transactions: visibleTransactions(ignoringKind: true), currency: list.settings.principal)
+        let label = TagDisplay.label(tag)
+        let title = String(localized: "\(label) · All time", bundle: #bundle)
+        let spent = formatter.string(from: -totals.expense, currencyCode: totals.currency)
+        let earned = formatter.string(from: totals.income, currencyCode: totals.currency, sign: .always)
+        return (title, spent, earned)
     }
 
     /// Planned movements first, then confirmed ones grouped by day, newest first.
@@ -159,6 +185,9 @@ public final class TransactionsViewModel {
     /// The kind chips don't change it: they pick which rows to read within the same month. Amounts
     /// are converted to the principal currency, never mixed.
     var monthTotals: (title: String, spent: String, earned: String)? {
+        if let tagTotals {
+            return tagTotals
+        }
         guard let list else { return nil }
         let month = YearMonth(containing: now(), calendar: calendar)
         let summary = MonthlySummary(

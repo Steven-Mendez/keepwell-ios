@@ -293,10 +293,10 @@ public enum KeepwellSchemaV6: VersionedSchema {
         [
             Persistence.AccountRecord.self,
             Persistence.CardRecord.self,
-            Persistence.TransactionRecord.self,
+            KeepwellSchemaV8.TransactionRecord.self,
             CategoryRecord.self,
             SettingsRecord.self,
-            RecurringRuleRecord.self,
+            KeepwellSchemaV8.RecurringRuleRecord.self,
         ]
     }
 
@@ -331,10 +331,10 @@ public enum KeepwellSchemaV7: VersionedSchema {
         [
             Persistence.AccountRecord.self,
             Persistence.CardRecord.self,
-            Persistence.TransactionRecord.self,
+            KeepwellSchemaV8.TransactionRecord.self,
             Persistence.CategoryRecord.self,
             SettingsRecord.self,
-            RecurringRuleRecord.self,
+            KeepwellSchemaV8.RecurringRuleRecord.self,
         ]
     }
 }
@@ -346,7 +346,7 @@ public enum KeepwellSchemaV8: VersionedSchema {
         [
             Persistence.AccountRecord.self,
             Persistence.CardRecord.self,
-            Persistence.TransactionRecord.self,
+            TransactionRecord.self,
             Persistence.CategoryRecord.self,
             SettingsRecord.self,
             RecurringRuleRecord.self,
@@ -355,8 +355,28 @@ public enum KeepwellSchemaV8: VersionedSchema {
     }
 }
 
+/// Loans (`LoanRecord`), personal debts (`PersonalDebtRecord`), categorization rules
+/// (`CategorizationRuleRecord`), and tags on movements and recurring rules (`tagsText`).
+public enum KeepwellSchemaV9: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(9, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        [
+            Persistence.AccountRecord.self,
+            Persistence.CardRecord.self,
+            Persistence.TransactionRecord.self,
+            Persistence.CategoryRecord.self,
+            SettingsRecord.self,
+            Persistence.RecurringRuleRecord.self,
+            SavingsGoalRecord.self,
+            LoanRecord.self,
+            PersonalDebtRecord.self,
+            CategorizationRuleRecord.self,
+        ]
+    }
+}
+
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV8
+public typealias KeepwellCurrentSchema = KeepwellSchemaV9
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -369,6 +389,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV6.self,
             KeepwellSchemaV7.self,
             KeepwellSchemaV8.self,
+            KeepwellSchemaV9.self,
         ]
     }
 
@@ -377,7 +398,9 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// V2 couldn't do either to a default. Cards from V3 start with no product name or expiry.
     /// Rows from V4 start alive (`deletedAt` nil), changed at the time of the migration. Movements
     /// from V5 start without a recurring rule, and there are no rules yet. Categories from V6 start
-    /// without a budget. V7 had no savings goals, so V8 starts with none.
+    /// without a budget. V7 had no savings goals, so V8 starts with none,
+    /// and V8 had no loans, personal debts or categorization rules, so V9 starts with none; its
+    /// movements and recurring rules start without tags.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -387,6 +410,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV5.self, toVersion: KeepwellSchemaV6.self),
             .lightweight(fromVersion: KeepwellSchemaV6.self, toVersion: KeepwellSchemaV7.self),
             .lightweight(fromVersion: KeepwellSchemaV7.self, toVersion: KeepwellSchemaV8.self),
+            .lightweight(fromVersion: KeepwellSchemaV8.self, toVersion: KeepwellSchemaV9.self),
         ]
     }
 }

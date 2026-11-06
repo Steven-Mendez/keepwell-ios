@@ -46,6 +46,41 @@ public protocol SavingsGoalRepository: Sendable {
     func deleteSavingsGoal(id: UUID) async throws(DomainError)
 }
 
+public protocol LoanRepository: Sendable {
+    /// Live loans only, in the order they were created.
+    func fetchLoans() async throws(DomainError) -> [Loan]
+    /// Inserts or replaces the loan with the same id.
+    func save(_ loan: Loan) async throws(DomainError)
+    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    func deleteLoan(id: UUID) async throws(DomainError)
+    /// The movement that pays an installment and the loan that marks it paid, in a single save: a
+    /// failure records neither, so an installment is never paid without its expense or twice.
+    func save(_ loan: Loan, recording transaction: Transaction) async throws(DomainError)
+    /// The loan with an installment back to due and the movement that paid it soft-deleted, in a
+    /// single save. A movement already deleted (or `nil`) leaves only the loan to save.
+    func save(_ loan: Loan, deletingTransaction transactionID: UUID?) async throws(DomainError)
+}
+
+public protocol PersonalDebtRepository: Sendable {
+    /// Live debts only, in the order they were created.
+    func fetchPersonalDebts() async throws(DomainError) -> [PersonalDebt]
+    /// Inserts or replaces the debt with the same id.
+    func save(_ debt: PersonalDebt) async throws(DomainError)
+    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    func deletePersonalDebt(id: UUID) async throws(DomainError)
+}
+
+public protocol CategorizationRuleRepository: Sendable {
+    /// Live rules in the person's order, which decides the one that wins.
+    func fetchCategorizationRules() async throws(DomainError) -> [CategorizationRule]
+    /// A new id goes after the existing ones; an existing one keeps its place.
+    func save(_ rule: CategorizationRule) async throws(DomainError)
+    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    func deleteCategorizationRule(id: UUID) async throws(DomainError)
+    /// Stores this order; ids it leaves out keep their relative order after the listed ones.
+    func reorderCategorizationRules(ids: [UUID]) async throws(DomainError)
+}
+
 public protocol CategoryRepository: Sendable {
     /// In the person's order. Includes every `TransactionCategory.defaults` entry, adding the ones
     /// a newer version ships, except the defaults the person deleted.
