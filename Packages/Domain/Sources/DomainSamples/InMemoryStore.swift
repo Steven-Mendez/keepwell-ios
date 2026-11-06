@@ -3,13 +3,14 @@ import Foundation
 
 /// Repository implementations kept in memory, for previews, snapshot tests and use case tests.
 public actor InMemoryStore: AccountRepository, CardRepository, TransactionRepository, CategoryRepository,
-    SettingsRepository, DataEraser, BackupStore
+    SettingsRepository, DataEraser, BackupStore, RecurringRuleRepository
 {
     private var accounts: [Account]
     private var cards: [Card]
     private var transactions: [Transaction]
     private var categories: [TransactionCategory]
     private var settings: Settings?
+    private var recurringRules: [RecurringRule]
 
     public init(
         accounts: [Account] = [],
@@ -17,12 +18,14 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         transactions: [Transaction] = [],
         categories: [TransactionCategory] = TransactionCategory.defaults,
         settings: Settings? = nil,
+        recurringRules: [RecurringRule] = [],
     ) {
         self.accounts = accounts
         self.cards = cards
         self.transactions = transactions
         self.categories = categories
         self.settings = settings
+        self.recurringRules = recurringRules
     }
 
     public init(sample: SampleData) {
@@ -32,6 +35,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             transactions: sample.transactions,
             categories: sample.categories,
             settings: sample.settings,
+            recurringRules: sample.recurringRules,
         )
     }
 
@@ -73,6 +77,27 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         try remove(id, from: &transactions)
     }
 
+    public func fetchRecurringRules() -> [RecurringRule] {
+        recurringRules
+    }
+
+    public func save(_ rule: RecurringRule) {
+        upsert(rule, into: &recurringRules)
+    }
+
+    public func deleteRecurringRule(id: UUID) throws(DomainError) {
+        try remove(id, from: &recurringRules)
+    }
+
+    public func saveMaterialized(transactions: [Transaction], rules: [RecurringRule]) {
+        for transaction in transactions {
+            upsert(transaction, into: &self.transactions)
+        }
+        for rule in rules {
+            upsert(rule, into: &recurringRules)
+        }
+    }
+
     public func fetchCategories() -> [TransactionCategory] {
         categories
     }
@@ -110,6 +135,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         transactions = []
         categories = []
         settings = nil
+        recurringRules = []
     }
 
     /// Records here carry no history, so they export stamped with the moment of the export and a
@@ -122,6 +148,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             cards: cards.map { Stamped($0, stamp) },
             categories: categories.map { Stamped($0, stamp) },
             transactions: transactions.map { Stamped($0, stamp) },
+            recurringRules: recurringRules.map { Stamped($0, stamp) },
         )
     }
 
@@ -131,6 +158,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         cards = contents.cards.filter { !$0.metadata.isDeleted }.map(\.value)
         categories = contents.categories.filter { !$0.metadata.isDeleted }.map(\.value)
         transactions = contents.transactions.filter { !$0.metadata.isDeleted }.map(\.value)
+        recurringRules = contents.recurringRules.filter { !$0.metadata.isDeleted }.map(\.value)
     }
 
     private func upsert<T: Identifiable>(_ item: T, into list: inout [T]) {

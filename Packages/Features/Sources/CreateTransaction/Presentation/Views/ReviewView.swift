@@ -194,6 +194,7 @@ public struct ReviewView: View {
             KWValueRow(String(localized: "Date", bundle: #bundle), value: "\(viewModel.dayLabel(viewModel.date)) ›")
         }
         .buttonStyle(.plain)
+        repeatRow
         Button { isEditingNote = true } label: {
             KWValueRow(String(localized: "Note", bundle: #bundle), value: noteValue)
         }
@@ -201,6 +202,23 @@ public struct ReviewView: View {
         if viewModel.showsDebitedField {
             debitedRow
         }
+    }
+
+    /// "Repeat": saving also creates a recurring rule that leaves drafts on the next dates.
+    private var repeatRow: some View {
+        Menu {
+            Picker(selection: $viewModel.repeatFrequency) {
+                ForEach(viewModel.repeatOptions, id: \.value) { option in
+                    Text(option.title).tag(option.value)
+                }
+            } label: {
+                EmptyView()
+            }
+        } label: {
+            KWValueRow(String(localized: "Repeat", bundle: #bundle), value: "\(viewModel.repeatTitle) ›")
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var noteValue: String {

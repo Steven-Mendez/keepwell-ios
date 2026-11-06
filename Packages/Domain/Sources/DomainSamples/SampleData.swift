@@ -11,6 +11,7 @@ public struct SampleData: Sendable {
     public let cards: [Card]
     public let transactions: [Transaction]
     public let categories: [TransactionCategory]
+    public let recurringRules: [RecurringRule]
 
     public enum IDs {
         public static let savings = UUID(uuidString: "00000000-0000-0000-0000-00000000A001") ?? UUID()
@@ -24,6 +25,10 @@ public struct SampleData: Sendable {
         public static let payrollTransfer = UUID(uuidString: "00000000-0000-0000-0000-00000000C004") ?? UUID()
         public static let mastercardHolder = UUID(uuidString: "00000000-0000-0000-0000-00000000C005") ?? UUID()
         public static let visaHolder = UUID(uuidString: "00000000-0000-0000-0000-00000000C007") ?? UUID()
+        public static let streamingRule = UUID(uuidString: "00000000-0000-0000-0000-00000000D001") ?? UUID()
+        public static let rentRule = UUID(uuidString: "00000000-0000-0000-0000-00000000D002") ?? UUID()
+        public static let salaryRule = UUID(uuidString: "00000000-0000-0000-0000-00000000D003") ?? UUID()
+        public static let cashRule = UUID(uuidString: "00000000-0000-0000-0000-00000000D004") ?? UUID()
     }
 
     /// The sample's fixed "today": 22 October 2026.
@@ -53,5 +58,32 @@ public struct SampleData: Sendable {
         accounts = Self.makeAccounts(opening: opening)
         cards = Self.makeCards()
         transactions = Self.makeTransactions(rate: rate, day: day)
+        recurringRules = Self.makeRecurringRules(day: day)
+    }
+
+    /// A subscription on the credit card, rent and a weekly cash top-up from savings, and the salary.
+    static func makeRecurringRules(day: (Int, Int) -> Date) -> [RecurringRule] {
+        [
+            RecurringRule(
+                id: IDs.streamingRule, name: "Streaming", kind: .expense, categoryID: "subscriptions",
+                amount: Decimal(string: "15.99") ?? 0, currency: "USD", accountID: IDs.mastercard, cardID: IDs.mastercardHolder,
+                frequency: .monthly, startDate: day(23, -2), nextDate: day(23, 0), isSubscription: true, autoConfirm: true,
+            ),
+            RecurringRule(
+                id: IDs.rentRule, name: "Rent", kind: .expense, categoryID: "housing",
+                amount: 18000, currency: "NIO", accountID: IDs.savings, cardID: IDs.savingsTransfer,
+                frequency: .monthly, startDate: day(1, -2), nextDate: day(1, 1),
+            ),
+            RecurringRule(
+                id: IDs.cashRule, name: "Cash for the week", kind: .transfer, categoryID: nil,
+                amount: 1000, currency: "NIO", accountID: IDs.savings, cardID: IDs.savingsTransfer,
+                destinationAccountID: IDs.cash, frequency: .weekly, interval: 2, startDate: day(10, 0), nextDate: day(24, 0),
+            ),
+            RecurringRule(
+                id: IDs.salaryRule, name: "Salary", kind: .income, categoryID: "salary",
+                amount: 1500, currency: "USD", accountID: IDs.payroll, cardID: IDs.payrollTransfer,
+                frequency: .monthly, startDate: day(30, -2), nextDate: day(30, 0), autoConfirm: true, isPaused: true,
+            ),
+        ]
     }
 }

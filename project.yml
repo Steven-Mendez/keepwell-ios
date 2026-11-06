@@ -122,6 +122,10 @@ targets:
       - package: Features
         product: LockPresentation
       - package: Features
+        product: RecurringDomain
+      - package: Features
+        product: RecurringPresentation
+      - package: Features
         product: SharedPresentation
     preBuildScripts:
       - name: SwiftLint
@@ -200,6 +204,8 @@ schemes:
         - package: Features/CreditCardPresentation
         - package: Features/LockDomain
         - package: Features/LockPresentation
+        - package: Features/RecurringDomain
+        - package: Features/RecurringPresentation
       targets:
         - package: Core/CoreTests
         - package: DesignSystem/DesignSystemTests
@@ -224,6 +230,8 @@ schemes:
         - package: Features/CreditCardDomainTests
         - package: Features/LockDomainTests
         - package: Features/LockPresentationTests
+        - package: Features/RecurringDomainTests
+        - package: Features/RecurringPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release

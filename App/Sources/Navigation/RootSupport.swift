@@ -8,6 +8,7 @@ import Domain
 import HomePresentation
 import LockPresentation
 import OnboardingPresentation
+import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
 import SummaryPresentation
@@ -114,6 +115,7 @@ struct SettingsRoute: View {
     let onErased: () -> Void
     let onOpenCategories: (TransactionKind) -> Void
     let onOpenPaymentMethods: () -> Void
+    let onOpenRecurring: () -> Void
 
     init(
         container: AppContainer,
@@ -121,6 +123,7 @@ struct SettingsRoute: View {
         onErased: @escaping () -> Void,
         onOpenCategories: @escaping (TransactionKind) -> Void,
         onOpenPaymentMethods: @escaping () -> Void,
+        onOpenRecurring: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         self.container = container
@@ -128,6 +131,7 @@ struct SettingsRoute: View {
         self.onErased = onErased
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
+        self.onOpenRecurring = onOpenRecurring
     }
 
     var body: some View {
@@ -138,6 +142,7 @@ struct SettingsRoute: View {
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onOpenCategories: onOpenCategories,
             onOpenPaymentMethods: onOpenPaymentMethods,
+            onOpenRecurring: onOpenRecurring,
         )
         .navigationBarBackButtonHidden()
         .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in
@@ -236,18 +241,62 @@ struct DebitCardRoute: View {
 struct TransactionsRoute: View {
     @State private var viewModel: TransactionsViewModel
     let onBack: () -> Void
+    let onOpenRecurringRule: (UUID) -> Void
     let onNewMovement: () -> Void
 
-    init(container: AppContainer, scope: TransactionScope, onBack: @escaping () -> Void, onNewMovement: @escaping () -> Void) {
+    init(
+        container: AppContainer,
+        scope: TransactionScope,
+        onBack: @escaping () -> Void,
+        onOpenRecurringRule: @escaping (UUID) -> Void,
+        onNewMovement: @escaping () -> Void,
+    ) {
         let viewModel = container.makeTransactionsViewModel()
         viewModel.scope = scope
         _viewModel = State(initialValue: viewModel)
         self.onBack = onBack
+        self.onOpenRecurringRule = onOpenRecurringRule
         self.onNewMovement = onNewMovement
     }
 
     var body: some View {
-        TransactionsView(viewModel: viewModel, onBack: onBack, onNewMovement: onNewMovement)
+        TransactionsView(viewModel: viewModel, onBack: onBack, onOpenRecurringRule: onOpenRecurringRule, onNewMovement: onNewMovement)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+/// Recurring movements and subscriptions. The screen reloads itself when it reappears after a rule closes.
+struct RecurringRoute: View {
+    @State private var viewModel: RecurringViewModel
+    let onBack: () -> Void
+    let onAdd: () -> Void
+    let onOpen: (UUID) -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void, onAdd: @escaping () -> Void, onOpen: @escaping (UUID) -> Void) {
+        _viewModel = State(initialValue: container.makeRecurringViewModel())
+        self.onBack = onBack
+        self.onAdd = onAdd
+        self.onOpen = onOpen
+    }
+
+    var body: some View {
+        RecurringView(viewModel: viewModel, onBack: onBack, onAdd: onAdd, onOpen: onOpen)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+/// A recurring rule's editor, which closes itself after saving or deleting.
+struct RecurringRuleRoute: View {
+    @State private var viewModel: RecurringRuleEditorViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeRecurringRuleEditorViewModel(ruleID: ruleID))
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack)
             .navigationBarBackButtonHidden()
     }
 }

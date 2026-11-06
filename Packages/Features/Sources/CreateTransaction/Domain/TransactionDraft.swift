@@ -34,6 +34,10 @@ public struct TransactionDraft: Sendable {
     public var note: String
     /// Saved without counting toward balances until the person confirms it.
     public var isDraft: Bool
+    /// "Repeat": also saves a recurring rule from this movement, every week, month or year.
+    public var repeatFrequency: RecurringFrequency?
+    /// The id the recurring rule gets when `repeatFrequency` is set, so the movement can name it.
+    public var recurringRuleID: UUID
 
     public init(
         id: UUID = UUID(),
@@ -48,6 +52,8 @@ public struct TransactionDraft: Sendable {
         actualDebitedPrincipal: Decimal? = nil,
         note: String = "",
         isDraft: Bool = false,
+        repeatFrequency: RecurringFrequency? = nil,
+        recurringRuleID: UUID = UUID(),
     ) {
         self.id = id
         self.kind = kind
@@ -61,6 +67,8 @@ public struct TransactionDraft: Sendable {
         self.actualDebitedPrincipal = actualDebitedPrincipal
         self.note = note
         self.isDraft = isDraft
+        self.repeatFrequency = repeatFrequency
+        self.recurringRuleID = recurringRuleID
     }
 }
 

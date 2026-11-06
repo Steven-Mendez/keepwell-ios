@@ -25,6 +25,10 @@ public enum DomainError: Error, Equatable, Sendable {
     /// A transfer needs a destination account different from its source.
     case invalidTransferDestination
     case invalidPeriod
+    /// A recurring rule repeats every 1 to 99 weeks, months or years.
+    case invalidInterval(Int)
+    /// A recurring rule can't end on a day before it starts.
+    case invalidEndDate
     case notFound(UUID)
     /// An app passcode must be exactly `Passcode.length` digits.
     case invalidPasscode

@@ -8,12 +8,15 @@ public protocol GetHomeOverviewUseCase: Sendable {
 public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     /// How many confirmed movements home previews before "See all".
     static let recentCount = 3
+    /// How far ahead recurring occurrences are listed (home shows a week; reminders use the rest).
+    static let upcomingDays = 30
 
     private let accounts: any AccountRepository
     private let cards: any CardRepository
     private let transactions: any TransactionRepository
     private let categories: any CategoryRepository
     private let settings: any SettingsRepository
+    private let recurringRules: (any RecurringRuleRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
@@ -23,6 +26,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         transactions: any TransactionRepository,
         categories: any CategoryRepository,
         settings: any SettingsRepository,
+        recurringRules: (any RecurringRuleRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -31,6 +35,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         self.transactions = transactions
         self.categories = categories
         self.settings = settings
+        self.recurringRules = recurringRules
         self.calendar = calendar
         self.now = now
     }
@@ -38,11 +43,13 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     public func execute() async throws(DomainError) -> HomeOverview {
         let stored = try await settings.load() ?? Settings(currencies: .initial)
         let records = try await LedgerRecords.load(accounts: accounts, cards: cards, transactions: transactions, categories: categories)
-        return try Self.overview(records, settings: stored, calendar: calendar, now: now())
+        let rules = try await recurringRules?.fetchRecurringRules() ?? []
+        return try Self.overview(records, rules: rules, settings: stored, calendar: calendar, now: now())
     }
 
     static func overview(
         _ records: LedgerRecords,
+        rules: [RecurringRule] = [],
         settings: Settings,
         calendar: Calendar,
         now: Date,
@@ -87,7 +94,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             cardDebt: accounts.contains { $0.kind == .credit } ? Money(cardDebt, currencies.principal) : nil,
             frequentExpenseCategoryIDs: frequentExpenseCategories(records),
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
-            cardSubscriptions: cardSubscriptions(records, calendar: calendar),
+            cardSubscriptions: cardSubscriptions(records, rules: rules, calendar: calendar),
+            upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
             accounts: accounts,
             cards: cards,
             categories: records.categories,
@@ -95,9 +103,9 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     }
 
     /// Only plastics with an expiry: the reminder is the one place that lists them.
-    private static func cardSubscriptions(_ records: LedgerRecords, calendar: Calendar) -> [UUID: [String]] {
+    private static func cardSubscriptions(_ records: LedgerRecords, rules: [RecurringRule], calendar: Calendar) -> [UUID: [String]] {
         records.cards.filter { $0.expiry != nil }.reduce(into: [:]) { result, card in
-            result[card.id] = Subscriptions.charged(toCard: card.id, transactions: records.transactions, calendar: calendar)
+            result[card.id] = Subscriptions.charged(toCard: card.id, transactions: records.transactions, rules: rules, calendar: calendar)
         }
     }
 

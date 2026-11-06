@@ -36,6 +36,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let paymentReminderDaysBefore: Int
     /// Services charged to each plastic again and again, by card id, for the expiry reminder.
     public let cardSubscriptions: [UUID: [String]]
+    /// Recurring occurrences from today through the next 30 days, soonest first.
+    public let upcoming: [RecurringOccurrence]
     /// For row subtitles.
     public let accounts: [Account]
     public let cards: [Card]
@@ -57,6 +59,7 @@ public struct HomeOverview: Hashable, Sendable {
         frequentExpenseCategoryIDs: [String],
         paymentReminderDaysBefore: Int,
         cardSubscriptions: [UUID: [String]] = [:],
+        upcoming: [RecurringOccurrence] = [],
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
@@ -76,6 +79,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.frequentExpenseCategoryIDs = frequentExpenseCategoryIDs
         self.paymentReminderDaysBefore = paymentReminderDaysBefore
         self.cardSubscriptions = cardSubscriptions
+        self.upcoming = upcoming
         self.accounts = accounts
         self.cards = cards
         self.categories = categories

@@ -20,13 +20,15 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV3.versionIdentifier == Schema.Version(3, 0, 0))
         #expect(KeepwellSchemaV4.versionIdentifier == Schema.Version(4, 0, 0))
         #expect(KeepwellSchemaV5.versionIdentifier == Schema.Version(5, 0, 0))
-        #expect(KeepwellMigrationPlan.schemas.count == 5)
-        #expect(KeepwellMigrationPlan.stages.count == 4)
+        #expect(KeepwellSchemaV6.versionIdentifier == Schema.Version(6, 0, 0))
+        #expect(KeepwellMigrationPlan.schemas.count == 6)
+        #expect(KeepwellMigrationPlan.stages.count == 5)
         #expect(KeepwellSchemaV1.models.count == 5)
         #expect(KeepwellSchemaV2.models.count == 5)
         #expect(KeepwellSchemaV3.models.count == 5)
         #expect(KeepwellSchemaV4.models.count == 5)
         #expect(KeepwellSchemaV5.models.count == 5)
+        #expect(KeepwellSchemaV6.models.count == 6)
     }
 
     /// A store written by V3 opens with today's schema: cards keep their digits and start with no
@@ -196,5 +198,42 @@ struct ModelContainerFactoryTests {
         let contents = try await store.exportContents()
         #expect(contents.accounts.allSatisfy { !$0.metadata.isDeleted })
         #expect(contents.transactions.allSatisfy { !$0.metadata.isDeleted })
+    }
+
+    /// A store written by V5 opens with V6: movements keep everything and name no rule, and there
+    /// are no rules until the person creates one.
+    @Test
+    func versionFiveStoreMigratesToVersionSix() async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Keepwell.store")
+        let transactionID = UUID()
+
+        do {
+            let schema = Schema(versionedSchema: KeepwellSchemaV5.self)
+            let container = try ModelContainer(
+                for: schema,
+                configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+            )
+            let context = ModelContext(container)
+            context.insert(KeepwellSchemaV5.TransactionRecord(
+                id: transactionID, date: .now, amount: "12.34", currency: "USD", accountID: UUID(),
+            ))
+            try context.save()
+        }
+
+        let schema = Schema(versionedSchema: KeepwellSchemaV6.self)
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: KeepwellMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+        )
+        let store = SwiftDataStore(modelContainer: container)
+        let transaction = try #require(await store.fetchTransactions(in: nil).first)
+        #expect(transaction.id == transactionID)
+        #expect(transaction.amount == Decimal(string: "12.34"))
+        #expect(transaction.recurringID == nil)
+        #expect(try await store.fetchRecurringRules().isEmpty)
     }
 }
