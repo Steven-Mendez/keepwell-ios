@@ -251,6 +251,16 @@
         }
       }
     },
+    "Split" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dividir"
+          }
+        }
+      }
+    },
     "Transactions" : {
       "localizations" : {
         "es" : {
