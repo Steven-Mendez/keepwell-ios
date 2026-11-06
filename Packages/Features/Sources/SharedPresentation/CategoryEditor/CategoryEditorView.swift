@@ -94,9 +94,9 @@ public struct CategoryEditorView: View {
                 budget
             }
             KWSectionHeader(String(localized: "Color", bundle: #bundle))
-            colors
+            CategoryColorPicker(selection: $viewModel.color)
             KWSectionHeader(String(localized: "Icon", bundle: #bundle))
-            icons
+            CategorySymbolPicker(selection: $viewModel.icon)
             if viewModel.isFallback {
                 Text("Movements from deleted categories land here, so this one can be renamed but not deleted.", bundle: #bundle)
                     .font(KWTextStyle.caption.font)
@@ -165,45 +165,6 @@ public struct CategoryEditorView: View {
                 .font(KWTextStyle.caption.font)
                 .foregroundStyle(KWColor.Text.muted)
                 .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    private var colors: some View {
-        // Two rows of five, so every color and the selected one stay in view.
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: KWSpacing.xs), count: 5), spacing: KWSpacing.xs) {
-            ForEach(CategoryDisplay.colorChoices, id: \.self) { key in
-                let isSelected = key == viewModel.color
-                Button { viewModel.color = key } label: {
-                    Circle()
-                        .fill(KWColor.categoryPalette(key: key) ?? KWColor.Text.faint)
-                        .frame(width: 36, height: 36)
-                        .padding(3)
-                        .overlay(Circle().strokeBorder(isSelected ? Color.white : .clear, lineWidth: 2))
-                        .contentShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(CategoryDisplay.colorName(key))
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-            }
-        }
-    }
-
-    private var icons: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: KWSpacing.xs), count: 6), spacing: KWSpacing.xs) {
-            ForEach(CategoryDisplay.symbolChoices, id: \.self) { symbol in
-                let isSelected = symbol == viewModel.icon
-                Button { viewModel.icon = symbol } label: {
-                    CategorySymbol(symbol: symbol, size: 22)
-                        .foregroundStyle(isSelected ? Color.black : KWColor.Text.primary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .background(isSelected ? Color.white : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: 12))
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(verbatim: symbol))
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-            }
         }
     }
 }
