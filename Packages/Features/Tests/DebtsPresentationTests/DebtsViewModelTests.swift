@@ -45,12 +45,23 @@ struct DebtsViewModelTests {
         let detail = try #require(viewModel.loanDetail)
         await detail.load()
         #expect(detail.method != nil)
-        #expect(detail.categoryID == TransactionCategory.otherExpenseID)
+        #expect(detail.categoryID == TransactionCategory.loanPaymentsID)
         #expect(detail.payTitle == "Pay 3/12 · C$5,500.00")
         await detail.pay()
         #expect(detail.didChange)
         #expect(detail.loan.paidCount == 3)
         #expect(detail.summary(hidden: false) == "3 of 12 paid · C$49,500.00 left")
+    }
+
+    @Test
+    func installmentsGoToOtherOnceLoanPaymentsIsDeleted() async throws {
+        let store = InMemoryStore(sample: .standard)
+        await store.deleteCategory(id: TransactionCategory.loanPaymentsID)
+        let viewModel = await loaded(store)
+        viewModel.openLoan(SampleData.IDs.motorbikeLoan)
+        let detail = try #require(viewModel.loanDetail)
+        await detail.load()
+        #expect(detail.categoryID == TransactionCategory.otherExpenseID)
     }
 
     @Test

@@ -23,7 +23,8 @@ public struct SummaryReport: Hashable, Sendable {
     public let budgets: [[CategoryBudgetStatus]]
     /// Net worth at the end of each of the last twelve months (`NetWorthHistory`), oldest first.
     public let netWorth: [NetWorthHistory.Point]
-    /// Whether a second currency goes into net worth at today's rate, which the card then says.
+    /// Whether a second currency goes into net worth, each month at its own rate, which the card then
+    /// says.
     public let convertsCurrencies: Bool
 
     public init(
