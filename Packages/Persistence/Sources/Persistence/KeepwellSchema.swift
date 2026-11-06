@@ -243,7 +243,7 @@ public enum KeepwellSchemaV5: VersionedSchema {
             Persistence.AccountRecord.self,
             Persistence.CardRecord.self,
             TransactionRecord.self,
-            Persistence.CategoryRecord.self,
+            KeepwellSchemaV6.CategoryRecord.self,
             SettingsRecord.self,
         ]
     }
@@ -294,6 +294,44 @@ public enum KeepwellSchemaV6: VersionedSchema {
             Persistence.AccountRecord.self,
             Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
+            CategoryRecord.self,
+            SettingsRecord.self,
+            RecurringRuleRecord.self,
+        ]
+    }
+
+    /// The category row with audit dates, before it carried a monthly budget. V5 shares it.
+    @Model
+    public final class CategoryRecord {
+        public var id = ""
+        var name = ""
+        var kindRaw = "expense"
+        var sortIndex = 0
+        var icon: String?
+        var color: String?
+        var isRenamed = false
+        var isRemoved = false
+        var createdAt = Date.now
+        var updatedAt = Date.now
+        var deletedAt: Date?
+
+        init(id: String, name: String, kindRaw: String, sortIndex: Int) {
+            self.id = id
+            self.name = name
+            self.kindRaw = kindRaw
+            self.sortIndex = sortIndex
+        }
+    }
+}
+
+/// Expense categories carry an optional monthly budget (`budgetAmount`, `budgetCurrency`).
+public enum KeepwellSchemaV7: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(7, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        [
+            Persistence.AccountRecord.self,
+            Persistence.CardRecord.self,
+            Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
             SettingsRecord.self,
             RecurringRuleRecord.self,
@@ -302,7 +340,7 @@ public enum KeepwellSchemaV6: VersionedSchema {
 }
 
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV6
+public typealias KeepwellCurrentSchema = KeepwellSchemaV7
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -313,6 +351,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV4.self,
             KeepwellSchemaV5.self,
             KeepwellSchemaV6.self,
+            KeepwellSchemaV7.self,
         ]
     }
 
@@ -320,7 +359,8 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// accepts additive changes. Rows from V2 start not renamed and not removed, which is true:
     /// V2 couldn't do either to a default. Cards from V3 start with no product name or expiry.
     /// Rows from V4 start alive (`deletedAt` nil), changed at the time of the migration. Movements
-    /// from V5 start without a recurring rule, and there are no rules yet.
+    /// from V5 start without a recurring rule, and there are no rules yet. Categories from V6 start
+    /// without a budget.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -328,6 +368,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV3.self, toVersion: KeepwellSchemaV4.self),
             .lightweight(fromVersion: KeepwellSchemaV4.self, toVersion: KeepwellSchemaV5.self),
             .lightweight(fromVersion: KeepwellSchemaV5.self, toVersion: KeepwellSchemaV6.self),
+            .lightweight(fromVersion: KeepwellSchemaV6.self, toVersion: KeepwellSchemaV7.self),
         ]
     }
 }

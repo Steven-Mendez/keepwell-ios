@@ -21,14 +21,16 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV4.versionIdentifier == Schema.Version(4, 0, 0))
         #expect(KeepwellSchemaV5.versionIdentifier == Schema.Version(5, 0, 0))
         #expect(KeepwellSchemaV6.versionIdentifier == Schema.Version(6, 0, 0))
-        #expect(KeepwellMigrationPlan.schemas.count == 6)
-        #expect(KeepwellMigrationPlan.stages.count == 5)
+        #expect(KeepwellSchemaV7.versionIdentifier == Schema.Version(7, 0, 0))
+        #expect(KeepwellMigrationPlan.schemas.count == 7)
+        #expect(KeepwellMigrationPlan.stages.count == 6)
         #expect(KeepwellSchemaV1.models.count == 5)
         #expect(KeepwellSchemaV2.models.count == 5)
         #expect(KeepwellSchemaV3.models.count == 5)
         #expect(KeepwellSchemaV4.models.count == 5)
         #expect(KeepwellSchemaV5.models.count == 5)
         #expect(KeepwellSchemaV6.models.count == 6)
+        #expect(KeepwellSchemaV7.models.count == 6)
     }
 
     /// A store written by V3 opens with today's schema: cards keep their digits and start with no
@@ -152,8 +154,9 @@ struct ModelContainerFactoryTests {
         #expect(categories.count == TransactionCategory.defaults.count + 1)
     }
 
-    /// A store written by V4 opens with V5: every record is alive, keeps its data and gets audit
-    /// dates, so nothing disappears behind the new `deletedAt` filter.
+    /// A store written by V4 opens with today's schema: every record is alive, keeps its data and
+    /// gets audit dates, so nothing disappears behind the `deletedAt` filter. It opens the current
+    /// schema, not V5, because the store reads categories with today's record.
     @Test
     func versionFourStoreMigratesToVersionFive() async throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
@@ -182,7 +185,7 @@ struct ModelContainerFactoryTests {
             try context.save()
         }
 
-        let schema = Schema(versionedSchema: KeepwellSchemaV5.self)
+        let schema = Schema(versionedSchema: KeepwellCurrentSchema.self)
         let container = try ModelContainer(
             for: schema,
             migrationPlan: KeepwellMigrationPlan.self,
@@ -235,5 +238,39 @@ struct ModelContainerFactoryTests {
         #expect(transaction.amount == Decimal(string: "12.34"))
         #expect(transaction.recurringID == nil)
         #expect(try await store.fetchRecurringRules().isEmpty)
+    }
+
+    /// A store written by V6 opens with V7: categories keep everything and start without a budget.
+    @Test
+    func versionSixStoreMigratesToVersionSeven() async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Keepwell.store")
+
+        do {
+            let schema = Schema(versionedSchema: KeepwellSchemaV6.self)
+            let container = try ModelContainer(
+                for: schema,
+                configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+            )
+            let context = ModelContext(container)
+            let boat = KeepwellSchemaV6.CategoryRecord(id: "custom-boat", name: "Boat", kindRaw: "expense", sortIndex: 0)
+            boat.icon = "sailboat"
+            context.insert(boat)
+            try context.save()
+        }
+
+        let schema = Schema(versionedSchema: KeepwellSchemaV7.self)
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: KeepwellMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none),
+        )
+        let store = SwiftDataStore(modelContainer: container)
+        let boat = try #require(await store.fetchCategories().first { $0.id == "custom-boat" })
+        #expect(boat.name == "Boat")
+        #expect(boat.icon == "sailboat")
+        #expect(boat.monthlyBudget == nil)
     }
 }
