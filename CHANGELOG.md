@@ -9,6 +9,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Accounts: the card stack rolls like an endless deck. Drag over it to turn the cards one at a time
+  in either direction, or tap a card behind to roll it to the front; tapping the front card opens
+  it.
+
 - "Back up now" writes the new portable backup file (`schemaVersion` 1), which the upcoming web app
   opens too: amounts and rates as exact text, and deleted records kept as deletions so they don't
   come back on another device. Files from earlier versions still restore, and a restore now
