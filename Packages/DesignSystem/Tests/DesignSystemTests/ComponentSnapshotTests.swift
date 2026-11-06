@@ -16,7 +16,7 @@ struct ComponentSnapshotTests {
     func surfaceCard() {
         let view = KWSurfaceCard {
             VStack(alignment: .leading, spacing: KWSpacing.xxs) {
-                Text("Balance neto").kwTextStyle(.caption).foregroundStyle(KWColor.Text.muted)
+                Text("Net balance").kwTextStyle(.caption).foregroundStyle(KWColor.Text.muted)
                 Text("$1,234.56").kwTextStyle(.amountLg).foregroundStyle(KWColor.Text.primary)
             }
         }

@@ -1,0 +1,346 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Amounts hidden in the app switcher and screenshots" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montos ocultos en el selector de apps y capturas"
+          }
+        }
+      }
+    },
+    "Choose a new passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un código nuevo"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar"
+          }
+        }
+      }
+    },
+    "Confirm your passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirma tu código"
+          }
+        }
+      }
+    },
+    "Create a passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea un código"
+          }
+        }
+      }
+    },
+    "Enter passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresar código"
+          }
+        }
+      }
+    },
+    "Enter your Keepwell passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresa tu código de Keepwell"
+          }
+        }
+      }
+    },
+    "Forgot your passcode?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Olvidaste tu código?"
+          }
+        }
+      }
+    },
+    "Good afternoon" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas tardes"
+          }
+        }
+      }
+    },
+    "Good afternoon, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas tardes, %@"
+          }
+        }
+      }
+    },
+    "Good evening" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas noches"
+          }
+        }
+      }
+    },
+    "Good evening, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenas noches, %@"
+          }
+        }
+      }
+    },
+    "Good morning" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenos días"
+          }
+        }
+      }
+    },
+    "Good morning, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buenos días, %@"
+          }
+        }
+      }
+    },
+    "Rest your finger on the Home button" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apoya tu dedo en el botón de inicio"
+          }
+        }
+      }
+    },
+    "Six digits to open Keepwell when Face ID can't. It's kept only on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seis dígitos para abrir Keepwell cuando Face ID no pueda. Solo se guarda en este iPhone."
+          }
+        }
+      }
+    },
+    "Tap to use Face ID" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para usar Face ID"
+          }
+        }
+      }
+    },
+    "Tap to use Optic ID" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para usar Optic ID"
+          }
+        }
+      }
+    },
+    "That passcode is easy to guess. Try one without repeated or consecutive digits." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese código es fácil de adivinar. Prueba uno sin dígitos repetidos ni consecutivos."
+          }
+        }
+      }
+    },
+    "The passcodes didn't match. Start again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los códigos no coinciden. Empieza de nuevo."
+          }
+        }
+      }
+    },
+    "Too many tries. Try again in %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demasiados intentos. Vuelve a intentarlo en %@."
+          }
+        }
+      }
+    },
+    "Type it once more." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escríbelo una vez más."
+          }
+        }
+      }
+    },
+    "Unlock Keepwell to see your finances." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquea Keepwell para ver tus finanzas."
+          }
+        }
+      }
+    },
+    "Unlock with Face ID" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear con Face ID"
+          }
+        }
+      }
+    },
+    "Unlock with Optic ID" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear con Optic ID"
+          }
+        }
+      }
+    },
+    "Unlock with Touch ID" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear con Touch ID"
+          }
+        }
+      }
+    },
+    "Use iPhone passcode" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar código del iPhone"
+          }
+        }
+      }
+    },
+    "Use your iPhone passcode to get back into Keepwell. Your Keepwell passcode will be turned off." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el código de tu iPhone para volver a entrar a Keepwell. Tu código de Keepwell se desactivará."
+          }
+        }
+      }
+    },
+    "We couldn't save the passcode. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar el código. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Wrong passcode. %lld tries left." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wrong passcode. %lld try left."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wrong passcode. %lld tries left."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Código incorrecto. Te queda %lld intento."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Código incorrecto. Te quedan %lld intentos."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Your finances are encrypted on this iPhone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus finanzas están cifradas en este iPhone"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

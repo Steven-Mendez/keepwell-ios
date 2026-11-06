@@ -6,11 +6,30 @@ import Foundation
 public enum DomainError: Error, Equatable, Sendable {
     case invalidAmount
     case invalidCurrency(String)
+    /// Two amounts in different currencies were combined without a conversion.
+    case currencyMismatch(String, String)
+    /// Rates are "1 principal = X second" and must be positive.
+    case invalidExchangeRate
+    case invalidLastFour(String)
+    /// A name the person must give (a card's or a category's) is empty.
+    case missingName
+    case invalidDayOfMonth(Int)
+    /// A card's "valid thru" needs a month 1–12 and a four-digit year.
+    case invalidExpiry
+    /// Another category of the same kind already has this name.
+    case duplicateCategoryName(String)
+    /// "Other" and "Other income" take the movements of deleted categories, so they stay.
+    case fallbackCategoryCantBeDeleted(String)
     case categoryKindMismatch(expected: TransactionKind, actual: TransactionKind)
-    /// Transfers need source and destination accounts, which this model doesn't have yet.
     case unsupportedTransactionKind(TransactionKind)
+    /// A transfer needs a destination account different from its source.
+    case invalidTransferDestination
     case invalidPeriod
     case notFound(UUID)
+    /// An app passcode must be exactly `Passcode.length` digits.
+    case invalidPasscode
+    /// Repeated or consecutive digits ("111111", "123456") are the first ones anyone tries.
+    case passcodeTooSimple
     case corruptedData(String)
     case persistence(String)
 }
