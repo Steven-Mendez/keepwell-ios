@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// How card art renders for each palette. The two token stops come from `tokens.json`; the
+/// How card art renders for each palette. The two token stops are `KWColor.CardArt.hexStops`; the
 /// screens draw the large cards with extra stops for some palettes, kept here so large cards match
 /// the design while minis keep the plain two-stop gradient.
 extension KWColor.CardArt {
