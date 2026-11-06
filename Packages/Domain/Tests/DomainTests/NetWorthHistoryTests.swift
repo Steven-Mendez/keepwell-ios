@@ -3,7 +3,8 @@ import Testing
 @testable import Domain
 
 /// The shared fixture: keepwell-web `tests/domain/net-worth-history.test.ts` builds the same ledger
-/// and expects the same numbers. Today is Nov 6 2026; the rate is 36.5 NIO per USD.
+/// and expects the same numbers. Today is Nov 6 2026; the rate is 36.5 NIO per USD, and October's
+/// last confirmed movement was recorded at 36 NIO per USD.
 @Suite("Net worth history")
 struct NetWorthHistoryTests {
     private let calendar = Fixtures.calendar
@@ -37,12 +38,17 @@ struct NetWorthHistoryTests {
         from account: UUID = IDs.bank,
         to destination: UUID? = nil,
         planned: Bool = false,
+        rate recorded: ExchangeRate? = nil,
     ) throws -> Transaction {
         try Fixtures.transaction(
             kind, amount: amount, currency: currency, account: account, destination: destination,
             status: planned ? .planned : .confirmed, date: date,
-            rate: ExchangeRate(principal: "USD", second: "NIO", rate: rate),
+            rate: recorded ?? ExchangeRate(principal: "USD", second: "NIO", rate: rate),
         )
+    }
+
+    private func usdNIO(_ rate: String) throws -> ExchangeRate {
+        try ExchangeRate(principal: "USD", second: "NIO", rate: Fixtures.decimal(rate))
     }
 
     private func ledger() throws -> (accounts: [Account], transactions: [Transaction]) {
@@ -60,19 +66,21 @@ struct NetWorthHistoryTests {
             // The last hour of September still belongs to September.
             movement(.expense, "80", on: Fixtures.date(2026, 9, 30, hour: 23)),
             movement(.transfer, "100", on: Fixtures.date(2026, 10, 1, hour: 0), to: IDs.visa),
-            movement(.expense, "365", "NIO", on: Fixtures.date(2026, 10, 12), from: IDs.wallet),
-            movement(.expense, "1000", on: Fixtures.date(2026, 10, 20), planned: true),
+            // October's rate: its last confirmed movement's. The planned one after it doesn't count.
+            movement(.expense, "365", "NIO", on: Fixtures.date(2026, 10, 12), from: IDs.wallet, rate: usdNIO("36")),
+            movement(.expense, "1000", on: Fixtures.date(2026, 10, 20), planned: true, rate: usdNIO("40")),
             movement(.expense, "100", "NIO", on: Fixtures.date(2026, 11, 2), from: IDs.wallet),
             movement(.income, "200", on: Fixtures.date(2026, 11, 3)),
-            // Later today counts; later this month doesn't yet.
-            movement(.expense, "10", on: Fixtures.date(2026, 11, 6, hour: 20)),
-            movement(.expense, "50", on: Fixtures.date(2026, 11, 20)),
+            // Later today counts; later this month doesn't yet. A single-currency rate is skipped, so
+            // November takes November 3's.
+            movement(.expense, "10", on: Fixtures.date(2026, 11, 6, hour: 20), rate: .single("USD")),
+            movement(.expense, "50", on: Fixtures.date(2026, 11, 20), rate: usdNIO("40")),
         ]
         return (accounts, transactions)
     }
 
     @Test
-    func valuesEachMonthEndAtTodaysRate() throws {
+    func valuesEachMonthEndAtItsRate() throws {
         let (accounts, transactions) = try ledger()
         let points = try NetWorthHistory.points(
             accounts: accounts, transactions: transactions, settings: settings, now: now, calendar: calendar,
@@ -80,7 +88,7 @@ struct NetWorthHistoryTests {
         // Months before July, when the first account opened, are left out.
         #expect(points.map(\.month.description) == ["2026-07", "2026-08", "2026-09", "2026-10", "2026-11"])
         #expect(points.allSatisfy { $0.total.currency == "USD" })
-        #expect(points.map { $0.total.amount.rounded(scale: 2) } == ["1500", "1200", "800", "890", "1077.26"].map(Fixtures.decimal))
+        #expect(points.map { $0.total.amount.rounded(scale: 2) } == ["1500", "1200", "800", "891.25", "1077.26"].map(Fixtures.decimal))
         let change = try #require(NetWorthHistory.change(of: points))
         #expect(change.rounded(scale: 2) == Fixtures.decimal("-422.74"))
     }
@@ -95,6 +103,13 @@ struct NetWorthHistoryTests {
         #expect(points.allSatisfy { $0.total.amount == 100 })
         #expect(NetWorthHistory.change(of: points) == 0)
         #expect(NetWorthHistory.change(of: Array(points.prefix(1))) == nil)
+    }
+
+    @Test
+    func fallsBackToTodaysRateWithoutMovements() throws {
+        let accounts = try [account(IDs.wallet, .cash, "3650", "NIO", opened: Fixtures.date(2026, 10, 1, hour: 0))]
+        let points = try NetWorthHistory.points(accounts: accounts, transactions: [], settings: settings, now: now, calendar: calendar)
+        #expect(points.map(\.total.amount) == [100, 100])
     }
 
     @Test

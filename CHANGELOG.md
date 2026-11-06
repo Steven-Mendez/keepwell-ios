@@ -24,8 +24,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - "Net worth" on Summary: a line of your net worth at the end of each of the last twelve months
   (this month as of today, months before your first account are left out), with the latest value
-  and how much it moved since the first month shown. Second-currency balances convert at today's
-  rate, since the app keeps no history of rates. Amounts follow "hide balances".
+  and how much it moved since the first month shown. Second-currency balances convert at each
+  month's rate: the one your latest confirmed movement before that month closed was recorded with
+  (today's rate when there's none). Amounts follow "hide balances".
 - "End of month" on home: roughly what your bank and cash accounts will hold when the month closes
   ("≈ C$12,400"), with the lines that add up to it. It starts from what they hold today, adds the
   income and takes away the expenses still planned this month (drafts and recurring movements not
