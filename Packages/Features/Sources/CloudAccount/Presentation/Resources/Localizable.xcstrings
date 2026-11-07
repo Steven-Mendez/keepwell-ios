@@ -201,6 +201,16 @@
         }
       }
     },
+    "Use a passkey" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar una passkey"
+          }
+        }
+      }
+    },
     "You were signed out. Sign in again to keep syncing." : {
       "localizations" : {
         "es" : {

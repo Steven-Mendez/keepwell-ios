@@ -67,3 +67,37 @@ public protocol CloudAccountRepository: Sendable {
 extension CloudAccountRepository {
     public func disconnectAssistants() async throws(CloudAccountError) {}
 }
+
+/// What the server sends to start a passkey sign-in.
+public struct PasskeyOptions: Sendable, Equatable {
+    public let challenge: Data
+    public let relyingParty: String
+
+    public init(challenge: Data, relyingParty: String) {
+        self.challenge = challenge
+        self.relyingParty = relyingParty
+    }
+}
+
+/// The signed answer from the system passkey sheet, sent back for verification.
+public struct PasskeyAssertion: Sendable, Equatable {
+    public let credentialID: Data
+    public let clientDataJSON: Data
+    public let authenticatorData: Data
+    public let signature: Data
+    public let userHandle: Data?
+
+    public init(credentialID: Data, clientDataJSON: Data, authenticatorData: Data, signature: Data, userHandle: Data?) {
+        self.credentialID = credentialID
+        self.clientDataJSON = clientDataJSON
+        self.authenticatorData = authenticatorData
+        self.signature = signature
+        self.userHandle = userHandle
+    }
+}
+
+/// Passkey sign-in (increment 22), separate from the account repository so builds without it stay simple.
+public protocol PasskeySignIn: Sendable {
+    func options() async throws(CloudAccountError) -> PasskeyOptions
+    func signIn(with assertion: PasskeyAssertion) async throws(CloudAccountError) -> CloudAccountUser
+}

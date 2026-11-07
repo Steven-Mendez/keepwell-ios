@@ -8,6 +8,7 @@ public struct CloudAccountSection: View {
     @Bindable private var viewModel: CloudAccountViewModel
     @State private var isConfirmingEverywhere = false
     @State private var isConfirmingDelete = false
+    @State private var passkeyAuthorizer = PasskeyAuthorizer()
 
     public init(viewModel: CloudAccountViewModel) {
         self.viewModel = viewModel
@@ -88,6 +89,15 @@ public struct CloudAccountSection: View {
             .signInWithAppleButtonStyle(.white)
             .frame(height: 48)
             .disabled(viewModel.isWorking)
+            if viewModel.canUsePasskeys {
+                Button {
+                    Task { await viewModel.signInWithPasskey(using: passkeyAuthorizer) }
+                } label: {
+                    Text("Use a passkey", bundle: #bundle)
+                }
+                .frame(maxWidth: .infinity)
+                .disabled(viewModel.isWorking)
+            }
         case let .signedIn(user):
             VStack(alignment: .leading, spacing: KWSpacing.sm) {
                 Text(user.name.isEmpty ? user.email : user.name).font(KWTextStyle.body.font)

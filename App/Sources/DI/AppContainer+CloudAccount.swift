@@ -41,6 +41,7 @@ extension AppContainer {
             delete: DefaultDeleteCloudAccountUseCase(repository: repository),
             sync: coordinator,
             disconnectAssistants: DefaultDisconnectAssistantsUseCase(repository: repository),
+            passkeys: HTTPPasskeySignIn(client: client),
         )
     }
 }

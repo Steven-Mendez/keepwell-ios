@@ -114,3 +114,82 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository {
         return .server(code: body?.error?.code ?? body?.code ?? "http_\(response.status)", requestID: body?.request_id)
     }
 }
+
+extension Data {
+    /// WebAuthn's encoding: base64url without padding.
+    var base64URL: String {
+        base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(
+            of: "=",
+            with: "",
+        )
+    }
+
+    init?(base64URL text: String) {
+        var base64 = text.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        base64 += String(repeating: "=", count: (4 - base64.count % 4) % 4)
+        self.init(base64Encoded: base64)
+    }
+}
+
+/// Better Auth's passkey endpoints, in the JSON shape SimpleWebAuthn uses on the web.
+public struct HTTPPasskeySignIn: PasskeySignIn {
+    private let client: APIClient
+    private let account: HTTPCloudAccountRepository
+
+    public init(client: APIClient) {
+        self.client = client
+        account = HTTPCloudAccountRepository(client: client)
+    }
+
+    private struct OptionsDTO: Decodable {
+        let challenge: String
+        let rpId: String
+    }
+
+    private struct Body: Encodable, Sendable {
+        struct Response: Encodable, Sendable {
+            let clientDataJSON: String
+            let authenticatorData: String
+            let signature: String
+            let userHandle: String?
+        }
+
+        struct Credential: Encodable, Sendable {
+            let id: String
+            let rawId: String
+            let type = "public-key"
+            let authenticatorAttachment = "platform"
+            let response: Response
+            let clientExtensionResults: [String: String] = [:]
+        }
+
+        let response: Credential
+    }
+
+    public func options() async throws(CloudAccountError) -> PasskeyOptions {
+        let response = try await client.send("GET", "api/auth/passkey/generate-authenticate-options")
+        guard (200 ..< 300).contains(response.status),
+              let dto = try? JSONDecoder().decode(OptionsDTO.self, from: response.body),
+              let challenge = Data(base64URL: dto.challenge)
+        else { throw .server(code: "passkey_options", requestID: nil) }
+        return PasskeyOptions(challenge: challenge, relyingParty: dto.rpId)
+    }
+
+    public func signIn(with assertion: PasskeyAssertion) async throws(CloudAccountError) -> CloudAccountUser {
+        let id = assertion.credentialID.base64URL
+        let body = Body(response: .init(
+            id: id,
+            rawId: id,
+            response: .init(
+                clientDataJSON: assertion.clientDataJSON.base64URL,
+                authenticatorData: assertion.authenticatorData.base64URL,
+                signature: assertion.signature.base64URL,
+                userHandle: assertion.userHandle?.base64URL,
+            ),
+        ))
+        let response = try await client.send("POST", "api/auth/passkey/verify-authentication", json: body)
+        guard (200 ..< 300).contains(response.status) else { throw .server(code: "passkey_rejected", requestID: nil) }
+        guard let user = try await account.currentUser() else { throw .signedOut }
+        return user
+    }
+}

@@ -8,3 +8,5 @@ DEVELOPMENT_TEAM = ABCDE12345
 
 // To sign in against your own API (the dev environment, or `pnpm dev` through a tunnel):
 // API_BASE_URL = https:/$()/api.dev.example.com
+// The web app's host, for passkeys (associated domain webcredentials:<host>):
+// WEB_HOST = app.example.com

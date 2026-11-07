@@ -26,6 +26,8 @@ public final class CloudAccountViewModel {
     private let signOutUseCase: any SignOutUseCase
     private let deleteUseCase: any DeleteCloudAccountUseCase
     private let disconnectUseCase: (any DisconnectAssistantsUseCase)?
+    /// Passkey sign-in; `nil` in builds without the web's associated domain.
+    private let passkeys: (any PasskeySignIn)?
     public private(set) var assistantsDisconnected = false
     /// Runs sync while the account has `cloud_sync`; `nil` in previews and tests.
     public let sync: SyncCoordinator?
@@ -37,7 +39,9 @@ public final class CloudAccountViewModel {
         delete: any DeleteCloudAccountUseCase,
         sync: SyncCoordinator? = nil,
         disconnectAssistants: (any DisconnectAssistantsUseCase)? = nil,
+        passkeys: (any PasskeySignIn)? = nil,
     ) {
+        self.passkeys = passkeys
         disconnectUseCase = disconnectAssistants
         self.sync = sync
         self.load = load
@@ -87,6 +91,26 @@ public final class CloudAccountViewModel {
         await run { () async throws(CloudAccountError) in
             try await self.signOutUseCase.execute(everywhere: everywhere)
             self.state = .signedOut
+        }
+    }
+
+    public var canUsePasskeys: Bool {
+        passkeys != nil
+    }
+
+    /// Signs in with a passkey made on the web (same relying party through the associated domain).
+    public func signInWithPasskey(using authorizer: PasskeyAuthorizer) async {
+        guard let passkeys else { return }
+        await run { () async throws(CloudAccountError) in
+            let options = try await passkeys.options()
+            let assertion: PasskeyAssertion
+            do {
+                assertion = try await authorizer.assert(options)
+            } catch {
+                // A dismissed sheet isn't worth an error.
+                return
+            }
+            self.state = try await .signedIn(passkeys.signIn(with: assertion))
         }
     }
 
