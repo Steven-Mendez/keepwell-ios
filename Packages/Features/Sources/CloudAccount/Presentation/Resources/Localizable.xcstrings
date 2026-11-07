@@ -1,0 +1,116 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta"
+          }
+        }
+      }
+    },
+    "An account syncs this iPhone with Keepwell on the web. Without one, your data stays only here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una cuenta sincroniza este iPhone con Keepwell en la web. Sin ella, tus datos se quedan solo aquí."
+          }
+        }
+      }
+    },
+    "Couldn't reach Keepwell. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo conectar con Keepwell. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Couldn't sign in with Apple. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar sesión con Apple. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Every iPhone and browser signed in to this account will need to sign in again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada iPhone y navegador con esta cuenta tendrá que volver a iniciar sesión."
+          }
+        }
+      }
+    },
+    "Keepwell accounts are invite-only for now." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por ahora las cuentas de Keepwell son solo por invitación."
+          }
+        }
+      }
+    },
+    "Sign out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sesión"
+          }
+        }
+      }
+    },
+    "Sign out everywhere" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar en todos"
+          }
+        }
+      }
+    },
+    "Sign out on all devices" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sesión en todos los dispositivos"
+          }
+        }
+      }
+    },
+    "Sign out on all devices?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cerrar sesión en todos los dispositivos?"
+          }
+        }
+      }
+    },
+    "You were signed out. Sign in again to keep syncing." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cerró tu sesión. Vuelve a iniciarla para seguir sincronizando."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

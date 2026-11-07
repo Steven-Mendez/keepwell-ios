@@ -5,3 +5,6 @@ DEVELOPMENT_TEAM = ABCDE12345
 // App Group must stay signed or the widgets never see the app's data. Never override
 // CODE_SIGN_ENTITLEMENTS on the command line: that also strips the widget extension's App Group.
 // APP_ENTITLEMENTS = App/Resources/KeepwellPersonalTeam.entitlements
+
+// To sign in against your own API (the dev environment, or `pnpm dev` through a tunnel):
+// API_BASE_URL = https:/$()/api.dev.example.com

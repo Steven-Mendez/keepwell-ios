@@ -134,6 +134,12 @@ targets:
       - package: Features
         product: DebtsPresentation
       - package: Features
+        product: CloudAccountDomain
+      - package: Features
+        product: CloudAccountData
+      - package: Features
+        product: CloudAccountPresentation
+      - package: Features
         product: SharedPresentation
     preBuildScripts:
       - name: SwiftLint
@@ -248,6 +254,9 @@ schemes:
         - package: Features/GoalsPresentationTests
         - package: Features/DebtsDomainTests
         - package: Features/DebtsPresentationTests
+        - package: Features/CloudAccountDomainTests
+        - package: Features/CloudAccountDataTests
+        - package: Features/CloudAccountPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release

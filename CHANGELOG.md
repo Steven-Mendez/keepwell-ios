@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- Settings: a Keepwell account with Sign in with Apple, in builds that have the API configured. The
+  session lives in the Keychain on this iPhone only; sign out here or on every device. Registration
+  is invite-only for now. Local use needs no account.
+
 ### Fixed
 
 - Deleting a category kept its movements' tags and the recurring movement that recorded them; they
