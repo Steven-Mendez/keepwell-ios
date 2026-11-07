@@ -21,8 +21,10 @@ public enum NetWorthHistory {
     ///   movements dated later this month are not counted yet.
     /// - An account adds its balance (`Balances.balance`, confirmed movements dated up to then) only
     ///   once its opening day has come; before that it contributes nothing.
-    /// - Every month converts at today's settings rate (`NetWorth.total`): the app keeps no history
-    ///   of rates, so only the balances move, not the rate.
+    /// - Each month converts at the rate it had then: the one stored by the latest confirmed
+    ///   movement dated before its cutoff whose rate is between today's principal and second
+    ///   currencies (`rate(for:settings:)`). Without such a movement it falls back to today's
+    ///   settings rate, which is also what months in a single currency use.
     /// - Months before the first account opened are left out; without accounts there are none.
     public static func points(
         accounts: [Account],
@@ -69,6 +71,30 @@ public enum NetWorthHistory {
         let balances = accounts
             .filter { calendar.startOfDay(for: $0.openingDate) < cutoff }
             .flatMap { Balances.balance(of: $0, transactions: movements, calendar: calendar) }
-        return try NetWorth.total(of: balances, settings: settings)
+        let monthSettings = try CurrencySettings(
+            principal: settings.principal,
+            second: settings.second,
+            rate: rate(for: movements, settings: settings),
+        )
+        return try NetWorth.total(of: balances, settings: monthSettings)
+    }
+
+    /// The rate stored by the latest of `movements` (already confirmed and dated before the cutoff)
+    /// that converts between today's two currencies; today's settings rate when none does. A rate
+    /// for another pair (single-currency, or from before the currencies were changed) says nothing
+    /// about this one.
+    private static func rate(for movements: [Transaction], settings: CurrencySettings) -> Decimal {
+        guard let second = settings.second else { return settings.rate }
+        // The first of equally dated movements wins, as on the web.
+        var latest: Transaction?
+        for movement in movements {
+            let rate = movement.exchangeRate
+            guard rate.principal == settings.principal, rate.second == second else { continue }
+            if let current = latest, movement.date <= current.date {
+                continue
+            }
+            latest = movement
+        }
+        return latest?.exchangeRate.rate ?? settings.rate
     }
 }

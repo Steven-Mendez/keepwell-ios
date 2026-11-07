@@ -26,7 +26,7 @@ extension CreateTransactionViewModel {
 
     public func continueFromAccounts() {
         guard canContinueFromAccounts else { return }
-        path = [.amount]
+        path = isEditing ? [] : [.amount]
     }
 
     /// Money leaves an account through its bank transfer method when it has one, so the movement

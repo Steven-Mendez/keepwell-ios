@@ -124,7 +124,11 @@ extension CreateTransactionViewModel {
     }
 
     public func editSource() {
-        path = type.movesBetweenAccounts ? [] : [.category, .method]
+        if isEditing {
+            path = type.movesBetweenAccounts ? [.accounts] : [.method]
+        } else {
+            path = type.movesBetweenAccounts ? [] : [.category, .method]
+        }
     }
 
     public func editCategory() {

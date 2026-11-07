@@ -65,7 +65,7 @@ extension SummaryViewModel {
             amount: hidden ? Self.maskedAmount : money(last.total.amount),
             isNegative: last.total.amount < 0 && !hidden,
             caption: report.convertsCurrencies
-                ? String(localized: "At the end of each month, at today's rate", bundle: #bundle)
+                ? String(localized: "At the end of each month, at that month's rate", bundle: #bundle)
                 : String(localized: "At the end of each month", bundle: #bundle),
             change: changeText,
             tone: tone,

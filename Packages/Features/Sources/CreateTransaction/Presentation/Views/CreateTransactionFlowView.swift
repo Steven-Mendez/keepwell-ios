@@ -24,6 +24,11 @@ public struct CreateTransactionFlowView: View {
                 await viewModel.load()
             }
         }
+        .onChange(of: viewModel.isFinished) { _, finished in
+            if finished {
+                onClose()
+            }
+        }
     }
 
     @ViewBuilder

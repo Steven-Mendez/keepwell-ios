@@ -17,6 +17,8 @@ public enum AppRoute: Hashable, Sendable {
     case bankAccount(accountID: UUID)
     /// The movement list opened from an account, already filtered to it.
     case transactions(accountID: UUID? = nil)
+    /// One movement's detail, with its actions (edit, receipt, split, delete).
+    case transaction(id: UUID)
     /// Recurring movements and subscriptions.
     case recurring
     /// A recurring rule's editor; `nil` creates one.

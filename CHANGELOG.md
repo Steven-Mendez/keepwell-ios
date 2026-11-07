@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+
+- Deleting a category kept its movements' tags and the recurring movement that recorded them; they
+  used to be dropped when the movements moved to "Other".
+
 ### Changed
 
 - Accounts: the card stack rolls like an endless deck. Drag over it to turn the cards one at a time
@@ -22,10 +27,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- "Export CSV" adds a last `tags` column ("#viaje-mexico #boda"), and "Import CSV" reads it back
+  (tags split on spaces or commas, normalized like the ones you type). Files without the column
+  still import; the web app writes and reads the same column.
+### Added
+
+- "Loan payments", a new default expense category ("Pagos de préstamos" in Spanish), placed before
+  "Other" and added on existing installs too. "Pay installment" on a loan files the expense there
+  unless you pick another category, or in "Other" if you deleted it.
+- Edit a saved movement: "Edit" on its detail opens the same steps on its review, where the amount,
+  category, payment method, accounts, description, date, note, tags and draft status can change.
+  It keeps the movement's reference, the rate it was logged with (so a later rate change in
+  settings doesn't rewrite it), whether it was split and the recurring rule behind it, and checks
+  everything logging checks. After moving it to another category, Keepwell offers "Always use
+  Transport for “Uber”?", which saves a categorization rule for that description.
+- Movement detail: tap a movement in Transactions, or a recent one on home, to see its amount, kind,
+  category, payment method or accounts, date, status, rate, note, tags (tap one to see every
+  movement with it) and the recurring rule behind it, with Confirm (drafts), Edit, Split
+  (expenses), Receipt and Delete.
+
 - "Net worth" on Summary: a line of your net worth at the end of each of the last twelve months
   (this month as of today, months before your first account are left out), with the latest value
-  and how much it moved since the first month shown. Second-currency balances convert at today's
-  rate, since the app keeps no history of rates. Amounts follow "hide balances".
+  and how much it moved since the first month shown. Second-currency balances convert at each
+  month's rate: the one your latest confirmed movement before that month closed was recorded with
+  (today's rate when there's none). Amounts follow "hide balances".
 - "End of month" on home: roughly what your bank and cash accounts will hold when the month closes
   ("≈ C$12,400"), with the lines that add up to it. It starts from what they hold today, adds the
   income and takes away the expenses still planned this month (drafts and recurring movements not

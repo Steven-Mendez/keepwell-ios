@@ -13,7 +13,8 @@ public struct ImportSummary: Hashable, Sendable {
     }
 }
 
-/// "Import CSV": reads the file "Export CSV" writes (same columns, any order). Each row must name
+/// "Import CSV": reads the file "Export CSV" writes (same columns, any order; files from before the
+/// `tags` column still import, without tags). Each row must name
 /// an account that exists, so movements never land somewhere the person didn't choose; rows
 /// already recorded are skipped, so importing the same file twice changes nothing. A row without a
 /// category the app knows gets the first categorization rule its description or note matches.
@@ -119,11 +120,11 @@ private struct RowReader {
         let description = value("description", in: row) ?? ""
         let note = value("note", in: row)
         var category = kind == .transfer ? nil : categoryID(value("category", in: row), kind: kind)
-        var tags: [String] = []
+        var tags = value("tags", in: row).map { Tags.parsed(csvField: $0) } ?? []
         if kind != .transfer, category == nil {
             let rule = CategorizationRules.firstMatch(in: rules, kind: kind, description: description, note: note)
             category = rule?.categoryID ?? TransactionCategory.otherID(for: kind)
-            tags = rule?.tags ?? []
+            tags = Tags.merging(tags, with: rule?.tags ?? [])
         }
         return Transaction(
             date: date,

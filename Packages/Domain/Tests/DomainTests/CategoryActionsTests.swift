@@ -24,7 +24,7 @@ struct CategoryActionsTests {
         let stored = [tips] + TransactionCategory.defaults.reversed() + [boat]
         let ordered = TransactionCategory.ordered(stored)
         let expense = ordered.filter { $0.kind == .expense }.map(\.id)
-        #expect(expense.first == "donations")
+        #expect(expense.first == TransactionCategory.loanPaymentsID)
         #expect(expense.suffix(2) == ["custom-boat", TransactionCategory.otherExpenseID])
         #expect(ordered.first(where: { $0.kind == .income }) == tips)
         #expect(ordered.last(where: { $0.kind == .income })?.id == TransactionCategory.otherIncomeID)
@@ -128,6 +128,25 @@ struct CategoryActionsTests {
         #expect(await store.fetchTransactions(in: nil).map(\.categoryID) == [TransactionCategory.otherExpenseID])
         // The name is free again.
         _ = try await DefaultSaveCategoryUseCase(categories: store).execute(CategoryDraft(name: "Groceries", kind: .expense))
+    }
+
+    @Test
+    func deletingACategoryKeepsItsMovementsTagsAndRecurringRule() async throws {
+        let expense = try #require(sample.transactions.first { $0.kind == .expense })
+        let ruleID = UUID()
+        let tagged = Transaction(
+            id: expense.id, date: expense.date, status: expense.status, description: expense.description,
+            kind: expense.kind, categoryID: "groceries", amount: expense.amount, currency: expense.currency,
+            accountID: expense.accountID, cardID: expense.cardID, exchangeRate: expense.exchangeRate,
+            note: "Weekly", recurringID: ruleID, tags: ["boda"],
+        )
+        let store = InMemoryStore(transactions: [tagged])
+        try await DefaultDeleteCategoryUseCase(categories: store, transactions: store).execute(id: "groceries")
+        let moved = try #require(await store.fetchTransactions(in: nil).first)
+        #expect(moved.categoryID == TransactionCategory.otherExpenseID)
+        #expect(moved.tags == ["boda"])
+        #expect(moved.recurringID == ruleID)
+        #expect(moved.note == "Weekly")
     }
 
     @Test

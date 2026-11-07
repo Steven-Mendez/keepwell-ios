@@ -4,10 +4,12 @@ import SharedPresentation
 import SwiftUI
 
 /// The latest movements with "See all", the way Revolut opens its home with what just happened.
+/// Tapping one opens its detail.
 struct HomeRecentCard: View {
     let viewModel: HomeViewModel
     let overview: HomeOverview
     let hidesBalances: Bool
+    let onOpen: (UUID) -> Void
     let onSeeAll: () -> Void
 
     var body: some View {
@@ -18,13 +20,17 @@ struct HomeRecentCard: View {
                 .padding(.bottom, KWSpacing.xxs)
             if let display = viewModel.display {
                 ForEach(overview.recent) { transaction in
-                    KWTransactionRow(
-                        display.style(of: transaction),
-                        title: transaction.description,
-                        subtitle: display.subtitle(of: transaction),
-                        amount: viewModel.visible(display.amount(of: transaction), hidden: hidesBalances),
-                        secondaryAmount: hidesBalances ? nil : display.secondaryAmount(of: transaction),
-                    )
+                    Button { onOpen(transaction.id) } label: {
+                        KWTransactionRow(
+                            display.style(of: transaction),
+                            title: transaction.description,
+                            subtitle: display.subtitle(of: transaction),
+                            amount: viewModel.visible(display.amount(of: transaction), hidden: hidesBalances),
+                            secondaryAmount: hidesBalances ? nil : display.secondaryAmount(of: transaction),
+                        )
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             Button(action: onSeeAll) {
