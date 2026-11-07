@@ -28,6 +28,16 @@ public enum Tags {
         return tags.compactMap(normalized).filter { seen.insert($0).inserted }
     }
 
+    /// How a CSV row writes them: "#viaje-mexico #boda", or "" without any.
+    public static func csvField(_ tags: [String]) -> String {
+        tags.map { "#\($0)" }.joined(separator: " ")
+    }
+
+    /// The tags a CSV cell lists, split on spaces or commas ("#boda, #viaje-mexico"), normalized.
+    public static func parsed(csvField text: String) -> [String] {
+        normalized(text.split { $0.isWhitespace || $0 == "," }.map(String.init))
+    }
+
     /// `tags` with `added` after them, each once.
     public static func merging(_ tags: [String], with added: [String]) -> [String] {
         normalized(tags + added)

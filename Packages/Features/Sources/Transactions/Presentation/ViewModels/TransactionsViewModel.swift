@@ -125,6 +125,14 @@ public final class TransactionsViewModel {
         query = TagDisplay.label(tag)
     }
 
+    /// Every movement with a tag, whatever the list was narrowed to before (a tag tapped in a
+    /// movement's detail).
+    public func showOnly(tag: String) {
+        filter = .all
+        scope = .all
+        show(tag: tag)
+    }
+
     /// "#boda · All time", "−$1,240.00" and "+$300.00" while the search is a tag: what that tag
     /// came to in the chosen account, in the principal currency, never mixed. Replaces the month's
     /// totals, since a trip or a wedding rarely fits in one month.

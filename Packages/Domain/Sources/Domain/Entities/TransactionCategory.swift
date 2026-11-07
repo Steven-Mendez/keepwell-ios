@@ -90,7 +90,7 @@ extension TransactionCategory {
         ("personal-care", "Personal care"), ("family", "Family"), ("travel", "Travel"),
         ("fees", "Fees"), ("tools", "Tools"), ("pets", "Pets"), ("gifts", "Gifts"),
         ("insurance", "Insurance"), ("taxes", "Taxes"), ("savings", "Savings"), ("donations", "Donations"),
-        ("other-expense", "Other"),
+        ("loan-payments", "Loan payments"), ("other-expense", "Other"),
     ].map { Self(id: $0.0, name: $0.1, kind: .expense) }
 
     public static let defaultIncome: [Self] = [
@@ -106,6 +106,8 @@ extension TransactionCategory {
     /// Where reconciliation adjustments and uncategorized imports land.
     public static let otherExpenseID = "other-expense"
     public static let otherIncomeID = "other-income"
+    /// Where a loan's "Pay installment" files the expense unless the person picks another.
+    public static let loanPaymentsID = "loan-payments"
 
     public static func otherID(for kind: TransactionKind) -> String {
         kind == .income ? otherIncomeID : otherExpenseID

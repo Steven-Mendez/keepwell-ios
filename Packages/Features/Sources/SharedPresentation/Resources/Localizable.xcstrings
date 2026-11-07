@@ -541,6 +541,16 @@
         }
       }
     },
+    "Loan payments" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagos de préstamos"
+          }
+        }
+      }
+    },
     "Monthly budget" : {
       "localizations" : {
         "es" : {
