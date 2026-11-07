@@ -178,12 +178,9 @@ public struct DefaultRestoreDefaultCategoriesUseCase: RestoreDefaultCategoriesUs
 }
 
 extension Transaction {
+    /// Everything else stays, tags and the recurring rule included: moving a deleted category's
+    /// movements to "Other" must not lose what else the person recorded on them.
     public func with(categoryID: String?) -> Self {
-        Self(
-            id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
-            amount: amount, currency: currency, accountID: accountID, cardID: cardID,
-            destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
-            exchangeRate: exchangeRate, isShared: isShared, note: note,
-        )
+        with(categoryID: categoryID, tags: tags)
     }
 }

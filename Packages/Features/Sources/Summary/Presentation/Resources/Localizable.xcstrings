@@ -191,12 +191,12 @@
         }
       }
     },
-    "At the end of each month, at today's rate" : {
+    "At the end of each month, at that month's rate" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Al cierre de cada mes, con la tasa de hoy"
+            "value" : "Al cierre de cada mes, con la tasa de ese mes"
           }
         }
       }

@@ -156,7 +156,7 @@ public final class LoanDetailViewModel: Identifiable {
     public private(set) var progress: LoanProgress
     public private(set) var context: TransactionContext?
     public var method: InstallmentSource?
-    /// "Other" until the person picks: there's no loan category every installment belongs in.
+    /// "Loan payments" until the person picks, or "Other" once they deleted it (`load()`).
     public var categoryID = TransactionCategory.otherExpenseID
     public var paymentDate: Date
     public private(set) var isPaying = false
@@ -184,6 +184,9 @@ public final class LoanDetailViewModel: Identifiable {
     public func load() async {
         guard context == nil else { return }
         context = try? await useCases.paymentContext.execute()
+        if categories.contains(where: { $0.id == TransactionCategory.loanPaymentsID }) {
+            categoryID = TransactionCategory.loanPaymentsID
+        }
         if let lastUsed = context?.lastUsedSource.map(InstallmentSource.init), methods.contains(where: { $0.source == lastUsed }) {
             method = lastUsed
         } else {

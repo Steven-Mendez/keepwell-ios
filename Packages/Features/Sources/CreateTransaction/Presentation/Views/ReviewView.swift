@@ -22,11 +22,17 @@ public struct ReviewView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    KWFlowHeader(.back, progress: viewModel.progress(of: .review), action: onBack)
+                    header
                     summaryCard.padding(.top, 30)
                     KWGroupedCard { details }
                     if !viewModel.type.movesBetweenAccounts {
                         tagsCard
+                    }
+                    if viewModel.keepsRecordedRate {
+                        Text("Edits keep the rate this transaction was logged with.", bundle: #bundle)
+                            .font(KWTextStyle.captionSm.font)
+                            .foregroundStyle(KWColor.Text.muted)
+                            .padding(.horizontal, KWSpacing.xxs)
                     }
                     if let error = viewModel.errorMessage {
                         Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
@@ -52,11 +58,62 @@ public struct ReviewView: View {
         .sheet(isPresented: $isEditingNote) {
             NoteSheet(note: $viewModel.note) { isEditingNote = false }
         }
+        .alert(
+            viewModel.ruleOffer?.title ?? "",
+            isPresented: isOfferingRule,
+            presenting: viewModel.ruleOffer,
+        ) { _ in
+            Button { Task { await viewModel.acceptRuleOffer() } } label: { Text("Create rule", bundle: #bundle) }
+            Button(role: .cancel) { viewModel.declineRuleOffer() } label: { Text("Not now", bundle: #bundle) }
+        }
+    }
+}
+
+extension ReviewView {
+    /// An edit opens here, so it closes the flow and says what it is; a new movement goes back a step.
+    @ViewBuilder
+    private var header: some View {
+        if viewModel.isEditing {
+            HStack(spacing: KWSpacing.sm) {
+                KWCircleButton(.close, accessibilityLabel: String(localized: "Close", bundle: #bundle), action: onBack)
+                Text("Edit transaction", bundle: #bundle)
+                    .font(KWTextStyle.heading.font)
+                    .frame(maxWidth: .infinity)
+                    .padding(.trailing, 52)
+                    .accessibilityAddTraits(.isHeader)
+            }
+        } else {
+            KWFlowHeader(.back, progress: viewModel.progress(of: .review), action: onBack)
+        }
     }
 
-    /// Slide to save, or save as a draft.
+    private var isOfferingRule: Binding<Bool> {
+        Binding(get: { viewModel.ruleOffer != nil }, set: { _ in })
+    }
+
+    /// Slide to save, or save as a draft. An edit saves with one button, like the web, since the
+    /// person already reviewed it once.
     @ViewBuilder
     private var saveActions: some View {
+        if viewModel.isEditing {
+            Button {
+                KWKeyboard.dismiss()
+                Task { await viewModel.saveChanges() }
+            } label: {
+                Text("Save changes", bundle: #bundle)
+            }
+            .buttonStyle(.kw(.primary, size: .regular))
+            .disabled(!viewModel.canSave)
+            .padding(.horizontal, KWLayout.gutter)
+            .padding(.top, KWSpacing.sm)
+            .padding(.bottom, 34)
+        } else {
+            newMovementActions
+        }
+    }
+
+    @ViewBuilder
+    private var newMovementActions: some View {
         KWSwipeToConfirm(viewModel.confirmTitle, accessibilityLabel: viewModel.saveTitle) {
             KWKeyboard.dismiss()
             Task {
@@ -204,7 +261,11 @@ public struct ReviewView: View {
             KWValueRow(String(localized: "Date", bundle: #bundle), value: "\(viewModel.dayLabel(viewModel.date)) ›")
         }
         .buttonStyle(.plain)
-        repeatRow
+        if viewModel.isEditing {
+            draftRow
+        } else {
+            repeatRow
+        }
         Button { isEditingNote = true } label: {
             KWValueRow(String(localized: "Note", bundle: #bundle), value: noteValue)
         }
@@ -242,6 +303,17 @@ public struct ReviewView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// "Save as draft" while editing: a draft stays out of balances until it's confirmed.
+    private var draftRow: some View {
+        Toggle(isOn: $viewModel.isDraft) {
+            Text("Save as draft", bundle: #bundle)
+                .font(KWTextStyle.body.font)
+                .foregroundStyle(KWColor.Text.secondary)
+        }
+        .toggleStyle(.kw)
+        .padding(.vertical, 9)
     }
 
     private var noteValue: String {

@@ -116,3 +116,48 @@ extension ImportTransactionsTests {
         #expect(try movement("Corner bakery").categoryID == TransactionCategory.otherExpenseID)
     }
 }
+
+extension ImportTransactionsTests {
+    @Test
+    func tagsGoOutAsTheLastColumnAndComeBack() async throws {
+        let cash = try #require(sample.accounts.first { $0.id == SampleData.IDs.cash })
+        let tagged = Transaction(
+            date: SampleData.defaultReferenceDate, description: "Hotel", kind: .expense, categoryID: "travel",
+            amount: 900, currency: "NIO", accountID: cash.id, exchangeRate: .single("NIO"), tags: ["viaje-mexico", "boda"],
+        )
+        let csv = DefaultExportTransactionsUseCase.csv(
+            transactions: [tagged],
+            accounts: sample.accounts,
+            cards: [],
+            categories: TransactionCategory.defaults,
+        )
+        let rows = CSV.rows(csv)
+        #expect(rows.first?.last == "tags")
+        #expect(rows.last?.last == "#viaje-mexico #boda")
+
+        let store = InMemoryStore(sample: sample)
+        #expect(try await importer(store).execute(csv: csv).imported == 1)
+        let saved = try #require(await store.fetchTransactions(in: nil).first { $0.description == "Hotel" })
+        #expect(saved.tags == ["viaje-mexico", "boda"])
+    }
+
+    @Test
+    func importedTagsAreSplitOnSpacesOrCommasAndNormalized() async throws {
+        let store = InMemoryStore(sample: sample)
+        let cash = try #require(sample.accounts.first { $0.id == SampleData.IDs.cash })
+        await store.save(CategorizationRule(match: "taxi", categoryID: "transport", kind: .expense, tags: ["trabajo"]))
+        let csv = """
+        date,type,description,category,amount,currency,account,Tags
+        2026-10-04,expense,Flowers,Gifts,50,NIO,\(cash.name),"#Boda, Viaje  #boda"
+        2026-10-04,expense,Taxi,,70,NIO,\(cash.name),#viaje
+        """
+        let importer = DefaultImportTransactionsUseCase(
+            transactions: store, accounts: store, cards: store, categories: store, settings: store, rules: store,
+        )
+        #expect(try await importer.execute(csv: csv).imported == 2)
+        let saved = await store.fetchTransactions(in: nil)
+        #expect(saved.first { $0.description == "Flowers" }?.tags == ["boda", "viaje"])
+        // The file's tags first, then the rule's.
+        #expect(saved.first { $0.description == "Taxi" }?.tags == ["viaje", "trabajo"])
+    }
+}

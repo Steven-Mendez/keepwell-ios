@@ -262,6 +262,7 @@ struct DebitCardRoute: View {
 struct TransactionsRoute: View {
     @State private var viewModel: TransactionsViewModel
     let onBack: () -> Void
+    let onOpenTransaction: (UUID) -> Void
     let onOpenRecurringRule: (UUID) -> Void
     let onNewMovement: () -> Void
 
@@ -269,6 +270,7 @@ struct TransactionsRoute: View {
         container: AppContainer,
         scope: TransactionScope,
         onBack: @escaping () -> Void,
+        onOpenTransaction: @escaping (UUID) -> Void,
         onOpenRecurringRule: @escaping (UUID) -> Void,
         onNewMovement: @escaping () -> Void,
     ) {
@@ -276,13 +278,22 @@ struct TransactionsRoute: View {
         viewModel.scope = scope
         _viewModel = State(initialValue: viewModel)
         self.onBack = onBack
+        self.onOpenTransaction = onOpenTransaction
         self.onOpenRecurringRule = onOpenRecurringRule
         self.onNewMovement = onNewMovement
     }
 
     var body: some View {
-        TransactionsView(viewModel: viewModel, onBack: onBack, onOpenRecurringRule: onOpenRecurringRule, onNewMovement: onNewMovement)
-            .navigationBarBackButtonHidden()
+        TransactionsView(
+            viewModel: viewModel,
+            onBack: onBack,
+            onOpenTransaction: onOpenTransaction,
+            onOpenRecurringRule: onOpenRecurringRule,
+            onNewMovement: onNewMovement,
+        )
+        .navigationBarBackButtonHidden()
+        // Back from a movement's detail, where it may have been edited or deleted.
+        .onAppear { Task { await viewModel.load() } }
     }
 }
 

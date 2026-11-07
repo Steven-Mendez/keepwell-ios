@@ -37,7 +37,7 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
 
     static let header = [
         "date", "status", "type", "description", "category", "amount", "currency", "account",
-        "card_last_four", "destination_account", "debited_principal", "rate", "shared", "note",
+        "card_last_four", "destination_account", "debited_principal", "rate", "shared", "note", "tags",
     ]
 
     static func csv(transactions: [Transaction], accounts: [Account], cards: [Card], categories: [TransactionCategory]) -> String {
@@ -60,6 +60,7 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
                 transaction.exchangeRate.hasSecondCurrency ? Self.number(transaction.exchangeRate.rate) : "",
                 transaction.isShared ? "yes" : "no",
                 transaction.note ?? "",
+                Tags.csvField(transaction.tags),
             ]
         }
         return ([header] + rows).map { $0.map(Self.escaped).joined(separator: ",") }.joined(separator: "\n") + "\n"

@@ -20,6 +20,8 @@ public struct HomeView: View {
         public var allRecurring: () -> Void
         public var goals: () -> Void
         public var debts: () -> Void
+        /// A recent movement's detail.
+        public var openTransaction: (UUID) -> Void
 
         public init(
             search: @escaping () -> Void,
@@ -33,6 +35,7 @@ public struct HomeView: View {
             allRecurring: @escaping () -> Void = {},
             goals: @escaping () -> Void = {},
             debts: @escaping () -> Void = {},
+            openTransaction: @escaping (UUID) -> Void = { _ in },
         ) {
             self.search = search
             self.summary = summary
@@ -45,6 +48,7 @@ public struct HomeView: View {
             self.allRecurring = allRecurring
             self.goals = goals
             self.debts = debts
+            self.openTransaction = openTransaction
         }
     }
 
@@ -85,7 +89,13 @@ public struct HomeView: View {
     private func content(_ overview: HomeOverview) -> some View {
         if overview.hasTransactions {
             if !overview.recent.isEmpty {
-                HomeRecentCard(viewModel: viewModel, overview: overview, hidesBalances: hidesBalances, onSeeAll: actions.allTransactions)
+                HomeRecentCard(
+                    viewModel: viewModel,
+                    overview: overview,
+                    hidesBalances: hidesBalances,
+                    onOpen: actions.openTransaction,
+                    onSeeAll: actions.allTransactions,
+                )
             }
             monthCard(overview)
             if let forecast = overview.forecast {

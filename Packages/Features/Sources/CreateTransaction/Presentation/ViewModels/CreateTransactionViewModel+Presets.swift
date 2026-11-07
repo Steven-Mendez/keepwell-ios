@@ -20,6 +20,8 @@ extension CreateTransactionViewModel {
     /// Shows the suggested description as real, editable text on the review step, as the design
     /// does. It follows the category while the person hasn't typed anything of their own.
     func prefillDescription() {
+        // A saved movement already has its description, which an edit keeps as it was.
+        guard mode == .create else { return }
         let current = description.trimmingCharacters(in: .whitespacesAndNewlines)
         guard current.isEmpty || current == prefilledDescription else { return }
         description = descriptionPlaceholder
