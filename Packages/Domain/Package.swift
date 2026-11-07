@@ -24,6 +24,8 @@ let package = Package(
                 "DomainSamples",
                 .product(name: "CustomDump", package: "swift-custom-dump"),
             ],
+            // Shared with keepwell-web and keepwell-api, copied verbatim from keepwell-web.
+            resources: [.copy("Fixtures")],
         ),
     ],
     swiftLanguageModes: [.v6],

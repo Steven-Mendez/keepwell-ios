@@ -31,6 +31,8 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
     /// Labels besides the category ("viaje-mexico"), normalized by `Tags`, each once, in the order
     /// they were added.
     public let tags: [String]
+    /// `mcp` when Claude (or another MCP client) recorded it.
+    public let source: RecordSource
 
     public init(
         id: UUID = UUID(),
@@ -50,6 +52,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         note: String? = nil,
         recurringID: UUID? = nil,
         tags: [String] = [],
+        source: RecordSource = .app,
     ) {
         self.id = id
         self.date = date
@@ -68,6 +71,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         self.note = note
         self.recurringID = recurringID
         self.tags = Tags.normalized(tags)
+        self.source = source
     }
 
     /// The rule behind "`amount` is always positive", kept here so every path that records a
@@ -92,6 +96,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+            source: source,
         )
     }
 
@@ -102,6 +107,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+            source: source,
         )
     }
 }
@@ -128,6 +134,7 @@ extension Transaction {
             note: container.decodeIfPresent(String.self, forKey: .note),
             recurringID: container.decodeIfPresent(UUID.self, forKey: .recurringID),
             tags: container.decodeIfPresent([String].self, forKey: .tags) ?? [],
+            source: container.decodeIfPresent(RecordSource.self, forKey: .source) ?? .app,
         )
     }
 }

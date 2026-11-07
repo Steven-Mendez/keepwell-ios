@@ -49,6 +49,9 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
     public let note: String?
     /// Copied to each movement's tags.
     public let tags: [String]
+    /// `mcp` when Claude created the rule; `nil` (older data) reads as `app`. Optional so rules
+    /// encoded before the field existed still decode.
+    public let source: RecordSource?
 
     public init(
         id: UUID = UUID(),
@@ -70,6 +73,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
         isPaused: Bool = false,
         note: String? = nil,
         tags: [String] = [],
+        source: RecordSource? = nil,
     ) {
         self.id = id
         self.name = name
@@ -90,6 +94,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
         self.isPaused = isPaused
         self.note = note
         self.tags = Tags.normalized(tags)
+        self.source = source
     }
 
     /// The rule's own limits: a positive amount, a name, an interval of 1–99 and an end that isn't
@@ -143,6 +148,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
+            source: source,
         )
     }
 
@@ -152,6 +158,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
+            source: source,
         )
     }
 
@@ -162,6 +169,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
+            source: source,
         )
     }
 
@@ -171,6 +179,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
+            source: source,
         )
     }
 }

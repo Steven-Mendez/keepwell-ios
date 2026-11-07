@@ -62,7 +62,11 @@ struct DebtBackupTests {
             amount: Money(500, "NIO"),
             date: day("2026-11-12T18:00:00Z"),
             note: "Pizza",
-            repayments: [DebtRepayment(amount: Decimal(string: "200.5") ?? 0, date: day("2026-11-15T18:00:00Z"))],
+            repayments: [DebtRepayment(
+                id: UUID(uuidString: "05023486-aea2-4213-991b-e2c121c09b54") ?? UUID(),
+                amount: Decimal(string: "200.5") ?? 0,
+                date: day("2026-11-15T18:00:00Z"),
+            )],
             transactionID: id("4C5D6E7F-8091-4A2B-B3C4-D5E6F708192A"),
         )
         let ana = try PersonalDebt(
@@ -109,7 +113,8 @@ struct DebtBackupTests {
         let debts = """
         "personalDebts":[{"amount":{"amount":"500","currency":"NIO"},"createdAt":"2026-10-26T07:33:20.000Z",\
         "date":"2026-11-12T18:00:00.000Z","direction":"theyOweMe","id":"3b4c5d6e-7f80-4192-a3b4-c5d6e7f8091a",\
-        "note":"Pizza","person":"Juan","repayments":[{"amount":"200.5","date":"2026-11-15T18:00:00.000Z"}],\
+        "note":"Pizza","person":"Juan","repayments":[{"amount":"200.5","date":"2026-11-15T18:00:00.000Z",\
+        "id":"05023486-aea2-4213-991b-e2c121c09b54"}],\
         "transactionId":"4c5d6e7f-8091-4a2b-b3c4-d5e6f708192a","updatedAt":"2026-10-26T07:33:20.500Z"},\
         {"amount":{"amount":"40","currency":"USD"},"createdAt":"2026-10-26T07:33:20.000Z",\
         "date":"2026-11-05T18:00:00.000Z","direction":"iOwe","id":"5d6e7f80-91a2-4b3c-84d5-e6f708192a3b",\

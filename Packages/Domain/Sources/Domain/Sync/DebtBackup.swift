@@ -70,6 +70,8 @@ public struct LoanBackup: Codable, Sendable, Equatable {
 /// A personal debt in the backup file (schema 4). Repayments are in the debt's currency.
 public struct PersonalDebtBackup: Codable, Sendable, Equatable {
     public struct Repayment: Codable, Sendable, Equatable {
+        /// Absent in backups written before repayments had ids.
+        public var id: String?
         public let amount: String
         public let date: Date
     }
@@ -96,7 +98,8 @@ public struct PersonalDebtBackup: Codable, Sendable, Equatable {
         amount = MoneyBackup(debt.amount)
         date = debt.date
         note = debt.note
-        repayments = debt.repayments.map { Repayment(amount: PortableDecimal.string($0.amount), date: $0.date) }
+        repayments = debt.repayments
+            .map { Repayment(id: PortableID.string($0.id), amount: PortableDecimal.string($0.amount), date: $0.date) }
         settledAt = debt.settledAt
         transactionId = debt.transactionID.map(PortableID.string)
         createdAt = stamped.metadata.createdAt
@@ -106,8 +109,16 @@ public struct PersonalDebtBackup: Codable, Sendable, Equatable {
 
     func toDomain() throws(DomainError) -> Stamped<PersonalDebt> {
         var rows: [DebtRepayment] = []
-        for repayment in repayments {
-            try rows.append(DebtRepayment(amount: PortableDecimal.decimal(repayment.amount), date: repayment.date))
+        let debtID = try PortableID.uuid(id)
+        for (index, repayment) in repayments.enumerated() {
+            let amount = try PortableDecimal.decimal(repayment.amount)
+            let id = try repayment.id.map(PortableID.uuid) ?? NameBasedID.legacyRepayment(
+                debtID: debtID,
+                index: index,
+                date: repayment.date,
+                amount: amount,
+            )
+            rows.append(DebtRepayment(id: id, amount: amount, date: repayment.date))
         }
         let debt = try PersonalDebt(
             id: PortableID.uuid(id),

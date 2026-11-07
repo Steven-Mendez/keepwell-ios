@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Recurring movements, loan installments and debt repayments get ids that are the same on every
+  device, ready for syncing with the web: recording the same occurrence twice yields one movement.
 - Settings: a Keepwell account with Sign in with Apple, in builds that have the API configured. The
   session lives in the Keychain on this iPhone only; sign out here or on every device. Registration
   is invite-only for now. Local use needs no account. The account can be deleted from Settings:

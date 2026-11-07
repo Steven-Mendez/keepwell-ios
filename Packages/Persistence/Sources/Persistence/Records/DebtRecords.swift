@@ -87,7 +87,9 @@ public final class PersonalDebtRecord: AuditedRecord {
         self.id = id
     }
 
+    /// `id` is absent in rows written before repayments had ids.
     private struct StoredRepayment: Codable {
+        var id: UUID?
         let amount: String
         let date: Date
     }
@@ -99,7 +101,11 @@ public final class PersonalDebtRecord: AuditedRecord {
         currency = debt.amount.currency
         date = debt.date
         note = debt.note
-        repaymentsJSON = JSONText.encode(debt.repayments.map { StoredRepayment(amount: DecimalCoding.string($0.amount), date: $0.date) })
+        repaymentsJSON = JSONText.encode(debt.repayments.map { StoredRepayment(
+            id: $0.id,
+            amount: DecimalCoding.string($0.amount),
+            date: $0.date,
+        ) })
         settledAt = debt.settledAt
         transactionID = debt.transactionID
     }
@@ -110,8 +116,10 @@ public final class PersonalDebtRecord: AuditedRecord {
         }
         let stored: [StoredRepayment] = try JSONText.decode(repaymentsJSON, what: "Debt repayments")
         var repayments: [DebtRepayment] = []
-        for row in stored {
-            try repayments.append(DebtRepayment(amount: DecimalCoding.decimal(row.amount), date: row.date))
+        for (index, row) in stored.enumerated() {
+            let amount = try DecimalCoding.decimal(row.amount)
+            let id = row.id ?? NameBasedID.legacyRepayment(debtID: id, index: index, date: row.date, amount: amount)
+            repayments.append(DebtRepayment(id: id, amount: amount, date: row.date))
         }
         return try PersonalDebt(
             id: id,
