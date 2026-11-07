@@ -10,8 +10,18 @@ public struct CloudAccountUser: Hashable, Sendable {
     public let capabilities: Set<String>
     /// Capabilities that come only from early access ("Sync included during early access").
     public let earlyAccess: Set<String>
+    /// `free`, `supporter`… The coffee turns `free` into `supporter`.
+    public let plan: String
 
-    public init(id: String, name: String, email: String, capabilities: Set<String> = [], earlyAccess: Set<String> = []) {
+    public init(
+        id: String,
+        name: String,
+        email: String,
+        capabilities: Set<String> = [],
+        earlyAccess: Set<String> = [],
+        plan: String = "free",
+    ) {
+        self.plan = plan
         self.id = id
         self.name = name
         self.email = email
@@ -22,11 +32,22 @@ public struct CloudAccountUser: Hashable, Sendable {
     public var canSync: Bool {
         capabilities.contains("cloud_sync")
     }
+
+    /// Whether the coffee would add something: sync or Claude missing, or only lent by early access.
+    public var canBeSupported: Bool {
+        plan == "free"
+    }
 }
 
 public enum CloudAccountError: Error, Equatable, Sendable {
     /// Registration is closed and this Apple ID isn't on the list.
     case notInvited
+    /// The invitation code is unknown, expired or already used.
+    case invalidInvitation
+    /// This purchase already gave a plan to another Keepwell account.
+    case purchaseBelongsToAnotherAccount
+    /// The App Store refused or failed the purchase.
+    case storeFailed
     /// The session is missing, expired or was revoked from another device.
     case signedOut
     /// No connection, or the server didn't answer.
@@ -42,10 +63,13 @@ public enum CloudAccountError: Error, Equatable, Sendable {
 public struct AppleCredential: Sendable, Equatable {
     public let idToken: String
     public let rawNonce: String
+    /// For a first sign-in while registration is by invitation; ignored for existing accounts.
+    public let invitation: String?
 
-    public init(idToken: String, rawNonce: String) {
+    public init(idToken: String, rawNonce: String, invitation: String? = nil) {
         self.idToken = idToken
         self.rawNonce = rawNonce
+        self.invitation = invitation
     }
 }
 

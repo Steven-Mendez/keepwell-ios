@@ -139,3 +139,55 @@ struct HTTPCloudAccountRepositoryTests {
         #expect(store.load() == nil)
     }
 }
+
+// MARK: - Invitations and the coffee
+
+extension HTTPCloudAccountRepositoryTests {
+    @Test
+    func anInvitationTravelsInItsHeaderAndABadOneSaysSo() async throws {
+        let repository = repository(InMemorySessionStore())
+        StubProtocol.handler = { _ in (403, [:], Data(#"{"code":"INVALID_INVITATION","message":"no"}"#.utf8)) }
+        await #expect(throws: CloudAccountError.invalidInvitation) {
+            try await repository.signIn(with: AppleCredential(idToken: "jwt", rawNonce: "raw", invitation: " ABCDE-FGHJK "))
+        }
+        #expect(StubProtocol.requests.first?.value(forHTTPHeaderField: "X-Keepwell-Invitation") == "ABCDE-FGHJK")
+    }
+
+    @Test
+    func redeemingSendsTheKeyAndReadsThePlanBack() async throws {
+        let store = InMemorySessionStore(cookie: "better-auth.session_token=x")
+        let repository = repository(store)
+        let key = UUID()
+        StubProtocol.handler = { request in
+            switch request.url?.path {
+            case "/entitlements/app-store":
+                (200, [:], Data(#"{"plan":"supporter"}"#.utf8))
+            case "/me":
+                (
+                    200,
+                    [:],
+                    Data(#"{"user":{"id":"u1","name":"Ana","email":"a@x"},"plan":"supporter","capabilities":["cloud_sync","mcp"]}"#.utf8),
+                )
+            default:
+                (404, [:], Data())
+            }
+        }
+        let user = try await repository.redeem("jws", idempotencyKey: key)
+        #expect(user.plan == "supporter")
+        #expect(user.canSync)
+        let request = try #require(StubProtocol.requests.first)
+        #expect(request.value(forHTTPHeaderField: "Idempotency-Key") == key.uuidString.lowercased())
+        let body = try #require(request.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: String])
+        #expect(json == ["signed_transaction": "jws"])
+    }
+
+    @Test
+    func aPurchaseOfAnotherAccountIsNamedAsSuch() async {
+        let repository = repository(InMemorySessionStore(cookie: "better-auth.session_token=x"))
+        StubProtocol.handler = { _ in (409, [:], Data(#"{"error":{"code":"already_redeemed_elsewhere","message":"m"}}"#.utf8)) }
+        await #expect(throws: CloudAccountError.purchaseBelongsToAnotherAccount) {
+            try await repository.redeem("jws", idempotencyKey: UUID())
+        }
+    }
+}

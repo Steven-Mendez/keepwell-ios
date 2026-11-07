@@ -68,6 +68,10 @@ public struct CloudAccountSection: View {
         case .loading:
             ProgressView().frame(maxWidth: .infinity)
         case .signedOut:
+            TextField(String(localized: "Invitation code (new accounts)", bundle: #bundle), text: $viewModel.invitation)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+                .font(KWTextStyle.body.font.monospaced())
             SignInWithAppleButton(.signIn) { request in
                 request.requestedScopes = [.fullName, .email]
                 request.nonce = viewModel.prepareAppleRequest()
@@ -115,6 +119,11 @@ public struct CloudAccountSection: View {
                     } label: {
                         Text("Sign out on all devices", bundle: #bundle)
                     }
+                }
+                if user.canBeSupported, viewModel.canBuySupport {
+                    Divider()
+                    SupportKeepwellCard(viewModel: viewModel, user: user)
+                    Divider()
                 }
                 if user.capabilities.contains("mcp") {
                     Button {

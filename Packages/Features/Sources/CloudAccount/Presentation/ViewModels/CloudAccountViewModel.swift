@@ -3,6 +3,26 @@ import CryptoKit
 import Foundation
 import Observation
 
+/// The coffee (increments 23 and 25): buy, restore, and finish purchases left halfway.
+public struct SupportActions: Sendable {
+    let buy: any BuySupportUseCase
+    let restore: any RestorePurchasesUseCase
+    let redeemPending: any RedeemPendingPurchasesUseCase
+    let price: @Sendable () async -> String?
+
+    public init(
+        buy: any BuySupportUseCase,
+        restore: any RestorePurchasesUseCase,
+        redeemPending: any RedeemPendingPurchasesUseCase,
+        price: @escaping @Sendable () async -> String?,
+    ) {
+        self.buy = buy
+        self.restore = restore
+        self.redeemPending = redeemPending
+        self.price = price
+    }
+}
+
 @MainActor
 @Observable
 public final class CloudAccountViewModel {
@@ -29,6 +49,13 @@ public final class CloudAccountViewModel {
     /// Passkey sign-in; `nil` in builds without the web's associated domain.
     private let passkeys: (any PasskeySignIn)?
     public private(set) var assistantsDisconnected = false
+    /// Invitation code for a first sign-in; existing accounts don't need one.
+    public var invitation = ""
+    /// The coffee; `nil` in builds without in-app purchase.
+    private let support: SupportActions?
+    public private(set) var coffeePrice: String?
+    /// A confirmation after buying or restoring ("Thank you…", "Nothing to restore").
+    public private(set) var supportMessage: String?
     /// Runs sync while the account has `cloud_sync`; `nil` in previews and tests.
     public let sync: SyncCoordinator?
 
@@ -40,7 +67,9 @@ public final class CloudAccountViewModel {
         sync: SyncCoordinator? = nil,
         disconnectAssistants: (any DisconnectAssistantsUseCase)? = nil,
         passkeys: (any PasskeySignIn)? = nil,
+        support: SupportActions? = nil,
     ) {
+        self.support = support
         self.passkeys = passkeys
         disconnectUseCase = disconnectAssistants
         self.sync = sync
@@ -54,6 +83,13 @@ public final class CloudAccountViewModel {
         do {
             state = try await load.execute().map(State.signedIn) ?? .signedOut
             errorMessage = nil
+            if case .signedIn = state, let support {
+                // A purchase paid but never confirmed (the app quit, no network) is finished now.
+                if let user = await support.redeemPending.execute() {
+                    state = .signedIn(user)
+                }
+                coffeePrice = await support.price()
+            }
         } catch {
             // Offline at launch: say so, but don't pretend the person is signed out.
             if state == .loading {
@@ -74,7 +110,10 @@ public final class CloudAccountViewModel {
         guard let nonce = pendingNonce else { return }
         pendingNonce = nil
         await run { () async throws(CloudAccountError) in
-            let user = try await self.signIn.execute(AppleCredential(idToken: idToken, rawNonce: nonce))
+            let invitation = self.invitation.trimmingCharacters(in: .whitespacesAndNewlines)
+            let credential = AppleCredential(idToken: idToken, rawNonce: nonce, invitation: invitation.isEmpty ? nil : invitation)
+            let user = try await self.signIn.execute(credential)
+            self.invitation = ""
             self.state = .signedIn(user)
         }
     }
@@ -114,6 +153,34 @@ public final class CloudAccountViewModel {
         }
     }
 
+    public var canBuySupport: Bool {
+        support != nil
+    }
+
+    /// Buys the coffee. Cancelling, or waiting for Ask to Buy, changes nothing and shows nothing.
+    public func buyCoffee() async {
+        guard let support else { return }
+        await run { () async throws(CloudAccountError) in
+            if case let .granted(user) = try await support.buy.execute() {
+                self.state = .signedIn(user)
+                self.supportMessage = String(localized: "Thank you for the coffee. Sync and Claude are on.", bundle: #bundle)
+            }
+        }
+    }
+
+    /// On a new install or a new account: asks the App Store for past purchases and sends them again.
+    public func restorePurchases() async {
+        guard let support else { return }
+        await run { () async throws(CloudAccountError) in
+            if let user = try await support.restore.execute() {
+                self.state = .signedIn(user)
+                self.supportMessage = String(localized: "Purchase restored.", bundle: #bundle)
+            } else {
+                self.supportMessage = String(localized: "No purchases to restore for this Apple ID.", bundle: #bundle)
+            }
+        }
+    }
+
     /// "Disconnect everything" for assistants connected through MCP.
     public func disconnectAssistants() async {
         guard let disconnectUseCase else { return }
@@ -147,7 +214,13 @@ public final class CloudAccountViewModel {
     private func message(for error: CloudAccountError) -> String {
         switch error {
         case .notInvited:
-            String(localized: "Keepwell accounts are invite-only for now.", bundle: #bundle)
+            String(localized: "Keepwell accounts are invite-only for now. Enter an invitation code first.", bundle: #bundle)
+        case .invalidInvitation:
+            String(localized: "That invitation is not valid. It may have expired or been used.", bundle: #bundle)
+        case .purchaseBelongsToAnotherAccount:
+            String(localized: "This purchase is already linked to another Keepwell account.", bundle: #bundle)
+        case .storeFailed:
+            String(localized: "The App Store couldn't complete the purchase. Try again.", bundle: #bundle)
         case .signedOut:
             String(localized: "You were signed out. Sign in again to keep syncing.", bundle: #bundle)
         case .needsPlan:

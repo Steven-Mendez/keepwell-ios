@@ -9,6 +9,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- "Invite me a coffee": a one-time purchase that turns on sync and Claude for your Keepwell account,
+  with Restore purchases for a new iPhone. A purchase interrupted before Keepwell confirmed it is
+  finished on the next launch.
+- New accounts can sign in with an invitation code.
 - Sign in to your Keepwell account with a passkey made on Keepwell for the web.
 - Movements Claude records through the Keepwell connector say "Recorded by Claude". Its drafts on Home
   can be confirmed or discarded; recurring payments it proposes wait paused until you resume them.

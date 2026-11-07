@@ -42,6 +42,18 @@ extension AppContainer {
             sync: coordinator,
             disconnectAssistants: DefaultDisconnectAssistantsUseCase(repository: repository),
             passkeys: HTTPPasskeySignIn(client: client),
+            support: makeSupportActions(repository: repository),
+        )
+    }
+
+    /// The coffee: StoreKit for the purchase, the API to verify it and grant the plan.
+    private func makeSupportActions(repository: HTTPCloudAccountRepository) -> SupportActions {
+        let store = StoreKitStoreRepository()
+        return SupportActions(
+            buy: DefaultBuySupportUseCase(store: store, entitlements: repository),
+            restore: DefaultRestorePurchasesUseCase(store: store, entitlements: repository),
+            redeemPending: DefaultRedeemPendingPurchasesUseCase(store: store, entitlements: repository),
+            price: { await store.displayPrice() },
         )
     }
 }

@@ -31,6 +31,26 @@
         }
       }
     },
+    "Buy a coffee" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprar un café"
+          }
+        }
+      }
+    },
+    "Buy a coffee for %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprar un café por %@"
+          }
+        }
+      }
+    },
     "Couldn't reach Keepwell. Try again." : {
       "localizations" : {
         "es" : {
@@ -101,6 +121,26 @@
         }
       }
     },
+    "Invitation code (new accounts)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de invitación (cuentas nuevas)"
+          }
+        }
+      }
+    },
+    "Invite me a coffee" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invítame un café"
+          }
+        }
+      }
+    },
     "Keepwell accounts are invite-only for now." : {
       "localizations" : {
         "es" : {
@@ -111,12 +151,52 @@
         }
       }
     },
+    "Keepwell accounts are invite-only for now. Enter an invitation code first." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las cuentas de Keepwell son solo por invitación por ahora. Escribe primero un código de invitación."
+          }
+        }
+      }
+    },
+    "No purchases to restore for this Apple ID." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay compras que restaurar para este Apple ID."
+          }
+        }
+      }
+    },
     "Offline. Changes sync when you're back online." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin conexión. Los cambios se sincronizan al volver a estar en línea."
+          }
+        }
+      }
+    },
+    "Purchase restored." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compra restaurada."
+          }
+        }
+      }
+    },
+    "Restore purchases" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar compras"
           }
         }
       }
@@ -171,6 +251,16 @@
         }
       }
     },
+    "Sync is included during early access. A one-time coffee keeps it, and lets Claude read and record your finances." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización está incluida durante el acceso anticipado. Un café, una sola vez, la mantiene y deja que Claude lea y registre tus finanzas."
+          }
+        }
+      }
+    },
     "Sync isn't included in your plan. Everything keeps working on this iPhone." : {
       "localizations" : {
         "es" : {
@@ -181,12 +271,62 @@
         }
       }
     },
+    "Sync with the web and Claude come with a one-time coffee. Everything else stays free and works on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización con la web y Claude vienen con un café, una sola vez. Todo lo demás sigue siendo gratis y funciona en este iPhone."
+          }
+        }
+      }
+    },
     "Syncing…" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sincronizando…"
+          }
+        }
+      }
+    },
+    "Thank you for the coffee. Sync and Claude are on." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gracias por el café. La sincronización y Claude ya están activos."
+          }
+        }
+      }
+    },
+    "That invitation is not valid. It may have expired or been used." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esa invitación no es válida. Puede que haya caducado o ya se haya usado."
+          }
+        }
+      }
+    },
+    "The App Store couldn't complete the purchase. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El App Store no pudo completar la compra. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "This purchase is already linked to another Keepwell account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta compra ya está vinculada a otra cuenta de Keepwell."
           }
         }
       }

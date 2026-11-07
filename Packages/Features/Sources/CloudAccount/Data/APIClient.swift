@@ -38,6 +38,7 @@ public final class APIClient: Sendable {
         _ path: String,
         json: (any Encodable & Sendable)? = nil,
         query: [String: String] = [:],
+        headers: [String: String] = [:],
     ) async throws(CloudAccountError) -> Response {
         var url = baseURL.appending(path: path)
         if !query.isEmpty {
@@ -49,6 +50,9 @@ public final class APIClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         // Better Auth checks the origin of cookie-authenticated writes; the API trusts its own.
         request.setValue(baseURL.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/")), forHTTPHeaderField: "Origin")
+        for (name, value) in headers {
+            request.setValue(value, forHTTPHeaderField: name)
+        }
         if let cookie = store.load() {
             request.setValue(cookie, forHTTPHeaderField: "Cookie")
         }

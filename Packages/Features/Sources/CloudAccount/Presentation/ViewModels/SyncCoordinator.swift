@@ -96,9 +96,13 @@ public final class SyncCoordinator {
         case let .server(_, requestID):
             state = .failed(requestID: requestID)
             backOff()
-        case .notInvited:
+        case .notInvited, .invalidInvitation:
             state = .signedOut
             halted = true
+        case .purchaseBelongsToAnotherAccount, .storeFailed:
+            // Not sync errors; listed so a new case is a compile error here, not a silent default.
+            state = .failed(requestID: nil)
+            backOff()
         }
     }
 

@@ -73,6 +73,17 @@ struct CloudAccountViewModelTests {
     }
 
     @Test
+    func theInvitationGoesWithTheFirstSignInAndIsForgottenAfter() async {
+        let signIn = RecordingSignIn(result: .success(ana))
+        let model = model(signIn: signIn)
+        model.invitation = "  ABCDE-FGHJK "
+        _ = model.prepareAppleRequest()
+        await model.completeAppleSignIn(idToken: "jwt")
+        #expect(await signIn.credentials.first?.invitation == "ABCDE-FGHJK")
+        #expect(model.invitation.isEmpty)
+    }
+
+    @Test
     func cancellingApplesSheetShowsNoError() {
         let model = model()
         _ = model.prepareAppleRequest()

@@ -3,7 +3,7 @@ import Foundation
 
 /// The account through the API: Better Auth's endpoints for signing in and out, `GET /me` for who
 /// is signed in.
-public struct HTTPCloudAccountRepository: CloudAccountRepository {
+public struct HTTPCloudAccountRepository: CloudAccountRepository, EntitlementRepository {
     private let client: APIClient
 
     public init(client: APIClient) {
@@ -21,6 +21,12 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository {
         let user: UserDTO
         let capabilities: [String]?
         let early_access: [String]? // swiftlint:disable:this identifier_name
+        let plan: String?
+    }
+
+    private struct RedeemBody: Encodable, Sendable {
+        // swiftlint:disable:next identifier_name
+        let signed_transaction: String
     }
 
     private struct ErrorDTO: Decodable {
@@ -53,15 +59,39 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository {
         let me = try decode(MeDTO.self, response)
         return CloudAccountUser(
             id: me.user.id, name: me.user.name, email: me.user.email,
-            capabilities: Set(me.capabilities ?? []), earlyAccess: Set(me.early_access ?? []),
+            capabilities: Set(me.capabilities ?? []), earlyAccess: Set(me.early_access ?? []), plan: me.plan ?? "free",
         )
     }
 
     public func signIn(with credential: AppleCredential) async throws(CloudAccountError) -> CloudAccountUser {
         let body = SignInBody(idToken: .init(token: credential.idToken, nonce: credential.rawNonce))
-        let response = try await client.send("POST", "api/auth/sign-in/social", json: body)
+        let invitation = credential.invitation?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let response = try await client.send(
+            "POST", "api/auth/sign-in/social", json: body,
+            headers: invitation.isEmpty ? [:] : ["X-Keepwell-Invitation": invitation],
+        )
         if response.status == 403 {
+            if case .server(code: "INVALID_INVITATION", _) = failure(response) {
+                throw .invalidInvitation
+            }
             throw .notInvited
+        }
+        guard (200 ..< 300).contains(response.status) else { throw failure(response) }
+        guard let user = try await currentUser() else { throw .signedOut }
+        return user
+    }
+
+    public func redeem(_ signedTransaction: String, idempotencyKey: UUID) async throws(CloudAccountError) -> CloudAccountUser {
+        let response = try await client.send(
+            "POST", "entitlements/app-store",
+            json: RedeemBody(signed_transaction: signedTransaction),
+            headers: ["Idempotency-Key": idempotencyKey.uuidString.lowercased()],
+        )
+        if response.status == 401 {
+            throw .signedOut
+        }
+        if response.status == 409, case .server(code: "already_redeemed_elsewhere", _) = failure(response) {
+            throw .purchaseBelongsToAnotherAccount
         }
         guard (200 ..< 300).contains(response.status) else { throw failure(response) }
         guard let user = try await currentUser() else { throw .signedOut }
