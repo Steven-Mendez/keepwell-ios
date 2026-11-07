@@ -92,6 +92,7 @@ public struct CloudAccountSection: View {
             VStack(alignment: .leading, spacing: KWSpacing.sm) {
                 Text(user.name.isEmpty ? user.email : user.name).font(KWTextStyle.body.font)
                 Text(user.email).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.secondary)
+                Text(syncLine(user)).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.secondary)
                 HStack {
                     Button {
                         Task { await viewModel.signOut(everywhere: false) }
@@ -113,6 +114,26 @@ public struct CloudAccountSection: View {
                 .font(KWTextStyle.body.font)
                 .disabled(viewModel.isWorking)
             }
+        }
+    }
+
+    private func syncLine(_ user: CloudAccountUser) -> String {
+        guard user.canSync else {
+            return String(localized: "Sync isn't included in your plan. Everything keeps working on this iPhone.", bundle: #bundle)
+        }
+        switch viewModel.sync?.state {
+        case .syncing:
+            return String(localized: "Syncing…", bundle: #bundle)
+        case let .offline(pending) where pending > 0:
+            return String(localized: "Offline. Changes sync when you're back online.", bundle: #bundle)
+        case .failed, .offline:
+            return String(localized: "Couldn't sync. Keepwell will try again.", bundle: #bundle)
+        case .needsPlan:
+            return String(localized: "Sync isn't included in your plan. Everything keeps working on this iPhone.", bundle: #bundle)
+        default:
+            return user.earlyAccess.contains("cloud_sync")
+                ? String(localized: "Sync included during early access.", bundle: #bundle)
+                : String(localized: "Up to date.", bundle: #bundle)
         }
     }
 }

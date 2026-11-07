@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Sync with Keepwell on the web through your Keepwell account: changes made offline are kept and sent
+  when the iPhone is back online, a moment after each edit, when the app opens and every minute while
+  it is open. Settings shows whether everything is up to date.
 - Recurring movements, loan installments and debt repayments get ids that are the same on every
   device, ready for syncing with the web: recording the same occurrence twice yields one movement.
 - Settings: a Keepwell account with Sign in with Apple, in builds that have the API configured. The

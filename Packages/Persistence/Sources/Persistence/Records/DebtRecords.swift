@@ -45,6 +45,12 @@ public final class LoanRecord: AuditedRecord {
         paymentsJSON = JSONText.encode(stored)
     }
 
+    /// Replaces the payments only (a payment row pulled from the server).
+    func setPayments(_ payments: [LoanPayment]) {
+        paymentsJSON = JSONText
+            .encode(payments.map { StoredPayment(number: $0.number, paidAt: $0.paidAt, transactionID: $0.transactionID) })
+    }
+
     func toDomain() throws(DomainCorruption) -> Loan {
         guard let frequency = LoanFrequency(rawValue: frequencyRaw) else {
             throw DomainCorruption("Loan frequency '\(frequencyRaw)'")
@@ -108,6 +114,12 @@ public final class PersonalDebtRecord: AuditedRecord {
         ) })
         settledAt = debt.settledAt
         transactionID = debt.transactionID
+    }
+
+    /// Replaces the repayments only (a repayment row pulled from the server).
+    func setRepayments(_ repayments: [DebtRepayment]) {
+        repaymentsJSON = JSONText
+            .encode(repayments.map { StoredRepayment(id: $0.id, amount: DecimalCoding.string($0.amount), date: $0.date) })
     }
 
     func toDomain() throws(DomainCorruption) -> PersonalDebt {

@@ -29,7 +29,7 @@ extension SwiftDataStore: LoanRepository {
             record.stampDeleted()
             for payment in try record.toDomain().payments {
                 let row = record.paymentRow(payment, deletedAt: record.updatedAt)
-                context.enqueue(entity: "loanPayment", id: row["id"] as? String ?? "", operation: "delete", row: row)
+                context.enqueueChild(entity: "loanPayment", id: row["id"] as? String ?? "", operation: "delete", row: row)
             }
             try context.saveWithOutbox()
         }
@@ -85,7 +85,7 @@ extension SwiftDataStore: LoanRepository {
         let current = Dictionary(uniqueKeysWithValues: after.map { ($0.number, $0) })
         for payment in after where previous[payment.number] != payment {
             let row = record.paymentRow(payment)
-            context.enqueue(
+            context.enqueueChild(
                 entity: "loanPayment",
                 id: row["id"] as? String ?? "",
                 operation: previous[payment.number] == nil ? "create" : "update",
@@ -94,7 +94,7 @@ extension SwiftDataStore: LoanRepository {
         }
         for payment in before where current[payment.number] == nil {
             let row = record.paymentRow(payment, deletedAt: record.updatedAt)
-            context.enqueue(entity: "loanPayment", id: row["id"] as? String ?? "", operation: "delete", row: row)
+            context.enqueueChild(entity: "loanPayment", id: row["id"] as? String ?? "", operation: "delete", row: row)
         }
     }
 }
@@ -121,7 +121,7 @@ extension SwiftDataStore: PersonalDebtRepository {
             let previous = Set(before.map(\.id))
             let current = Set(debt.repayments.map(\.id))
             for repayment in debt.repayments where !previous.contains(repayment.id) {
-                context.enqueue(
+                context.enqueueChild(
                     entity: "personalDebtRepayment",
                     id: repayment.id.uuidString.lowercased(),
                     operation: "create",
@@ -129,7 +129,7 @@ extension SwiftDataStore: PersonalDebtRepository {
                 )
             }
             for repayment in before where !current.contains(repayment.id) {
-                context.enqueue(
+                context.enqueueChild(
                     entity: "personalDebtRepayment",
                     id: repayment.id.uuidString.lowercased(),
                     operation: "delete",
@@ -148,7 +148,7 @@ extension SwiftDataStore: PersonalDebtRepository {
             }
             record.stampDeleted()
             for repayment in try record.toDomain().repayments {
-                context.enqueue(
+                context.enqueueChild(
                     entity: "personalDebtRepayment",
                     id: repayment.id.uuidString.lowercased(),
                     operation: "delete",

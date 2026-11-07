@@ -19,7 +19,19 @@ extension ModelContext {
             )
             offset += 0.001
         }
+        let queued = offset > 0
         try save()
+        if queued {
+            NotificationCenter.default.post(name: .keepwellOutboxChanged, object: nil)
+        }
+    }
+
+    /// Queues an event outside the record loop: a loan's payment or a debt's repayment. Those go a
+    /// second after the parent's own event (written by `saveWithOutbox`), because the server
+    /// receives events in outbox order and another device can only attach a payment to a loan it
+    /// already has.
+    func enqueueChild(entity: String, id: String, operation: String, row: WireRow) {
+        enqueue(entity: entity, id: id, operation: operation, row: row, at: .now.addingTimeInterval(1))
     }
 
     func enqueue(entity: String, id: String, operation: String, row: WireRow, at date: Date = .now) {
@@ -50,4 +62,9 @@ private struct PendingEvent {
             return nil
         }
     }
+}
+
+extension Notification.Name {
+    /// Posted after a local change reaches the outbox, so the sync engine can run soon.
+    public static let keepwellOutboxChanged = Notification.Name("keepwell.outboxChanged")
 }

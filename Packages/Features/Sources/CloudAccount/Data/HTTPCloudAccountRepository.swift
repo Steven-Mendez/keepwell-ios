@@ -17,7 +17,11 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository {
         var domain: CloudAccountUser { CloudAccountUser(id: id, name: name, email: email) }
     }
 
-    private struct MeDTO: Decodable { let user: UserDTO }
+    private struct MeDTO: Decodable {
+        let user: UserDTO
+        let capabilities: [String]?
+        let early_access: [String]? // swiftlint:disable:this identifier_name
+    }
 
     private struct ErrorDTO: Decodable {
         struct Detail: Decodable { let code: String? }
@@ -46,7 +50,11 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository {
             client.clearSession()
             return nil
         }
-        return try decode(MeDTO.self, response).user.domain
+        let me = try decode(MeDTO.self, response)
+        return CloudAccountUser(
+            id: me.user.id, name: me.user.name, email: me.user.email,
+            capabilities: Set(me.capabilities ?? []), earlyAccess: Set(me.early_access ?? []),
+        )
     }
 
     public func signIn(with credential: AppleCredential) async throws(CloudAccountError) -> CloudAccountUser {

@@ -41,6 +41,16 @@
         }
       }
     },
+    "Couldn't sync. Keepwell will try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo sincronizar. Keepwell lo intentará de nuevo."
+          }
+        }
+      }
+    },
     "Delete account" : {
       "localizations" : {
         "es" : {
@@ -81,6 +91,16 @@
         }
       }
     },
+    "Offline. Changes sync when you're back online." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin conexión. Los cambios se sincronizan al volver a estar en línea."
+          }
+        }
+      }
+    },
     "Sign out" : {
       "localizations" : {
         "es" : {
@@ -117,6 +137,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Cerrar sesión en todos los dispositivos?"
+          }
+        }
+      }
+    },
+    "Sync included during early access." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización incluida en el acceso anticipado."
+          }
+        }
+      }
+    },
+    "Sync isn't included in your plan. Everything keeps working on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización no está incluida en tu plan. Todo sigue funcionando en este iPhone."
+          }
+        }
+      }
+    },
+    "Syncing…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizando…"
+          }
+        }
+      }
+    },
+    "Up to date." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al día."
           }
         }
       }

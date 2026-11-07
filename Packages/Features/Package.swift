@@ -351,7 +351,7 @@ let package = Package(
         ),
         .target(
             name: "CloudAccountData",
-            dependencies: ["CloudAccountDomain"],
+            dependencies: ["CloudAccountDomain", .product(name: "Domain", package: "Domain")],
             path: "Sources/CloudAccount/Data",
         ),
         .target(
@@ -364,7 +364,10 @@ let package = Package(
             resources: [.process("Resources")],
         ),
         .testTarget(name: "CloudAccountDomainTests", dependencies: ["CloudAccountDomain"]),
-        .testTarget(name: "CloudAccountDataTests", dependencies: ["CloudAccountData", "CloudAccountDomain"]),
+        .testTarget(
+            name: "CloudAccountDataTests",
+            dependencies: ["CloudAccountData", "CloudAccountDomain", .product(name: "Domain", package: "Domain")],
+        ),
         .testTarget(name: "CloudAccountPresentationTests", dependencies: ["CloudAccountPresentation", "CloudAccountDomain"]),
 
         // MARK: Settings

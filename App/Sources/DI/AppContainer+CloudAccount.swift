@@ -2,25 +2,44 @@ import CloudAccountData
 import CloudAccountDomain
 import CloudAccountPresentation
 import Foundation
+import Persistence
 
-// MARK: - Keepwell account (API)
+// MARK: - Keepwell account and sync (API)
 
 extension AppContainer {
+    private var keychainService: String {
+        (Bundle.main.bundleIdentifier ?? "Keepwell") + ".api-session"
+    }
+
     /// One client per app: it owns the session cookie in the Keychain. `nil` without an API URL.
     var apiClient: APIClient? {
         guard let url = AppEnvironment.current.apiBaseURL else { return nil }
-        let service = (Bundle.main.bundleIdentifier ?? "Keepwell") + ".api-session"
-        return APIClient(baseURL: url, store: KeychainSessionStore(service: service))
+        return APIClient(baseURL: url, store: KeychainSessionStore(service: keychainService))
     }
 
     func makeCloudAccountViewModel() -> CloudAccountViewModel? {
         guard let client = apiClient else { return nil }
         let repository = HTTPCloudAccountRepository(client: client)
+        let engine = SyncEngine(
+            client: client,
+            store: store,
+            clientID: SyncClientID.load(from: KeychainSessionStore(service: keychainService, account: "sync-client-id")),
+        )
+        let store = store
+        let coordinator = SyncCoordinator(
+            run: { () async throws(CloudAccountError) in try await engine.syncOnce() },
+            status: { await (engine.lastSync, store.pendingCount()) },
+        )
+        // A local change reaches the server a couple of seconds later.
+        NotificationCenter.default.addObserver(forName: .keepwellOutboxChanged, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { coordinator.changed() }
+        }
         return CloudAccountViewModel(
             load: DefaultLoadCloudAccountUseCase(repository: repository),
             signIn: DefaultSignInWithAppleUseCase(repository: repository),
             signOut: DefaultSignOutUseCase(repository: repository),
             delete: DefaultDeleteCloudAccountUseCase(repository: repository),
+            sync: coordinator,
         )
     }
 }

@@ -13,10 +13,13 @@ public protocol SessionStore: Sendable {
 /// to a new iPhone (which signs in again).
 public struct KeychainSessionStore: SessionStore {
     private let service: String
-    private let account = "session-cookie"
+    private let account: String
 
-    public init(service: String) {
+    /// `account` names the item: the session cookie by default, or another value such as the
+    /// installation's sync `client_id`.
+    public init(service: String, account: String = "session-cookie") {
         self.service = service
+        self.account = account
     }
 
     private var query: [String: Any] {
@@ -67,5 +70,18 @@ public final class InMemorySessionStore: SessionStore, @unchecked Sendable {
 
     public func clear() {
         lock.withLock { cookie = nil }
+    }
+}
+
+/// This installation's identity for sync, created on first use and kept in the Keychain (this
+/// device only). If it is lost, a new one is made and the engine starts from a snapshot.
+public enum SyncClientID {
+    public static func load(from store: any SessionStore) -> String {
+        if let existing = store.load() {
+            return existing
+        }
+        let id = UUID().uuidString.lowercased()
+        store.save(id)
+        return id
     }
 }

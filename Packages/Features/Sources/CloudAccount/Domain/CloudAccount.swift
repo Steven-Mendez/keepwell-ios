@@ -6,11 +6,21 @@ public struct CloudAccountUser: Hashable, Sendable {
     public let id: String
     public let name: String
     public let email: String
+    /// `cloud_sync` and `mcp`, as GET /me resolves them; the app never infers them itself.
+    public let capabilities: Set<String>
+    /// Capabilities that come only from early access ("Sync included during early access").
+    public let earlyAccess: Set<String>
 
-    public init(id: String, name: String, email: String) {
+    public init(id: String, name: String, email: String, capabilities: Set<String> = [], earlyAccess: Set<String> = []) {
         self.id = id
         self.name = name
         self.email = email
+        self.capabilities = capabilities
+        self.earlyAccess = earlyAccess
+    }
+
+    public var canSync: Bool {
+        capabilities.contains("cloud_sync")
     }
 }
 
@@ -21,6 +31,8 @@ public enum CloudAccountError: Error, Equatable, Sendable {
     case signedOut
     /// No connection, or the server didn't answer.
     case unreachable
+    /// The account's plan doesn't include what was asked (`403 needs_plan`).
+    case needsPlan
     /// The server refused the request; `requestID` is what support can look up.
     case server(code: String, requestID: String?)
 }

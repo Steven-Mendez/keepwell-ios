@@ -12,7 +12,10 @@ public final class CloudAccountViewModel {
         case signedIn(CloudAccountUser)
     }
 
-    public private(set) var state = State.loading
+    public private(set) var state = State.loading {
+        didSet { followSync() }
+    }
+
     public private(set) var isWorking = false
     public private(set) var errorMessage: String?
     /// The raw nonce of the sign-in in progress; Apple only sees its SHA-256.
@@ -22,13 +25,17 @@ public final class CloudAccountViewModel {
     private let signIn: any SignInWithAppleUseCase
     private let signOutUseCase: any SignOutUseCase
     private let deleteUseCase: any DeleteCloudAccountUseCase
+    /// Runs sync while the account has `cloud_sync`; `nil` in previews and tests.
+    public let sync: SyncCoordinator?
 
     public init(
         load: any LoadCloudAccountUseCase,
         signIn: any SignInWithAppleUseCase,
         signOut: any SignOutUseCase,
         delete: any DeleteCloudAccountUseCase,
+        sync: SyncCoordinator? = nil,
     ) {
+        self.sync = sync
         self.load = load
         self.signIn = signIn
         signOutUseCase = signOut
@@ -106,6 +113,8 @@ public final class CloudAccountViewModel {
             String(localized: "Keepwell accounts are invite-only for now.", bundle: #bundle)
         case .signedOut:
             String(localized: "You were signed out. Sign in again to keep syncing.", bundle: #bundle)
+        case .needsPlan:
+            String(localized: "Sync isn't included in your plan. Everything keeps working on this iPhone.", bundle: #bundle)
         case .unreachable, .server:
             String(localized: "Couldn't reach Keepwell. Try again.", bundle: #bundle)
         }
@@ -113,5 +122,16 @@ public final class CloudAccountViewModel {
 
     static func sha256(_ text: String) -> String {
         SHA256.hash(data: Data(text.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Starts sync when an account with `cloud_sync` is signed in, stops it otherwise.
+    private func followSync() {
+        guard let sync else { return }
+        if case let .signedIn(user) = state, user.canSync {
+            sync.start()
+            sync.resume()
+        } else {
+            sync.stop()
+        }
     }
 }

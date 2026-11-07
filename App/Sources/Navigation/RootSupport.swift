@@ -132,7 +132,7 @@ struct SettingsRoute: View {
         onOpenRules: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
-        _cloudAccount = State(initialValue: container.makeCloudAccountViewModel())
+        _cloudAccount = State(initialValue: container.cloudAccount)
         self.container = container
         self.onBack = onBack
         self.onErased = onErased

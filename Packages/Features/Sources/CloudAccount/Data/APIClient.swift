@@ -37,8 +37,13 @@ public final class APIClient: Sendable {
         _ method: String,
         _ path: String,
         json: (any Encodable & Sendable)? = nil,
+        query: [String: String] = [:],
     ) async throws(CloudAccountError) -> Response {
-        var request = URLRequest(url: baseURL.appending(path: path))
+        var url = baseURL.appending(path: path)
+        if !query.isEmpty {
+            url.append(queryItems: query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) })
+        }
+        var request = URLRequest(url: url)
         request.httpMethod = method
         request.timeoutInterval = 20
         request.setValue("application/json", forHTTPHeaderField: "Accept")
