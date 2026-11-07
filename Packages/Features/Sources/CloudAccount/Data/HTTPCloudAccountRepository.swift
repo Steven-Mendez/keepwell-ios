@@ -81,6 +81,14 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository {
         guard (200 ..< 300).contains(response.status) else { throw failure(response) }
     }
 
+    public func disconnectAssistants() async throws(CloudAccountError) {
+        let response = try await client.send("POST", "mcp/disconnect-all", json: Empty())
+        if response.status == 401 {
+            throw .signedOut
+        }
+        guard (200 ..< 300).contains(response.status) else { throw failure(response) }
+    }
+
     public func deleteAccount() async throws(CloudAccountError) {
         let response = try await client.send("DELETE", "me")
         if response.status == 401 {

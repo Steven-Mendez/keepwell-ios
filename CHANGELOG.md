@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Movements Claude records through the Keepwell connector say "Recorded by Claude". Its drafts on Home
+  can be confirmed or discarded; recurring payments it proposes wait paused until you resume them.
+  Settings can disconnect every connected assistant at once.
 - Sync with Keepwell on the web through your Keepwell account: changes made offline are kept and sent
   when the iPhone is back online, a moment after each edit, when the app opens and every minute while
   it is open. Settings shows whether everything is up to date.

@@ -40,6 +40,7 @@ extension AppContainer {
             signOut: DefaultSignOutUseCase(repository: repository),
             delete: DefaultDeleteCloudAccountUseCase(repository: repository),
             sync: coordinator,
+            disconnectAssistants: DefaultDisconnectAssistantsUseCase(repository: repository),
         )
     }
 }

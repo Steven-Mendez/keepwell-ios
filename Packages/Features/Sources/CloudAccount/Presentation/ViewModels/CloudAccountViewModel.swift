@@ -25,6 +25,8 @@ public final class CloudAccountViewModel {
     private let signIn: any SignInWithAppleUseCase
     private let signOutUseCase: any SignOutUseCase
     private let deleteUseCase: any DeleteCloudAccountUseCase
+    private let disconnectUseCase: (any DisconnectAssistantsUseCase)?
+    public private(set) var assistantsDisconnected = false
     /// Runs sync while the account has `cloud_sync`; `nil` in previews and tests.
     public let sync: SyncCoordinator?
 
@@ -34,7 +36,9 @@ public final class CloudAccountViewModel {
         signOut: any SignOutUseCase,
         delete: any DeleteCloudAccountUseCase,
         sync: SyncCoordinator? = nil,
+        disconnectAssistants: (any DisconnectAssistantsUseCase)? = nil,
     ) {
+        disconnectUseCase = disconnectAssistants
         self.sync = sync
         self.load = load
         self.signIn = signIn
@@ -83,6 +87,15 @@ public final class CloudAccountViewModel {
         await run { () async throws(CloudAccountError) in
             try await self.signOutUseCase.execute(everywhere: everywhere)
             self.state = .signedOut
+        }
+    }
+
+    /// "Disconnect everything" for assistants connected through MCP.
+    public func disconnectAssistants() async {
+        guard let disconnectUseCase else { return }
+        await run { () async throws(CloudAccountError) in
+            try await disconnectUseCase.execute()
+            self.assistantsDisconnected = true
         }
     }
 

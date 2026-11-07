@@ -21,6 +21,16 @@
         }
       }
     },
+    "Assistants disconnected" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asistentes desconectados"
+          }
+        }
+      }
+    },
     "Couldn't reach Keepwell. Try again." : {
       "localizations" : {
         "es" : {
@@ -67,6 +77,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Eliminar tu cuenta de Keepwell?"
+          }
+        }
+      }
+    },
+    "Disconnect assistants" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar asistentes"
           }
         }
       }

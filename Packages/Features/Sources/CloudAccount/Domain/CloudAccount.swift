@@ -60,4 +60,10 @@ public protocol CloudAccountRepository: Sendable {
     /// Asks the server to delete the account. Every session ends at once and the server erases the
     /// data in the background; the local data on this iPhone stays.
     func deleteAccount() async throws(CloudAccountError)
+    /// Cuts every assistant connected through MCP at once (their tokens stop working right away).
+    func disconnectAssistants() async throws(CloudAccountError)
+}
+
+extension CloudAccountRepository {
+    public func disconnectAssistants() async throws(CloudAccountError) {}
 }

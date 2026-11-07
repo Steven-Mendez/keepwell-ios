@@ -74,3 +74,19 @@ public struct DefaultDeleteCloudAccountUseCase: DeleteCloudAccountUseCase {
         try await repository.deleteAccount()
     }
 }
+
+public protocol DisconnectAssistantsUseCase: Sendable {
+    func execute() async throws(CloudAccountError)
+}
+
+public struct DefaultDisconnectAssistantsUseCase: DisconnectAssistantsUseCase {
+    private let repository: any CloudAccountRepository
+
+    public init(repository: any CloudAccountRepository) {
+        self.repository = repository
+    }
+
+    public func execute() async throws(CloudAccountError) {
+        try await repository.disconnectAssistants()
+    }
+}

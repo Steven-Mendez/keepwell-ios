@@ -119,6 +119,7 @@ final class AppContainer {
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
+            discard: DefaultDeleteTransactionUseCase(transactions: store),
         )
     }
 

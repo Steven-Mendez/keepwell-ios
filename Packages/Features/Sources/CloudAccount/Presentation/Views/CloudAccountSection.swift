@@ -106,6 +106,18 @@ public struct CloudAccountSection: View {
                         Text("Sign out on all devices", bundle: #bundle)
                     }
                 }
+                if user.capabilities.contains("mcp") {
+                    Button {
+                        Task { await viewModel.disconnectAssistants() }
+                    } label: {
+                        if viewModel.assistantsDisconnected {
+                            Text("Assistants disconnected", bundle: #bundle)
+                        } else {
+                            Text("Disconnect assistants", bundle: #bundle)
+                        }
+                    }
+                    .disabled(viewModel.assistantsDisconnected)
+                }
                 Button(role: .destructive) {
                     isConfirmingDelete = true
                 } label: {
