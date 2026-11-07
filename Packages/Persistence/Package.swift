@@ -24,6 +24,8 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+            // `wire-columns.json`, copied verbatim from keepwell-web's shared fixtures.
+            resources: [.copy("Fixtures")],
         ),
     ],
     swiftLanguageModes: [.v6],

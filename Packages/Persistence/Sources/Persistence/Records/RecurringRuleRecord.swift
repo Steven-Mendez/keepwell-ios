@@ -27,6 +27,8 @@ public final class RecurringRuleRecord: AuditedRecord {
     var note: String?
     /// Added in V9, one tag per line like a movement's.
     var tagsText = ""
+    /// Added in V10: who created it (`RecordSource`); `nil` on older rows reads as `app`.
+    var sourceRaw: String?
     var createdAt = Date.now
     var updatedAt = Date.now
     var deletedAt: Date?
@@ -56,6 +58,10 @@ public final class RecurringRuleRecord: AuditedRecord {
         isPaused = rule.isPaused
         note = rule.note
         tagsText = TagsText.encode(rule.tags)
+        // Set when created, never changed afterwards (an edit of Claude's movement stays Claude's).
+        if sourceRaw == nil {
+            sourceRaw = rule.source?.rawValue ?? RecordSource.app.rawValue
+        }
     }
 
     func toDomain() throws(DomainCorruption) -> RecurringRule {
@@ -82,6 +88,8 @@ public final class RecurringRuleRecord: AuditedRecord {
             isPaused: isPaused,
             note: note,
             tags: TagsText.decode(tagsText),
+            // `nil` means made in the app, so a rule reads back as it was saved.
+            source: sourceRaw == RecordSource.mcp.rawValue ? .mcp : nil,
         )
     }
 }
