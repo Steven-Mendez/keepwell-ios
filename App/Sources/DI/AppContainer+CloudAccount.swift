@@ -20,6 +20,7 @@ extension AppContainer {
             load: DefaultLoadCloudAccountUseCase(repository: repository),
             signIn: DefaultSignInWithAppleUseCase(repository: repository),
             signOut: DefaultSignOutUseCase(repository: repository),
+            delete: DefaultDeleteCloudAccountUseCase(repository: repository),
         )
     }
 }

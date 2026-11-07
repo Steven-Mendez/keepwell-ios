@@ -40,6 +40,10 @@ private actor FakeRepository: CloudAccountRepository {
             throw everywhereError
         }
     }
+
+    func deleteAccount() async throws(CloudAccountError) {
+        calls.append("delete")
+    }
 }
 
 @Suite("Cloud account use cases")

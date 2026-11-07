@@ -7,6 +7,7 @@ import SwiftUI
 public struct CloudAccountSection: View {
     @Bindable private var viewModel: CloudAccountViewModel
     @State private var isConfirmingEverywhere = false
+    @State private var isConfirmingDelete = false
 
     public init(viewModel: CloudAccountViewModel) {
         self.viewModel = viewModel
@@ -40,6 +41,23 @@ public struct CloudAccountSection: View {
             }
         } message: {
             Text("Every iPhone and browser signed in to this account will need to sign in again.", bundle: #bundle)
+        }
+        .confirmationDialog(
+            String(localized: "Delete your Keepwell account?", bundle: #bundle),
+            isPresented: $isConfirmingDelete,
+            titleVisibility: .visible,
+        ) {
+            Button(role: .destructive) {
+                Task { await viewModel.deleteAccount() }
+            } label: {
+                Text("Delete account", bundle: #bundle)
+            }
+        } message: {
+            Text(
+                // swiftlint:disable:next line_length
+                "You're signed out everywhere at once and your synced data is erased from Keepwell's servers. Backups keep it up to 35 more days. What's on this iPhone stays here.",
+                bundle: #bundle,
+            )
         }
     }
 
@@ -86,6 +104,11 @@ public struct CloudAccountSection: View {
                     } label: {
                         Text("Sign out on all devices", bundle: #bundle)
                     }
+                }
+                Button(role: .destructive) {
+                    isConfirmingDelete = true
+                } label: {
+                    Text("Delete account", bundle: #bundle)
                 }
                 .font(KWTextStyle.body.font)
                 .disabled(viewModel.isWorking)

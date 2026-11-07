@@ -41,6 +41,26 @@
         }
       }
     },
+    "Delete account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar cuenta"
+          }
+        }
+      }
+    },
+    "Delete your Keepwell account?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar tu cuenta de Keepwell?"
+          }
+        }
+      }
+    },
     "Every iPhone and browser signed in to this account will need to sign in again." : {
       "localizations" : {
         "es" : {
@@ -107,6 +127,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se cerró tu sesión. Vuelve a iniciarla para seguir sincronizando."
+          }
+        }
+      }
+    },
+    "You're signed out everywhere at once and your synced data is erased from Keepwell's servers. Backups keep it up to 35 more days. What's on this iPhone stays here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cierra tu sesión en todos lados al instante y tus datos sincronizados se borran de los servidores de Keepwell. Las copias de seguridad los conservan hasta 35 días más. Lo que hay en este iPhone se queda aquí."
           }
         }
       }

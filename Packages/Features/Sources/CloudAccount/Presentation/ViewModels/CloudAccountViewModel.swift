@@ -21,11 +21,18 @@ public final class CloudAccountViewModel {
     private let load: any LoadCloudAccountUseCase
     private let signIn: any SignInWithAppleUseCase
     private let signOutUseCase: any SignOutUseCase
+    private let deleteUseCase: any DeleteCloudAccountUseCase
 
-    public init(load: any LoadCloudAccountUseCase, signIn: any SignInWithAppleUseCase, signOut: any SignOutUseCase) {
+    public init(
+        load: any LoadCloudAccountUseCase,
+        signIn: any SignInWithAppleUseCase,
+        signOut: any SignOutUseCase,
+        delete: any DeleteCloudAccountUseCase,
+    ) {
         self.load = load
         self.signIn = signIn
         signOutUseCase = signOut
+        deleteUseCase = delete
     }
 
     public func refresh() async {
@@ -68,6 +75,13 @@ public final class CloudAccountViewModel {
     public func signOut(everywhere: Bool) async {
         await run { () async throws(CloudAccountError) in
             try await self.signOutUseCase.execute(everywhere: everywhere)
+            self.state = .signedOut
+        }
+    }
+
+    public func deleteAccount() async {
+        await run { () async throws(CloudAccountError) in
+            try await self.deleteUseCase.execute()
             self.state = .signedOut
         }
     }

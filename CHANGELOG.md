@@ -11,7 +11,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - Settings: a Keepwell account with Sign in with Apple, in builds that have the API configured. The
   session lives in the Keychain on this iPhone only; sign out here or on every device. Registration
-  is invite-only for now. Local use needs no account.
+  is invite-only for now. Local use needs no account. The account can be deleted from Settings:
+  sessions end at once and the server erases the synced data; backups keep it up to 35 more days.
 
 ### Fixed
 

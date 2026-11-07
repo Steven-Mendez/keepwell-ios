@@ -57,3 +57,20 @@ public struct DefaultSignOutUseCase: SignOutUseCase {
         await repository.signOut()
     }
 }
+
+public protocol DeleteCloudAccountUseCase: Sendable {
+    func execute() async throws(CloudAccountError)
+}
+
+/// App Store guideline 5.1.1: the account can be deleted from inside the app.
+public struct DefaultDeleteCloudAccountUseCase: DeleteCloudAccountUseCase {
+    private let repository: any CloudAccountRepository
+
+    public init(repository: any CloudAccountRepository) {
+        self.repository = repository
+    }
+
+    public func execute() async throws(CloudAccountError) {
+        try await repository.deleteAccount()
+    }
+}

@@ -45,4 +45,7 @@ public protocol CloudAccountRepository: Sendable {
     func signOut() async
     /// Ends every session of the account, on every device.
     func signOutEverywhere() async throws(CloudAccountError)
+    /// Asks the server to delete the account. Every session ends at once and the server erases the
+    /// data in the background; the local data on this iPhone stays.
+    func deleteAccount() async throws(CloudAccountError)
 }

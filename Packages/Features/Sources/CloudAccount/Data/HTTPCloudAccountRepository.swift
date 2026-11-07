@@ -73,6 +73,17 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository {
         guard (200 ..< 300).contains(response.status) else { throw failure(response) }
     }
 
+    public func deleteAccount() async throws(CloudAccountError) {
+        let response = try await client.send("DELETE", "me")
+        if response.status == 401 {
+            client.clearSession()
+            throw .signedOut
+        }
+        guard (200 ..< 300).contains(response.status) else { throw failure(response) }
+        // The server already ended the session; forget the cookie.
+        client.clearSession()
+    }
+
     private func decode<T: Decodable>(_ type: T.Type, _ response: APIClient.Response) throws(CloudAccountError) -> T {
         guard (200 ..< 300).contains(response.status) else { throw failure(response) }
         do {

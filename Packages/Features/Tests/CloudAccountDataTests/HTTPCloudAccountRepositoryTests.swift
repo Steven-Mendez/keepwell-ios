@@ -125,4 +125,17 @@ struct HTTPCloudAccountRepositoryTests {
         await HTTPCloudAccountRepository(client: APIClient(baseURL: base, store: store, configuration: configuration)).signOut()
         #expect(store.load() == nil)
     }
+
+    @Test
+    func deletingTheAccountForgetsTheSession() async throws {
+        let store = InMemorySessionStore(cookie: "better-auth.session_token=x")
+        let repository = repository(store)
+        StubProtocol.handler = { request in
+            request.httpMethod == "DELETE" && request.url?.path == "/me"
+                ? (202, [:], Data(#"{"status":"deletion_requested","backups_retained_days":35}"#.utf8))
+                : (404, [:], Data())
+        }
+        try await repository.deleteAccount()
+        #expect(store.load() == nil)
+    }
 }
