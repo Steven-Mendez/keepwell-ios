@@ -24,12 +24,10 @@ public final class SettingsViewModel {
     /// The lock screen's name as typed; saved when the field loses focus.
     public var nameText = ""
     public private(set) var errorMessage: String?
-    /// Set once the iCloud switch changed, since the store only switches on the next launch.
-    public private(set) var backupChangeIsPending = false
     public var exportedFile: ExportedFile?
     /// The outcome of the last CSV import, shown under the data card.
     public private(set) var importMessage: String?
-    /// The outcome of the last backup or restore, shown under the iCloud status.
+    /// The outcome of the last backup or restore, shown under the backup row.
     public private(set) var backupMessage: String?
     public private(set) var isWorking = false
 
@@ -38,7 +36,6 @@ public final class SettingsViewModel {
 
     private let getOverview: any GetSettingsOverviewUseCase
     private let updateSettings: any UpdateSettingsUseCase
-    private let setICloudBackup: any SetICloudBackupUseCase
     private let exportTransactions: any ExportTransactionsUseCase
     private let importTransactions: any ImportTransactionsUseCase
     private let createBackup: any CreateBackupUseCase
@@ -52,7 +49,6 @@ public final class SettingsViewModel {
     public init(
         getOverview: any GetSettingsOverviewUseCase,
         updateSettings: any UpdateSettingsUseCase,
-        setICloudBackup: any SetICloudBackupUseCase,
         exportTransactions: any ExportTransactionsUseCase,
         importTransactions: any ImportTransactionsUseCase,
         createBackup: any CreateBackupUseCase,
@@ -66,7 +62,6 @@ public final class SettingsViewModel {
         self.setPreferredName = setPreferredName
         self.getOverview = getOverview
         self.updateSettings = updateSettings
-        self.setICloudBackup = setICloudBackup
         self.exportTransactions = exportTransactions
         self.importTransactions = importTransactions
         self.createBackup = createBackup
@@ -150,17 +145,6 @@ public final class SettingsViewModel {
 
     public func setReminderDays(_ days: Int) async {
         await update { $0.paymentReminderDaysBefore = days }
-    }
-
-    public func setICloudBackup(_ isEnabled: Bool) async {
-        do {
-            try await setICloudBackup.execute(isEnabled)
-            backupChangeIsPending.toggle()
-            errorMessage = nil
-            await load()
-        } catch {
-            errorMessage = Self.saveError
-        }
     }
 
     private func update(_ change: @escaping @Sendable (inout Settings) throws(DomainError) -> Void) async {

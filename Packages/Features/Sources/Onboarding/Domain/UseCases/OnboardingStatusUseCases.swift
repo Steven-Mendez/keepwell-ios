@@ -18,8 +18,8 @@ public struct DefaultGetSettingsUseCase: GetSettingsUseCase {
     }
 }
 
-/// "I've used it before: restore from iCloud". With backup on, the private database syncs down on
-/// its own; this waits for finished settings to arrive.
+/// "I've used it before: restore from my Keepwell account". Once the person signs in, sync brings
+/// the data down on its own; this waits for finished settings to arrive.
 public protocol RestoreFromBackupUseCase: Sendable {
     /// The restored settings, or `nil` when nothing arrived within the wait.
     func execute() async throws(DomainError) -> Settings?
@@ -27,24 +27,20 @@ public protocol RestoreFromBackupUseCase: Sendable {
 
 public struct DefaultRestoreFromBackupUseCase: RestoreFromBackupUseCase {
     private let settings: any SettingsRepository
-    private let backup: any BackupPreference
     private let attempts: Int
     private let interval: Duration
 
     public init(
         settings: any SettingsRepository,
-        backup: any BackupPreference,
-        attempts: Int = 10,
+        attempts: Int = 30,
         interval: Duration = .seconds(1),
     ) {
         self.settings = settings
-        self.backup = backup
         self.attempts = attempts
         self.interval = interval
     }
 
     public func execute() async throws(DomainError) -> Settings? {
-        backup.setICloudBackupEnabled(true)
         for attempt in 0 ..< attempts {
             if let restored = try await settings.load(), restored.hasCompletedOnboarding {
                 return restored

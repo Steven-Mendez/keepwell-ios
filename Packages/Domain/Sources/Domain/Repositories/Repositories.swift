@@ -103,7 +103,8 @@ public protocol SettingsRepository: Sendable {
     func save(_ settings: Settings) async throws(DomainError)
 }
 
-/// "Eliminar todos mis datos": wipes this device and the iCloud copy (App Store guideline 5.1.1).
+/// "Eliminar todos mis datos": wipes this device (App Store guideline 5.1.1). Synced data on the
+/// server goes with the account (Settings → Account → Delete account).
 public protocol DataEraser: Sendable {
     func eraseAll() async throws(DomainError)
 }
@@ -114,13 +115,6 @@ public protocol BackupStore: Sendable {
     func exportContents() async throws(DomainError) -> BackupContents
     /// Replaces everything with `contents` in a single save: a failure leaves the store as it was.
     func replaceAll(with contents: BackupContents) async throws(DomainError)
-}
-
-/// The device-local "Respaldo en iCloud" switch. It decides which store opens at launch, so it
-/// lives outside the synced settings.
-public protocol BackupPreference: Sendable {
-    var isICloudBackupEnabled: Bool { get }
-    func setICloudBackupEnabled(_ isEnabled: Bool)
 }
 
 /// The app passcode, kept on this device only (never in the synced store or a backup). The

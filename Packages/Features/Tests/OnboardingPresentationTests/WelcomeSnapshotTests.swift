@@ -19,14 +19,14 @@ struct WelcomeSnapshotTests {
     @Test
     func returning() {
         assertScreenSnapshot(of: ReturningView(
-            restoreState: .idle, onBack: {}, onRestoreFromICloud: {}, onRestoreFromFile: {}, onStartFresh: {},
+            restoreState: .idle, onBack: {}, onRestoreFromAccount: {}, onRestoreFromFile: {}, onStartFresh: {},
         ))
     }
 
     @Test
     func returningAfterFailedRestore() {
         assertScreenSnapshot(of: ReturningView(
-            restoreState: .notFound, onBack: {}, onRestoreFromICloud: {}, onRestoreFromFile: {}, onStartFresh: {},
+            restoreState: .notFound, onBack: {}, onRestoreFromAccount: {}, onRestoreFromFile: {}, onStartFresh: {},
         ))
     }
 }

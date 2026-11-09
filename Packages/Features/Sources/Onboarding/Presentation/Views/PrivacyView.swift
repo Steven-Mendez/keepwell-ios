@@ -18,7 +18,8 @@ public struct PrivacyView: View {
                 OnboardingHeading(
                     title: String(localized: "Your data stays yours", bundle: #bundle),
                     message: String(
-                        localized: "No account and no servers of ours. Your data lives on your iPhone and, if you want, in your iCloud.",
+                        // swiftlint:disable:next line_length
+                        localized: "Your data lives on your iPhone. A Keepwell account to sync with the web is optional, and you can add it later in Settings.",
                         bundle: #bundle,
                     ),
                 )
@@ -44,11 +45,6 @@ public struct PrivacyView: View {
 
     private var protectionToggles: some View {
         KWGroupedCard {
-            toggle(
-                String(localized: "iCloud backup", bundle: #bundle),
-                String(localized: "Recover everything if you change iPhone", bundle: #bundle),
-                isOn: $viewModel.backsUpToICloud,
-            )
             toggle(
                 String(localized: "Hide amounts when leaving", bundle: #bundle),
                 String(localized: "In the app switcher", bundle: #bundle),

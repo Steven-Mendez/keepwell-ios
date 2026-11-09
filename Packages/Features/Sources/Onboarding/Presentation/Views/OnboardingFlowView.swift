@@ -12,21 +12,25 @@ public struct OnboardingFlowView: View {
     @Bindable private var viewModel: OnboardingViewModel
     private let onImportCSV: () -> Void
     private let onRestoreFile: () -> Void
+    private let onSignInToRestore: ((@escaping () -> Void) -> Void)?
     private let onSetUpPasscode: () -> Void
     private let onFinish: (Exit) -> Void
 
     /// `onSetUpPasscode` shows the lock feature's own passcode setup; once it saves, the app calls
-    /// `passcodeCreated()` on the view model.
+    /// `passcodeCreated()` on the view model. `onSignInToRestore` shows the account sign-in and calls
+    /// its argument once signed in; `nil` in builds without the Keepwell API.
     public init(
         viewModel: OnboardingViewModel,
         onImportCSV: @escaping () -> Void,
         onRestoreFile: @escaping () -> Void = {},
+        onSignInToRestore: ((@escaping () -> Void) -> Void)? = nil,
         onSetUpPasscode: @escaping () -> Void,
         onFinish: @escaping (Exit) -> Void,
     ) {
         self.viewModel = viewModel
         self.onImportCSV = onImportCSV
         self.onRestoreFile = onRestoreFile
+        self.onSignInToRestore = onSignInToRestore
         self.onSetUpPasscode = onSetUpPasscode
         self.onFinish = onFinish
     }
@@ -49,10 +53,14 @@ public struct OnboardingFlowView: View {
             ReturningView(
                 restoreState: viewModel.restoreState,
                 onBack: back,
-                onRestoreFromICloud: {
-                    Task {
-                        if await viewModel.restore() != nil {
-                            onFinish(.home)
+                onRestoreFromAccount: onSignInToRestore.map { signIn in
+                    {
+                        signIn {
+                            Task {
+                                if await viewModel.restore() != nil {
+                                    onFinish(.home)
+                                }
+                            }
                         }
                     }
                 },

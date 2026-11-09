@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Removed
+
+- iCloud backup (CloudKit). Your data stays on this iPhone, in the same place; the Keepwell account
+  syncs it with the web and other iPhones, and the backup file keeps working. A copy left in iCloud
+  by earlier versions can be removed in iOS Settings → your name → iCloud → Manage Storage.
+
 ### Added
 
 - "Invite me a coffee": a one-time purchase that turns on sync and Claude for your Keepwell account,

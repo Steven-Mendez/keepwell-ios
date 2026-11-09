@@ -4,7 +4,7 @@ import SettingsDomain
 import SwiftUI
 import UIKit
 
-/// Settings: currency and rate, card reminders, organization counts, lock and privacy, iCloud
+/// Settings: currency and rate, card reminders, organization counts, lock and privacy,
 /// backup, CSV export and deleting everything.
 public struct SettingsView: View {
     @Bindable private var viewModel: SettingsViewModel
@@ -87,7 +87,8 @@ public struct SettingsView: View {
             eraseConfirmation
         } message: {
             Text(
-                "Your accounts, cards and transactions are deleted from this iPhone and from iCloud. This can't be undone.",
+                // swiftlint:disable:next line_length
+                "Your accounts, cards and transactions are deleted from this iPhone. This can't be undone. Data synced to your Keepwell account goes when you delete the account.",
                 bundle: #bundle,
             )
         }
@@ -265,7 +266,7 @@ public struct SettingsView: View {
             }
             .buttonStyle(.kw(.destructive, size: .row))
             .disabled(viewModel.isWorking)
-            Text("Deletes the data on this iPhone and the iCloud backup.", bundle: #bundle)
+            Text("Deletes the data on this iPhone.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.muted)
                 .multilineTextAlignment(.center)

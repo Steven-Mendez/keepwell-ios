@@ -42,8 +42,6 @@ final class AppContainer {
     let preferences = StorePreferences()
     /// The app passcode's hash, in this device's Keychain only.
     let passcodes: any PasscodeRepository = KeychainPasscodeStore()
-    /// Started with the container so it hears CloudKit uploads from launch on.
-    let backupStatus = BackupStatusTracker()
     /// The Keepwell account and its sync, one per app; `nil` in builds without an API.
     private(set) lazy var cloudAccount: CloudAccountViewModel? = makeCloudAccountViewModel()
 
@@ -84,9 +82,9 @@ final class AppContainer {
     func makeOnboardingViewModel() -> OnboardingViewModel {
         OnboardingViewModel(
             completeOnboarding: DefaultCompleteOnboardingUseCase(
-                settings: store, accounts: store, cards: store, backup: preferences, profile: preferences, passcodes: passcodes,
+                settings: store, accounts: store, cards: store, profile: preferences, passcodes: passcodes,
             ),
-            restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store, backup: preferences),
+            restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store),
             notifications: UserNotificationAuthorizer(),
         )
     }
@@ -155,16 +153,15 @@ final class AppContainer {
     func makeSettingsViewModel() -> SettingsViewModel {
         SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
-                settings: store, categories: store, cards: store, backup: preferences, status: backupStatus,
+                settings: store, categories: store, cards: store,
                 passcodes: passcodes, profile: preferences,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
-            setICloudBackup: DefaultSetICloudBackupUseCase(backup: preferences, settings: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
             importTransactions: makeImportTransactions(),
             createBackup: DefaultCreateBackupUseCase(store: store),
             restoreBackup: makeRestoreBackup(),
-            eraseAllData: DefaultEraseAllDataUseCase(eraser: store, cloud: makeCloudCopyEraser()),
+            eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
         )
@@ -235,14 +232,6 @@ final class AppContainer {
         widgetSnapshots.clear()
         WidgetCenter.shared.reloadAllTimelines()
         await reminders.removeAll()
-    }
-
-    /// Sample-data and UI-test runs keep an in-memory store, so erasing them must never reach the
-    /// real iCloud copy.
-    private func makeCloudCopyEraser() -> (any CloudCopyEraser)? {
-        let environment = AppEnvironment.current
-        guard !environment.isUITesting, !environment.usesSampleData else { return nil }
-        return CloudKitCopyEraser(containerIdentifier: environment.cloudKitContainer)
     }
 
     // MARK: - Credit card

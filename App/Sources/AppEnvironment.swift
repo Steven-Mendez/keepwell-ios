@@ -4,7 +4,6 @@ import OSLog
 /// Runtime environment read from Info.plist (values injected by the .xcconfig files) and launch
 /// arguments.
 struct AppEnvironment {
-    let cloudKitContainer: String
     /// The Keepwell API (sign-in, sync). `nil` when the build sets no `API_BASE_URL`: the app stays
     /// local-only and Settings shows no account section.
     let apiBaseURL: URL?
@@ -24,11 +23,9 @@ struct AppEnvironment {
 
     static let current: AppEnvironment = {
         let info = Bundle.main.infoDictionary ?? [:]
-        let container = info["KeepwellCloudKitContainer"] as? String ?? ""
         let arguments = ProcessInfo.processInfo.arguments
         let api = (info["KeepwellAPIBaseURL"] as? String).flatMap { $0.isEmpty ? nil : URL(string: $0) }
         return Self(
-            cloudKitContainer: container,
             apiBaseURL: api,
             isUITesting: arguments.contains("-ui-testing"),
             usesSampleData: arguments.contains("-sample-data"),

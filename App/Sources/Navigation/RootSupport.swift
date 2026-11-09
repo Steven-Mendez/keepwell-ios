@@ -90,15 +90,37 @@ struct OnboardingRoute: View {
     let onRestoreFile: () -> Void
     let onFinish: (OnboardingFlowView.Exit) -> Void
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
+    /// "Restore from your Keepwell account": the sign-in sheet, and what to do once signed in.
+    @State private var restoreAfterSignIn: (() -> Void)?
 
     var body: some View {
         OnboardingFlowView(
             viewModel: viewModel,
             onImportCSV: onImportCSV,
             onRestoreFile: onRestoreFile,
+            onSignInToRestore: container.cloudAccount == nil ? nil : { restore in restoreAfterSignIn = restore },
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onFinish: onFinish,
         )
+        .sheet(isPresented: Binding(get: { restoreAfterSignIn != nil }, set: {
+            if !$0 {
+                restoreAfterSignIn = nil
+            }
+        })) {
+            if let account = container.cloudAccount {
+                ScrollView {
+                    CloudAccountSection(viewModel: account).padding()
+                }
+                .presentationDetents([.medium])
+                .onChange(of: account.state) { _, state in
+                    // Signed in: sync starts on its own, and onboarding waits for the data to arrive.
+                    if case .signedIn = state, let restore = restoreAfterSignIn {
+                        restoreAfterSignIn = nil
+                        restore()
+                    }
+                }
+            }
+        }
         .fullScreenCover(item: $passcodeSetup) { flow in
             PasscodeSetupView(viewModel: flow.viewModel, isChanging: viewModel.hasPasscode) {
                 if flow.viewModel.isSaved {

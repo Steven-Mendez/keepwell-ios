@@ -251,6 +251,16 @@
         }
       }
     },
+    "Backup file" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivo de respaldo"
+          }
+        }
+      }
+    },
     "Backup ready · %@. Save it in iCloud Drive or Files." : {
       "localizations" : {
         "es" : {
@@ -481,6 +491,16 @@
         }
       }
     },
+    "Deletes the data on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borra los datos de este iPhone."
+          }
+        }
+      }
+    },
     "Deleting a category moves its movements to “%@”, which stays so they always have a place." : {
       "localizations" : {
         "es" : {
@@ -507,6 +527,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar regla"
+          }
+        }
+      }
+    },
+    "Everything in one file you keep, in iCloud Drive or Files. The web app opens it too." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo en un archivo que guardas tú, en iCloud Drive o Archivos. La app web también lo abre."
           }
         }
       }
@@ -1437,6 +1467,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tus cuentas, tarjetas y movimientos se borran de este iPhone y de iCloud. No se puede deshacer."
+          }
+        }
+      }
+    },
+    "Your accounts, cards and transactions are deleted from this iPhone. This can't be undone. Data synced to your Keepwell account goes when you delete the account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus cuentas, tarjetas y movimientos se borran de este iPhone. No se puede deshacer. Lo sincronizado con tu cuenta Keepwell se borra al eliminar la cuenta."
           }
         }
       }

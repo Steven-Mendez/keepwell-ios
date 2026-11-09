@@ -164,7 +164,6 @@ struct OnboardingViewModelTests {
         viewModel.selectSecond("NIO")
         viewModel.swapCurrencies()
         viewModel.rateText = "0.0273"
-        viewModel.backsUpToICloud = false
         viewModel.path = [.currencies, .accounts, .privacy]
         await viewModel.allowNotifications()
         #expect(notifications.asked)
@@ -172,7 +171,6 @@ struct OnboardingViewModelTests {
         #expect(currencies?.principal == "NIO")
         #expect(currencies?.second == "USD")
         #expect(currencies?.rate == Decimal(string: "0.0273"))
-        #expect(complete.received.draft?.backsUpToICloud == false)
         #expect(viewModel.path.last == .done)
         #expect(viewModel.completedSettings != nil)
     }

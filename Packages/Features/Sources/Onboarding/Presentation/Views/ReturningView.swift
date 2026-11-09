@@ -6,20 +6,21 @@ import SwiftUI
 public struct ReturningView: View {
     private let restoreState: OnboardingViewModel.RestoreState
     private let onBack: () -> Void
-    private let onRestoreFromICloud: () -> Void
+    /// `nil` in builds without the Keepwell API: the option isn't offered.
+    private let onRestoreFromAccount: (() -> Void)?
     private let onRestoreFromFile: () -> Void
     private let onStartFresh: () -> Void
 
     public init(
         restoreState: OnboardingViewModel.RestoreState,
         onBack: @escaping () -> Void,
-        onRestoreFromICloud: @escaping () -> Void,
+        onRestoreFromAccount: (() -> Void)?,
         onRestoreFromFile: @escaping () -> Void,
         onStartFresh: @escaping () -> Void,
     ) {
         self.restoreState = restoreState
         self.onBack = onBack
-        self.onRestoreFromICloud = onRestoreFromICloud
+        self.onRestoreFromAccount = onRestoreFromAccount
         self.onRestoreFromFile = onRestoreFromFile
         self.onStartFresh = onStartFresh
     }
@@ -36,15 +37,17 @@ public struct ReturningView: View {
                     ),
                 )
                 KWGroupedCard {
-                    option(
-                        .cloud,
-                        title: restoreState == .searching
-                            ? String(localized: "Looking for your backup…", bundle: #bundle)
-                            : String(localized: "Restore from iCloud", bundle: #bundle),
-                        subtitle: String(localized: "If iCloud backup was on in Keepwell", bundle: #bundle),
-                        action: onRestoreFromICloud,
-                    )
-                    .disabled(restoreState == .searching)
+                    if let onRestoreFromAccount {
+                        option(
+                            .cloud,
+                            title: restoreState == .searching
+                                ? String(localized: "Looking for your data…", bundle: #bundle)
+                                : String(localized: "Restore from your Keepwell account", bundle: #bundle),
+                            subtitle: String(localized: "If you synced with the web or another iPhone", bundle: #bundle),
+                            action: onRestoreFromAccount,
+                        )
+                        .disabled(restoreState == .searching)
+                    }
                     option(
                         .download,
                         title: String(localized: "Restore from a backup file (.json)", bundle: #bundle),
@@ -53,7 +56,7 @@ public struct ReturningView: View {
                     )
                 }
                 if restoreState == .notFound {
-                    Text("We couldn't find a backup in your iCloud.", bundle: #bundle)
+                    Text("Nothing has synced from your account yet. Try again in a moment.", bundle: #bundle)
                         .font(KWTextStyle.caption.font)
                         .foregroundStyle(KWColor.Text.muted)
                 }

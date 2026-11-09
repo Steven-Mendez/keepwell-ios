@@ -45,7 +45,6 @@ public final class OnboardingViewModel {
     public var locksWithBiometrics = true
     /// A Keepwell passcode was created on the protect step.
     public private(set) var hasPasscode = false
-    public var backsUpToICloud = true
     public var hidesAmountsInAppSwitcher = true
     public private(set) var restoreState = RestoreState.idle
     public private(set) var isSaving = false
@@ -293,7 +292,6 @@ public final class OnboardingViewModel {
             currencies: currencies,
             accounts: accountsToSave,
             locksWithBiometrics: locksWithBiometrics,
-            backsUpToICloud: backsUpToICloud,
             hidesAmountsInAppSwitcher: hidesAmountsInAppSwitcher,
             preferredName: preferredName,
             hasPasscode: hasPasscode,

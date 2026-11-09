@@ -401,6 +401,16 @@
         }
       }
     },
+    "If you synced with the web or another iPhone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si sincronizaste con la web u otro iPhone"
+          }
+        }
+      }
+    },
     "Import movements only (.csv)" : {
       "localizations" : {
         "es" : {
@@ -481,6 +491,16 @@
         }
       }
     },
+    "Looking for your data…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando tus datos…"
+          }
+        }
+      }
+    },
     "Main currency" : {
       "localizations" : {
         "es" : {
@@ -531,6 +551,16 @@
         }
       }
     },
+    "Nothing has synced from your account yet. Try again in a moment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no ha llegado nada de tu cuenta. Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
     "Now log your first transaction. The more you record, the better your monthly summary." : {
       "localizations" : {
         "es" : {
@@ -557,6 +587,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En tu iPhone, con respaldo en tu iCloud"
+          }
+        }
+      }
+    },
+    "On your iPhone, synced with the web if you want" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En tu iPhone, sincronizado con la web si quieres"
           }
         }
       }
@@ -677,6 +717,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restaurar desde iCloud"
+          }
+        }
+      }
+    },
+    "Restore from your Keepwell account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar desde tu cuenta Keepwell"
           }
         }
       }
@@ -927,6 +977,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tus saldos son solo tuyos. Bloquea la app para que solo tú puedas abrirla."
+          }
+        }
+      }
+    },
+    "Your data lives on your iPhone. A Keepwell account to sync with the web is optional, and you can add it later in Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos viven en tu iPhone. Una cuenta Keepwell para sincronizar con la web es opcional, y puedes añadirla después en Ajustes."
           }
         }
       }
