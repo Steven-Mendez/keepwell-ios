@@ -5,8 +5,16 @@
       "layers" : [
         {
           "glass" : false,
-          "image-name" : "mark.svg",
-          "name" : "mark"
+          "name" : "mark",
+          "image-name-specializations" : [
+            {
+              "value" : "mark.svg"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "mark-dark.png"
+            }
+          ]
         }
       ],
       "shadow" : {
@@ -23,8 +31,16 @@
       "layers" : [
         {
           "glass" : false,
-          "image-name" : "background.png",
-          "name" : "background"
+          "name" : "background",
+          "image-name-specializations" : [
+            {
+              "value" : "background.png"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "background-dark.png"
+            }
+          ]
         }
       ],
       "shadow" : {

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// The keepwell figure (head and cupped arc), drawn from the brand's 72×72 artwork.
+/// The keepwell symbol (wallet with a padlock shackle) in one color, tinted by `foregroundStyle`
+/// so it can sit on any background, including widgets in tinted or accented rendering.
 public struct KWLogoMark: View {
     private let size: CGFloat
 
@@ -9,62 +10,53 @@ public struct KWLogoMark: View {
     }
 
     public var body: some View {
-        let scale = size / 72
-        ZStack {
-            Circle()
-                .frame(width: 18 * scale, height: 18 * scale)
-                .position(x: 36 * scale, y: 21 * scale)
-            LogoArc()
-                .stroke(style: StrokeStyle(lineWidth: 7.5 * scale, lineCap: .round))
-        }
-        .frame(width: size, height: size)
-        .accessibilityHidden(true)
+        Image("KeepwellSymbolTemplate", bundle: .module)
+            .resizable()
+            .renderingMode(.template)
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
     }
 }
 
-private struct LogoArc: Shape {
-    func path(in rect: CGRect) -> Path {
-        SVGPath.path(from: "M15 34v7a21 21 0 0 0 42 0v-7")
-            .applying(CGAffineTransform(scaleX: rect.width / 72, y: rect.height / 72))
-    }
-}
-
-/// Logo mark on the brand gradient tile, as on the lock screen (72pt, radius 17).
+/// The app icon in miniature (72pt, radius 17): the white symbol on the icon's blue tile, so the
+/// lock screen and app switcher match what the person tapped on the Home Screen.
 public struct KWAppIconTile: View {
     public init() {}
 
     public var body: some View {
-        KWLogoMark(size: 44)
+        // Placed as on the icon: 52% of the tile wide, slightly above center.
+        KWLogoMark(size: 40)
             .foregroundStyle(.white)
+            .offset(y: -2.5)
             .frame(width: 72, height: 72)
             .background(
-                LinearGradient(colors: [KWColor.Brand.b500, KWColor.Brand.b700], startPoint: .topLeading, endPoint: .bottomTrailing),
+                // Same stops as App/Resources/AppIcon.icon/Assets/background.png.
+                LinearGradient(colors: [KWColor.Brand.b500, KWColor.Brand.b700], startPoint: .top, endPoint: .bottom),
                 in: RoundedRectangle(cornerRadius: 17, style: .continuous),
             )
             .overlay { TopHighlight(shape: RoundedRectangle(cornerRadius: 17, style: .continuous), opacity: 0.3) }
     }
 }
 
-/// Mark followed by the "keepwell" wordmark.
+/// The horizontal lockup (symbol and "KEEPWELL") in one color, tinted by `foregroundStyle`.
 public struct KWWordmark: View {
-    private let markSize: CGFloat
-    private let fontSize: CGFloat
+    private let height: CGFloat
 
-    public init(markSize: CGFloat = 50, fontSize: CGFloat = 46) {
-        self.markSize = markSize
-        self.fontSize = fontSize
+    /// - Parameter height: Height of the lockup; the symbol fills it and the name is centered on it.
+    public init(height: CGFloat = 50) {
+        self.height = height
     }
 
     public var body: some View {
-        HStack(spacing: 10) {
-            KWLogoMark(size: markSize)
-            Text(verbatim: "keepwell")
-                .font(.kw(fontSize, weight: 800, relativeTo: .largeTitle))
-                .tracking(-2)
-        }
-        .foregroundStyle(.white)
-        .accessibilityElement()
-        .accessibilityLabel(Text(verbatim: "keepwell"))
+        Image("KeepwellLockupTemplate", bundle: .module)
+            .resizable()
+            .renderingMode(.template)
+            .scaledToFit()
+            .frame(height: height)
+            .foregroundStyle(.white)
+            .accessibilityElement()
+            .accessibilityLabel(Text(verbatim: "Keepwell"))
     }
 }
 
@@ -72,8 +64,8 @@ public struct KWWordmark: View {
     VStack(spacing: KWSpacing.xl) {
         KWAppIconTile()
         KWWordmark()
+        KWLogoMark(size: 28).foregroundStyle(.white)
     }
     .padding(KWLayout.gutter)
     .background(KWColor.Brand.b700)
-    .onAppear { KWFonts.register() }
 }
