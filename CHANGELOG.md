@@ -29,6 +29,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Month titles in Spanish read "Noviembre de 2026" instead of "Noviembre De 2026" on Transactions and
+  Summary.
+- The Keepwell account card shows the email once when Apple shares no name, and "Sign out" and "Sign
+  out on all devices" sit one above the other instead of squeezed into one line.
+- "Buy a coffee" while the App Store hasn't loaded the coffee says it isn't available right now,
+  instead of a vague "couldn't complete the purchase".
+- The sample data (Debug builds) is written in Spanish when the app runs in Spanish.
 - Deleting a category kept its movements' tags and the recurring movement that recorded them; they
   used to be dropped when the movements moved to "Other".
 

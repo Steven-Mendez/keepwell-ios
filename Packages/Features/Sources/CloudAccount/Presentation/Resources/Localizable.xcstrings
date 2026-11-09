@@ -321,6 +321,16 @@
         }
       }
     },
+    "The coffee isn't available in the App Store right now. Check your connection and try again later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El café no está disponible en el App Store en este momento. Revisa tu conexión e inténtalo más tarde."
+          }
+        }
+      }
+    },
     "This purchase is already linked to another Keepwell account." : {
       "localizations" : {
         "es" : {
