@@ -14,7 +14,7 @@ APP_GROUP_ID = group.$(APP_BUNDLE_ID)
 APP_DISPLAY_NAME = Keepwell$(APP_NAME_SUFFIX)
 
 // Versioning (MARKETING_VERSION = user-visible version; CURRENT_PROJECT_VERSION = build)
-MARKETING_VERSION = 0.1.0
+MARKETING_VERSION = 1.0
 CURRENT_PROJECT_VERSION = 1
 
 // The app's entitlements. Personal (free) teams can't sign iCloud or Push, so Local.xcconfig can
