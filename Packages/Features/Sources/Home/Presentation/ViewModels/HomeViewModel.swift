@@ -23,6 +23,8 @@ public final class HomeViewModel {
 
     private let getOverview: any GetHomeOverviewUseCase
     private let confirmPlanned: any ConfirmPlannedTransactionUseCase
+    /// Throws away a draft an assistant recorded; `nil` where nothing can be discarded (previews).
+    private let discard: (any DeleteTransactionUseCase)?
     private let getPreferredName: any GetPreferredNameUseCase
     let calendar: Calendar
     let formatter = CurrencyFormatter()
@@ -31,10 +33,12 @@ public final class HomeViewModel {
         getOverview: any GetHomeOverviewUseCase,
         confirmPlanned: any ConfirmPlannedTransactionUseCase,
         getPreferredName: any GetPreferredNameUseCase,
+        discard: (any DeleteTransactionUseCase)? = nil,
         calendar: Calendar = .current,
     ) {
         self.getOverview = getOverview
         self.confirmPlanned = confirmPlanned
+        self.discard = discard
         self.getPreferredName = getPreferredName
         self.calendar = calendar
     }
@@ -67,6 +71,22 @@ public final class HomeViewModel {
         } catch {
             actionError = String(localized: "We couldn't confirm it. Try again.", bundle: #bundle)
         }
+    }
+
+    /// Discards an assistant's draft: it never happened, so it is deleted rather than confirmed.
+    public func discardDraft(_ transaction: Transaction) async {
+        guard let discard, transaction.source == .mcp, !transaction.isConfirmed else { return }
+        do {
+            try await discard.execute(id: transaction.id)
+            actionError = nil
+            await load()
+        } catch {
+            actionError = String(localized: "We couldn't confirm it. Try again.", bundle: #bundle)
+        }
+    }
+
+    public var canDiscardDrafts: Bool {
+        discard != nil
     }
 
     // MARK: - Display

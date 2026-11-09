@@ -25,6 +25,12 @@ APP_ENTITLEMENTS = App/Resources/Keepwell.entitlements
 // (development-signed builds) apart from Production (TestFlight/App Store).
 CLOUDKIT_CONTAINER_ID = iCloud.$(BASE_BUNDLE_ID)
 
+// Keepwell API (account and sync). Empty keeps the app local-only. Set it per environment or in
+// Local.xcconfig; xcconfig treats `//` as a comment, so write https:/$()/api.example.com.
+API_BASE_URL =
+// The web app's host (app.<domain>): passkeys' relying party, shared through the associated domain.
+WEB_HOST = app.keepwell.invalid
+
 // Platform and language
 IPHONEOS_DEPLOYMENT_TARGET = 26.0
 TARGETED_DEVICE_FAMILY = 1

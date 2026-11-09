@@ -15,6 +15,8 @@ public struct SettingsView: View {
     private let onOpenPaymentMethods: () -> Void
     private let onOpenRecurring: () -> Void
     private let onOpenRules: () -> Void
+    /// The Keepwell account section, owned by `CloudAccountPresentation`; absent in builds without an API.
+    private let accountSection: AnyView?
     @State private var isConfirmingErase = false
     @State private var isConfirmingSwap = false
     @FocusState private var isEditingRate: Bool
@@ -30,7 +32,9 @@ public struct SettingsView: View {
         onOpenPaymentMethods: @escaping () -> Void = {},
         onOpenRecurring: @escaping () -> Void = {},
         onOpenRules: @escaping () -> Void = {},
+        accountSection: AnyView? = nil,
     ) {
+        self.accountSection = accountSection
         self.viewModel = viewModel
         self.onBack = onBack
         self.onErased = onErased
@@ -285,6 +289,9 @@ private struct ShareSheet: UIViewControllerRepresentable {
 extension SettingsView {
     @ViewBuilder
     private func sections(_ overview: SettingsOverview) -> some View {
+        if let accountSection {
+            accountSection
+        }
         currency(overview.settings)
         cards(overview.settings)
         organization(overview)

@@ -45,6 +45,12 @@ public final class LoanRecord: AuditedRecord {
         paymentsJSON = JSONText.encode(stored)
     }
 
+    /// Replaces the payments only (a payment row pulled from the server).
+    func setPayments(_ payments: [LoanPayment]) {
+        paymentsJSON = JSONText
+            .encode(payments.map { StoredPayment(number: $0.number, paidAt: $0.paidAt, transactionID: $0.transactionID) })
+    }
+
     func toDomain() throws(DomainCorruption) -> Loan {
         guard let frequency = LoanFrequency(rawValue: frequencyRaw) else {
             throw DomainCorruption("Loan frequency '\(frequencyRaw)'")
@@ -87,7 +93,9 @@ public final class PersonalDebtRecord: AuditedRecord {
         self.id = id
     }
 
+    /// `id` is absent in rows written before repayments had ids.
     private struct StoredRepayment: Codable {
+        var id: UUID?
         let amount: String
         let date: Date
     }
@@ -99,9 +107,19 @@ public final class PersonalDebtRecord: AuditedRecord {
         currency = debt.amount.currency
         date = debt.date
         note = debt.note
-        repaymentsJSON = JSONText.encode(debt.repayments.map { StoredRepayment(amount: DecimalCoding.string($0.amount), date: $0.date) })
+        repaymentsJSON = JSONText.encode(debt.repayments.map { StoredRepayment(
+            id: $0.id,
+            amount: DecimalCoding.string($0.amount),
+            date: $0.date,
+        ) })
         settledAt = debt.settledAt
         transactionID = debt.transactionID
+    }
+
+    /// Replaces the repayments only (a repayment row pulled from the server).
+    func setRepayments(_ repayments: [DebtRepayment]) {
+        repaymentsJSON = JSONText
+            .encode(repayments.map { StoredRepayment(id: $0.id, amount: DecimalCoding.string($0.amount), date: $0.date) })
     }
 
     func toDomain() throws(DomainCorruption) -> PersonalDebt {
@@ -110,8 +128,10 @@ public final class PersonalDebtRecord: AuditedRecord {
         }
         let stored: [StoredRepayment] = try JSONText.decode(repaymentsJSON, what: "Debt repayments")
         var repayments: [DebtRepayment] = []
-        for row in stored {
-            try repayments.append(DebtRepayment(amount: DecimalCoding.decimal(row.amount), date: row.date))
+        for (index, row) in stored.enumerated() {
+            let amount = try DecimalCoding.decimal(row.amount)
+            let id = row.id ?? NameBasedID.legacyRepayment(debtID: id, index: index, date: row.date, amount: amount)
+            repayments.append(DebtRepayment(id: id, amount: amount, date: row.date))
         }
         return try PersonalDebt(
             id: id,

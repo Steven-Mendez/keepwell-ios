@@ -2,6 +2,7 @@ import AccountsDomain
 import AccountsPresentation
 import AddCardDomain
 import AddCardPresentation
+import CloudAccountPresentation
 import Core
 import CreateTransactionDomain
 import CreateTransactionPresentation
@@ -43,19 +44,11 @@ final class AppContainer {
     let passcodes: any PasscodeRepository = KeychainPasscodeStore()
     /// Started with the container so it hears CloudKit uploads from launch on.
     let backupStatus = BackupStatusTracker()
+    /// The Keepwell account and its sync, one per app; `nil` in builds without an API.
+    private(set) lazy var cloudAccount: CloudAccountViewModel? = makeCloudAccountViewModel()
 
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
-    }
-
-    /// Gives every bank account exactly one card before any screen reads them: older versions
-    /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
-    func normalizeBankCards() async {
-        do {
-            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store, recurringRules: store).execute()
-        } catch {
-            Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
-        }
     }
 
     #if DEBUG
@@ -126,6 +119,7 @@ final class AppContainer {
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
+            discard: DefaultDeleteTransactionUseCase(transactions: store),
         )
     }
 
@@ -347,5 +341,17 @@ final class AppContainer {
         DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
         )
+    }
+}
+
+extension AppContainer {
+    /// Gives every bank account exactly one card before any screen reads them: older versions
+    /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
+    func normalizeBankCards() async {
+        do {
+            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store, recurringRules: store).execute()
+        } catch {
+            Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
+        }
     }
 }

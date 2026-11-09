@@ -1,5 +1,6 @@
 import AccountsPresentation
 import AddCardPresentation
+import CloudAccountPresentation
 import Core
 import CreateTransactionPresentation
 import CreditCardPresentation
@@ -111,6 +112,7 @@ struct OnboardingRoute: View {
 
 struct SettingsRoute: View {
     @State private var viewModel: SettingsViewModel
+    @State private var cloudAccount: CloudAccountViewModel?
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
     private let container: AppContainer
     let onBack: () -> Void
@@ -130,6 +132,7 @@ struct SettingsRoute: View {
         onOpenRules: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
+        _cloudAccount = State(initialValue: container.cloudAccount)
         self.container = container
         self.onBack = onBack
         self.onErased = onErased
@@ -149,6 +152,7 @@ struct SettingsRoute: View {
             onOpenPaymentMethods: onOpenPaymentMethods,
             onOpenRecurring: onOpenRecurring,
             onOpenRules: onOpenRules,
+            accountSection: cloudAccount.map { AnyView(CloudAccountSection(viewModel: $0)) },
         )
         .navigationBarBackButtonHidden()
         .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in

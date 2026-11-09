@@ -7,6 +7,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- "Invite me a coffee": a one-time purchase that turns on sync and Claude for your Keepwell account,
+  with Restore purchases for a new iPhone. A purchase interrupted before Keepwell confirmed it is
+  finished on the next launch.
+- New accounts can sign in with an invitation code.
+- Sign in to your Keepwell account with a passkey made on Keepwell for the web.
+- Movements Claude records through the Keepwell connector say "Recorded by Claude". Its drafts on Home
+  can be confirmed or discarded; recurring payments it proposes wait paused until you resume them.
+  Settings can disconnect every connected assistant at once.
+- Sync with Keepwell on the web through your Keepwell account: changes made offline are kept and sent
+  when the iPhone is back online, a moment after each edit, when the app opens and every minute while
+  it is open. Settings shows whether everything is up to date.
+- Recurring movements, loan installments and debt repayments get ids that are the same on every
+  device, ready for syncing with the web: recording the same occurrence twice yields one movement.
+- Settings: a Keepwell account with Sign in with Apple, in builds that have the API configured. The
+  session lives in the Keychain on this iPhone only; sign out here or on every device. Registration
+  is invite-only for now. Local use needs no account. The account can be deleted from Settings:
+  sessions end at once and the server erases the synced data; backups keep it up to 35 more days.
+
 ### Fixed
 
 - Deleting a category kept its movements' tags and the recurring movement that recorded them; they

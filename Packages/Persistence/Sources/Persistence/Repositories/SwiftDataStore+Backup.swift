@@ -75,7 +75,7 @@ extension SwiftDataStore: BackupStore {
                     record.apply(transaction.metadata)
                 }
                 insertPlans(of: contents, into: context)
-                try context.save()
+                try context.saveWithOutbox()
             } catch {
                 context.rollback()
                 throw error
@@ -132,7 +132,10 @@ extension SwiftDataStore: BackupStore {
 
     /// Row by row rather than a batch delete, so the deletions and the inserts that follow land in
     /// the same save and roll back together.
+    /// The outbox goes too: after a restore it holds one event per restored record, in the wire
+    /// format, written by `saveWithOutbox`.
     private func deleteEveryRecord(in context: ModelContext) throws {
+        try context.fetch(FetchDescriptor<OutboxRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<TransactionRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<RecurringRuleRecord>()).forEach(context.delete)
         try context.fetch(FetchDescriptor<SavingsGoalRecord>()).forEach(context.delete)

@@ -78,6 +78,8 @@ struct RootView: View {
             .task {
                 notifications.handler = handleNotification
                 await load()
+                // Signs the account back in from the Keychain and starts sync when it has cloud_sync.
+                await container.cloudAccount?.refresh()
             }
             .onOpenURL(perform: open)
             .onChange(of: screens?.home.overview) { _, overview in
@@ -86,6 +88,9 @@ struct RootView: View {
             }
             .onChange(of: scenePhase) { _, newPhase in
                 Task { await sceneChanged(to: newPhase) }
+                if newPhase == .active {
+                    container.cloudAccount?.sync?.trigger(after: 0)
+                }
             }
             // Any write (a movement logged, edited or deleted from any screen, an import, a widget
             // quick log) changes what home and the widgets show, even when home isn't on screen.

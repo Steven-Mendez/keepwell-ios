@@ -37,6 +37,9 @@ let package = Package(
         .library(name: "GoalsPresentation", targets: ["GoalsPresentation"]),
         .library(name: "DebtsDomain", targets: ["DebtsDomain"]),
         .library(name: "DebtsPresentation", targets: ["DebtsPresentation"]),
+        .library(name: "CloudAccountDomain", targets: ["CloudAccountDomain"]),
+        .library(name: "CloudAccountData", targets: ["CloudAccountData"]),
+        .library(name: "CloudAccountPresentation", targets: ["CloudAccountPresentation"]),
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -339,6 +342,33 @@ let package = Package(
                 .product(name: "DomainSamples", package: "Domain"),
             ],
         ),
+
+        // MARK: Cloud account (Keepwell API: Sign in with Apple, session)
+
+        .target(
+            name: "CloudAccountDomain",
+            path: "Sources/CloudAccount/Domain",
+        ),
+        .target(
+            name: "CloudAccountData",
+            dependencies: ["CloudAccountDomain", .product(name: "Domain", package: "Domain")],
+            path: "Sources/CloudAccount/Data",
+        ),
+        .target(
+            name: "CloudAccountPresentation",
+            dependencies: [
+                "CloudAccountDomain",
+                .product(name: "DesignSystem", package: "DesignSystem"),
+            ],
+            path: "Sources/CloudAccount/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(name: "CloudAccountDomainTests", dependencies: ["CloudAccountDomain"]),
+        .testTarget(
+            name: "CloudAccountDataTests",
+            dependencies: ["CloudAccountData", "CloudAccountDomain", .product(name: "Domain", package: "Domain")],
+        ),
+        .testTarget(name: "CloudAccountPresentationTests", dependencies: ["CloudAccountPresentation", "CloudAccountDomain"]),
 
         // MARK: Settings
 
