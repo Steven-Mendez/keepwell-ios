@@ -2,27 +2,27 @@ import Domain
 import Foundation
 
 extension SampleData {
-    static func makeAccounts(opening: Date) -> [Account] {
+    static func makeAccounts(opening: Date, language: SampleLanguage) -> [Account] {
         [
             Account(
                 id: IDs.savings,
-                name: "Savings",
-                bank: "Bank One",
+                name: text("Savings", language),
+                bank: text("Bank One", language),
                 kind: .deposit,
                 openingBalances: [Money(9520, "USD")],
                 openingDate: opening,
             ),
             Account(
                 id: IDs.payroll,
-                name: "Payroll",
-                bank: "Bank Two",
+                name: text("Payroll", language),
+                bank: text("Bank Two", language),
                 kind: .deposit,
                 openingBalances: [Money(Decimal(string: "-480.10") ?? 0, "USD")],
                 openingDate: opening,
             ),
             Account(
                 id: IDs.cash,
-                name: "Wallet",
+                name: text("Wallet", language),
                 kind: .cash,
                 openingBalances: [Money(7500, "NIO")],
                 openingDate: opening,
@@ -30,7 +30,7 @@ extension SampleData {
             Account(
                 id: IDs.mastercard,
                 name: "Mastercard",
-                bank: "Bank One",
+                bank: text("Bank One", language),
                 kind: .credit,
                 openingBalances: [Money(0, "USD"), Money(0, "NIO")],
                 openingDate: opening,
@@ -39,7 +39,7 @@ extension SampleData {
             Account(
                 id: IDs.visa,
                 name: "Visa",
-                bank: "Bank Two",
+                bank: text("Bank Two", language),
                 kind: .credit,
                 openingBalances: [Money(-880, "NIO")],
                 openingDate: opening,
