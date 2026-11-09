@@ -53,7 +53,9 @@ final class AppContainer {
 
     #if DEBUG
     func seedSampleData() async {
-        let sample = SampleData(referenceDate: .now)
+        // In the app's own language, so Spanish screenshots don't show English movements.
+        let language = SampleLanguage(languageCode: Bundle.main.preferredLocalizations.first)
+        let sample = SampleData(referenceDate: .now, language: language)
         do {
             try await store.seed(
                 settings: sample.settings,

@@ -204,7 +204,7 @@ public final class TransactionsViewModel {
             currency: list.settings.principal,
             calendar: calendar,
         )
-        let title = now().formatted(.dateTime.month(.wide).year()).localizedCapitalized
+        let title = now().formatted(.dateTime.month(.wide).year()).sentenceCased
         let spent = formatter.string(from: -summary.expense, currencyCode: summary.currency)
         let earned = formatter.string(from: summary.income, currencyCode: summary.currency, sign: .always)
         return (title, spent, earned)

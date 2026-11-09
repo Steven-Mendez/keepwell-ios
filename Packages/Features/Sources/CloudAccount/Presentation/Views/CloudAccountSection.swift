@@ -105,21 +105,12 @@ public struct CloudAccountSection: View {
         case let .signedIn(user):
             VStack(alignment: .leading, spacing: KWSpacing.sm) {
                 Text(user.name.isEmpty ? user.email : user.name).font(KWTextStyle.body.font)
-                Text(user.email).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.secondary)
-                Text(syncLine(user)).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.secondary)
-                HStack {
-                    Button {
-                        Task { await viewModel.signOut(everywhere: false) }
-                    } label: {
-                        Text("Sign out", bundle: #bundle)
-                    }
-                    Spacer()
-                    Button(role: .destructive) {
-                        isConfirmingEverywhere = true
-                    } label: {
-                        Text("Sign out on all devices", bundle: #bundle)
-                    }
+                // Apple often shares no name, and the email shown twice reads as a glitch.
+                if !user.name.isEmpty, user.name != user.email {
+                    Text(user.email).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.secondary)
                 }
+                Text(syncLine(user)).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.secondary)
+                signOutButtons
                 if user.canBeSupported, viewModel.canBuySupport {
                     Divider()
                     SupportKeepwellCard(viewModel: viewModel, user: user)
@@ -144,6 +135,22 @@ public struct CloudAccountSection: View {
                 }
                 .font(KWTextStyle.body.font)
                 .disabled(viewModel.isWorking)
+            }
+        }
+    }
+
+    /// Stacked: side by side, the longer label wraps onto two lines in Spanish.
+    private var signOutButtons: some View {
+        VStack(alignment: .leading, spacing: KWSpacing.sm) {
+            Button {
+                Task { await viewModel.signOut(everywhere: false) }
+            } label: {
+                Text("Sign out", bundle: #bundle)
+            }
+            Button(role: .destructive) {
+                isConfirmingEverywhere = true
+            } label: {
+                Text("Sign out on all devices", bundle: #bundle)
             }
         }
     }

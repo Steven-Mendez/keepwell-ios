@@ -160,6 +160,18 @@ public final class CloudAccountViewModel {
     /// Buys the coffee. Cancelling, or waiting for Ask to Buy, changes nothing and shows nothing.
     public func buyCoffee() async {
         guard let support else { return }
+        // No price means the App Store didn't hand over the product (offline, or not on sale yet):
+        // buying would only end in a vague store error, so ask again and say what's wrong.
+        if coffeePrice == nil {
+            coffeePrice = await support.price()
+            guard coffeePrice != nil else {
+                errorMessage = String(
+                    localized: "The coffee isn't available in the App Store right now. Check your connection and try again later.",
+                    bundle: #bundle,
+                )
+                return
+            }
+        }
         await run { () async throws(CloudAccountError) in
             if case let .granted(user) = try await support.buy.execute() {
                 self.state = .signedIn(user)
