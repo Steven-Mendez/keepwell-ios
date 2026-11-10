@@ -7,7 +7,7 @@ import Testing
 struct TransactionRowSnapshotTests {
     @Test
     func transactionRows() {
-        let view = KWGroupedCard(horizontalPadding: 14, verticalPadding: 4) {
+        let view = KWGroupedCard(verticalPadding: 4) {
             KWTransactionRow(
                 .planned,
                 title: "Rent",

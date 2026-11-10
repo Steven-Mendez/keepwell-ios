@@ -36,13 +36,15 @@ public struct KWEmptyState: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .multilineTextAlignment(.center)
+            // Only the text is inset, for shorter lines; the action spans the screen's gutter
+            // like every other full-width button, so its edges meet the header and cards above.
+            .padding(.horizontal, KWSpacing.md)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
                     .buttonStyle(.kw())
                     .padding(.top, KWSpacing.xs)
             }
         }
-        .padding(.horizontal, KWSpacing.md)
         .frame(maxWidth: .infinity)
     }
 }
