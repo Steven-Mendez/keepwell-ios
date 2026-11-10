@@ -23,11 +23,10 @@ struct NetWorthTests {
     }
 
     @Test
-    func unknownCurrencyThrows() throws {
+    func currencyTheSettingsDontConvertIsLeftOut() throws {
         let settings = try CurrencySettings(second: "NIO", rate: 36)
-        #expect(throws: DomainError.currencyMismatch("EUR", "USD")) {
-            try NetWorth.total(of: [Money(1, "EUR")], settings: settings)
-        }
+        let total = try NetWorth.total(of: [Money(1, "EUR"), Money(5, "USD")], settings: settings)
+        #expect(total == Money(5, "USD"))
     }
 
     @Test

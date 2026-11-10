@@ -36,6 +36,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Home no longer fails when an account holds a currency outside the settings; net worth leaves those balances out, and a card limit in such a currency shows no "available".
 - Signing in on the welcome to an account that has no data of yours yet (for example one made on
   the web) no longer skips the setup: your name (filled in from the account when Apple or the
   account shares it), currencies, accounts, protection and privacy follow, and what you set up

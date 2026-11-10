@@ -116,8 +116,8 @@ public struct DefaultGetCreditCardDetailUseCase: GetCreditCardDetailUseCase {
         let cycle = BillingCycle.cycle(containing: now, cutoffDay: terms?.cutoffDay, calendar: calendar)
 
         var available: Money?
-        if let limit = terms?.limit {
-            let owed = try currencies.exchangeRate.convert(totalDebt, to: limit.currency)
+        // A limit in a currency the settings no longer convert: no "available" rather than a wrong one.
+        if let limit = terms?.limit, let owed = try? currencies.exchangeRate.convert(totalDebt, to: limit.currency) {
             available = Money(limit.amount + owed.amount, limit.currency)
         }
         let cycleTransactions = transactions
