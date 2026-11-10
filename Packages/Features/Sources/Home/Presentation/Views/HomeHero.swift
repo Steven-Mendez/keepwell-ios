@@ -9,6 +9,9 @@ struct HomeHero: View {
     let viewModel: HomeViewModel
     let actions: HomeView.Actions
     @Binding var hidesBalances: Bool
+    /// The moment the greeting and date line show; `nil` follows the clock minute by minute. Fixed
+    /// only in snapshots, where "Good afternoon" vs "Good evening" must not depend on when they run.
+    var fixedDate: Date?
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var page = BalancePage.Kind.netWorth
@@ -59,21 +62,29 @@ struct HomeHero: View {
 
     // MARK: - Top bar
 
+    private func greeting(at date: Date) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(viewModel.greeting(at: date))
+                .font(.kw(22, weight: 800, relativeTo: .title2))
+                .foregroundStyle(KWColor.Text.primary)
+            Text(viewModel.dateLine(date))
+                .font(KWTextStyle.caption.font)
+                .foregroundStyle(KWColor.Text.onBrand)
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+    }
+
     private var topBar: some View {
         HStack(spacing: KWSpacing.xs) {
-            TimelineView(.everyMinute) { context in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(viewModel.greeting(at: context.date))
-                        .font(.kw(22, weight: 800, relativeTo: .title2))
-                        .foregroundStyle(KWColor.Text.primary)
-                    Text(viewModel.dateLine(context.date))
-                        .font(KWTextStyle.caption.font)
-                        .foregroundStyle(KWColor.Text.onBrand)
+            if let fixedDate {
+                greeting(at: fixedDate)
+            } else {
+                TimelineView(.everyMinute) { context in
+                    greeting(at: context.date)
                 }
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .accessibilityElement(children: .combine)
-                .accessibilityAddTraits(.isHeader)
             }
             Spacer(minLength: KWSpacing.xs)
             KWCircleButton(
