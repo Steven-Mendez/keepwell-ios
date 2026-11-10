@@ -15,8 +15,8 @@ final class KeyboardUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
         app.buttons["Start"].tap()
-        XCTAssertTrue(app.buttons["Start from scratch"].waitForExistence(timeout: 5))
-        app.buttons["Start from scratch"].tap()
+        XCTAssertTrue(app.buttons["Continue without an account"].waitForExistence(timeout: 5))
+        app.buttons["Continue without an account"].tap()
         XCTAssertTrue(app.staticTexts["What's your name?"].waitForExistence(timeout: 5))
         app.buttons["Skip"].tap()
         XCTAssertTrue(app.staticTexts["Which currencies do you use?"].waitForExistence(timeout: 5))

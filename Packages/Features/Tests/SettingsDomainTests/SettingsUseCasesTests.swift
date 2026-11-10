@@ -45,20 +45,11 @@ struct SettingsUseCasesTests {
     @Test
     func overviewCountsCategoriesAndMethods() async throws {
         let store = InMemoryStore(sample: sample)
-        let overview = try await DefaultGetSettingsOverviewUseCase(settings: store, categories: store, cards: store, backup: FakeBackup())
+        let overview = try await DefaultGetSettingsOverviewUseCase(settings: store, categories: store, cards: store)
             .execute()
         #expect(overview.expenseCategoryCount == sample.categories.count { $0.kind == .expense })
         #expect(overview.incomeCategoryCount == sample.categories.count { $0.kind == .income })
         #expect(overview.paymentMethodCount == sample.cards.count)
-    }
-
-    @Test
-    func iCloudSwitchUpdatesTheDeviceAndTheSettings() async throws {
-        let store = InMemoryStore(sample: sample)
-        let backup = FakeBackup()
-        try await DefaultSetICloudBackupUseCase(backup: backup, settings: store).execute(false)
-        #expect(!backup.isICloudBackupEnabled)
-        #expect(await store.load()?.isICloudBackupEnabled == false)
     }
 
     @Test
@@ -79,15 +70,6 @@ struct SettingsUseCasesTests {
     }
 }
 
-private final class FakeBackup: BackupPreference, @unchecked Sendable {
-    /// Tests touch it from one task at a time.
-    var isICloudBackupEnabled = true
-
-    func setICloudBackupEnabled(_ isEnabled: Bool) {
-        isICloudBackupEnabled = isEnabled
-    }
-}
-
 @Suite("Settings lock profile")
 struct SettingsLockProfileTests {
     @Test
@@ -95,7 +77,7 @@ struct SettingsLockProfileTests {
         let store = InMemoryStore(sample: .standard)
         let lock = try InMemoryPasscodeStore(passcode: Passcode("482915"), name: "Steven")
         let overview = try await DefaultGetSettingsOverviewUseCase(
-            settings: store, categories: store, cards: store, backup: FakeBackup(), passcodes: lock, profile: lock,
+            settings: store, categories: store, cards: store, passcodes: lock, profile: lock,
         ).execute()
         #expect(overview.hasPasscode)
         #expect(overview.preferredName == "Steven")
@@ -118,37 +100,10 @@ struct SettingsLockProfileTests {
     }
 
     @Test
-    func erasingAllDataClearsThisDeviceThenTheCloudCopy() async throws {
+    func erasingAllDataEmptiesThisDevice() async throws {
         let store = InMemoryStore(sample: .standard)
-        let cloud = CloudSpy()
-        try await DefaultEraseAllDataUseCase(eraser: store, cloud: cloud).execute()
+        try await DefaultEraseAllDataUseCase(eraser: store).execute()
         #expect(await store.fetchTransactions(in: nil).isEmpty)
         #expect(await store.fetchAccounts().isEmpty)
-        #expect(await cloud.erased)
-    }
-
-    @Test
-    func anUnreachableCloudStillLeavesThisDeviceEmpty() async throws {
-        let store = InMemoryStore(sample: .standard)
-        await #expect(throws: DomainError.persistence("offline")) {
-            try await DefaultEraseAllDataUseCase(eraser: store, cloud: CloudSpy(failure: .persistence("offline"))).execute()
-        }
-        #expect(await store.fetchAccounts().isEmpty)
-    }
-}
-
-private actor CloudSpy: CloudCopyEraser {
-    private let failure: DomainError?
-    private(set) var erased = false
-
-    init(failure: DomainError? = nil) {
-        self.failure = failure
-    }
-
-    func eraseCloudCopy() async throws(DomainError) {
-        if let failure {
-            throw failure
-        }
-        erased = true
     }
 }

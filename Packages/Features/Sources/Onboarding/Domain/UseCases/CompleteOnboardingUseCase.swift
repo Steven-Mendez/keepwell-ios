@@ -10,7 +10,6 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
     private let settings: any SettingsRepository
     private let accounts: any AccountRepository
     private let cards: any CardRepository
-    private let backup: any BackupPreference
     private let profile: any ProfileRepository
     private let passcodes: any PasscodeRepository
     private let now: @Sendable () -> Date
@@ -19,7 +18,6 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
         settings: any SettingsRepository,
         accounts: any AccountRepository,
         cards: any CardRepository,
-        backup: any BackupPreference,
         profile: any ProfileRepository,
         passcodes: any PasscodeRepository,
         now: @escaping @Sendable () -> Date = { .now },
@@ -27,7 +25,6 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
         self.settings = settings
         self.accounts = accounts
         self.cards = cards
-        self.backup = backup
         self.profile = profile
         self.passcodes = passcodes
         self.now = now
@@ -46,11 +43,11 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
             currencies: draft.currencies,
             unlockMethod: draft.unlockMethod,
             hidesAmountsInAppSwitcher: draft.hidesAmountsInAppSwitcher,
-            isICloudBackupEnabled: draft.backsUpToICloud,
+            // CloudKit is retired (increment 15); the field stays in the shared backup format.
+            isICloudBackupEnabled: false,
             hasCompletedOnboarding: true,
         )
         try await settings.save(result)
-        backup.setICloudBackupEnabled(draft.backsUpToICloud)
         await profile.setPreferredName(PreferredName.normalized(draft.preferredName))
         // The Keychain outlives a reinstall, so a passcode from an earlier install (or an abandoned
         // onboarding) would otherwise lock the app with a code the person may not remember.

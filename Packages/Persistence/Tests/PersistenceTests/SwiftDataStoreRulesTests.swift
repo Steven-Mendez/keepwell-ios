@@ -30,20 +30,20 @@ struct SwiftDataStoreRulesTests {
     }
 
     @Test
-    func deletingARuleLeavesATombstoneInTheBackup() async throws {
+    func deletingARuleLeavesATombstone() async throws {
         let store = try makeStore()
         try await store.save(uber)
         try await store.save(cafe)
         try await store.deleteCategorizationRule(id: uber.id)
         #expect(try await store.fetchCategorizationRules() == [cafe])
         await #expect(throws: DomainError.notFound(uber.id)) { try await store.deleteCategorizationRule(id: uber.id) }
-        let exported = try await store.exportContents().categorizationRules
+        let exported = try await store.auditedContents().categorizationRules
         #expect(exported.map(\.value) == [uber, cafe])
         #expect(exported.map(\.metadata.isDeleted) == [true, false])
     }
 
     @Test
-    func tagsRoundTripOnMovementsAndRecurringRulesAndThroughABackup() async throws {
+    func tagsRoundTripOnMovementsAndRecurringRules() async throws {
         let sample = SampleData.standard
         let store = try makeStore()
         let movement = try #require(sample.transactions.first).with(categoryID: "transport", tags: ["Viaje México", "boda"])
@@ -58,13 +58,6 @@ struct SwiftDataStoreRulesTests {
         try await store.save(uber)
         #expect(try await store.fetchTransactions(in: nil).first?.tags == ["viaje-méxico", "boda"])
         #expect(try await store.fetchRecurringRules().first?.tags == ["gym"])
-
-        let contents = try await store.exportContents()
-        let restored = try makeStore()
-        try await restored.replaceAll(with: contents)
-        #expect(try await restored.fetchTransactions(in: nil).first?.tags == ["viaje-méxico", "boda"])
-        #expect(try await restored.fetchRecurringRules().first?.tags == ["gym"])
-        #expect(try await restored.fetchCategorizationRules() == [uber])
     }
 
     @Test
@@ -85,7 +78,7 @@ struct SwiftDataStoreRulesTests {
         try await store.save(unpaid, deletingTransaction: payment.transactionID)
         #expect(try await store.fetchLoans() == [unpaid])
         #expect(try await !store.fetchTransactions(in: nil).contains { $0.id == expense.id })
-        #expect(try await store.exportContents().transactions.contains { $0.value.id == expense.id && $0.metadata.isDeleted })
+        #expect(try await store.auditedContents().transactions.contains { $0.value.id == expense.id && $0.metadata.isDeleted })
         // The movement may already be gone: the loan still saves.
         try await store.save(loan, deletingTransaction: UUID())
         #expect(try await store.fetchLoans() == [loan])

@@ -241,26 +241,6 @@
         }
       }
     },
-    "Back up now" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Respaldar ahora"
-          }
-        }
-      }
-    },
-    "Backup ready · %@. Save it in iCloud Drive or Files." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Respaldo listo · %@. Guárdalo en iCloud Drive o en Archivos."
-          }
-        }
-      }
-    },
     "Bank transfer" : {
       "localizations" : {
         "es" : {
@@ -471,12 +451,12 @@
         }
       }
     },
-    "Deletes the data on this iPhone and the iCloud backup." : {
+    "Deletes the data on this iPhone." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Borra los datos de este iPhone y el respaldo de iCloud."
+            "value" : "Borra los datos de este iPhone."
           }
         }
       }
@@ -601,16 +581,6 @@
         }
       }
     },
-    "In your own iCloud, encrypted. We don't see anything." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En tu propio iCloud, cifrado. Nosotros no vemos nada."
-          }
-        }
-      }
-    },
     "Income" : {
       "localizations" : {
         "es" : {
@@ -667,16 +637,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Idioma"
-          }
-        }
-      }
-    },
-    "Last backup: %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Último respaldo: %@"
           }
         }
       }
@@ -861,16 +821,6 @@
         }
       }
     },
-    "Off: your data stays only on this iPhone." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apagado: tus datos quedan solo en este iPhone."
-          }
-        }
-      }
-    },
     "On ›" : {
       "localizations" : {
         "es" : {
@@ -961,16 +911,6 @@
         }
       }
     },
-    "Replace your data with this backup?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Reemplazar tus datos con este respaldo?"
-          }
-        }
-      }
-    },
     "Restore" : {
       "localizations" : {
         "es" : {
@@ -997,46 +937,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Restaurar las categorías predeterminadas?"
-          }
-        }
-      }
-    },
-    "Restored the backup from %@ · %lld transactions" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Restored the backup from %@ · %lld transaction"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Restored the backup from %@ · %lld transactions"
-                }
-              }
-            }
-          }
-        },
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Respaldo del %@ restaurado · %lld movimiento"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Respaldo del %@ restaurado · %lld movimientos"
-                }
-              }
-            }
           }
         }
       }
@@ -1121,16 +1021,6 @@
         }
       }
     },
-    "Syncs on its own while you have iCloud on this iPhone." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se sincroniza solo mientras tengas iCloud en este iPhone."
-          }
-        }
-      }
-    },
     "Tags to add" : {
       "localizations" : {
         "es" : {
@@ -1157,26 +1047,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Texto a buscar"
-          }
-        }
-      }
-    },
-    "That file isn't a Keepwell backup, so nothing was changed." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ese archivo no es un respaldo de Keepwell, así que no cambió nada."
-          }
-        }
-      }
-    },
-    "The change applies the next time you open Keepwell." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El cambio se aplica la próxima vez que abras Keepwell."
           }
         }
       }
@@ -1237,16 +1107,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualízala cuando quieras reemplazando el valor. Cada movimiento guarda la tasa con la que se anotó, así tu historial no cambia."
-          }
-        }
-      }
-    },
-    "We couldn't create the backup. Try again." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudimos crear el respaldo. Inténtalo de nuevo."
           }
         }
       }
@@ -1331,32 +1191,12 @@
         }
       }
     },
-    "We couldn't read that file." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudimos leer ese archivo."
-          }
-        }
-      }
-    },
     "We couldn't read that file. Export it again as CSV (UTF-8)." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos leer ese archivo. Expórtalo de nuevo como CSV (UTF-8)."
-          }
-        }
-      }
-    },
-    "We couldn't restore the backup. Try again." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudimos restaurar el respaldo. Inténtalo de nuevo."
           }
         }
       }
@@ -1421,22 +1261,12 @@
         }
       }
     },
-    "What's on this iPhone now is replaced by the backup." : {
+    "Your accounts, cards and transactions are deleted from this iPhone. This can't be undone. Data synced to your Keepwell account goes when you delete the account." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lo que hay ahora en este iPhone se reemplaza por el respaldo."
-          }
-        }
-      }
-    },
-    "Your accounts, cards and transactions are deleted from this iPhone and from iCloud. This can't be undone." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tus cuentas, tarjetas y movimientos se borran de este iPhone y de iCloud. No se puede deshacer."
+            "value" : "Tus cuentas, tarjetas y movimientos se borran de este iPhone. No se puede deshacer. Lo sincronizado con tu cuenta Keepwell se borra al eliminar la cuenta."
           }
         }
       }
@@ -1447,16 +1277,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nombre"
-          }
-        }
-      }
-    },
-    "iCloud backup" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Respaldo en iCloud"
           }
         }
       }

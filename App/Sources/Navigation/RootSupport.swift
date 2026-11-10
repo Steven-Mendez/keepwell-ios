@@ -1,5 +1,6 @@
 import AccountsPresentation
 import AddCardPresentation
+import CloudAccountDomain
 import CloudAccountPresentation
 import Core
 import CreateTransactionPresentation
@@ -81,21 +82,20 @@ final class MainScreens {
 // Each pushed screen keeps its view model in `@State`, so re-rendering the stack doesn't
 // recreate it and lose what the person was doing.
 
-/// Onboarding with the lock feature's passcode setup over it, so the protect step reuses the
-/// same screen and rules as Settings.
+/// Onboarding with the account feature's sign-in as its account step and the lock feature's
+/// passcode setup over it, so both reuse the same screens and rules as Settings.
 struct OnboardingRoute: View {
     let container: AppContainer
     let viewModel: OnboardingViewModel
     let onImportCSV: () -> Void
-    let onRestoreFile: () -> Void
     let onFinish: (OnboardingFlowView.Exit) -> Void
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
 
     var body: some View {
         OnboardingFlowView(
             viewModel: viewModel,
+            accountStep: accountStep,
             onImportCSV: onImportCSV,
-            onRestoreFile: onRestoreFile,
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onFinish: onFinish,
         )
@@ -105,6 +105,33 @@ struct OnboardingRoute: View {
                     viewModel.passcodeCreated()
                 }
                 passcodeSetup = nil
+            }
+        }
+    }
+
+    private var accountStep: AnyView? {
+        guard viewModel.offersAccount, let account = container.cloudAccount else { return nil }
+        return AnyView(
+            AccountSignInView(
+                viewModel: account,
+                isFindingData: viewModel.restoreState == .searching,
+                onBack: { _ = viewModel.path.popLast() },
+                onContinue: signedIn,
+                onContinueWithoutAccount: viewModel.continueWithoutAccount,
+            )
+            // A sign-in on this step moves on by itself; the account's data comes down first.
+            .onChange(of: account.state) { old, new in
+                if case .signedOut = old, case let .signedIn(user) = new, viewModel.path.last == .account {
+                    signedIn(user)
+                }
+            },
+        )
+    }
+
+    private func signedIn(_ user: CloudAccountUser) {
+        Task {
+            if await viewModel.signedIn(canSync: user.canSync) != nil {
+                onFinish(.home)
             }
         }
     }

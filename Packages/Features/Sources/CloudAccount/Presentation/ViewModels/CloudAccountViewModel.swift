@@ -51,6 +51,8 @@ public final class CloudAccountViewModel {
     public private(set) var assistantsDisconnected = false
     /// Invitation code for a first sign-in; existing accounts don't need one.
     public var invitation = ""
+    /// The last sign-in was refused for lack of a valid invitation, so the code field should show.
+    public private(set) var needsInvitation = false
     /// The coffee; `nil` in builds without in-app purchase.
     private let support: SupportActions?
     public private(set) var coffeePrice: String?
@@ -215,10 +217,12 @@ public final class CloudAccountViewModel {
         do {
             try await work()
             errorMessage = nil
+            needsInvitation = false
         } catch {
             if error == .signedOut {
                 state = .signedOut
             }
+            needsInvitation = error == .notInvited || error == .invalidInvitation
             errorMessage = message(for: error)
         }
     }

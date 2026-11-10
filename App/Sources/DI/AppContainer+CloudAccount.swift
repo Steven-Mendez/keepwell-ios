@@ -2,6 +2,7 @@ import CloudAccountData
 import CloudAccountDomain
 import CloudAccountPresentation
 import Foundation
+import OnboardingDomain
 import Persistence
 
 // MARK: - Keepwell account and sync (API)
@@ -44,6 +45,13 @@ extension AppContainer {
             passkeys: HTTPPasskeySignIn(client: client),
             support: makeSupportActions(repository: repository),
         )
+    }
+
+    /// Onboarding's wait for an account's data after signing in; `nil` without an API, which also
+    /// leaves the account step out of onboarding.
+    func makeRestoreFromAccount() -> (any RestoreFromAccountUseCase)? {
+        guard let sync = cloudAccount?.sync else { return nil }
+        return DefaultRestoreFromAccountUseCase(settings: store, completedSyncRounds: { await sync.completedRounds })
     }
 
     /// The coffee: StoreKit for the purchase, the API to verify it and grant the plan.

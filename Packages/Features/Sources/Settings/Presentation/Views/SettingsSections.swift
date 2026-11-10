@@ -206,24 +206,16 @@ struct SecuritySection: View {
     }
 }
 
-/// iCloud backup and CSV export.
+/// The CSV export and import: the one way to keep a copy or move movements by hand. Syncing with
+/// other devices is the Keepwell account's job (Account).
 struct DataSection: View {
     let viewModel: SettingsViewModel
     let overview: SettingsOverview
     @State private var isImporting = false
-    @State private var isPickingBackup = false
-    @State private var pendingRestore: URL?
 
     var body: some View {
         SettingsSection(title: String(localized: "Data", bundle: #bundle)) {
             KWGroupedCard {
-                VStack(alignment: .leading, spacing: 10) {
-                    backupToggle
-                    backupStatusRow
-                    // A backup is a file the person keeps, so it works whether iCloud sync is on or off.
-                    backupActions
-                }
-                .padding(.vertical, 14)
                 csvRows
             }
             if let message = viewModel.importMessage {
@@ -237,42 +229,6 @@ struct DataSection: View {
                 Task { await viewModel.importFile(at: url) }
             }
         }
-        .background {
-            // A second importer can't share a view with the first, so it lives on the background.
-            Color.clear.fileImporter(isPresented: $isPickingBackup, allowedContentTypes: [.json]) { result in
-                if case let .success(url) = result {
-                    pendingRestore = url
-                }
-            }
-        }
-        .confirmationDialog(
-            String(localized: "Replace your data with this backup?", bundle: #bundle),
-            isPresented: isConfirmingRestore,
-            titleVisibility: .visible,
-        ) {
-            Button(role: .destructive) {
-                if let url = pendingRestore {
-                    Task { _ = await viewModel.restore(from: url) }
-                }
-            } label: {
-                Text("Restore", bundle: #bundle)
-            }
-        } message: {
-            Text("What's on this iPhone now is replaced by the backup.", bundle: #bundle)
-        }
-    }
-
-    private var backupStatusRow: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(overview.isICloudBackupEnabled ? KWColor.State.positive : KWColor.Text.faint)
-                .frame(width: 8, height: 8)
-            Text(backupStatus)
-                .font(KWTextStyle.caption.font.weight(.regular))
-                .foregroundStyle(KWColor.Text.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(.leading, 52)
     }
 
     @ViewBuilder
@@ -291,72 +247,5 @@ struct DataSection: View {
         }
         .buttonStyle(.plain)
         .disabled(viewModel.isWorking)
-    }
-
-    private var isConfirmingRestore: Binding<Bool> {
-        Binding(get: { pendingRestore != nil }, set: {
-            if !$0 {
-                pendingRestore = nil
-            }
-        })
-    }
-
-    private var backupActions: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: KWSpacing.xs) {
-                Button {
-                    Task { await viewModel.backUpNow() }
-                } label: {
-                    Text("Back up now", bundle: #bundle)
-                }
-                .buttonStyle(.kw(.primary, size: .small))
-                Button { isPickingBackup = true } label: {
-                    Text("Restore", bundle: #bundle)
-                }
-                .buttonStyle(.kw(.secondary, size: .small))
-            }
-            .disabled(viewModel.isWorking)
-            if let message = viewModel.backupMessage {
-                Text(message)
-                    .font(KWTextStyle.captionSm.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(.leading, 52)
-    }
-
-    private var backupToggle: some View {
-        Toggle(isOn: Binding(
-            get: { overview.isICloudBackupEnabled },
-            set: { enabled in Task { await viewModel.setICloudBackup(enabled) } },
-        )) {
-            HStack(spacing: KWSpacing.sm) {
-                KWIconView(.cloud, size: 20)
-                    .foregroundStyle(KWColor.Brand.link)
-                    .frame(width: 40, height: 40)
-                    .background(KWColor.Tint.accent, in: Circle())
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("iCloud backup", bundle: #bundle).font(KWTextStyle.body.font)
-                    Text("In your own iCloud, encrypted. We don't see anything.", bundle: #bundle)
-                        .font(KWTextStyle.captionSm.font.weight(.regular))
-                        .foregroundStyle(KWColor.Text.muted)
-                }
-            }
-        }
-        .toggleStyle(.kw)
-    }
-
-    private var backupStatus: String {
-        if viewModel.backupChangeIsPending {
-            return String(localized: "The change applies the next time you open Keepwell.", bundle: #bundle)
-        }
-        if overview.isICloudBackupEnabled, let last = overview.lastBackupDate {
-            let when = last.formatted(.relative(presentation: .named))
-            return String(localized: "Last backup: \(when)", bundle: #bundle)
-        }
-        return overview.isICloudBackupEnabled
-            ? String(localized: "Syncs on its own while you have iCloud on this iPhone.", bundle: #bundle)
-            : String(localized: "Off: your data stays only on this iPhone.", bundle: #bundle)
     }
 }

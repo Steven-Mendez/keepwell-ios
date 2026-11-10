@@ -28,8 +28,8 @@ public struct WelcomeView: View {
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 14) {
-                    feature(.personOff, String(localized: "No account or sign-up", bundle: #bundle))
-                    feature(.phone, String(localized: "On your iPhone, backed up to your iCloud", bundle: #bundle))
+                    feature(.personOff, String(localized: "No account needed", bundle: #bundle))
+                    feature(.phone, String(localized: "On your iPhone, synced with the web if you want", bundle: #bundle))
                     feature(.transfer, String(localized: "Any currency, with your own rate", bundle: #bundle))
                 }
                 .padding(.top, KWSpacing.xl)

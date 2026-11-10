@@ -9,6 +9,9 @@ import Observation
 @Observable
 public final class SyncCoordinator {
     public private(set) var state = SyncState.idle(lastSync: nil, pending: 0)
+    /// Rounds that have ended, failed ones included. Signing in during onboarding waits for the
+    /// next one to know whether the account had data to bring down.
+    public private(set) var completedRounds = 0
 
     private let run: @Sendable () async throws(CloudAccountError) -> Void
     private let status: @Sendable () async -> (lastSync: Date?, pending: Int)
@@ -77,6 +80,7 @@ public final class SyncCoordinator {
         }
         running = false
         let current = await status()
+        completedRounds += 1
         switch error {
         case nil:
             state = .idle(lastSync: current.lastSync, pending: current.pending)

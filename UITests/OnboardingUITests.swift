@@ -81,13 +81,13 @@ final class OnboardingUITests: XCTestCase {
         add(attachment)
     }
 
-    /// Welcome, then "Have you used Keepwell before?" answered with "Start from scratch".
+    /// Welcome, then the account step answered with "Continue without an account".
     private func startFromScratch(_ app: XCUIApplication) {
         XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
         attachScreenshot("1-welcome")
         app.buttons["Start"].tap()
-        XCTAssertTrue(app.buttons["Start from scratch"].waitForExistence(timeout: 5))
-        attachScreenshot("1b-returning")
-        app.buttons["Start from scratch"].tap()
+        XCTAssertTrue(app.buttons["Continue without an account"].waitForExistence(timeout: 5))
+        attachScreenshot("1b-account")
+        app.buttons["Continue without an account"].tap()
     }
 }
