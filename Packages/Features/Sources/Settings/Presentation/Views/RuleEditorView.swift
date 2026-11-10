@@ -125,7 +125,7 @@ struct RuleEditorView: View {
             .autocorrectionDisabled()
             .focused($isMatchFocused)
             .submitLabel(.done)
-            .padding(.horizontal, 14)
+            .padding(.horizontal, KWSpacing.md)
             .frame(height: 48)
             .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.card))
             Text("Capitals and accents don't matter.", bundle: #bundle)
