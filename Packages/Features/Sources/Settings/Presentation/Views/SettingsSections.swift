@@ -194,11 +194,11 @@ struct SecuritySection: View {
                 .font(.kw(12, weight: 600, relativeTo: .caption))
                 .multilineTextAlignment(.center)
                 .lineSpacing(1)
-                .foregroundStyle(isSelected ? Color.black : KWColor.Text.secondary)
+                .foregroundStyle(isSelected ? KWColor.Semantic.primaryForeground : KWColor.Text.secondary)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(isSelected ? Color.white : KWColor.Surface.surface2, in: shape)
-                .overlay { shape.strokeBorder(isSelected ? Color.white : KWColor.Surface.border) }
+                .background(isSelected ? KWColor.Semantic.primary : KWColor.Surface.surface2, in: shape)
+                .overlay { shape.strokeBorder(isSelected ? KWColor.Semantic.primary : KWColor.Surface.border) }
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

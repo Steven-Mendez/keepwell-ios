@@ -105,10 +105,10 @@ public struct CategoryView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
-            .foregroundStyle(isSelected ? Color.black : KWColor.Text.primary)
+            .foregroundStyle(isSelected ? KWColor.Semantic.primaryForeground : KWColor.Text.primary)
             .frame(maxWidth: .infinity)
             .frame(height: 96)
-            .background(isSelected ? Color.white : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.card))
+            .background(isSelected ? KWColor.Semantic.primary : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.card))
             .overlay {
                 if isDashed {
                     RoundedRectangle(cornerRadius: KWRadius.card)

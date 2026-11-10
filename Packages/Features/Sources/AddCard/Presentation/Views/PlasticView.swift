@@ -112,13 +112,13 @@ public struct PlasticView: View {
                 Button { viewModel.color = CardDisplay.cardColor(for: palette) } label: {
                     Circle()
                         .fill(palette.largeGradient)
-                        // Keeps the black swatch from disappearing into the black screen.
-                        .overlay { Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1) }
+                        // Keeps the black swatch from disappearing into a dark screen, and the white one into a light one.
+                        .overlay { Circle().strokeBorder(KWColor.Text.primary.opacity(0.18), lineWidth: 1) }
                         .frame(width: 36, height: 36)
                         .padding(isSelected ? 3 : 0)
-                        .background(isSelected ? Color.black : .clear, in: Circle())
+                        .background(isSelected ? KWColor.Surface.bg : .clear, in: Circle())
                         .padding(isSelected ? 2 : 0)
-                        .background(isSelected ? Color.white : .clear, in: Circle())
+                        .background(isSelected ? KWColor.Text.primary : .clear, in: Circle())
                         .frame(width: 36, height: 36)
                 }
                 .buttonStyle(.plain)
@@ -138,10 +138,10 @@ public struct PlasticView: View {
                     Button { viewModel.network = network } label: {
                         Text(CardDisplay.networkName(network))
                             .font(.kw(13, weight: 600, relativeTo: .footnote))
-                            .foregroundStyle(isSelected ? Color.black : KWColor.Text.secondary)
+                            .foregroundStyle(isSelected ? KWColor.Semantic.primaryForeground : KWColor.Text.secondary)
                             .padding(.horizontal, KWSpacing.sm)
                             .frame(height: 34)
-                            .background(isSelected ? Color.white : KWColor.Surface.surface2, in: Capsule())
+                            .background(isSelected ? KWColor.Semantic.primary : KWColor.Surface.surface2, in: Capsule())
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(isSelected ? .isSelected : [])

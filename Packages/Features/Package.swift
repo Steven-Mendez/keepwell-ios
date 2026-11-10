@@ -310,9 +310,11 @@ let package = Package(
             dependencies: [
                 "TransactionsPresentation",
                 "TransactionsDomain",
+                "FeatureTestSupport",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+            exclude: ["__Snapshots__"],
         ),
 
         // MARK: Summary
@@ -368,7 +370,11 @@ let package = Package(
             name: "CloudAccountDataTests",
             dependencies: ["CloudAccountData", "CloudAccountDomain", .product(name: "Domain", package: "Domain")],
         ),
-        .testTarget(name: "CloudAccountPresentationTests", dependencies: ["CloudAccountPresentation", "CloudAccountDomain"]),
+        .testTarget(
+            name: "CloudAccountPresentationTests",
+            dependencies: ["CloudAccountPresentation", "CloudAccountDomain", "FeatureTestSupport"],
+            exclude: ["__Snapshots__"],
+        ),
 
         // MARK: Settings
 
@@ -393,9 +399,12 @@ let package = Package(
             name: "SettingsPresentationTests",
             dependencies: [
                 "SettingsPresentation",
+                "SettingsDomain",
+                "FeatureTestSupport",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+            exclude: ["__Snapshots__"],
         ),
         .testTarget(
             name: "SettingsDomainTests",

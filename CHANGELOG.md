@@ -18,6 +18,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Light mode. Keepwell follows the iPhone's appearance: in light mode screens, onboarding, the lock
+  screen, the splash and the widgets are white and light gray with navy text, the brand blue for
+  buttons and links (deepened where needed to stay readable), and the logo in blue. The home hero
+  card, card art, the app icon tile and the saved receipt image keep their look in both modes. Dark
+  mode looks exactly as before.
 - Onboarding asks to sign in to a Keepwell account right after the welcome: Sign in with Apple, a
   passkey, or an invitation code for a new account. An account that already has data brings it down
   and skips the setup. "Continue without an account" keeps everything on this iPhone, as before; you

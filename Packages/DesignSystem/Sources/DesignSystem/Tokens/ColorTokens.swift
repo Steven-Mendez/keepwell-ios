@@ -1,35 +1,39 @@
 import SwiftUI
 
+/// Every color the app draws with. Surfaces, text, links and states are light/dark pairs that follow
+/// the system appearance (`Hex.Light` and `Hex`); the brand scale and card art are fixed, so the
+/// brand moments (home hero, lock, splash, icon tile, receipt) look the same in both modes.
 public enum KWColor {
     public enum Surface {
-        public static let bg = Color(hex: Hex.Surface.bg)
-        public static let nav = Color(hex: Hex.Surface.nav)
-        public static let surface = Color(hex: Hex.Surface.surface)
-        public static let surface2 = Color(hex: Hex.Surface.surface2)
-        public static let divider = Color(hex: Hex.Surface.divider)
-        public static let border = Color(hex: Hex.Surface.border)
-        public static let controlOff = Color(hex: Hex.Surface.controlOff)
-        public static let light = Color(hex: Hex.Surface.light)
+        public static let bg = Color(light: Hex.Light.Surface.bg, dark: Hex.Surface.bg)
+        public static let nav = Color(light: Hex.Light.Surface.nav, dark: Hex.Surface.nav)
+        public static let surface = Color(light: Hex.Light.Surface.surface, dark: Hex.Surface.surface)
+        public static let surface2 = Color(light: Hex.Light.Surface.surface2, dark: Hex.Surface.surface2)
+        public static let divider = Color(light: Hex.Light.Surface.divider, dark: Hex.Surface.divider)
+        public static let border = Color(light: Hex.Light.Surface.border, dark: Hex.Surface.border)
+        public static let controlOff = Color(light: Hex.Light.Surface.controlOff, dark: Hex.Surface.controlOff)
+        public static let light = Color(light: Hex.Light.Surface.light, dark: Hex.Surface.light)
     }
 
     public enum Text {
-        public static let primary = Color(hex: Hex.Text.primary)
-        public static let secondary = Color(hex: Hex.Text.secondary)
-        public static let muted = Color(hex: Hex.Text.muted)
-        public static let faint = Color(hex: Hex.Text.faint)
-        public static let onBrand = Color(hex: Hex.Text.onBrand)
-        public static let onPositive = Color(hex: Hex.Text.onPositive)
-        public static let onExtra = Color(hex: Hex.Text.onExtra)
+        public static let primary = Color(light: Hex.Light.Text.primary, dark: Hex.Text.primary)
+        public static let secondary = Color(light: Hex.Light.Text.secondary, dark: Hex.Text.secondary)
+        public static let muted = Color(light: Hex.Light.Text.muted, dark: Hex.Text.muted)
+        public static let faint = Color(light: Hex.Light.Text.faint, dark: Hex.Text.faint)
+        public static let onBrand = Color(light: Hex.Light.Text.onBrand, dark: Hex.Text.onBrand)
+        public static let onPositive = Color(light: Hex.Light.Text.onPositive, dark: Hex.Text.onPositive)
+        public static let onExtra = Color(light: Hex.Light.Text.onExtra, dark: Hex.Text.onExtra)
     }
 
     public enum Brand {
+        // The scale is fixed: it paints the brand gradients, which stay dark-styled in light mode.
         public static let b500 = Color(hex: Hex.Brand.b500)
         public static let b600 = Color(hex: Hex.Brand.b600)
         public static let b700 = Color(hex: Hex.Brand.b700)
         public static let b900 = Color(hex: Hex.Brand.b900)
-        public static let accent = Color(hex: Hex.Brand.accent)
-        public static let link = Color(hex: Hex.Brand.link)
-        public static let linkHover = Color(hex: Hex.Brand.linkHover)
+        public static let accent = Color(light: Hex.Light.Brand.accent, dark: Hex.Brand.accent)
+        public static let link = Color(light: Hex.Light.Brand.link, dark: Hex.Brand.link)
+        public static let linkHover = Color(light: Hex.Light.Brand.linkHover, dark: Hex.Brand.linkHover)
         public static let gradient = LinearGradient(
             colors: [b500, b700],
             startPoint: .topLeading,
@@ -38,13 +42,13 @@ public enum KWColor {
     }
 
     public enum State {
-        public static let positive = Color(hex: Hex.State.positive)
-        public static let pending = Color(hex: Hex.State.pending)
-        public static let negative = Color(hex: Hex.State.negative)
+        public static let positive = Color(light: Hex.Light.State.positive, dark: Hex.State.positive)
+        public static let pending = Color(light: Hex.Light.State.pending, dark: Hex.State.pending)
+        public static let negative = Color(light: Hex.Light.State.negative, dark: Hex.State.negative)
         /// Movements that don't change what the person has, like a transfer between their own
         /// accounts, so they carry no gain or loss color.
         public static let neutral = KWColor.Text.secondary
-        public static let extra = Color(hex: Hex.State.extra)
+        public static let extra = Color(light: Hex.Light.State.extra, dark: Hex.State.extra)
     }
 
     /// Card art (two-stop gradients). `violeta`, `coral` and `lima` are no longer offered but still
@@ -124,6 +128,7 @@ public enum KWColor {
         categoryPalette.first { $0.key == key }.map { Color(hex: $0.hex) }
     }
 
+    /// The dark palette, the app's original look. `Light` mirrors it name for name.
     enum Hex {
         enum Surface {
             static let bg: UInt32 = 0x000000
@@ -162,5 +167,62 @@ public enum KWColor {
             static let negative: UInt32 = 0xFF8A7F
             static let extra: UInt32 = 0xC8F560
         }
+    }
+}
+
+extension KWColor.Hex {
+    /// The light palette, derived from the dark one: the same blue identity on white and light gray
+    /// grouped surfaces, with navy text. Accents, links and states are deepened where the dark
+    /// value would fall under WCAG AA (4.5:1) on white. keepwell-web's `pnpm tokens:sync` reads
+    /// this enum too, so it keeps the dark palette's names and one `static let` per line.
+    enum Light {
+        enum Surface {
+            static let bg: UInt32 = 0xF2F3F7
+            static let nav: UInt32 = 0xFBFBFD
+            static let surface: UInt32 = 0xFFFFFF
+            static let surface2: UInt32 = 0xEAECF1
+            static let divider: UInt32 = 0xE3E5EB
+            static let border: UInt32 = 0xD9DCE4
+            static let controlOff: UInt32 = 0xC9CCD6
+            static let light: UInt32 = 0xEDEDF2
+        }
+
+        enum Text {
+            static let primary: UInt32 = 0x0D1226
+            static let secondary: UInt32 = 0x3B4054
+            static let muted: UInt32 = 0x5B6074
+            static let faint: UInt32 = 0x60657A
+            static let onBrand: UInt32 = 0x4A5070
+            static let onPositive: UInt32 = 0xFFFFFF
+            static let onExtra: UInt32 = 0xFFFFFF
+        }
+
+        enum Brand {
+            static let b500: UInt32 = 0x4A74FF
+            static let b600: UInt32 = 0x2448E0
+            static let b700: UInt32 = 0x1A33A8
+            static let b900: UInt32 = 0x0B1550
+            static let accent: UInt32 = 0x2448E0
+            static let link: UInt32 = 0x2448E0
+            static let linkHover: UInt32 = 0x1A33A8
+        }
+
+        enum State {
+            static let positive: UInt32 = 0x087550
+            static let pending: UInt32 = 0x965400
+            static let negative: UInt32 = 0xC22B28
+            static let extra: UInt32 = 0x44700B
+        }
+    }
+}
+
+extension Color {
+    /// A color that follows the appearance it is drawn in: the system's, or the `colorScheme`
+    /// a view sets for its subtree. Anything that isn't explicitly light draws the dark value,
+    /// the app's original look.
+    init(light: UInt32, dark: UInt32) {
+        let light = UIColor(hex: light)
+        let dark = UIColor(hex: dark)
+        self.init(uiColor: UIColor { $0.userInterfaceStyle == .light ? light : dark })
     }
 }

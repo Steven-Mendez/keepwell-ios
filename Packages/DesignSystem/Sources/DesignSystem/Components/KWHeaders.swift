@@ -5,9 +5,9 @@ public struct KWCircleButton: View {
     public enum Style: Sendable {
         /// `surface` fill on black screens.
         case surface
-        /// Translucent white on gradients.
+        /// Translucent text color on gradients: white in dark mode and on brand surfaces.
         case translucent
-        /// White fill, black icon: the "+" in list headers.
+        /// `primary` fill and icon (white and black in dark mode): the "+" in list headers.
         case white
     }
 
@@ -26,7 +26,7 @@ public struct KWCircleButton: View {
     public var body: some View {
         Button(action: action) {
             KWIconView(icon, size: 20, lineWidth: style == .white ? 2.2 : 2)
-                .foregroundStyle(style == .white ? Color.black : KWColor.Text.primary)
+                .foregroundStyle(style == .white ? KWColor.Semantic.primaryForeground : KWColor.Text.primary)
                 .frame(width: 40, height: 40)
                 .background(background, in: Circle())
                 .contentShape(Circle())
@@ -38,13 +38,14 @@ public struct KWCircleButton: View {
     private var background: Color {
         switch style {
         case .surface: KWColor.Surface.surface
-        case .translucent: KWColor.Overlay.white14
-        case .white: .white
+        // The text color at 14%: white on gradients and dark screens, a soft navy on light ones.
+        case .translucent: KWColor.Text.primary.opacity(0.14)
+        case .white: KWColor.Semantic.primary
         }
     }
 }
 
-/// Segmented progress for multi-step flows: done steps white, pending ones `border`.
+/// Segmented progress for multi-step flows: done steps `primary`, pending ones `border`.
 public struct KWStepProgress: View {
     private let total: Int
     private let current: Int
@@ -59,7 +60,7 @@ public struct KWStepProgress: View {
         HStack(spacing: 6) {
             ForEach(0 ..< total, id: \.self) { index in
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(index < current ? Color.white : KWColor.Surface.border)
+                    .fill(index < current ? KWColor.Semantic.primary : KWColor.Surface.border)
                     .frame(height: 4)
             }
         }
