@@ -7,6 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+
+- The welcome asks first whether you already use Keepwell: sign in with Apple or a passkey (or an
+  invitation code for a new account) right there, and an account with data brings it back and skips
+  the setup. "Use without an account" sits under it and keeps everything only on this iPhone; you
+  can sign in later from Settings. The separate account screen after "Start" is gone.
+
 ## [1.0.1] - 2026-11-09
 
 ### Removed

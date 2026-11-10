@@ -9,9 +9,9 @@ import OnboardingDomain
 @MainActor
 @Observable
 public final class OnboardingViewModel {
+    /// The setup steps pushed after the welcome. Signing in to an account, or choosing to use
+    /// Keepwell without one, happens on the welcome itself.
     public enum Step: Hashable, Sendable {
-        /// Sign in to a Keepwell account, or continue without one (data stays on this iPhone).
-        case account
         case name
         case currencies
         case accounts
@@ -197,26 +197,25 @@ public final class OnboardingViewModel {
 
     // MARK: Navigation
 
-    /// Whether the welcome leads to the account step; builds without the API go straight to setup.
+    /// Whether the welcome asks for an existing account first; builds without the API only offer
+    /// "Start", straight to setup.
     public var offersAccount: Bool {
         restoreFromAccount != nil
     }
 
-    /// "Start" on the welcome: the account step first, so an account's data can come down before
-    /// anything is set up by hand.
+    /// "Start" on the welcome of a build without the Keepwell API.
     public func begin() {
-        path = offersAccount ? [.account] : [.name]
+        showSetUp()
     }
 
-    /// "Continue without an account": everything stays on this iPhone. The account step stays one
-    /// step back.
+    /// "Use without an account" on the welcome: everything stays on this iPhone.
     public func continueWithoutAccount() {
         showSetUp()
     }
 
-    /// Signed in on the account step. An account that syncs and already has finished settings
-    /// brings them down and onboarding ends (the returned settings); otherwise the setup steps
-    /// follow, and what they save syncs up.
+    /// Signed in on the welcome. An account that syncs and already has finished settings brings
+    /// them down and onboarding ends (the returned settings); otherwise the setup steps follow,
+    /// and what they save syncs up.
     public func signedIn(canSync: Bool) async -> Settings? {
         guard restoreState == .idle else { return nil }
         if canSync, let restoreFromAccount {
@@ -231,9 +230,9 @@ public final class OnboardingViewModel {
         return nil
     }
 
-    /// The setup steps, with the account step (when offered) one step back.
+    /// The setup steps, with the welcome (and its sign-in) one step back.
     private func showSetUp() {
-        path = offersAccount ? [.account, .name] : [.name]
+        path = [.name]
     }
 
     /// The trimmed name, or `nil` while the field is blank.

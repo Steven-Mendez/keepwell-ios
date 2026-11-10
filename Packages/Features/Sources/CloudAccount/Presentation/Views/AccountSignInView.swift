@@ -2,13 +2,12 @@ import CloudAccountDomain
 import DesignSystem
 import SwiftUI
 
-/// The onboarding step after the welcome: sign in to a Keepwell account (Apple, a passkey made on
-/// the web, an invitation code for new accounts) or continue without one. One strong action, the
-/// alternatives below it and the local path last, quieter, with what it means in one line.
+/// The choice on the onboarding welcome, under the pitch: sign in to an existing Keepwell account
+/// first (Apple, a passkey made on the web, an invitation code for new accounts), then, under an
+/// "or", using Keepwell without one and what that means in one line.
 public struct AccountSignInView: View {
     @Bindable private var viewModel: CloudAccountViewModel
     private let isFindingData: Bool
-    private let onBack: () -> Void
     private let onContinue: (CloudAccountUser) -> Void
     private let onContinueWithoutAccount: () -> Void
     @State private var showsInvitation = false
@@ -20,35 +19,29 @@ public struct AccountSignInView: View {
     public init(
         viewModel: CloudAccountViewModel,
         isFindingData: Bool,
-        onBack: @escaping () -> Void,
         onContinue: @escaping (CloudAccountUser) -> Void,
         onContinueWithoutAccount: @escaping () -> Void,
     ) {
         self.viewModel = viewModel
         self.isFindingData = isFindingData
-        self.onBack = onBack
         self.onContinue = onContinue
         self.onContinueWithoutAccount = onContinueWithoutAccount
     }
 
     public var body: some View {
-        KWScreen(bottom: 32) {
-            VStack(alignment: .leading, spacing: KWSpacing.md) {
-                KWFlowHeader(.back, action: onBack)
-                KWAppIconTile()
-                    .padding(.top, KWSpacing.xs)
-                Text("Sign in to Keepwell", bundle: #bundle)
-                    .kwTextStyle(.titleSm)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityAddTraits(.isHeader)
-                Text("Sync your accounts and movements with Keepwell on the web and your other devices.", bundle: #bundle)
-                    .font(KWTextStyle.body.font)
-                    .foregroundStyle(KWColor.Text.muted)
-                    .lineSpacing(4)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: KWSpacing.md)
-                content
+        VStack(alignment: .leading, spacing: KWSpacing.md) {
+            if case .signedOut = viewModel.state {
+                VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+                    Text("Already use Keepwell?", bundle: #bundle)
+                        .font(KWTextStyle.body.font.weight(.semibold))
+                        .accessibilityAddTraits(.isHeader)
+                    Text("Sign in and your accounts and movements come back as they were.", bundle: #bundle)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.Text.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+            content
         }
         .task {
             if viewModel.state == .loading {
@@ -125,11 +118,11 @@ public struct AccountSignInView: View {
             }
             orDivider
             Button(action: onContinueWithoutAccount) {
-                Text("Continue without an account", bundle: #bundle)
+                Text("Use without an account", bundle: #bundle)
             }
             .buttonStyle(.kw(.surface))
             .disabled(viewModel.isWorking)
-            Text("Your data stays only on this iPhone.", bundle: #bundle)
+            Text("Everything stays only on this iPhone. You can sign in later from Settings.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.muted)
                 .frame(maxWidth: .infinity)
