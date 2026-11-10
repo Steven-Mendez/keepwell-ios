@@ -14,6 +14,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let netWorth: Money
     /// The net worth in the second currency, when there is one.
     public let netWorthInSecond: Money?
+    /// Currencies with a balance that net worth leaves out because the settings can't convert them.
+    public let netWorthExcluded: [String]
     /// Deposit and cash accounts.
     public let accountCount: Int
     /// Plastics (debit and credit), not transfer channels.
@@ -60,6 +62,7 @@ public struct HomeOverview: Hashable, Sendable {
         settings: CurrencySettings,
         netWorth: Money,
         netWorthInSecond: Money?,
+        netWorthExcluded: [String] = [],
         accountCount: Int,
         cardCount: Int,
         month: MonthlySummary,
@@ -86,6 +89,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.settings = settings
         self.netWorth = netWorth
         self.netWorthInSecond = netWorthInSecond
+        self.netWorthExcluded = netWorthExcluded
         self.accountCount = accountCount
         self.cardCount = cardCount
         self.month = month

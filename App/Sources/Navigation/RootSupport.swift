@@ -187,6 +187,7 @@ struct SettingsRoute: View {
                     syncRow: AnyView(CloudSyncRow(viewModel: account)),
                     sections: AnyView(CloudAccountSections(viewModel: account)),
                     destructiveRows: AnyView(CloudAccountDestructiveRows(viewModel: account)),
+                    isSignedIn: account.isSignedIn,
                 )
             },
             about: SettingsAbout(version: AppEnvironment.current.version, privacyPolicy: AppEnvironment.current.privacyPolicyURL),

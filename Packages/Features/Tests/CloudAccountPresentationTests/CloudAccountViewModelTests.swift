@@ -24,8 +24,16 @@ private actor RecordingSignIn: SignInWithAppleUseCase {
     }
 }
 
-private struct StubSignOut: SignOutUseCase {
-    func execute(everywhere _: Bool) async throws(CloudAccountError) {}
+private final class SignOuts: SignOutUseCase, @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+    var value: Int {
+        lock.withLock { count }
+    }
+
+    func execute(everywhere _: Bool) async throws(CloudAccountError) {
+        lock.withLock { count += 1 }
+    }
 }
 
 private struct StubDelete: DeleteCloudAccountUseCase {
@@ -61,7 +69,7 @@ struct CloudAccountViewModelTests {
         signIn: any SignInWithAppleUseCase = RecordingSignIn(result: .failure(.unreachable)),
         delete: StubDelete = StubDelete(),
     ) -> CloudAccountViewModel {
-        CloudAccountViewModel(load: StubLoad(result: loaded), signIn: signIn, signOut: StubSignOut(), delete: delete)
+        CloudAccountViewModel(load: StubLoad(result: loaded), signIn: signIn, signOut: SignOuts(), delete: delete)
     }
 
     @Test
@@ -114,6 +122,31 @@ struct CloudAccountViewModelTests {
         #expect(model.state == .signedOut)
     }
 
+    /// "Delete all my data" while signed in: the account's copy must not come back down.
+    @Test
+    func erasingThisIPhoneSignsOutOfTheAccount() async {
+        let signOuts = SignOuts()
+        let model = CloudAccountViewModel(
+            load: StubLoad(result: .success(ana)), signIn: RecordingSignIn(result: .success(ana)), signOut: signOuts, delete: StubDelete(),
+        )
+        await model.refresh()
+        #expect(model.isSignedIn)
+        #expect(await model.signOutBeforeErasing())
+        #expect(model.state == .signedOut)
+        #expect(signOuts.value == 1)
+    }
+
+    @Test
+    func erasingThisIPhoneWhileSignedOutDoesNothingToTheAccount() async {
+        let signOuts = SignOuts()
+        let model = CloudAccountViewModel(
+            load: StubLoad(result: .success(nil)), signIn: RecordingSignIn(result: .success(ana)), signOut: signOuts, delete: StubDelete(),
+        )
+        await model.refresh()
+        #expect(await model.signOutBeforeErasing())
+        #expect(signOuts.value == 0)
+    }
+
     @Test
     func deletingTheAccountSignsOut() async {
         let model = model(loaded: .success(ana))
@@ -155,7 +188,7 @@ struct CloudAccountViewModelTests {
         let model = CloudAccountViewModel(
             load: StubLoad(result: .success(nil)),
             signIn: RecordingSignIn(result: .success(syncing)),
-            signOut: StubSignOut(),
+            signOut: SignOuts(),
             delete: StubDelete(),
             sync: sync,
         )

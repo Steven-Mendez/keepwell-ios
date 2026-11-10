@@ -1321,6 +1321,26 @@
         }
       }
     },
+    "You'll be signed out on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cerrará la sesión en este iPhone."
+          }
+        }
+      }
+    },
+    "Your Keepwell account keeps its copy; to erase it too, delete your account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu cuenta de Keepwell conserva su copia; para borrarla también, elimina tu cuenta."
+          }
+        }
+      }
+    },
     "Your accounts, cards and transactions are deleted from this iPhone. This can't be undone. Data synced to your Keepwell account goes when you delete the account." : {
       "localizations" : {
         "es" : {

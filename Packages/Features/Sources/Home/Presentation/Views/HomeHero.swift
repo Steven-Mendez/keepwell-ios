@@ -158,16 +158,28 @@ struct HomeHero: View {
                 .accessibilityLabel(hidesBalances
                     ? String(localized: "Hidden", bundle: #bundle)
                     : viewModel.formatter.string(item.amount))
-            if let caption = item.caption {
-                Text(viewModel.visible(caption, hidden: hidesBalances))
-                    .font(KWTextStyle.label.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.onBrand)
-                    .monospacedDigit()
-            }
+            captions(item)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, KWLayout.gutter)
         .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private func captions(_ item: BalancePage) -> some View {
+        if let caption = item.caption {
+            Text(viewModel.visible(caption, hidden: hidesBalances))
+                .font(KWTextStyle.label.font.weight(.regular))
+                .foregroundStyle(KWColor.Text.onBrand)
+                .monospacedDigit()
+        }
+        if let note = item.note {
+            Text(note)
+                .font(KWTextStyle.caption.font)
+                .foregroundStyle(KWColor.Text.onBrand)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
     }
 
     private func pageDots(_ pages: [BalancePage]) -> some View {

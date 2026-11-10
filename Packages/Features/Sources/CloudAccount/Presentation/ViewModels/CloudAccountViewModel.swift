@@ -142,6 +142,22 @@ public final class CloudAccountViewModel {
         }
     }
 
+    public var isSignedIn: Bool {
+        if case .signedIn = state {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Before "Delete all my data": signing out first means nothing syncs between the erase and
+    /// the sign-out, and a failed sign-out erases nothing. `true` when nobody is signed in any more.
+    public func signOutBeforeErasing() async -> Bool {
+        guard isSignedIn else { return true }
+        await signOut(everywhere: false)
+        return !isSignedIn
+    }
+
     public var canUsePasskeys: Bool {
         passkeys != nil
     }

@@ -15,6 +15,14 @@ public enum NetWorth {
         return Money(total, settings.principal)
     }
 
+    /// The currencies of non-zero balances the settings can't convert to the principal: what `total`
+    /// leaves out, so the screen can say so instead of showing a total that looks complete.
+    public static func excludedCurrencies(of balances: [Money], settings: CurrencySettings) -> [String] {
+        let rate = settings.exchangeRate
+        let left = balances.filter { $0.amount != 0 && (try? rate.convert($0, to: settings.principal)) == nil }
+        return Array(Set(left.map(\.currency))).sorted()
+    }
+
     /// The same total expressed in the second currency ("≈ C$408,634"), when there is one.
     public static func inSecondCurrency(_ total: Money, settings: CurrencySettings) -> Money? {
         guard let second = settings.second else { return nil }

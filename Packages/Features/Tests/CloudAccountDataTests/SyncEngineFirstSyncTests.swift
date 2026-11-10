@@ -138,19 +138,79 @@ extension SyncEngineTests {
         #expect(cursor(suite) == 7)
     }
 
-    /// The app quit halfway through bringing the account's data down: the next round finishes the
-    /// download instead of finding data on both sides and asking.
+    /// Older versions left a choice marker behind when the app quit mid-download, and finished it
+    /// on the next round by clearing the iPhone again, entries made since included.
     @Test
-    func aDownloadCutShortFinishesWithoutAsking() async throws {
+    func aChoiceLeftByAnOlderVersionNeverWipesWithoutAsking() async throws {
         let store = FakeSyncStore(counts: ["transaction": 2])
         let suite = suite()
         UserDefaults(suiteName: suite)?.set("useAccount", forKey: "sync.choosing")
         Self.serve(["transaction": [Self.row("t1"), Self.row("t2")]])
         let outcome = try await engine(store, suite: suite).syncOnce(account: "u1")
-        #expect(outcome == .synced)
-        #expect(await store.replacedWith?.count == 2)
-        #expect(cursor(suite) == 7)
+        #expect(outcome == .needsChoice(SyncConflict(device: SyncDataSummary(movements: 2), account: SyncDataSummary(movements: 2))))
+        #expect(await store.replacedWith == nil)
+        #expect(cursor(suite) == nil)
         #expect(UserDefaults(suiteName: suite)?.string(forKey: "sync.choosing") == nil)
+    }
+
+    /// Nothing local is touched before the account's whole snapshot is in hand.
+    @Test
+    func aSnapshotThatCantBeFetchedChangesNothingOnThisDevice() async {
+        let store = FakeSyncStore(events: [event("groceries", name: "Mine")], counts: ["transaction": 4])
+        let suite = suite()
+        StubProtocol.handler = { _ in (500, [:], Self.json([:])) }
+        let eng = engine(store, suite: suite)
+        await #expect(throws: CloudAccountError.self) { try await eng.resolve(.useAccount, account: "u1") }
+        await #expect(throws: CloudAccountError.self) { try await eng.syncOnce(account: "u1") }
+        #expect(await store.replacedWith == nil)
+        #expect(await store.uploadedOver == nil)
+        #expect(await store.pendingCount() == 1)
+        #expect(cursor(suite) == nil)
+    }
+
+    /// A row the store can't read fails the download, so the cursor never moves past it.
+    @Test
+    func aRowThatCantBeStoredFailsTheFirstDownloadWithoutACursor() async {
+        let store = FakeSyncStore()
+        await store.setFailsToReplace(true)
+        let suite = suite()
+        Self.serve(["transaction": [Self.row("t1")]])
+        await #expect(throws: CloudAccountError.server(code: "apply_failed", requestID: nil)) {
+            try await engine(store, suite: suite).syncOnce(account: "u1")
+        }
+        #expect(cursor(suite) == nil)
+        #expect(!paths().contains("/sync/push"))
+    }
+
+    @Test
+    func aRowThatCantBeStoredFailsUsingTheAccountsDataWithoutACursor() async {
+        let store = FakeSyncStore(events: [event("groceries", name: "Mine")], counts: ["transaction": 4])
+        await store.setFailsToReplace(true)
+        let suite = suite()
+        Self.serve(["transaction": [Self.row("t1")]])
+        await #expect(throws: CloudAccountError.server(code: "apply_failed", requestID: nil)) {
+            try await engine(store, suite: suite).resolve(.useAccount, account: "u1")
+        }
+        #expect(cursor(suite) == nil)
+        #expect(await store.pendingCount() == 1)
+    }
+
+    /// An empty account after this device's outbox was already sent elsewhere (another account):
+    /// nothing is queued, so the device's rows are put in the outbox before the snapshot is adopted.
+    @Test
+    func anEmptyAccountGetsThisDevicesDataAndKeepsItsOwnChanges() async throws {
+        let store = FakeSyncStore(events: [event("food", name: "Mine")], counts: ["transaction": 4])
+        let suite = suite()
+        Self.serve(["category": [Self.row("food", name: "Theirs"), Self.row("rent", name: "Rent")]])
+        let outcome = try await engine(store, suite: suite).syncOnce(account: "u2")
+        #expect(outcome == .synced)
+        #expect(await store.uploadedOver?.isEmpty == true)
+        #expect(await store.replacedWith == nil)
+        // The device's own change is pending, so the account's row for it didn't overwrite it.
+        #expect(await store.appliedNames() == ["Rent"])
+        #expect(paths().contains("/sync/push"))
+        #expect(await store.pendingCount() == 0)
+        #expect(cursor(suite) == 7)
     }
 
     @Test

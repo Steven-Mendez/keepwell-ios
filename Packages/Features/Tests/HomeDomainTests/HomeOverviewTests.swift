@@ -60,6 +60,21 @@ struct HomeOverviewTests {
     }
 
     @Test
+    func netWorthSaysWhichCurrenciesItLeavesOut() async throws {
+        #expect(try await overview().netWorthExcluded.isEmpty)
+        let store = InMemoryStore(sample: sample)
+        try await store.save(Account(
+            id: UUID(), name: "Abroad", kind: .cash, openingBalances: [Money(50, "CHF")],
+            openingDate: SampleData.defaultReferenceDate.addingTimeInterval(-86400),
+        ))
+        let result = try await DefaultGetHomeOverviewUseCase(
+            accounts: store, cards: store, transactions: store, categories: store, settings: store,
+            now: { SampleData.defaultReferenceDate },
+        ).execute()
+        #expect(result.netWorthExcluded == ["CHF"])
+    }
+
+    @Test
     func cardCountLeavesTransferChannelsOut() async throws {
         let result = try await overview()
         #expect(result.cardCount == sample.cards.count { $0.kind != .transfer })
