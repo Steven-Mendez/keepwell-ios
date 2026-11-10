@@ -2,13 +2,15 @@ import DesignSystem
 import SnapshotTesting
 import SwiftUI
 
-/// Renders a whole screen at the design's 390×844 frame and 2× scale, dark mode.
+/// Renders a whole screen at the design's 390×844 frame and 2× scale, in dark mode unless
+/// `colorScheme` says otherwise.
 @MainActor
 public func assertScreenSnapshot(
     of view: some View,
     width: CGFloat = 390,
     height: CGFloat = 844,
     named name: String? = nil,
+    colorScheme: ColorScheme = .dark,
     fileID: StaticString = #file,
     filePath: StaticString = #filePath,
     testName: String = #function,
@@ -19,7 +21,7 @@ public func assertScreenSnapshot(
     let framed = view
         .frame(width: width, height: height)
         .background(KWColor.Surface.bg)
-        .environment(\.colorScheme, .dark)
+        .environment(\.colorScheme, colorScheme)
     assertSnapshot(
         of: framed,
         as: .image(

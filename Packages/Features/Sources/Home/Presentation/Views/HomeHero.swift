@@ -9,6 +9,7 @@ struct HomeHero: View {
     let viewModel: HomeViewModel
     let actions: HomeView.Actions
     @Binding var hidesBalances: Bool
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var page = BalancePage.Kind.netWorth
 
@@ -28,7 +29,15 @@ struct HomeHero: View {
         .padding(.horizontal, KWLayout.gutter)
         .padding(.top, KWLayout.safeTop)
         .padding(.bottom, KWSpacing.xl)
-        .background {
+        .kwBrandSurface()
+        .background { background }
+    }
+
+    /// In dark mode the brand blue melts into the black screen. In light mode it can't melt into
+    /// the light gray, so it ends as a blue panel with rounded bottom corners.
+    @ViewBuilder
+    private var background: some View {
+        if colorScheme == .dark {
             LinearGradient(
                 stops: [
                     .init(color: KWColor.Brand.b600, location: 0),
@@ -38,6 +47,13 @@ struct HomeHero: View {
                 startPoint: .top,
                 endPoint: .bottom,
             )
+        } else {
+            LinearGradient(colors: [KWColor.Brand.b600, KWColor.Brand.b700], startPoint: .top, endPoint: .bottom)
+                .clipShape(UnevenRoundedRectangle(
+                    bottomLeadingRadius: KWRadius.surface,
+                    bottomTrailingRadius: KWRadius.surface,
+                    style: .continuous,
+                ))
         }
     }
 

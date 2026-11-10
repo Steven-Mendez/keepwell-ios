@@ -100,9 +100,9 @@ public struct DebtsView: View {
                 Button { viewModel.newDebt(.iOwe) } label: { Text("I borrowed money", bundle: #bundle) }
             } label: {
                 KWIconView(.plus, size: 20, lineWidth: 2.2)
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(KWColor.Semantic.primaryForeground)
                     .frame(width: 40, height: 40)
-                    .background(Color.white, in: Circle())
+                    .background(KWColor.Semantic.primary, in: Circle())
                     .contentShape(Circle())
             }
             .accessibilityLabel(Text("Add", bundle: #bundle))

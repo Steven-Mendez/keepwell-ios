@@ -11,16 +11,6 @@
         }
       }
     },
-    "A file saved with “Back up now” in Settings" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un archivo guardado con “Respaldar ahora” en Ajustes"
-          }
-        }
-      }
-    },
     "Account" : {
       "localizations" : {
         "es" : {
@@ -157,16 +147,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Banco · %@ · Débito ··%@"
-          }
-        }
-      }
-    },
-    "Bring your accounts, cards and movements from a backup, or set everything up from scratch." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trae tus cuentas, tarjetas y movimientos desde un respaldo, o configura todo desde cero."
           }
         }
       }
@@ -371,32 +351,12 @@
         }
       }
     },
-    "Have you used Keepwell before?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Ya usaste Keepwell?"
-          }
-        }
-      }
-    },
     "Hide amounts when leaving" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocultar montos al salir"
-          }
-        }
-      }
-    },
-    "If iCloud backup was on in Keepwell" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Si tenías activado el respaldo en iCloud en Keepwell"
           }
         }
       }
@@ -471,16 +431,6 @@
         }
       }
     },
-    "Looking for your backup…" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buscando tu respaldo…"
-          }
-        }
-      }
-    },
     "Main currency" : {
       "localizations" : {
         "es" : {
@@ -501,22 +451,12 @@
         }
       }
     },
-    "No account and no servers of ours. Your data lives on your iPhone and, if you want, in your iCloud." : {
+    "No account needed" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sin cuenta y sin nuestros servidores. Tus datos viven en tu iPhone y, si quieres, en tu iCloud."
-          }
-        }
-      }
-    },
-    "No account or sign-up" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin cuenta ni registro"
+            "value" : "No necesitas una cuenta"
           }
         }
       }
@@ -551,12 +491,12 @@
         }
       }
     },
-    "On your iPhone, backed up to your iCloud" : {
+    "On your iPhone, synced with the web if you want" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En tu iPhone, con respaldo en tu iCloud"
+            "value" : "En tu iPhone, sincronizado con la web si quieres"
           }
         }
       }
@@ -631,16 +571,6 @@
         }
       }
     },
-    "Recover everything if you change iPhone" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recupera todo si cambias de iPhone"
-          }
-        }
-      }
-    },
     "Remove account" : {
       "localizations" : {
         "es" : {
@@ -657,26 +587,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los reportes y el patrimonio se calculan en la moneda principal."
-          }
-        }
-      }
-    },
-    "Restore from a backup file (.json)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restaurar desde un archivo de respaldo (.json)"
-          }
-        }
-      }
-    },
-    "Restore from iCloud" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restaurar desde iCloud"
           }
         }
       }
@@ -761,16 +671,6 @@
         }
       }
     },
-    "Start from scratch" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empezar de cero"
-          }
-        }
-      }
-    },
     "Statement and payment dates for your cards" : {
       "localizations" : {
         "es" : {
@@ -837,16 +737,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avisos útiles, sin spam"
-          }
-        }
-      }
-    },
-    "We couldn't find a backup in your iCloud." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No encontramos un respaldo en tu iCloud."
           }
         }
       }
@@ -931,6 +821,16 @@
         }
       }
     },
+    "Your data lives on your iPhone. A Keepwell account to sync with the web is optional, and you can add it later in Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos viven en tu iPhone. Una cuenta Keepwell para sincronizar con la web es opcional, y puedes añadirla después en Ajustes."
+          }
+        }
+      }
+    },
     "Your data stays yours" : {
       "localizations" : {
         "es" : {
@@ -967,16 +867,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nombre"
-          }
-        }
-      }
-    },
-    "iCloud backup" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Respaldo en iCloud"
           }
         }
       }

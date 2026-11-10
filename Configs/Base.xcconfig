@@ -14,16 +14,19 @@ APP_GROUP_ID = group.$(APP_BUNDLE_ID)
 APP_DISPLAY_NAME = Keepwell$(APP_NAME_SUFFIX)
 
 // Versioning (MARKETING_VERSION = user-visible version; CURRENT_PROJECT_VERSION = build)
-MARKETING_VERSION = 0.1.0
+MARKETING_VERSION = 1.0.1
 CURRENT_PROJECT_VERSION = 1
 
-// The app's entitlements. Personal (free) teams can't sign iCloud or Push, so Local.xcconfig can
+// The app's entitlements. Personal (free) teams can't sign Sign in with Apple, so Local.xcconfig can
 // point this at KeepwellPersonalTeam.entitlements, which keeps only the App Group the widgets need.
 APP_ENTITLEMENTS = App/Resources/Keepwell.entitlements
 
-// CloudKit: a single container for every environment. CloudKit keeps Development data
-// (development-signed builds) apart from Production (TestFlight/App Store).
-CLOUDKIT_CONTAINER_ID = iCloud.$(BASE_BUNDLE_ID)
+// Keepwell API (account and sync). Empty keeps the app local-only. Set it per environment or in
+// Local.xcconfig; xcconfig treats `//` as a comment, so write https:/$()/api.example.com.
+// Production has no domain of its own: the web app forwards the API's paths (keepwell-api ADR 0009).
+API_BASE_URL = https:/$()/keepwell-web.vercel.app
+// The web app's host: passkeys' relying party, shared through the associated domain.
+WEB_HOST = keepwell-web.vercel.app
 
 // Platform and language
 IPHONEOS_DEPLOYMENT_TARGET = 26.0

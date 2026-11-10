@@ -361,6 +361,16 @@
         }
       }
     },
+    "Proposed by Claude · resume to confirm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propuesto por Claude · reanúdalo para confirmar"
+          }
+        }
+      }
+    },
     "Record automatically" : {
       "localizations" : {
         "es" : {

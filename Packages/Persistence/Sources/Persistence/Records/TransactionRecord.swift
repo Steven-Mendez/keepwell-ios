@@ -31,6 +31,8 @@ public final class TransactionRecord: AuditedRecord {
     /// Added in V9: the normalized tags, one per line (a tag never holds whitespace). Text rather
     /// than an array attribute, which CloudKit mirroring would store as an opaque blob anyway.
     var tagsText = ""
+    /// Added in V10: who created it (`RecordSource`); `nil` on older rows reads as `app`.
+    var sourceRaw: String?
 
     #Index<TransactionRecord>([\.date])
 
@@ -57,6 +59,10 @@ public final class TransactionRecord: AuditedRecord {
         note = transaction.note
         recurringID = transaction.recurringID
         tagsText = TagsText.encode(transaction.tags)
+        // Set when created, never changed afterwards (an edit of Claude's movement stays Claude's).
+        if sourceRaw == nil {
+            sourceRaw = transaction.source.rawValue
+        }
     }
 
     func toDomain() throws(DomainCorruption) -> Transaction {
@@ -89,6 +95,7 @@ public final class TransactionRecord: AuditedRecord {
             note: note,
             recurringID: recurringID,
             tags: TagsText.decode(tagsText),
+            source: sourceRaw.flatMap(RecordSource.init(rawValue:)) ?? .app,
         )
     }
 }

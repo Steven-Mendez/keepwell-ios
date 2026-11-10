@@ -1,0 +1,496 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta"
+          }
+        }
+      }
+    },
+    "An account syncs this iPhone with Keepwell on the web. Without one, your data stays only here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una cuenta sincroniza este iPhone con Keepwell en la web. Sin ella, tus datos se quedan solo aquí."
+          }
+        }
+      }
+    },
+    "Assistants disconnected" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asistentes desconectados"
+          }
+        }
+      }
+    },
+    "Buy a coffee" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprar un café"
+          }
+        }
+      }
+    },
+    "Buy a coffee for %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprar un café por %@"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        }
+      }
+    },
+    "Continue without an account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar sin cuenta"
+          }
+        }
+      }
+    },
+    "Couldn't reach Keepwell. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo conectar con Keepwell. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Couldn't sign in with Apple. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar sesión con Apple. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Couldn't sync. Keepwell will try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo sincronizar. Keepwell lo intentará de nuevo."
+          }
+        }
+      }
+    },
+    "Delete account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar cuenta"
+          }
+        }
+      }
+    },
+    "Delete your Keepwell account?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar tu cuenta de Keepwell?"
+          }
+        }
+      }
+    },
+    "Disconnect assistants" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar asistentes"
+          }
+        }
+      }
+    },
+    "Every iPhone and browser signed in to this account will need to sign in again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada iPhone y navegador con esta cuenta tendrá que volver a iniciar sesión."
+          }
+        }
+      }
+    },
+    "Have an invitation code?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Tienes un código de invitación?"
+          }
+        }
+      }
+    },
+    "Invitation code" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de invitación"
+          }
+        }
+      }
+    },
+    "Invitation code (new accounts)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de invitación (cuentas nuevas)"
+          }
+        }
+      }
+    },
+    "Invite me a coffee" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invítame un café"
+          }
+        }
+      }
+    },
+    "Keepwell accounts are invite-only for now." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por ahora las cuentas de Keepwell son solo por invitación."
+          }
+        }
+      }
+    },
+    "Keepwell accounts are invite-only for now. Enter an invitation code first." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las cuentas de Keepwell son solo por invitación por ahora. Escribe primero un código de invitación."
+          }
+        }
+      }
+    },
+    "Looking for your data…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando tus datos…"
+          }
+        }
+      }
+    },
+    "New accounts need one. Then sign in with Apple or a passkey." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las cuentas nuevas lo necesitan. Luego inicia sesión con Apple o una passkey."
+          }
+        }
+      }
+    },
+    "No purchases to restore for this Apple ID." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay compras que restaurar para este Apple ID."
+          }
+        }
+      }
+    },
+    "Offline. Changes sync when you're back online." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin conexión. Los cambios se sincronizan al volver a estar en línea."
+          }
+        }
+      }
+    },
+    "Purchase restored." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compra restaurada."
+          }
+        }
+      }
+    },
+    "Restore purchases" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar compras"
+          }
+        }
+      }
+    },
+    "Sign in to Keepwell" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicia sesión en Keepwell"
+          }
+        }
+      }
+    },
+    "Sign out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sesión"
+          }
+        }
+      }
+    },
+    "Sign out everywhere" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar en todos"
+          }
+        }
+      }
+    },
+    "Sign out on all devices" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sesión en todos los dispositivos"
+          }
+        }
+      }
+    },
+    "Sign out on all devices?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cerrar sesión en todos los dispositivos?"
+          }
+        }
+      }
+    },
+    "Signed in as" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesión iniciada como"
+          }
+        }
+      }
+    },
+    "Sync included during early access." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización incluida en el acceso anticipado."
+          }
+        }
+      }
+    },
+    "Sync is included during early access. A one-time coffee keeps it, and lets Claude read and record your finances." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización está incluida durante el acceso anticipado. Un café, una sola vez, la mantiene y deja que Claude lea y registre tus finanzas."
+          }
+        }
+      }
+    },
+    "Sync isn't included in your plan. Everything keeps working on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización no está incluida en tu plan. Todo sigue funcionando en este iPhone."
+          }
+        }
+      }
+    },
+    "Sync with the web and Claude come with a one-time coffee. Everything else stays free and works on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización con la web y Claude vienen con un café, una sola vez. Todo lo demás sigue siendo gratis y funciona en este iPhone."
+          }
+        }
+      }
+    },
+    "Sync your accounts and movements with Keepwell on the web and your other devices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincroniza tus cuentas y movimientos con Keepwell en la web y tus otros dispositivos."
+          }
+        }
+      }
+    },
+    "Syncing…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizando…"
+          }
+        }
+      }
+    },
+    "Thank you for the coffee. Sync and Claude are on." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gracias por el café. La sincronización y Claude ya están activos."
+          }
+        }
+      }
+    },
+    "That invitation is not valid. It may have expired or been used." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esa invitación no es válida. Puede que haya caducado o ya se haya usado."
+          }
+        }
+      }
+    },
+    "The App Store couldn't complete the purchase. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El App Store no pudo completar la compra. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "The coffee isn't available in the App Store right now. Check your connection and try again later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El café no está disponible en el App Store en este momento. Revisa tu conexión e inténtalo más tarde."
+          }
+        }
+      }
+    },
+    "This purchase is already linked to another Keepwell account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta compra ya está vinculada a otra cuenta de Keepwell."
+          }
+        }
+      }
+    },
+    "Up to date." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al día."
+          }
+        }
+      }
+    },
+    "Use a passkey" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar una passkey"
+          }
+        }
+      }
+    },
+    "You were signed out. Sign in again to keep syncing." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cerró tu sesión. Vuelve a iniciarla para seguir sincronizando."
+          }
+        }
+      }
+    },
+    "You're signed out everywhere at once and your synced data is erased from Keepwell's servers. Backups keep it up to 35 more days. What's on this iPhone stays here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cierra tu sesión en todos lados al instante y tus datos sincronizados se borran de los servidores de Keepwell. Las copias de seguridad los conservan hasta 35 días más. Lo que hay en este iPhone se queda aquí."
+          }
+        }
+      }
+    },
+    "Your data stays only on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos se quedan solo en este iPhone."
+          }
+        }
+      }
+    },
+    "or" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "o"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

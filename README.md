@@ -1,7 +1,9 @@
 # Keepwell
 
-Personal finance iOS app for two currencies. Data lives on device with SwiftData, with optional
-backup to the user's private iCloud (CloudKit). No accounts, no first-party servers.
+Personal finance iOS app for two currencies. Data lives on device with SwiftData. An optional
+Keepwell account (Sign in with Apple or a passkey, invite-only) syncs it with Keepwell on the web
+through the Keepwell API; without one, everything stays on the device. CSV export and import are
+the manual way to keep or move a copy.
 
 > Status: **in development**. Screens are built feature by feature from `design/keepwell-design`.
 
@@ -32,7 +34,7 @@ make open              # open the project in Xcode
   `make generate` after changing `project.yml` or adding files.
 - To sign for a device, create `Configs/Local.xcconfig` (git-ignored) from
   `Configs/Local.xcconfig.example` with your `DEVELOPMENT_TEAM`. With a personal (free) team, also
-  set `APP_ENTITLEMENTS` as that file shows: it drops iCloud and Push but keeps the App Group, which
+  set `APP_ENTITLEMENTS` as that file shows: it drops Sign in with Apple and associated domains but keeps the App Group, which
   the widgets need to read the app's data.
 - Design material lives in `design/` **locally only** and is never committed (it is git-ignored).
   Ask the team for it and place it under `design/keepwell-design/`.
@@ -97,10 +99,8 @@ SwiftLint custom rules fail the build on layer violations. Full rules: [`CLAUDE.
 | Staging       | `com.stevenmendez.keepwell.staging` | Keepwell Staging | QA / TestFlight (*Keepwell Staging* scheme) |
 | Release       | `com.stevenmendez.keepwell`         | Keepwell         | App Store                                   |
 
-All environments share the CloudKit container `iCloud.com.stevenmendez.keepwell`; CloudKit keeps
-Development and Production data apart based on signing. Values live in `Configs/*.xcconfig`.
-
-Without a signing team with iCloud enabled, the app falls back to on-device storage (logged via OSLog).
+Values live in `Configs/*.xcconfig`. `API_BASE_URL` points the app at the Keepwell API; left empty,
+the app is local-only and onboarding and Settings offer no account.
 
 ## Quality and tests
 

@@ -10,6 +10,7 @@ public struct CreditCardView: View {
     private let onBack: () -> Void
     private let onPay: () -> Void
     private let onSeeAllMovements: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
     @State private var sheet: Sheet?
 
     enum Sheet: String, Identifiable {
@@ -55,10 +56,15 @@ public struct CreditCardView: View {
             .padding(.horizontal, KWLayout.gutter)
             .padding(.top, KWLayout.safeTop)
             .padding(.bottom, 28)
-            // Scrolls with the card, as in the design, fading to black under the debt.
+            // Scrolls with the card, as in the design, fading into the screen under the debt: navy
+            // in dark mode, a light brand tint in light mode, where navy would hide the dark text.
             .background(alignment: .top) {
-                LinearGradient(colors: [KWColor.Brand.b900, .black], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 420)
+                LinearGradient(
+                    colors: [colorScheme == .dark ? KWColor.Brand.b900 : KWColor.Brand.b500.opacity(0.22), KWColor.Surface.bg],
+                    startPoint: .top,
+                    endPoint: .bottom,
+                )
+                .frame(height: 420)
             }
         }
         .scrollIndicators(.hidden)

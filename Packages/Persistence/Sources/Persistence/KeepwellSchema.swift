@@ -375,8 +375,28 @@ public enum KeepwellSchemaV9: VersionedSchema {
     }
 }
 
+/// The sync outbox (`OutboxRecord`), and who created each movement and recurring rule (`sourceRaw`).
+public enum KeepwellSchemaV10: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(10, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        [
+            Persistence.AccountRecord.self,
+            Persistence.CardRecord.self,
+            Persistence.TransactionRecord.self,
+            Persistence.CategoryRecord.self,
+            SettingsRecord.self,
+            Persistence.RecurringRuleRecord.self,
+            SavingsGoalRecord.self,
+            LoanRecord.self,
+            PersonalDebtRecord.self,
+            CategorizationRuleRecord.self,
+            OutboxRecord.self,
+        ]
+    }
+}
+
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV9
+public typealias KeepwellCurrentSchema = KeepwellSchemaV10
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -390,6 +410,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV7.self,
             KeepwellSchemaV8.self,
             KeepwellSchemaV9.self,
+            KeepwellSchemaV10.self,
         ]
     }
 
@@ -400,7 +421,8 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// from V5 start without a recurring rule, and there are no rules yet. Categories from V6 start
     /// without a budget. V7 had no savings goals, so V8 starts with none,
     /// and V8 had no loans, personal debts or categorization rules, so V9 starts with none; its
-    /// movements and recurring rules start without tags.
+    /// movements and recurring rules start without tags. V10 starts with an empty outbox and every
+    /// movement and rule made in the app (`sourceRaw` nil reads as `app`).
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -411,6 +433,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV6.self, toVersion: KeepwellSchemaV7.self),
             .lightweight(fromVersion: KeepwellSchemaV7.self, toVersion: KeepwellSchemaV8.self),
             .lightweight(fromVersion: KeepwellSchemaV8.self, toVersion: KeepwellSchemaV9.self),
+            .lightweight(fromVersion: KeepwellSchemaV9.self, toVersion: KeepwellSchemaV10.self),
         ]
     }
 }

@@ -47,12 +47,16 @@ public struct TransactionDisplay: Sendable {
         id.flatMap { accounts[$0] }.map(CardDisplay.name(of:)) ?? ""
     }
 
-    /// "Groceries · Debit •••• 3922"; transfers read "Savings → Cash".
+    /// "Groceries · Debit •••• 3922"; transfers read "Savings → Cash". A movement an assistant
+    /// recorded through MCP says so first, confirmed or not.
     public func subtitle(of transaction: Transaction) -> String {
+        let recordedBy = transaction.source == .mcp ? String(localized: "Recorded by Claude", bundle: #bundle) : nil
         if transaction.kind == .transfer {
-            return "\(accountName(transaction.accountID)) → \(accountName(transaction.destinationAccountID))"
+            return [recordedBy, "\(accountName(transaction.accountID)) → \(accountName(transaction.destinationAccountID))"]
+                .compactMap(\.self)
+                .joined(separator: " · ")
         }
-        return [categoryName(of: transaction), methodName(of: transaction)]
+        return [recordedBy, categoryName(of: transaction), methodName(of: transaction)]
             .compactMap(\.self)
             .filter { !$0.isEmpty }
             .joined(separator: " · ")

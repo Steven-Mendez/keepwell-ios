@@ -6,10 +6,8 @@ import SwiftData
 public enum PersistenceStore: Sendable, Equatable {
     /// Memory only (tests, previews, UI tests).
     case inMemory
-    /// On device only, without iCloud (the user turned backup off).
+    /// On the device. Keepwell's own sync (the account) keeps other devices up to date.
     case local
-    /// On device + CloudKit private database.
-    case cloudKit(containerIdentifier: String)
 }
 
 public enum ModelContainerFactory {
@@ -23,8 +21,6 @@ public enum ModelContainerFactory {
             ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         case .local:
             ModelConfiguration(schema: schema, cloudKitDatabase: .none)
-        case let .cloudKit(identifier):
-            ModelConfiguration(schema: schema, cloudKitDatabase: .private(identifier))
         }
         logger.info("Creating ModelContainer: \(String(describing: store), privacy: .public)")
         return try ModelContainer(

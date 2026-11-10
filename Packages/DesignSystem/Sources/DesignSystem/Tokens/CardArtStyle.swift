@@ -50,10 +50,11 @@ extension KWColor.CardArt {
     /// of its own metal, like the embossing on a real platinum or gold card.
     public var foreground: Color {
         switch self {
-        case .lima: KWColor.Text.onExtra
+        // Fixed, not light/dark pairs: card art looks the same in both appearances.
+        case .lima: Color(hex: KWColor.Hex.Text.onExtra)
         case .platino: Color(hex: 0x24272D)
         case .oro: Color(hex: 0x3A2908)
-        default: KWColor.Text.primary
+        default: Color(hex: KWColor.Hex.Text.primary)
         }
     }
 

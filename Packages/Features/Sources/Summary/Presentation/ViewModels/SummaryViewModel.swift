@@ -120,7 +120,7 @@ public final class SummaryViewModel {
         let name = selected.month.year == current.year
             ? start.formatted(.dateTime.month(.wide))
             : start.formatted(.dateTime.month(.wide).year())
-        return name.localizedCapitalized
+        return name.sentenceCased
     }
 
     // MARK: Formatting

@@ -46,6 +46,7 @@ struct OpenAppPrompt: View {
     var body: some View {
         VStack(alignment: .leading, spacing: KWSpacing.xs) {
             KWLogoMark(size: 28)
+                .foregroundStyle(KWColor.Semantic.logo)
             Text("Open Keepwell to see your month here.")
                 .font(.kw(13, weight: 600, relativeTo: .footnote))
                 .foregroundStyle(KWColor.Text.secondary)

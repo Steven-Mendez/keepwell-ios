@@ -100,7 +100,7 @@ public struct KWButtonStyle: ButtonStyle {
 
     private var foreground: Color {
         switch variant {
-        case .primary: .black
+        case .primary: KWColor.Semantic.primaryForeground
         case .secondary, .surface, .plain: KWColor.Text.primary
         case .destructive: KWColor.State.negative
         case .link: KWColor.Brand.link
@@ -109,7 +109,7 @@ public struct KWButtonStyle: ButtonStyle {
 
     private var background: Color {
         switch variant {
-        case .primary: .white
+        case .primary: KWColor.Semantic.primary
         case .secondary, .link: KWColor.Surface.surface2
         case .surface, .destructive: KWColor.Surface.surface
         case .plain: .clear

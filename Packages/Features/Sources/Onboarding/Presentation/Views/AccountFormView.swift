@@ -201,17 +201,17 @@ struct AccountFormView: View {
                 Button { draft.debtMode = mode } label: {
                     Text(modeTitle(mode))
                         .font(.kw(15, weight: 700))
-                        .foregroundStyle(draft.debtMode == mode ? Color.black : KWColor.Text.primary)
+                        .foregroundStyle(draft.debtMode == mode ? KWColor.Semantic.primaryForeground : KWColor.Text.primary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, KWSpacing.md)
                         .padding(.vertical, 14)
                         .background(
-                            draft.debtMode == mode ? Color.white : KWColor.Surface.surface,
+                            draft.debtMode == mode ? KWColor.Semantic.primary : KWColor.Surface.surface,
                             in: RoundedRectangle(cornerRadius: KWSpacing.md),
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: KWSpacing.md)
-                                .strokeBorder(draft.debtMode == mode ? Color.white : KWColor.Surface.border),
+                                .strokeBorder(draft.debtMode == mode ? KWColor.Semantic.primary : KWColor.Surface.border),
                         )
                 }
                 .buttonStyle(.plain)

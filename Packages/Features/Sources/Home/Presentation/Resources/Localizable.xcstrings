@@ -331,6 +331,16 @@
         }
       }
     },
+    "Discard" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar"
+          }
+        }
+      }
+    },
     "Draft for today" : {
       "localizations" : {
         "es" : {
