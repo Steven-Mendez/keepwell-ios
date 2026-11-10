@@ -81,13 +81,10 @@ final class OnboardingUITests: XCTestCase {
         add(attachment)
     }
 
-    /// Welcome, then the account step answered with "Continue without an account".
+    /// The welcome, left for setup without an account.
     private func startFromScratch(_ app: XCUIApplication) {
-        XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
+        _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
         attachScreenshot("1-welcome")
-        app.buttons["Start"].tap()
-        XCTAssertTrue(app.buttons["Continue without an account"].waitForExistence(timeout: 5))
-        attachScreenshot("1b-account")
-        app.buttons["Continue without an account"].tap()
+        app.leaveWelcomeWithoutAccount()
     }
 }

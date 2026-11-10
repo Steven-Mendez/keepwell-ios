@@ -30,17 +30,38 @@ struct SettingsSnapshotTests {
         return viewModel
     }
 
+    private func screen(_ viewModel: SettingsViewModel) -> SettingsView {
+        SettingsView(
+            viewModel: viewModel,
+            onBack: {},
+            onErased: {},
+            about: SettingsAbout(version: "1.0.1 (1)", privacyPolicy: URL(string: "https://example.com/privacy")),
+        )
+    }
+
     @Test
     func settings() async {
-        await assertScreenSnapshot(of: SettingsView(viewModel: loaded(), onBack: {}, onErased: {}), height: 1400)
+        await assertScreenSnapshot(of: screen(loaded()), height: 2150)
     }
 
     @Test
     func settingsLight() async {
+        await assertScreenSnapshot(of: screen(loaded()), height: 2150, named: "light", colorScheme: .light)
+    }
+
+    /// iPhone SE width: long Spanish-length labels and the rate field still fit on one row.
+    @Test
+    func settingsOnASmallIPhone() async {
+        await assertScreenSnapshot(of: screen(loaded()), width: 320, height: 1300)
+    }
+
+    /// The largest text sizes stack values under their titles instead of truncating them.
+    @Test
+    func settingsWithLargeText() async {
         await assertScreenSnapshot(
-            of: SettingsView(viewModel: loaded(), onBack: {}, onErased: {}),
-            height: 1400,
-            named: "light",
+            of: screen(loaded()).environment(\.dynamicTypeSize, .accessibility2),
+            height: 1600,
+            named: "accessibility2",
             colorScheme: .light,
         )
     }

@@ -13,6 +13,38 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   invitation code for a new account) right there, and an account with data brings it back and skips
   the setup. "Use without an account" sits under it and keeps everything only on this iPhone; you
   can sign in later from Settings. The separate account screen after "Start" is gone.
+- Settings is reorganized, in the same order and with the same names as Keepwell for the web: your
+  account at the top (name, plan and a sync status: Synced, Syncing, Sync paused, Offline, Couldn't
+  sync or Sync off), or a "Sign in to sync" card while Keepwell is only on this iPhone; then
+  Profile & preferences (your name, now always editable, and the app language), Money (currencies,
+  rate and the card payment reminder), Organization, Data & sync (sync now, import and export
+  CSV), Security, Connected assistants, Support Keepwell and About (privacy policy). Every row has an
+  icon, and signing out, deleting the account and deleting all your data sit together at the
+  bottom in red. The version is at the foot of the list. Rows adapt to the largest text sizes and
+  to small iPhones.
+
+### Added
+
+- Signing in to a Keepwell account that already has data, on an iPhone that has its own, asks
+  which to keep instead of mixing them: "Use your account's data" replaces what's on this iPhone,
+  and "Keep this iPhone's data" (after a second confirmation) replaces the account's data on every
+  device. Each option shows how many movements and accounts it holds. "Decide later" keeps sync
+  paused while everything keeps working on this iPhone; Settings → Data & sync → "Choose which data
+  to keep" asks again. A download or upload cut short (the app closed, no connection) finishes on
+  its own without asking again. Your passcode, name and lock settings stay either way. If only one side has
+  data, it syncs as before without asking.
+
+### Fixed
+
+- Signing in on the welcome to an account that has no data of yours yet (for example one made on
+  the web) no longer skips the setup: your name (filled in from the account when Apple or the
+  account shares it), currencies, accounts, protection and privacy follow, and what you set up
+  syncs to the account once setup ends (nothing syncs while you set up). An account with data still
+  brings it back and goes straight home.
+- Signing in to a different Keepwell account on this iPhone starts that account's first sync from
+  scratch instead of continuing where the previous account left off.
+- After "Delete all my data", the next sync brings the account's data back down instead of only
+  what changes from then on.
 
 ## [1.0.1] - 2026-11-09
 

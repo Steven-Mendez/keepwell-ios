@@ -4,59 +4,11 @@ import Domain
 import Foundation
 import Testing
 
-/// Local storage stand-in: records what the engine asks of it.
-private actor FakeStore: SyncStore {
-    var events: [OutboxEvent] = []
-    var applied: [(String, [String: Any])] = []
-    var adopted: [(String, Date)] = []
-
-    init(events: [OutboxEvent] = []) {
-        self.events = events
-    }
-
-    func pendingEvents(limit: Int) throws(DomainError) -> [OutboxEvent] {
-        Array(events.prefix(limit))
-    }
-
-    func removeEvents(ids: [UUID]) throws(DomainError) {
-        events.removeAll { ids.contains($0.id) }
-    }
-
-    func pendingCount() -> Int {
-        events.count
-    }
-
-    func hasPendingEvent(entity: String, entityID: String) -> Bool {
-        events.contains { $0.entity == entity && $0.entityID == entityID }
-    }
-
-    func applyRemote(entity: String, row: Data) throws(DomainError) -> Bool {
-        applied.append((entity, (try? JSONSerialization.jsonObject(with: row) as? [String: Any]) ?? [:]))
-        return true
-    }
-
-    func adoptUpdatedAt(entity: String, entityID _: String, updatedAt: Date) throws(DomainError) {
-        adopted.append((entity, updatedAt))
-    }
-
-    func appliedNames() -> [String] {
-        applied.compactMap { $0.1["name"] as? String }
-    }
-
-    func appliedCount() -> Int {
-        applied.count
-    }
-
-    func push(_ event: OutboxEvent) {
-        events.append(event)
-    }
-}
-
 @Suite("iOS sync engine", .serialized)
 struct SyncEngineTests {
-    private let base = URL(string: "https://api.example.com") ?? URL(fileURLWithPath: "/")
+    let base = URL(string: "https://api.example.com") ?? URL(fileURLWithPath: "/")
 
-    private func engine(_ store: FakeStore, suite: String) -> SyncEngine {
+    func engine(_ store: FakeSyncStore, suite: String) -> SyncEngine {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubProtocol.self]
         StubProtocol.requests = []
@@ -68,15 +20,15 @@ struct SyncEngineTests {
         return SyncEngine(client: client, store: store, defaultsSuite: suite, clientID: "client-1")
     }
 
-    private func suite() -> String {
+    func suite() -> String {
         "sync-tests-\(UUID().uuidString)"
     }
 
-    private func cursor(_ suite: String) -> Int? {
+    func cursor(_ suite: String) -> Int? {
         UserDefaults(suiteName: suite)?.object(forKey: "sync.cursor") as? Int
     }
 
-    private func event(_ id: String, name: String) -> OutboxEvent {
+    func event(_ id: String, name: String) -> OutboxEvent {
         let row: [String: Any] = ["id": id, "name": name, "updated_at": "2026-11-01T10:00:00.000Z", "deleted_at": NSNull()]
         return OutboxEvent(
             id: UUID(),
@@ -88,14 +40,14 @@ struct SyncEngineTests {
         )
     }
 
-    private static func json(_ object: Any) -> Data {
+    static func json(_ object: Any) -> Data {
         (try? JSONSerialization.data(withJSONObject: object)) ?? Data()
     }
 
     @Test
     func pushesEmptiesTheOutboxAdoptsTheWinnerAndPullsTheRest() async throws {
         let mine = event("groceries", name: "Mine")
-        let store = FakeStore(events: [mine])
+        let store = FakeSyncStore(events: [mine])
         let suite = suite()
         UserDefaults(suiteName: suite)?.set(5, forKey: "sync.cursor")
         StubProtocol.handler = { request in
@@ -145,7 +97,7 @@ struct SyncEngineTests {
 
     @Test
     func aNewInstallationLoadsSnapshotsFirst() async throws {
-        let store = FakeStore()
+        let store = FakeSyncStore()
         let suite = suite()
         StubProtocol.handler = { request in
             if request.url?.path == "/sync/snapshot" {
@@ -168,7 +120,7 @@ struct SyncEngineTests {
 
     @Test
     func neverOverwritesARowWithAPendingChange() async throws {
-        let store = FakeStore()
+        let store = FakeSyncStore()
         let suite = suite()
         UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
         StubProtocol.handler = { request in
@@ -194,7 +146,7 @@ struct SyncEngineTests {
     @Test
     func stopsWithNeedsPlanWhenTheAccountLacksSync() async {
         StubProtocol.handler = { _ in (403, [:], Self.json(["error": ["code": "needs_plan", "message": "x"], "request_id": "r"])) }
-        let store = FakeStore(events: [event("groceries", name: "Mine")])
+        let store = FakeSyncStore(events: [event("groceries", name: "Mine")])
         await #expect(throws: CloudAccountError.needsPlan) {
             try await engine(store, suite: suite()).syncOnce()
         }

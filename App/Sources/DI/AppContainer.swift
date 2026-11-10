@@ -2,6 +2,7 @@ import AccountsDomain
 import AccountsPresentation
 import AddCardDomain
 import AddCardPresentation
+import CloudAccountData
 import CloudAccountPresentation
 import Core
 import CreateTransactionDomain
@@ -44,6 +45,10 @@ final class AppContainer {
     let passcodes: any PasscodeRepository = KeychainPasscodeStore()
     /// The Keepwell account and its sync, one per app; `nil` in builds without an API.
     private(set) lazy var cloudAccount: CloudAccountViewModel? = makeCloudAccountViewModel()
+    /// One API client per app, shared by the account and its sync.
+    private(set) lazy var apiClient: APIClient? = makeAPIClient()
+    /// The sync engine behind `cloudAccount`, kept so erasing this iPhone can forget its cursor.
+    private(set) lazy var syncEngine: SyncEngine? = makeSyncEngine()
 
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
@@ -222,6 +227,9 @@ final class AppContainer {
     func clearOutside() async {
         // The passcode and name live outside the store, so erasing the store alone would keep them.
         await passcodes.removePasscode()
+        // With its data gone, this iPhone starts over with the account: the next sync is a first
+        // sync again, so the account's data comes back instead of only what's new from now on.
+        await syncEngine?.reset()
         await preferences.setPreferredName(nil)
         widgetSnapshots.clear()
         WidgetCenter.shared.reloadAllTimelines()

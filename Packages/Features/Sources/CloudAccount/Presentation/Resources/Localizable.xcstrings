@@ -1,12 +1,242 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Account" : {
+    "%lld accounts" : {
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld account"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld accounts"
+                }
+              }
+            }
+          }
+        },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuenta"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuenta"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuentas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld debts" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld debt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld debts"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld deuda"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld deudas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld goals" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld goal"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld goals"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld meta"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld metas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld movements" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movement"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movements"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld movimientos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld recurring" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld recurring"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld recurring"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld recurrente"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld recurrentes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld rules" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rule"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rules"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld regla"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld reglas"
+                }
+              }
+            }
           }
         }
       }
@@ -21,16 +251,6 @@
         }
       }
     },
-    "An account syncs this iPhone with Keepwell on the web. Without one, your data stays only here." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Una cuenta sincroniza este iPhone con Keepwell en la web. Sin ella, tus datos se quedan solo aquí."
-          }
-        }
-      }
-    },
     "Assistants disconnected" : {
       "localizations" : {
         "es" : {
@@ -41,22 +261,42 @@
         }
       }
     },
-    "Buy a coffee" : {
+    "Choose which data to keep" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comprar un café"
+            "value" : "Elige qué datos conservar"
           }
         }
       }
     },
-    "Buy a coffee for %@" : {
+    "Choose which to keep. The other is replaced, and this can't be undone." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comprar un café por %@"
+            "value" : "Elige cuáles conservar. Los otros se reemplazan y no se puede deshacer."
+          }
+        }
+      }
+    },
+    "Claude and other assistants lose access to your account at once." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude y los demás asistentes pierden el acceso a tu cuenta al instante."
+          }
+        }
+      }
+    },
+    "Connected assistants" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asistentes conectados"
           }
         }
       }
@@ -91,12 +331,32 @@
         }
       }
     },
+    "Couldn't sync" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo sincronizar"
+          }
+        }
+      }
+    },
     "Couldn't sync. Keepwell will try again." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo sincronizar. Keepwell lo intentará de nuevo."
+          }
+        }
+      }
+    },
+    "Decide later" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decidir después"
           }
         }
       }
@@ -131,6 +391,26 @@
         }
       }
     },
+    "Early access" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso anticipado"
+          }
+        }
+      }
+    },
+    "Erases your synced data from Keepwell's servers." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borra tus datos sincronizados de los servidores de Keepwell."
+          }
+        }
+      }
+    },
     "Every iPhone and browser signed in to this account will need to sign in again." : {
       "localizations" : {
         "es" : {
@@ -141,12 +421,32 @@
         }
       }
     },
+    "Every iPhone and browser will need to sign in again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada iPhone y navegador tendrá que volver a iniciar sesión."
+          }
+        }
+      }
+    },
     "Everything stays only on this iPhone. You can sign in later from Settings." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todo se queda solo en este iPhone. Puedes iniciar sesión después desde Ajustes."
+          }
+        }
+      }
+    },
+    "Free plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan gratuito"
           }
         }
       }
@@ -191,6 +491,16 @@
         }
       }
     },
+    "Keep this iPhone's data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservar los datos de este iPhone"
+          }
+        }
+      }
+    },
     "Keepwell accounts are invite-only for now." : {
       "localizations" : {
         "es" : {
@@ -207,6 +517,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Las cuentas de Keepwell son solo por invitación por ahora. Escribe primero un código de invitación."
+          }
+        }
+      }
+    },
+    "Last synced %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizado %@"
           }
         }
       }
@@ -241,6 +561,26 @@
         }
       }
     },
+    "Off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivada"
+          }
+        }
+      }
+    },
+    "Offline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin conexión"
+          }
+        }
+      }
+    },
     "Offline. Changes sync when you're back online." : {
       "localizations" : {
         "es" : {
@@ -261,6 +601,46 @@
         }
       }
     },
+    "Replace" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplazar"
+          }
+        }
+      }
+    },
+    "Replace your account's data?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Reemplazar los datos de tu cuenta?"
+          }
+        }
+      }
+    },
+    "Replaces what's on this iPhone with the data in your Keepwell account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplaza lo que hay en este iPhone con los datos de tu cuenta de Keepwell."
+          }
+        }
+      }
+    },
+    "Replaces your account's data, on every device, with what's here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplaza los datos de tu cuenta, en todos tus dispositivos, con lo que hay aquí."
+          }
+        }
+      }
+    },
     "Restore purchases" : {
       "localizations" : {
         "es" : {
@@ -277,6 +657,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inicia sesión y tus cuentas y movimientos vuelven tal como estaban."
+          }
+        }
+      }
+    },
+    "Sign in at the top to sync with Keepwell on the web." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicia sesión arriba para sincronizar con Keepwell en la web."
+          }
+        }
+      }
+    },
+    "Sign in to sync" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicia sesión para sincronizar"
           }
         }
       }
@@ -331,12 +731,32 @@
         }
       }
     },
-    "Sync included during early access." : {
+    "Support Keepwell" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sincronización incluida en el acceso anticipado."
+            "value" : "Apoya a Keepwell"
+          }
+        }
+      }
+    },
+    "Supporter" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colaborador"
+          }
+        }
+      }
+    },
+    "Sync" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización"
           }
         }
       }
@@ -351,6 +771,16 @@
         }
       }
     },
+    "Sync is paused until you choose." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización está en pausa hasta que elijas."
+          }
+        }
+      }
+    },
     "Sync isn't included in your plan. Everything keeps working on this iPhone." : {
       "localizations" : {
         "es" : {
@@ -361,12 +791,62 @@
         }
       }
     },
+    "Sync now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar ahora"
+          }
+        }
+      }
+    },
+    "Sync off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización desactivada"
+          }
+        }
+      }
+    },
+    "Sync paused" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización en pausa"
+          }
+        }
+      }
+    },
     "Sync with the web and Claude come with a one-time coffee. Everything else stays free and works on this iPhone." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "La sincronización con la web y Claude vienen con un café, una sola vez. Todo lo demás sigue siendo gratis y funciona en este iPhone."
+          }
+        }
+      }
+    },
+    "Synced" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizado"
+          }
+        }
+      }
+    },
+    "Syncing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizando"
           }
         }
       }
@@ -421,22 +901,22 @@
         }
       }
     },
+    "This iPhone and your account have different data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este iPhone y tu cuenta tienen datos distintos"
+          }
+        }
+      }
+    },
     "This purchase is already linked to another Keepwell account." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esta compra ya está vinculada a otra cuenta de Keepwell."
-          }
-        }
-      }
-    },
-    "Up to date." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Al día."
           }
         }
       }
@@ -461,6 +941,16 @@
         }
       }
     },
+    "Use your account's data" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar los datos de tu cuenta"
+          }
+        }
+      }
+    },
     "You were signed out. Sign in again to keep syncing." : {
       "localizations" : {
         "es" : {
@@ -477,6 +967,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se cierra tu sesión en todos lados al instante y tus datos sincronizados se borran de los servidores de Keepwell. Las copias de seguridad los conservan hasta 35 días más. Lo que hay en este iPhone se queda aquí."
+          }
+        }
+      }
+    },
+    "Your data is only on this iPhone. Sign in to keep it in sync with Keepwell on the web." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos están solo en este iPhone. Inicia sesión para mantenerlos sincronizados con Keepwell en la web."
           }
         }
       }

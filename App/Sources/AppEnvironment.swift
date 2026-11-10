@@ -7,6 +7,10 @@ struct AppEnvironment {
     /// The Keepwell API (sign-in, sync). `nil` when the build sets no `API_BASE_URL`: the app stays
     /// local-only and Settings shows no account section.
     let apiBaseURL: URL?
+    /// Keepwell on the web, whose privacy policy Settings links to; `nil` without an API.
+    let privacyPolicyURL: URL?
+    /// "1.0.1 (12)", for the foot of Settings.
+    let version: String?
     let isUITesting: Bool
     /// `-sample-data`: start from the generic sample set in memory (Debug builds only), for UI
     /// tests and simulator checks against the design.
@@ -25,8 +29,13 @@ struct AppEnvironment {
         let info = Bundle.main.infoDictionary ?? [:]
         let arguments = ProcessInfo.processInfo.arguments
         let api = (info["KeepwellAPIBaseURL"] as? String).flatMap { $0.isEmpty ? nil : URL(string: $0) }
+        let marketing = info["CFBundleShortVersionString"] as? String
+        let build = info["CFBundleVersion"] as? String
         return Self(
             apiBaseURL: api,
+            // The API and the web share a host (the web serves the API's routes).
+            privacyPolicyURL: api?.appending(path: "privacy"),
+            version: marketing.map { version in build.map { "\(version) (\($0))" } ?? version },
             isUITesting: arguments.contains("-ui-testing"),
             usesSampleData: arguments.contains("-sample-data"),
             opensNewMovement: arguments.contains("-open-new-movement"),

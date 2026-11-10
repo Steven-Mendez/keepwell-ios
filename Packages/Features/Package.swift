@@ -372,7 +372,13 @@ let package = Package(
         ),
         .testTarget(
             name: "CloudAccountPresentationTests",
-            dependencies: ["CloudAccountPresentation", "CloudAccountDomain", "OnboardingPresentation", "FeatureTestSupport"],
+            dependencies: [
+                "CloudAccountPresentation",
+                "CloudAccountDomain",
+                "OnboardingPresentation",
+                "FeatureTestSupport",
+                .product(name: "DesignSystem", package: "DesignSystem"),
+            ],
             exclude: ["__Snapshots__"],
         ),
 
