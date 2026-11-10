@@ -41,6 +41,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- New Keepwell logo: the wallet-and-padlock symbol is the app icon, and appears on the launch
+  splash, lock screen, app switcher cover, saved receipts and the widget's first-run prompt.
 - Accounts: the card stack rolls like an endless deck. Drag over it to turn the cards one at a time
   in either direction, or tap a card behind to roll it to the front; tapping the front card opens
   it.
