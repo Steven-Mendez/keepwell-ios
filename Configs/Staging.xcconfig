@@ -4,3 +4,8 @@
 BUNDLE_ID_SUFFIX = .staging
 APP_NAME_SUFFIX = $(SPACE)Staging
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = STAGING $(inherited)
+
+// Builds for TestFlight and the App Store always carry Sign in with Apple and passkeys, even when
+// Local.xcconfig points development builds at the personal-team entitlements (a personal team
+// can't distribute anyway, and a build without them fails "Continue with Apple").
+APP_ENTITLEMENTS = App/Resources/Keepwell.entitlements
