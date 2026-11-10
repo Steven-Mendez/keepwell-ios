@@ -40,6 +40,8 @@ public final class CloudAccountViewModel {
     public private(set) var errorMessage: String?
     /// The raw nonce of the sign-in in progress; Apple only sees its SHA-256.
     private var pendingNonce: String?
+    /// The given name Apple shares on the first authorization only, kept for onboarding's name step.
+    private var appleGivenName: String?
 
     private let load: any LoadCloudAccountUseCase
     private let signIn: any SignInWithAppleUseCase
@@ -108,9 +110,14 @@ public final class CloudAccountViewModel {
         return Self.sha256(raw)
     }
 
-    public func completeAppleSignIn(idToken: String) async {
+    /// `givenName` is what Apple shared, if anything (only on the first authorization of this app).
+    public func completeAppleSignIn(idToken: String, givenName: String? = nil) async {
         guard let nonce = pendingNonce else { return }
         pendingNonce = nil
+        let trimmed = givenName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !trimmed.isEmpty {
+            appleGivenName = trimmed
+        }
         await run { () async throws(CloudAccountError) in
             let invitation = self.invitation.trimmingCharacters(in: .whitespacesAndNewlines)
             let credential = AppleCredential(idToken: idToken, rawNonce: nonce, invitation: invitation.isEmpty ? nil : invitation)
@@ -246,6 +253,17 @@ public final class CloudAccountViewModel {
         }
     }
 
+    /// What onboarding's name step can start from: the name Apple shared at sign-in, otherwise the
+    /// first word of the account's name. Never the email, which isn't how anyone is greeted.
+    public func suggestedName(for user: CloudAccountUser) -> String? {
+        if let appleGivenName {
+            return appleGivenName
+        }
+        let name = user.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, !name.contains("@"), name != user.email else { return nil }
+        return name.split(separator: " ").first.map(String.init)
+    }
+
     static func sha256(_ text: String) -> String {
         SHA256.hash(data: Data(text.utf8)).map { String(format: "%02x", $0) }.joined()
     }
@@ -254,6 +272,7 @@ public final class CloudAccountViewModel {
     private func followSync() {
         guard let sync else { return }
         if case let .signedIn(user) = state, user.canSync {
+            sync.accountID = user.id
             sync.start()
             sync.resume()
         } else {

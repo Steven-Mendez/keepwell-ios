@@ -13,10 +13,7 @@ final class KeyboardUITests: XCTestCase {
         app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
-        XCTAssertTrue(app.buttons["Start"].waitForExistence(timeout: 10))
-        app.buttons["Start"].tap()
-        XCTAssertTrue(app.buttons["Continue without an account"].waitForExistence(timeout: 5))
-        app.buttons["Continue without an account"].tap()
+        app.leaveWelcomeWithoutAccount()
         XCTAssertTrue(app.staticTexts["What's your name?"].waitForExistence(timeout: 5))
         app.buttons["Skip"].tap()
         XCTAssertTrue(app.staticTexts["Which currencies do you use?"].waitForExistence(timeout: 5))

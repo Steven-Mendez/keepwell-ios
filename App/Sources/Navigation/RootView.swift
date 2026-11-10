@@ -1,5 +1,6 @@
 import AccountsPresentation
 import AddCardPresentation
+import CloudAccountPresentation
 import Core
 import CreateTransactionDomain
 import CreateTransactionPresentation
@@ -158,6 +159,19 @@ struct RootView: View {
                 reloadScreens()
             }
         }
+        .sheet(isPresented: choosingSyncData) {
+            if let sync = container.cloudAccount?.sync, let conflict = sync.conflict {
+                SyncChoiceSheet(sync: sync, conflict: conflict)
+                    .presentationDetents([.large])
+                    .presentationBackground(KWColor.Surface.bg)
+            }
+        }
+        // Keeping the account's data replaces what every tab shows.
+        .onChange(of: container.cloudAccount?.sync?.conflict == nil) { _, settled in
+            if settled {
+                reloadScreens()
+            }
+        }
         .fullScreenCover(item: $addCard, onDismiss: reloadScreens) { flow in
             AddCardFlowView(viewModel: flow.viewModel, onExit: exitAddCard)
         }
@@ -278,6 +292,8 @@ extension RootView {
 
     private func finishOnboarding(_ exit: OnboardingFlowView.Exit) {
         enterMain()
+        // What setup saved goes up to the account now.
+        container.cloudAccount?.sync?.releaseAfterSetup()
         Task { await refreshLockSettings() }
         if let csv = pendingImport {
             pendingImport = nil

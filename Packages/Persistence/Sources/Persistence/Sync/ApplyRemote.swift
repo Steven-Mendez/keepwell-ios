@@ -7,7 +7,7 @@ import SwiftData
 // and a local tombstone stays final. Payments and repayments, rows on the wire, are merged into the
 // loan or debt that holds them on this iPhone.
 
-private struct WireReader {
+struct WireReader {
     let row: [String: Any]
 
     func string(_ key: String) throws -> String {
@@ -113,7 +113,7 @@ extension SwiftDataStore {
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
-    private func apply(entity: String, _ wire: WireReader, in context: ModelContext) throws -> Bool {
+    func apply(entity: String, _ wire: WireReader, in context: ModelContext) throws -> Bool {
         switch entity {
         case "account":
             let id = try wire.uuid("id")

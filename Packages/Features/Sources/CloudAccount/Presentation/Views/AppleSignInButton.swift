@@ -22,7 +22,7 @@ struct AppleSignInButton: View {
                     viewModel.appleSignInFailed(cancelled: false)
                     return
                 }
-                Task { await viewModel.completeAppleSignIn(idToken: token) }
+                Task { await viewModel.completeAppleSignIn(idToken: token, givenName: credential.fullName?.givenName) }
             case let .failure(error):
                 viewModel.appleSignInFailed(cancelled: (error as? ASAuthorizationError)?.code == .canceled)
             }

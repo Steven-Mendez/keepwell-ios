@@ -161,6 +161,16 @@
         }
       }
     },
+    "Opens outside Keepwell" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se abre fuera de Keepwell"
+          }
+        }
+      }
+    },
     "Platinum" : {
       "localizations" : {
         "es" : {

@@ -4,8 +4,29 @@ import SettingsDomain
 import SwiftUI
 import UIKit
 
-/// Settings: currency and rate, card reminders, organization counts, lock and privacy,
-/// CSV export and import, and deleting everything.
+/// The pieces of Settings that belong to the Keepwell account, built by `CloudAccountPresentation`
+/// and left out in builds without an API. Each piece hides itself when it doesn't apply.
+public struct SettingsAccountViews {
+    /// The profile card at the top: who is signed in and how sync is doing, or the sign-in.
+    let header: AnyView
+    /// The sync row at the top of Data. It always shows one row.
+    let syncRow: AnyView
+    /// Connected assistants and supporting Keepwell, between Security and About.
+    let sections: AnyView
+    /// Signing out and deleting the account, at the bottom with the other destructive rows.
+    let destructiveRows: AnyView
+
+    public init(header: AnyView, syncRow: AnyView, sections: AnyView, destructiveRows: AnyView) {
+        self.header = header
+        self.syncRow = syncRow
+        self.sections = sections
+        self.destructiveRows = destructiveRows
+    }
+}
+
+/// Settings, in keepwell-web's order and names: the account, Profile & preferences, Money,
+/// Organization, Data & sync, Security, Connected assistants, About, then the destructive rows.
+/// Support Keepwell (the App Store coffee) is iOS only and sits before About.
 public struct SettingsView: View {
     @Bindable private var viewModel: SettingsViewModel
     private let onBack: () -> Void
@@ -15,12 +36,9 @@ public struct SettingsView: View {
     private let onOpenPaymentMethods: () -> Void
     private let onOpenRecurring: () -> Void
     private let onOpenRules: () -> Void
-    /// The Keepwell account section, owned by `CloudAccountPresentation`; absent in builds without an API.
-    private let accountSection: AnyView?
+    private let account: SettingsAccountViews?
+    private let about: SettingsAbout
     @State private var isConfirmingErase = false
-    @State private var isConfirmingSwap = false
-    @FocusState private var isEditingRate: Bool
-    @Environment(\.openURL) private var openURL
 
     /// `onSetUpPasscode` opens creating or changing the app passcode, which the lock feature owns.
     public init(
@@ -32,9 +50,11 @@ public struct SettingsView: View {
         onOpenPaymentMethods: @escaping () -> Void = {},
         onOpenRecurring: @escaping () -> Void = {},
         onOpenRules: @escaping () -> Void = {},
-        accountSection: AnyView? = nil,
+        account: SettingsAccountViews? = nil,
+        about: SettingsAbout = SettingsAbout(),
     ) {
-        self.accountSection = accountSection
+        self.account = account
+        self.about = about
         self.viewModel = viewModel
         self.onBack = onBack
         self.onErased = onErased
@@ -47,9 +67,13 @@ public struct SettingsView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: KWSpacing.lg) {
                 KWNavigationHeader(String(localized: "Settings", bundle: #bundle), style: .large, onBack: onBack)
-                    .padding(.bottom, KWSpacing.xs)
+                if let account {
+                    account.header
+                } else {
+                    LocalProfileHeader(name: viewModel.overview?.preferredName)
+                }
                 if let overview = viewModel.overview {
                     sections(overview)
                 }
@@ -58,6 +82,7 @@ public struct SettingsView: View {
                         .font(KWTextStyle.caption.font)
                         .foregroundStyle(KWColor.State.negative)
                 }
+                AboutFooter(about: about)
             }
             .padding(.horizontal, KWLayout.gutter)
             .padding(.top, KWLayout.safeTop)
@@ -70,11 +95,6 @@ public struct SettingsView: View {
         .foregroundStyle(KWColor.Text.primary)
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
-        .onChange(of: isEditingRate) { _, editing in
-            if !editing {
-                Task { await viewModel.commitRate() }
-            }
-        }
         .sheet(item: $viewModel.exportedFile) { file in
             ShareSheet(items: [file.url])
                 .presentationDetents([.medium, .large])
@@ -94,212 +114,94 @@ public struct SettingsView: View {
         }
     }
 
-    // MARK: - Sections
-
-    private func currency(_ settings: Settings) -> some View {
-        SettingsSection(title: String(localized: "Currency", bundle: #bundle)) {
-            KWGroupedCard {
-                currencyRow(String(localized: "Main currency", bundle: #bundle), code: settings.currencies.principal)
-                if let second = settings.currencies.second {
-                    currencyRow(String(localized: "Second currency", bundle: #bundle), code: second)
-                    Button { isConfirmingSwap = true } label: {
-                        KWValueRow(
-                            String(localized: "Make \(second) the main currency", bundle: #bundle),
-                            value: "⇅",
-                            style: .navigation,
-                            verticalPadding: 14,
-                        )
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .confirmationDialog(
-                        String(localized: "Make \(second) the main currency?", bundle: #bundle),
-                        isPresented: $isConfirmingSwap,
-                        titleVisibility: .visible,
-                    ) {
-                        Button { Task { await viewModel.swapCurrencies() } } label: {
-                            Text("Swap currencies", bundle: #bundle)
-                        }
-                    } message: {
-                        Text(
-                            "Net worth, summaries and new movements will be in \(second), and the rate is turned around. Past movements keep the rate they were logged with.",
-                            bundle: #bundle,
-                        )
-                    }
-                    rateRow(settings.currencies)
-                    Text(viewModel.rateFootnote)
-                        .font(KWTextStyle.captionSm.font.weight(.regular))
-                        .foregroundStyle(KWColor.Text.muted)
-                        .lineSpacing(3)
-                        .padding(.top, KWSpacing.sm)
-                        .padding(.bottom, 14)
-                }
-            }
-        }
-    }
-
-    /// One line, as in the design: long currency names shrink a little instead of wrapping.
-    private func currencyRow(_ label: String, code: String) -> some View {
-        HStack(spacing: KWSpacing.sm) {
-            Text(label)
-            Spacer(minLength: KWSpacing.xs)
-            Text(viewModel.currencyName(code))
-                .font(.kw(15, weight: 600))
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-        }
-        .font(KWTextStyle.body.font)
-        .padding(.vertical, 14)
-        .accessibilityElement(children: .combine)
-    }
-
-    /// Keepwell follows the iPhone's language. iOS also lets each app use its own, from the app's
-    /// page in the iPhone's Settings, and reopens the app in it; the row leads there.
-    private var languageSection: some View {
-        SettingsSection(title: String(localized: "Language", bundle: #bundle)) {
-            KWGroupedCard {
-                Button {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        openURL(url)
-                    }
-                } label: {
-                    KWValueRow(
-                        String(localized: "App language", bundle: #bundle),
-                        value: "\(viewModel.languageName) ›",
-                        style: .setting,
-                        verticalPadding: 14,
-                    )
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                Text("Keepwell uses your iPhone's language. To use another one only here, choose it in iPhone Settings.", bundle: #bundle)
-                    .font(KWTextStyle.captionSm.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.vertical, KWSpacing.sm)
-            }
-        }
-    }
-
-    private func rateRow(_ currencies: CurrencySettings) -> some View {
-        HStack(spacing: KWSpacing.sm) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: "1 \(currencies.principal) =").font(KWTextStyle.body.font)
-                Text("Manual · default 1", bundle: #bundle)
-                    .font(KWTextStyle.captionSm.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.muted)
-            }
-            Spacer(minLength: KWSpacing.xs)
-            TextField(String(localized: "Rate", bundle: #bundle), text: $viewModel.rateText)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .font(.kw(15, weight: 600))
-                .monospacedDigit()
-                .focused($isEditingRate)
-                .padding(.vertical, KWSpacing.xs)
-                .padding(.horizontal, 10)
-                .frame(width: 100)
-                .background(KWColor.Surface.surface2, in: RoundedRectangle(cornerRadius: 10))
-            Text(currencies.second ?? "").font(.kw(15, weight: 600))
-        }
-        .padding(.vertical, 14)
-    }
-
-    private func cards(_ settings: Settings) -> some View {
-        SettingsSection(title: String(localized: "Credit cards", bundle: #bundle)) {
-            KWGroupedCard {
-                SettingsMenuRow(
-                    label: String(localized: "Remind me to pay", bundle: #bundle),
-                    value: viewModel.reminderTitle(settings.paymentReminderDaysBefore),
-                    options: SettingsViewModel.reminderOptions,
-                    title: viewModel.reminderTitle,
-                ) { days in Task { await viewModel.setReminderDays(days) } }
-            }
-        }
+    @ViewBuilder
+    private func sections(_ overview: SettingsOverview) -> some View {
+        ProfileSection(viewModel: viewModel)
+        MoneySection(viewModel: viewModel, settings: overview.settings)
+        organization(overview)
+        DataSection(viewModel: viewModel, syncRow: account?.syncRow)
+        SecuritySection(viewModel: viewModel, overview: overview, onSetUpPasscode: onSetUpPasscode)
+        account?.sections
+        AboutSection(about: about)
+        destructive
     }
 
     private func organization(_ overview: SettingsOverview) -> some View {
         SettingsSection(title: String(localized: "Organization", bundle: #bundle)) {
             KWGroupedCard {
-                categoriesRow(
-                    String(localized: "Expense categories", bundle: #bundle),
-                    count: overview.expenseCategoryCount,
-                    kind: .expense,
-                )
-                categoriesRow(String(localized: "Income categories", bundle: #bundle), count: overview.incomeCategoryCount, kind: .income)
-                Button(action: onOpenPaymentMethods) {
-                    KWValueRow(
-                        String(localized: "Payment methods", bundle: #bundle),
-                        value: "\(overview.paymentMethodCount) ›",
-                        style: .navigation,
-                        verticalPadding: 14,
+                Button { onOpenCategories(.expense) } label: {
+                    countRow(
+                        String(localized: "Expense categories", bundle: #bundle),
+                        .tag,
+                        KWSettingsTint.organization,
+                        overview.expenseCategoryCount,
                     )
-                    .contentShape(Rectangle())
+                }
+                Button { onOpenCategories(.income) } label: {
+                    countRow(
+                        String(localized: "Income categories", bundle: #bundle),
+                        .tag,
+                        KWSettingsTint.money,
+                        overview.incomeCategoryCount,
+                    )
+                }
+                Button(action: onOpenPaymentMethods) {
+                    countRow(
+                        String(localized: "Payment methods", bundle: #bundle),
+                        .creditCard,
+                        KWSettingsTint.data,
+                        overview.paymentMethodCount,
+                    )
+                }
+                Button(action: onOpenRecurring) { recurringRow }
+                Button(action: onOpenRules) { rulesRow }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var recurringRow: some View {
+        KWSettingsRow(
+            String(localized: "Recurring", bundle: #bundle),
+            description: String(localized: "Subscriptions and regular movements", bundle: #bundle),
+            icon: .subscription,
+            tint: KWSettingsTint.reminders,
+            accessory: .chevron,
+        )
+    }
+
+    private var rulesRow: some View {
+        KWSettingsRow(
+            String(localized: "Rules", bundle: #bundle),
+            description: String(localized: "Categorize movements by their description", bundle: #bundle),
+            icon: .list,
+            tint: KWSettingsTint.security,
+            accessory: .chevron,
+        )
+    }
+
+    private func countRow(_ title: String, _ icon: KWIcon, _ tint: Color, _ count: Int) -> some View {
+        KWSettingsRow(title, icon: icon, tint: tint, value: "\(count)", accessory: .chevron)
+    }
+
+    /// Everything that can't be undone, apart and in red: the account's rows, then this iPhone's.
+    private var destructive: some View {
+        VStack(alignment: .leading, spacing: KWSpacing.sm) {
+            account?.destructiveRows
+            KWGroupedCard {
+                Button { isConfirmingErase = true } label: {
+                    KWSettingsRow(
+                        String(localized: "Delete all my data", bundle: #bundle),
+                        description: String(localized: "Deletes the data on this iPhone.", bundle: #bundle),
+                        icon: .trash,
+                        isDestructive: true,
+                    )
                 }
                 .buttonStyle(.plain)
-                Button(action: onOpenRecurring) {
-                    KWValueRow(String(localized: "Recurring", bundle: #bundle), value: "›", style: .navigation, verticalPadding: 14)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                Button(action: onOpenRules) {
-                    KWValueRow(String(localized: "Rules", bundle: #bundle), value: "›", style: .navigation, verticalPadding: 14)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                .disabled(viewModel.isWorking)
             }
         }
-    }
-
-    private func categoriesRow(_ label: String, count: Int, kind: TransactionKind) -> some View {
-        Button { onOpenCategories(kind) } label: {
-            KWValueRow(label, value: "\(count) ›", style: .navigation, verticalPadding: 14)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var erase: some View {
-        VStack(spacing: KWSpacing.sm) {
-            Button { isConfirmingErase = true } label: {
-                Text("Delete all my data", bundle: #bundle)
-            }
-            .buttonStyle(.kw(.destructive, size: .row))
-            .disabled(viewModel.isWorking)
-            Text("Deletes the data on this iPhone.", bundle: #bundle)
-                .font(KWTextStyle.captionSm.font.weight(.regular))
-                .foregroundStyle(KWColor.Text.muted)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-        }
-        .padding(.top, KWSpacing.sm)
-    }
-}
-
-/// The system share sheet, for the exported file.
-private struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context _: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
-}
-
-extension SettingsView {
-    @ViewBuilder
-    private func sections(_ overview: SettingsOverview) -> some View {
-        if let accountSection {
-            accountSection
-        }
-        currency(overview.settings)
-        cards(overview.settings)
-        organization(overview)
-        languageSection
-        SecuritySection(viewModel: viewModel, overview: overview, onSetUpPasscode: onSetUpPasscode)
-        DataSection(viewModel: viewModel, overview: overview)
-        erase
+        .padding(.top, KWSpacing.xs)
     }
 
     private var eraseConfirmation: some View {
@@ -313,4 +215,92 @@ extension SettingsView {
             Text("Delete everything", bundle: #bundle)
         }
     }
+}
+
+/// What the About section and the footer show; the app passes its own version and links.
+public struct SettingsAbout: Sendable {
+    let version: String?
+    let privacyPolicy: URL?
+
+    public init(version: String? = nil, privacyPolicy: URL? = nil) {
+        self.version = version
+        self.privacyPolicy = privacyPolicy
+    }
+}
+
+/// The header of a build without the Keepwell API: the person and where their data lives.
+private struct LocalProfileHeader: View {
+    let name: String?
+
+    var body: some View {
+        KWGroupedCard {
+            HStack(spacing: KWSpacing.sm) {
+                KWAvatar(name: name)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: name ?? "Keepwell")
+                        .font(KWTextStyle.heading.font)
+                    Text("Your data stays only on this iPhone.", bundle: #bundle)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.Text.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, KWSpacing.md)
+        }
+    }
+}
+
+private struct AboutSection: View {
+    let about: SettingsAbout
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        if let url = about.privacyPolicy {
+            SettingsSection(title: String(localized: "About", bundle: #bundle)) {
+                KWGroupedCard {
+                    Button { openURL(url) } label: {
+                        KWSettingsRow(
+                            String(localized: "Privacy policy", bundle: #bundle),
+                            icon: .shield,
+                            tint: KWSettingsTint.about,
+                            accessory: .external,
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+}
+
+/// The logo and version at the end of the list, as most finance apps close their settings.
+private struct AboutFooter: View {
+    let about: SettingsAbout
+
+    var body: some View {
+        VStack(spacing: KWSpacing.xs) {
+            KWLogoMark(size: 28)
+                .foregroundStyle(KWColor.Text.faint)
+            if let version = about.version {
+                Text("Keepwell \(version)", bundle: #bundle)
+                    .font(KWTextStyle.captionSm.font)
+                    .foregroundStyle(KWColor.Text.faint)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, KWSpacing.sm)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// The system share sheet, for the exported file.
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }

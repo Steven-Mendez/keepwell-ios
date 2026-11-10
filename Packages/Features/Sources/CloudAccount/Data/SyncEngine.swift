@@ -3,20 +3,22 @@ import Domain
 import Foundation
 
 /// iOS twin of keepwell-web's sync engine (ADR 0005 in keepwell-api): push the outbox, settle each
-/// answer, then pull until caught up. A new installation loads a snapshot first.
+/// answer, then pull until caught up. The first sync with an account loads a snapshot first, and
+/// when this device and the account both hold data it stops for the person to keep one side.
 public actor SyncEngine {
+    /// Settings come first: a download cut short still has the account's currencies.
     static let entities = [
-        "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
-        "personalDebt", "personalDebtRepayment", "categorizationRule", "settings",
+        "settings", "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
+        "personalDebt", "personalDebtRepayment", "categorizationRule",
     ]
 
     private let client: APIClient
-    private let store: any SyncStore
+    private let store: any SyncConflictStore
     private let defaults: UserDefaults
     private let clientID: String
 
     /// `defaultsSuite` keeps the cursor apart (tests); `nil` is the app's standard defaults.
-    public init(client: APIClient, store: any SyncStore, defaultsSuite: String? = nil, clientID: String) {
+    public init(client: APIClient, store: any SyncConflictStore, defaultsSuite: String? = nil, clientID: String) {
         self.client = client
         self.store = store
         defaults = defaultsSuite.flatMap(UserDefaults.init(suiteName:)) ?? .standard
@@ -26,6 +28,12 @@ public actor SyncEngine {
     private var cursor: Int? {
         get { defaults.object(forKey: "sync.cursor") as? Int }
         set { defaults.set(newValue, forKey: "sync.cursor") }
+    }
+
+    /// The account the cursor belongs to.
+    private var cursorAccount: String? {
+        get { defaults.string(forKey: "sync.account") }
+        set { defaults.set(newValue, forKey: "sync.account") }
     }
 
     public var lastSync: Date? { defaults.object(forKey: "sync.lastAt") as? Date }
@@ -38,10 +46,66 @@ public actor SyncEngine {
     public func reset() {
         defaults.removeObject(forKey: "sync.cursor")
         defaults.removeObject(forKey: "sync.lastAt")
+        defaults.removeObject(forKey: "sync.rejected")
+        defaults.removeObject(forKey: "sync.choosing")
     }
 
-    /// One round. Throws `CloudAccountError` as the API answered.
-    public func syncOnce() async throws(CloudAccountError) {
+    /// One round. Throws `CloudAccountError` as the API answered. `account` is the signed-in
+    /// account's id; the first round with it decides how the two sides meet.
+    @discardableResult
+    public func syncOnce(account: String? = nil) async throws(CloudAccountError) -> SyncRoundOutcome {
+        bind(to: account)
+        if cursor == nil, let choice = choiceUnderWay {
+            try await resolve(choice)
+            return .synced
+        }
+        if cursor == nil {
+            let snapshot = try await fetchSnapshot()
+            let device = try await deviceSummary()
+            let remote = Self.summary(of: snapshot.rows)
+            switch (device.hasUserData, remote.hasUserData) {
+            case (true, true):
+                // Nothing goes up or comes down until the person keeps one side.
+                return .needsChoice(SyncConflict(device: device, account: remote))
+            case (false, true):
+                // Only the account has data: it comes down whole, the onboarding's categories and
+                // settings included, and nothing of this device's goes up over it.
+                choiceUnderWay = .useAccount
+                try await replaceLocal(with: snapshot.rows)
+            default:
+                for remoteRow in snapshot.rows {
+                    try await adopt(entity: remoteRow.entity, data: remoteRow.row)
+                }
+            }
+            cursor = snapshot.cursor
+            choiceUnderWay = nil
+        }
+        try await push()
+        try await pull()
+        defaults.set(Date.now, forKey: "sync.lastAt")
+        return .synced
+    }
+
+    /// Ends a conflict by keeping one side, then syncs normally. The account's rows are read again
+    /// here: another device may have changed them while the choice waited.
+    public func resolve(_ choice: SyncChoice, account: String? = nil) async throws(CloudAccountError) {
+        bind(to: account)
+        choiceUnderWay = choice
+        let snapshot = try await fetchSnapshot()
+        switch choice {
+        case .useAccount:
+            try await replaceLocal(with: snapshot.rows)
+        case .keepDevice:
+            do {
+                try await store.queueFullUpload(replacing: snapshot.rows, at: .now)
+            } catch {
+                throw .server(code: "local_write_failed", requestID: nil)
+            }
+        }
+        // Saved once the outbox holds the whole upload: a round cut short sends the rest later
+        // instead of asking again.
+        cursor = snapshot.cursor
+        choiceUnderWay = nil
         try await push()
         try await pull()
         defaults.set(Date.now, forKey: "sync.lastAt")
@@ -108,7 +172,7 @@ public actor SyncEngine {
             guard let event = byID[result.event_id],
                   await !(store.hasPendingEvent(entity: event.entity, entityID: event.entityID)) else { continue }
             if let current = result.current {
-                try? await store.applyRemote(entity: event.entity, row: current.data)
+                _ = try? await store.applyRemote(entity: event.entity, row: current.data)
             } else if result.status == "applied", let text = result.updated_at, let date = Self.parseDate(text) {
                 try? await store.adoptUpdatedAt(entity: event.entity, entityID: event.entityID, updatedAt: date)
             }
@@ -135,27 +199,28 @@ public actor SyncEngine {
         let next_after: String? // swiftlint:disable:this identifier_name
     }
 
-    private func pull() async throws(CloudAccountError) {
-        if cursor == nil {
-            var lowest = Int.max
-            for entity in Self.entities {
-                var after = ""
-                while true {
-                    let page: SnapshotAnswer = try await decode(client.send(
-                        "GET",
-                        "sync/snapshot",
-                        query: ["entity": entity, "after": after, "limit": "500"],
-                    ))
-                    lowest = min(lowest, page.server_seq)
-                    for row in page.rows {
-                        try await adopt(entity: entity, row: row)
-                    }
-                    guard let next = page.next_after else { break }
-                    after = next
-                }
+    /// Every row the account holds, tombstones included, and the cursor that follows them.
+    private func fetchSnapshot() async throws(CloudAccountError) -> (rows: [RemoteRow], cursor: Int) {
+        var lowest = Int.max
+        var rows: [RemoteRow] = []
+        for entity in Self.entities {
+            var after = ""
+            while true {
+                let page: SnapshotAnswer = try await decode(client.send(
+                    "GET",
+                    "sync/snapshot",
+                    query: ["entity": entity, "after": after, "limit": "500"],
+                ))
+                lowest = min(lowest, page.server_seq)
+                rows += page.rows.map { RemoteRow(entity: entity, row: $0.data) }
+                guard let next = page.next_after else { break }
+                after = next
             }
-            cursor = lowest == .max ? 0 : lowest
         }
+        return (rows, lowest == .max ? 0 : lowest)
+    }
+
+    private func pull() async throws(CloudAccountError) {
         while true {
             let position = cursor ?? 0
             let page: PullAnswer = try await decode(client.send(
@@ -176,12 +241,16 @@ public actor SyncEngine {
 
     /// The server's row is the truth, except for a row with a pending local change.
     private func adopt(entity: String, row: RawJSON) async throws(CloudAccountError) {
-        guard let id = row.object?["id"] as? String else { return }
+        try await adopt(entity: entity, data: row.data)
+    }
+
+    private func adopt(entity: String, data: Data) async throws(CloudAccountError) {
+        guard let id = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["id"] as? String else { return }
         if await store.hasPendingEvent(entity: entity, entityID: id) {
             return
         }
         do {
-            try await store.applyRemote(entity: entity, row: row.data)
+            try await store.applyRemote(entity: entity, row: data)
         } catch {
             throw .server(code: "apply_failed", requestID: nil)
         }
@@ -221,6 +290,69 @@ public actor SyncEngine {
         default:
             throw .server(code: "http_\(response.status)", requestID: nil)
         }
+    }
+}
+
+// MARK: - First sync
+
+extension SyncEngine {
+    /// A choice (or a first download) under way: a round cut short finishes it instead of finding
+    /// half the account's data here and asking again.
+    private var choiceUnderWay: SyncChoice? {
+        get {
+            switch defaults.string(forKey: "sync.choosing") {
+            case "useAccount": .useAccount
+            case "keepDevice": .keepDevice
+            default: nil
+            }
+        }
+        set {
+            switch newValue {
+            case .useAccount: defaults.set("useAccount", forKey: "sync.choosing")
+            case .keepDevice: defaults.set("keepDevice", forKey: "sync.choosing")
+            case nil: defaults.removeObject(forKey: "sync.choosing")
+            }
+        }
+    }
+
+    /// A cursor only means something for the account that made it: signing in to another account
+    /// starts over with that account's first sync. A cursor from before accounts were recorded is
+    /// taken to be the current account's, as it was.
+    private func bind(to account: String?) {
+        guard let account else { return }
+        if let previous = cursorAccount, previous != account {
+            reset()
+        }
+        cursorAccount = account
+    }
+
+    private func deviceSummary() async throws(CloudAccountError) -> SyncDataSummary {
+        do {
+            return try await SyncDataSummary(counts: store.localRowCounts())
+        } catch {
+            // Taking an unreadable store for an empty one could replace it; better to try again.
+            throw .server(code: "local_read_failed", requestID: nil)
+        }
+    }
+
+    private func replaceLocal(with rows: [RemoteRow]) async throws(CloudAccountError) {
+        do {
+            try await store.replaceSyncedData(with: rows)
+        } catch {
+            throw .server(code: "apply_failed", requestID: nil)
+        }
+    }
+
+    static func summary(of rows: [RemoteRow]) -> SyncDataSummary {
+        var counts: [String: Int] = [:]
+        for remoteRow in rows where SyncDataSummary.userDataEntities.contains(remoteRow.entity) {
+            let object = try? JSONSerialization.jsonObject(with: remoteRow.row) as? [String: Any]
+            let deleted = object?["deleted_at"].map { !($0 is NSNull) } ?? false
+            if object != nil, !deleted {
+                counts[remoteRow.entity, default: 0] += 1
+            }
+        }
+        return SyncDataSummary(counts: counts)
     }
 }
 

@@ -90,3 +90,18 @@ extension RootView {
         )
     }
 }
+
+extension RootView {
+    /// The first sync with an account found data on both sides; "Decide later" closes the sheet and
+    /// Settings opens it again.
+    var choosingSyncData: Binding<Bool> {
+        Binding(
+            get: { container.cloudAccount?.sync.map { $0.isChoosingData && $0.conflict != nil } ?? false },
+            set: { presented in
+                if !presented {
+                    container.cloudAccount?.sync?.decideLater()
+                }
+            },
+        )
+    }
+}

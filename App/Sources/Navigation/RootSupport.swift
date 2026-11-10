@@ -128,9 +128,12 @@ struct OnboardingRoute: View {
     }
 
     private func signedIn(_ user: CloudAccountUser) {
+        let suggestedName = container.cloudAccount?.suggestedName(for: user)
         Task {
-            if await viewModel.signedIn(canSync: user.canSync) != nil {
+            if await viewModel.signedIn(canSync: user.canSync, suggestedName: suggestedName) != nil {
                 onFinish(.home)
+            } else {
+                container.cloudAccount?.sync?.holdForSetup()
             }
         }
     }
@@ -178,7 +181,15 @@ struct SettingsRoute: View {
             onOpenPaymentMethods: onOpenPaymentMethods,
             onOpenRecurring: onOpenRecurring,
             onOpenRules: onOpenRules,
-            accountSection: cloudAccount.map { AnyView(CloudAccountSection(viewModel: $0)) },
+            account: cloudAccount.map { account in
+                SettingsAccountViews(
+                    header: AnyView(CloudAccountHeader(viewModel: account)),
+                    syncRow: AnyView(CloudSyncRow(viewModel: account)),
+                    sections: AnyView(CloudAccountSections(viewModel: account)),
+                    destructiveRows: AnyView(CloudAccountDestructiveRows(viewModel: account)),
+                )
+            },
+            about: SettingsAbout(version: AppEnvironment.current.version, privacyPolicy: AppEnvironment.current.privacyPolicyURL),
         )
         .navigationBarBackButtonHidden()
         .fullScreenCover(item: $passcodeSetup, onDismiss: reload) { flow in

@@ -178,21 +178,54 @@ private final class SyncRounds: @unchecked Sendable {
 @Suite("Restore from the Keepwell account")
 struct RestoreFromAccountUseCaseTests {
     @Test
-    func returnsTheSettingsSyncBroughtDown() async throws {
+    func anAccountWithDataBringsItsSettingsAndSkipsSetUp() async throws {
         var settings = SampleData.standard.settings
         settings.hasCompletedOnboarding = true
         let rounds = SyncRounds(finishAfter: nil)
         let restored = try await DefaultRestoreFromAccountUseCase(
-            settings: InMemoryStore(settings: settings), completedSyncRounds: { rounds.completed() }, attempts: 1,
+            settings: InMemoryStore(settings: settings),
+            hasUserData: { true },
+            completedSyncRounds: { rounds.completed() },
+            attempts: 1,
         ).execute()
         #expect(restored == settings)
+    }
+
+    /// Data whose settings never said onboarding was done (or never came) still opens home, now
+    /// and on the next launch.
+    @Test
+    func dataWithoutFinishedSettingsIsMarkedAsSetUp() async throws {
+        let store = InMemoryStore()
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: store, hasUserData: { true }, completedSyncRounds: { 0 }, attempts: 1,
+        ).execute()
+        #expect(restored?.hasCompletedOnboarding == true)
+        #expect(try await store.load()?.hasCompletedOnboarding == true)
+    }
+
+    /// The reported bug: an account made elsewhere has finished settings and its categories, but
+    /// nothing of the person's, and signing in skipped the name, currencies and accounts.
+    @Test
+    func finishedSettingsWithoutUserDataGoOnWithSetUp() async throws {
+        var settings = SampleData.standard.settings
+        settings.hasCompletedOnboarding = true
+        let rounds = SyncRounds(finishAfter: 2)
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(settings: settings),
+            hasUserData: { false },
+            completedSyncRounds: { rounds.completed() },
+            attempts: 1000,
+            interval: .milliseconds(1),
+        ).execute()
+        #expect(restored == nil)
     }
 
     @Test
     func stopsWaitingOnceASyncRoundEndsWithNothing() async throws {
         let rounds = SyncRounds(finishAfter: 2)
         let restored = try await DefaultRestoreFromAccountUseCase(
-            settings: InMemoryStore(), completedSyncRounds: { rounds.completed() }, attempts: 1000, interval: .milliseconds(1),
+            settings: InMemoryStore(), hasUserData: { false }, completedSyncRounds: { rounds.completed() },
+            attempts: 1000, interval: .milliseconds(1),
         ).execute()
         #expect(restored == nil)
     }
@@ -201,7 +234,8 @@ struct RestoreFromAccountUseCaseTests {
     func givesUpWhenSyncNeverAnswers() async throws {
         let rounds = SyncRounds(finishAfter: nil)
         let restored = try await DefaultRestoreFromAccountUseCase(
-            settings: InMemoryStore(), completedSyncRounds: { rounds.completed() }, attempts: 2, interval: .milliseconds(1),
+            settings: InMemoryStore(), hasUserData: { false }, completedSyncRounds: { rounds.completed() },
+            attempts: 2, interval: .milliseconds(1),
         ).execute()
         #expect(restored == nil)
     }

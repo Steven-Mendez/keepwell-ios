@@ -323,7 +323,7 @@ extension SwiftDataStore: CategoryRepository {
 
     /// One row per id. Two devices can each write the same default before syncing: the first
     /// row wins, and a delete on either device removes it.
-    private func uniqueCategoryRows(in context: ModelContext) throws -> [(record: CategoryRecord, isRemoved: Bool)] {
+    func uniqueCategoryRows(in context: ModelContext) throws -> [(record: CategoryRecord, isRemoved: Bool)] {
         let records = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
         var removedIDs = Set<String>()
         for record in records where record.isTombstone {

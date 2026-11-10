@@ -213,10 +213,10 @@ public final class OnboardingViewModel {
         showSetUp()
     }
 
-    /// Signed in on the welcome. An account that syncs and already has finished settings brings
-    /// them down and onboarding ends (the returned settings); otherwise the setup steps follow,
-    /// and what they save syncs up.
-    public func signedIn(canSync: Bool) async -> Settings? {
+    /// Signed in on the welcome. An account that syncs and already holds user data brings it down
+    /// and onboarding ends (the returned settings). Otherwise every setup step follows, the name
+    /// starting from `suggestedName` (the account's), and what the steps save syncs up.
+    public func signedIn(canSync: Bool, suggestedName: String? = nil) async -> Settings? {
         guard restoreState == .idle else { return nil }
         if canSync, let restoreFromAccount {
             restoreState = .searching
@@ -225,6 +225,9 @@ public final class OnboardingViewModel {
             if let restored {
                 return restored
             }
+        }
+        if preferredName == nil, let suggested = PreferredName.normalized(suggestedName) {
+            nameText = String(suggested.prefix(PreferredName.maxLength))
         }
         showSetUp()
         return nil
@@ -283,23 +286,6 @@ public final class OnboardingViewModel {
 
     public func skipNotifications() async {
         await finish()
-    }
-
-    // MARK: Done summary
-
-    /// "All set, Steven" once there's a name to say.
-    public var doneTitle: String {
-        guard let name = preferredName else { return String(localized: "All set", bundle: #bundle) }
-        return String(localized: "All set, \(name)", bundle: #bundle)
-    }
-
-    public var currenciesSummary: String {
-        [principal, second].compactMap(\.self).joined(separator: " + ")
-    }
-
-    public var rateSummary: String? {
-        guard let second, let rate else { return nil }
-        return "1 \(principal) = \(rate) \(second)"
     }
 
     // MARK: Private

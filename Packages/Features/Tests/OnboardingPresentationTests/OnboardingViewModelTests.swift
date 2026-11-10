@@ -259,4 +259,22 @@ struct OnboardingViewModelTests {
         #expect(restore.calls == 0)
         #expect(viewModel.path == [.name])
     }
+
+    /// Signing in to an account without data goes through every step, the name filled in from
+    /// the account so the person only confirms it.
+    @Test
+    func signingInToANewAccountStartsTheNameFromTheAccount() async {
+        let viewModel = OnboardingFactory.make(restore: RestoreStub())
+        #expect(await viewModel.signedIn(canSync: true, suggestedName: "  Steven ") == nil)
+        #expect(viewModel.path == [.name])
+        #expect(viewModel.nameText == "Steven")
+    }
+
+    @Test
+    func aNameAlreadyTypedIsNotReplaced() async {
+        let viewModel = OnboardingFactory.make(restore: RestoreStub())
+        viewModel.nameText = "Ana"
+        _ = await viewModel.signedIn(canSync: false, suggestedName: "Steven")
+        #expect(viewModel.nameText == "Ana")
+    }
 }

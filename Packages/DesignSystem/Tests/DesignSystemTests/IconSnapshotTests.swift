@@ -13,6 +13,6 @@ struct IconSnapshotTests {
             }
         }
         .foregroundStyle(KWColor.Text.primary)
-        assertComponentSnapshot(of: grid, height: 300)
+        assertComponentSnapshot(of: grid, height: 380)
     }
 }

@@ -191,12 +191,42 @@
         }
       }
     },
+    "A copy of every movement" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una copia de todos tus movimientos"
+          }
+        }
+      }
+    },
+    "About" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de"
+          }
+        }
+      }
+    },
     "Add a bank account or a card from Accounts to see it here." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Agrega una cuenta de banco o una tarjeta desde Cuentas para verla aquí."
+          }
+        }
+      }
+    },
+    "Add movements from a spreadsheet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega movimientos desde una hoja de cálculo"
           }
         }
       }
@@ -271,6 +301,16 @@
         }
       }
     },
+    "Categorize movements by their description" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoriza los movimientos según su descripción"
+          }
+        }
+      }
+    },
     "Category" : {
       "localizations" : {
         "es" : {
@@ -331,32 +371,12 @@
         }
       }
     },
-    "Credit cards" : {
+    "Data & sync" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tarjetas de crédito"
-          }
-        }
-      }
-    },
-    "Currency" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moneda"
-          }
-        }
-      }
-    },
-    "Data" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datos"
+            "value" : "Datos y sincronización"
           }
         }
       }
@@ -601,6 +621,16 @@
         }
       }
     },
+    "Keepwell %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keepwell %@"
+          }
+        }
+      }
+    },
     "Keepwell passcode" : {
       "localizations" : {
         "es" : {
@@ -627,16 +657,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keepwell te pedirá el código de tu iPhone en su lugar."
-          }
-        }
-      }
-    },
-    "Language" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Idioma"
           }
         }
       }
@@ -677,6 +697,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manual · por defecto 1"
+          }
+        }
+      }
+    },
+    "Money" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dinero"
           }
         }
       }
@@ -821,12 +851,12 @@
         }
       }
     },
-    "On ›" : {
+    "On" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activado ›"
+            "value" : "Activado"
           }
         }
       }
@@ -867,6 +897,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medios de pago"
+          }
+        }
+      }
+    },
+    "Privacy policy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Política de privacidad"
+          }
+        }
+      }
+    },
+    "Profile & preferences" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfil y preferencias"
           }
         }
       }
@@ -971,22 +1021,22 @@
         }
       }
     },
-    "Security and privacy" : {
+    "Security" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seguridad y privacidad"
+            "value" : "Seguridad"
           }
         }
       }
     },
-    "Set up ›" : {
+    "Set up" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurar ›"
+            "value" : "Configurar"
           }
         }
       }
@@ -1007,6 +1057,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seis dígitos, guardados solo en este iPhone. Sin él, el bloqueo usa el código de tu iPhone."
+          }
+        }
+      }
+    },
+    "Subscriptions and regular movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscripciones y movimientos periódicos"
           }
         }
       }
@@ -1267,6 +1327,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tus cuentas, tarjetas y movimientos se borran de este iPhone. No se puede deshacer. Lo sincronizado con tu cuenta Keepwell se borra al eliminar la cuenta."
+          }
+        }
+      }
+    },
+    "Your data stays only on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos se quedan solo en este iPhone."
           }
         }
       }
