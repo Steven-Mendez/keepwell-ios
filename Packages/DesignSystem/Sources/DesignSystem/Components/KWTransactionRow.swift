@@ -138,7 +138,7 @@ public struct KWTransactionAmounts: View {
 }
 
 #Preview {
-    KWGroupedCard(horizontalPadding: 14, verticalPadding: 4) {
+    KWGroupedCard(verticalPadding: 4) {
         KWTransactionRow(.planned, title: "Rent", subtitle: "Housing · Debit 1234", amount: "−C$3,500.00", secondaryAmount: "≈ $95.56")
         KWTransactionRow(.expense, title: "Lunch", subtitle: "Restaurants · Cash", amount: "−C$250.00", secondaryAmount: "$6.83")
         KWTransactionRow(

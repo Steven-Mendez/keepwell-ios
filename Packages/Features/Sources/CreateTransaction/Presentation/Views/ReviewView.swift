@@ -32,7 +32,6 @@ public struct ReviewView: View {
                         Text("Edits keep the rate this transaction was logged with.", bundle: #bundle)
                             .font(KWTextStyle.captionSm.font)
                             .foregroundStyle(KWColor.Text.muted)
-                            .padding(.horizontal, KWSpacing.xxs)
                     }
                     if let error = viewModel.errorMessage {
                         Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
@@ -204,7 +203,6 @@ extension ReviewView {
                         .font(KWTextStyle.captionSm.font)
                         .foregroundStyle(KWColor.Text.muted)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, KWSpacing.xs)
                 }
             }
             if let from = viewModel.fromParty {
@@ -281,7 +279,6 @@ extension ReviewView {
             Text("Tags", bundle: #bundle)
                 .font(KWTextStyle.label.font)
                 .foregroundStyle(KWColor.Text.muted)
-                .padding(.leading, KWSpacing.xxs)
             KWGroupedCard {
                 TagEditor(tags: $viewModel.tags, usage: viewModel.tagUsage)
             }

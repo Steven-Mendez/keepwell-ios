@@ -43,7 +43,7 @@ struct HomeRecentCard: View {
             .buttonStyle(.plain)
             .padding(.bottom, -KWSpacing.xs)
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }

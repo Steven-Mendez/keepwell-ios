@@ -70,7 +70,6 @@ struct DebtEditorView: View {
             Text("Only tracked here: it doesn't record a movement or change your balances.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.muted)
-                .padding(.horizontal, KWSpacing.xxs)
             if !viewModel.isCreating {
                 Button { isConfirmingDelete = true } label: {
                     Text("Delete debt", bundle: #bundle)
@@ -200,7 +199,7 @@ struct DebtDetailView: View {
                 .font(KWTextStyle.captionSm.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.muted)
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }

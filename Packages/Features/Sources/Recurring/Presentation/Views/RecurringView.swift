@@ -40,7 +40,7 @@ public struct RecurringView: View {
                     ForEach(viewModel.sections) { section in
                         VStack(alignment: .leading, spacing: KWSpacing.xs) {
                             KWSectionHeader(section.group.title)
-                            KWGroupedCard(horizontalPadding: 14, verticalPadding: KWSpacing.xxs) {
+                            KWGroupedCard(verticalPadding: KWSpacing.xxs) {
                                 ForEach(section.rules) { rule in
                                     row(rule)
                                 }
@@ -88,7 +88,7 @@ public struct RecurringView: View {
                 .foregroundStyle(KWColor.Text.secondary)
                 .monospacedDigit()
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
         .accessibilityElement(children: .combine)

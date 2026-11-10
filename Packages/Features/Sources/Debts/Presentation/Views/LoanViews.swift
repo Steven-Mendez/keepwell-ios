@@ -84,7 +84,6 @@ struct LoanEditorView: View {
                 Text(total)
                     .font(KWTextStyle.captionSm.font.weight(.regular))
                     .foregroundStyle(KWColor.Text.muted)
-                    .padding(.horizontal, KWSpacing.xxs)
             }
             KWSegmentedControl(viewModel.frequencyOptions, selection: $viewModel.frequency)
             KWGroupedCard {
@@ -219,7 +218,7 @@ struct LoanDetailView: View {
                 .font(KWTextStyle.caption.font)
                 .foregroundStyle(KWColor.Text.muted)
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }

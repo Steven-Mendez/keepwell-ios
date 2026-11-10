@@ -27,14 +27,14 @@ public struct WelcomeView: View {
                 }
                 .padding(.top, KWLayout.safeTop)
                 .padding(.bottom, KWSpacing.lg)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, KWLayout.gutter)
             }
             .scrollBounceBehavior(.basedOnSize)
             .scrollDismissesKeyboard(.interactively)
             .foregroundStyle(KWColor.Text.primary)
             .background { KWGlowBackground(.brand).ignoresSafeArea() }
         } else {
-            KWScreen(top: 64, bottom: 40, horizontal: 20) {
+            KWScreen(top: 64, bottom: 40) {
                 KWGlowBackground(.brand)
             } content: {
                 VStack(alignment: .leading, spacing: 0) {

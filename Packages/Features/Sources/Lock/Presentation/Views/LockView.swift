@@ -20,7 +20,7 @@ public struct LockView: View {
     }
 
     public var body: some View {
-        KWScreen(top: 96, bottom: 32, horizontal: KWSpacing.xl) {
+        KWScreen(top: 96, bottom: 32) {
             KWGlowBackground(.brand)
         } content: {
             TimelineView(.periodic(from: .now, by: 1)) { timeline in

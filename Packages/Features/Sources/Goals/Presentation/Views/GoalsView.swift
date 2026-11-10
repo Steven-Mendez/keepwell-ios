@@ -117,7 +117,7 @@ struct GoalRow: View {
                 .disabled(progress.goal.saved <= 0)
             }
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }

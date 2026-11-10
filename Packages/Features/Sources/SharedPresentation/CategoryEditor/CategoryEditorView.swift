@@ -145,7 +145,7 @@ public struct CategoryEditorView: View {
         .font(KWTextStyle.body.font)
         .focused($isNameFocused)
         .submitLabel(.done)
-        .padding(.horizontal, 14)
+        .padding(.horizontal, KWSpacing.md)
         .frame(height: 48)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.card))
     }

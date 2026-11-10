@@ -17,7 +17,7 @@ struct RecurringChoiceSheet<Option: Identifiable, Row: View>: View {
                 Text(title)
                     .kwTextStyle(.titleSm)
                     .accessibilityAddTraits(.isHeader)
-                KWGroupedCard(horizontalPadding: 14) {
+                KWGroupedCard {
                     ForEach(options) { option in
                         Button { onSelect(option) } label: {
                             HStack(spacing: KWSpacing.sm) {
@@ -107,7 +107,7 @@ struct RecurringRuleDetail: View {
             if let display = viewModel.display, !viewModel.recorded.isEmpty {
                 KWSectionHeader(String(localized: "Recorded", bundle: #bundle))
                     .padding(.top, KWSpacing.xs)
-                KWGroupedCard(horizontalPadding: 14, verticalPadding: KWSpacing.xxs) {
+                KWGroupedCard(verticalPadding: KWSpacing.xxs) {
                     ForEach(viewModel.recorded) { transaction in
                         KWTransactionRow(
                             display.style(of: transaction),

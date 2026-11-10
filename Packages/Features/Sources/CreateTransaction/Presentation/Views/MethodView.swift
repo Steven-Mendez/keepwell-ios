@@ -30,7 +30,7 @@ public struct MethodView: View {
                         .font(.kw(13, weight: 600, relativeTo: .footnote))
                         .foregroundStyle(KWColor.Text.muted)
                         .padding(.top, KWSpacing.xxs)
-                    KWGroupedCard(horizontalPadding: 14) {
+                    KWGroupedCard {
                         ForEach(group.rows) { row in
                             Button { viewModel.selectSource(row.source) } label: { content(row) }
                                 .buttonStyle(.plain)

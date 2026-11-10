@@ -14,7 +14,7 @@ public struct DoneView: View {
     }
 
     public var body: some View {
-        KWScreen(top: 140, bottom: 40, horizontal: 20) {
+        KWScreen(top: 140, bottom: 40) {
             KWGlowBackground(.success)
         } content: {
             VStack(spacing: 0) {

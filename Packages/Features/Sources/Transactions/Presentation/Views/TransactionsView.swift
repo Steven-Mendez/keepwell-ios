@@ -182,7 +182,7 @@ public struct TransactionsView: View {
                 .accessibilityLabel(Text("Clear search", bundle: #bundle))
             }
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, KWSpacing.md)
         .frame(height: 42)
         .background(KWColor.Surface.surface, in: Capsule())
     }
@@ -236,7 +236,7 @@ public struct TransactionsView: View {
                         .foregroundStyle(KWColor.Text.muted)
                         .accessibilityAddTraits(.isHeader)
                         .padding(.top, KWSpacing.xxs)
-                    KWGroupedCard(horizontalPadding: 14, verticalPadding: KWSpacing.xxs) {
+                    KWGroupedCard(verticalPadding: KWSpacing.xxs) {
                         ForEach(section.transactions) { transaction in
                             row(transaction, display: display)
                         }

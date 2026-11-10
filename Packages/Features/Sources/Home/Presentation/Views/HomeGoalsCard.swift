@@ -31,7 +31,7 @@ struct HomeGoalsCard: View {
                         .foregroundStyle(KWColor.Text.muted)
                 }
             }
-            .padding(18)
+            .padding(KWSpacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
             .contentShape(Rectangle())
