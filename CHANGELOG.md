@@ -40,6 +40,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- "Continue with Apple" works again in TestFlight builds: release builds always carry the Sign in
+  with Apple and passkey entitlements, whatever a local development config says.
 - Sync no longer clears this iPhone before it has the whole account in hand: using your account's
   data fetches everything first, then replaces your data in one step, and a first download cut
   short asks again instead of finishing by clearing what you entered since. A row that can't be
