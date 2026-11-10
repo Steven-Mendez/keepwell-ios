@@ -5,7 +5,7 @@ import SwiftUI
 import UIKit
 
 /// Settings: currency and rate, card reminders, organization counts, lock and privacy,
-/// backup, CSV export and deleting everything.
+/// CSV export and import, and deleting everything.
 public struct SettingsView: View {
     @Bindable private var viewModel: SettingsViewModel
     private let onBack: () -> Void

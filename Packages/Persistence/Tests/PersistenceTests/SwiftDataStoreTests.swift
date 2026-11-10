@@ -236,7 +236,7 @@ struct SwiftDataStoreTests {
         try await store.deleteRecurringRule(id: rule.id)
         #expect(try await !store.fetchRecurringRules().contains { $0.id == rule.id })
         await #expect(throws: DomainError.notFound(rule.id)) { try await store.deleteRecurringRule(id: rule.id) }
-        #expect(try await store.exportContents().recurringRules.contains { $0.value.id == rule.id && $0.metadata.isDeleted })
+        #expect(try await store.auditedContents().recurringRules.contains { $0.value.id == rule.id && $0.metadata.isDeleted })
     }
 
     @Test
@@ -258,7 +258,7 @@ struct SwiftDataStoreTests {
         try await store.deleteSavingsGoal(id: exact.id)
         #expect(try await !store.fetchSavingsGoals().contains { $0.id == exact.id })
         await #expect(throws: DomainError.notFound(exact.id)) { try await store.deleteSavingsGoal(id: exact.id) }
-        #expect(try await store.exportContents().savingsGoals.contains { $0.value.id == exact.id && $0.metadata.isDeleted })
+        #expect(try await store.auditedContents().savingsGoals.contains { $0.value.id == exact.id && $0.metadata.isDeleted })
     }
 
     @Test
@@ -299,7 +299,7 @@ extension SwiftDataStoreTests {
         #expect(try await store.fetchLoans().isEmpty)
         #expect(try await store.fetchPersonalDebts().isEmpty)
         await #expect(throws: DomainError.notFound(loan.id)) { try await store.deleteLoan(id: loan.id) }
-        let exported = try await store.exportContents()
+        let exported = try await store.auditedContents()
         #expect(exported.loans.contains { $0.value == loan && $0.metadata.isDeleted })
         #expect(exported.personalDebts.contains { $0.value == debt && $0.metadata.isDeleted })
     }

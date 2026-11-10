@@ -202,7 +202,7 @@ struct ModelContainerFactoryTests {
         #expect(transaction.id == transactionID)
         #expect(transaction.amount == Decimal(string: "12.34"))
         #expect(try await store.fetchCategories().contains { $0.id == "custom-boat" })
-        let contents = try await store.exportContents()
+        let contents = try await store.auditedContents()
         #expect(contents.accounts.allSatisfy { !$0.metadata.isDeleted })
         #expect(contents.transactions.allSatisfy { !$0.metadata.isDeleted })
     }

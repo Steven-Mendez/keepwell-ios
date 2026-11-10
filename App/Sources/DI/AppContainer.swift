@@ -84,7 +84,7 @@ final class AppContainer {
             completeOnboarding: DefaultCompleteOnboardingUseCase(
                 settings: store, accounts: store, cards: store, profile: preferences, passcodes: passcodes,
             ),
-            restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store),
+            restoreFromAccount: makeRestoreFromAccount(),
             notifications: UserNotificationAuthorizer(),
         )
     }
@@ -159,8 +159,6 @@ final class AppContainer {
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
             importTransactions: makeImportTransactions(),
-            createBackup: DefaultCreateBackupUseCase(store: store),
-            restoreBackup: makeRestoreBackup(),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
@@ -179,10 +177,6 @@ final class AppContainer {
 
     func makePasscodeSetupViewModel() -> PasscodeSetupViewModel {
         PasscodeSetupViewModel(setPasscode: DefaultSetPasscodeUseCase(passcodes: passcodes))
-    }
-
-    func makeRestoreBackup() -> any RestoreBackupUseCase {
-        DefaultRestoreBackupUseCase(store: store)
     }
 
     func makePaymentMethodsViewModel() -> PaymentMethodsViewModel {

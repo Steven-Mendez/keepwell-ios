@@ -1,10 +1,37 @@
 import Domain
 import Foundation
 import SwiftData
+@testable import Persistence
 
-extension SwiftDataStore: BackupStore {
+/// A domain value with the audit times of the record that stores it.
+struct Stamped<Value: Hashable & Sendable>: Hashable, Sendable {
+    let value: Value
+    let metadata: RecordMetadata
+
+    init(_ value: Value, _ metadata: RecordMetadata) {
+        self.value = value
+        self.metadata = metadata
+    }
+}
+
+/// Everything the store holds, deleted records included, so tests can check tombstones and audit
+/// times that the repositories never return.
+struct AuditedContents {
+    var settings: Stamped<Settings>?
+    var accounts: [Stamped<Account>]
+    var cards: [Stamped<Card>]
+    var categories: [Stamped<TransactionCategory>]
+    var transactions: [Stamped<Transaction>]
+    var recurringRules: [Stamped<RecurringRule>]
+    var savingsGoals: [Stamped<SavingsGoal>]
+    var loans: [Stamped<Loan>]
+    var personalDebts: [Stamped<PersonalDebt>]
+    var categorizationRules: [Stamped<CategorizationRule>]
+}
+
+extension SwiftDataStore {
     /// Every record, deleted ones included, with the times it was created, changed and deleted.
-    public func exportContents() throws(DomainError) -> BackupContents {
+    func auditedContents() throws(DomainError) -> AuditedContents {
         try perform { context in
             let settings = try context.fetch(FetchDescriptor<SettingsRecord>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]))
                 .first
@@ -26,7 +53,7 @@ extension SwiftDataStore: BackupStore {
                 .map { try Stamped($0.toDomain(), $0.metadata) }
             let categorizationRules = try context.fetch(FetchDescriptor<CategorizationRuleRecord>(sortBy: [SortDescriptor(\.sortIndex)]))
                 .map { try Stamped($0.toDomain(), $0.metadata) }
-            return try BackupContents(
+            return try AuditedContents(
                 settings: settings,
                 accounts: accounts,
                 cards: cards,
@@ -38,78 +65,6 @@ extension SwiftDataStore: BackupStore {
                 personalDebts: debts,
                 categorizationRules: categorizationRules,
             )
-        }
-    }
-
-    /// Deletes every record and writes `contents` in one save, keeping ids and audit times, so a
-    /// restored record looks to a sync engine like the one that was backed up. On failure the
-    /// context is rolled back and nothing changes.
-    public func replaceAll(with contents: BackupContents) throws(DomainError) {
-        try perform { context in
-            do {
-                try deleteEveryRecord(in: context)
-                if let settings = contents.settings {
-                    let record = SettingsRecord().inserted(into: context)
-                    record.update(from: settings.value)
-                    record.updatedAt = settings.metadata.updatedAt
-                }
-                for account in contents.accounts {
-                    let record = AccountRecord(id: account.value.id).inserted(into: context)
-                    record.update(from: account.value)
-                    record.apply(account.metadata)
-                }
-                for card in contents.cards {
-                    let record = CardRecord(id: card.value.id).inserted(into: context)
-                    record.update(from: card.value)
-                    record.apply(card.metadata)
-                }
-                for (index, category) in contents.categories.enumerated() {
-                    let record = CategoryRecord(id: category.value.id).inserted(into: context)
-                    record.update(from: category.value, sortIndex: index)
-                    record.isRemoved = category.metadata.isDeleted
-                    record.apply(category.metadata)
-                }
-                for transaction in contents.transactions {
-                    let record = TransactionRecord(id: transaction.value.id).inserted(into: context)
-                    record.update(from: transaction.value)
-                    record.apply(transaction.metadata)
-                }
-                insertPlans(of: contents, into: context)
-                try context.saveWithOutbox()
-            } catch {
-                context.rollback()
-                throw error
-            }
-        }
-    }
-
-    /// Recurring rules, savings goals, loans, personal debts and categorization rules: what the person planned or keeps
-    /// track of rather than the movements themselves.
-    private func insertPlans(of contents: BackupContents, into context: ModelContext) {
-        for rule in contents.recurringRules {
-            let record = RecurringRuleRecord(id: rule.value.id).inserted(into: context)
-            record.update(from: rule.value)
-            record.apply(rule.metadata)
-        }
-        for goal in contents.savingsGoals {
-            let record = SavingsGoalRecord(id: goal.value.id).inserted(into: context)
-            record.update(from: goal.value)
-            record.apply(goal.metadata)
-        }
-        for loan in contents.loans {
-            let record = LoanRecord(id: loan.value.id).inserted(into: context)
-            record.update(from: loan.value)
-            record.apply(loan.metadata)
-        }
-        for debt in contents.personalDebts {
-            let record = PersonalDebtRecord(id: debt.value.id).inserted(into: context)
-            record.update(from: debt.value)
-            record.apply(debt.metadata)
-        }
-        for (index, rule) in contents.categorizationRules.enumerated() {
-            let record = CategorizationRuleRecord(id: rule.value.id).inserted(into: context)
-            record.update(from: rule.value, sortIndex: index)
-            record.apply(rule.metadata)
         }
     }
 
@@ -128,23 +83,5 @@ extension SwiftDataStore: BackupStore {
                 RecordMetadata(createdAt: metadata.createdAt, updatedAt: metadata.updatedAt, deletedAt: deletedAt),
             )
         }
-    }
-
-    /// Row by row rather than a batch delete, so the deletions and the inserts that follow land in
-    /// the same save and roll back together.
-    /// The outbox goes too: after a restore it holds one event per restored record, in the wire
-    /// format, written by `saveWithOutbox`.
-    private func deleteEveryRecord(in context: ModelContext) throws {
-        try context.fetch(FetchDescriptor<OutboxRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<TransactionRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<RecurringRuleRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<SavingsGoalRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<LoanRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<PersonalDebtRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<CategorizationRuleRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<CardRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<AccountRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<CategoryRecord>()).forEach(context.delete)
-        try context.fetch(FetchDescriptor<SettingsRecord>()).forEach(context.delete)
     }
 }

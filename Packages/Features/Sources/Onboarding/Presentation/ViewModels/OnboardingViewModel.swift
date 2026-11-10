@@ -10,8 +10,8 @@ import OnboardingDomain
 @Observable
 public final class OnboardingViewModel {
     public enum Step: Hashable, Sendable {
-        /// "Have you used Keepwell before?": restore a backup or start from scratch.
-        case returning
+        /// Sign in to a Keepwell account, or continue without one (data stays on this iPhone).
+        case account
         case name
         case currencies
         case accounts
@@ -22,8 +22,8 @@ public final class OnboardingViewModel {
 
     public enum RestoreState: Equatable, Sendable {
         case idle
+        /// Signed in: waiting for the account's data to sync down.
         case searching
-        case notFound
     }
 
     /// One currency, or a main one plus a second with a rate between them.
@@ -53,7 +53,8 @@ public final class OnboardingViewModel {
     private var searchedCurrencies: [String] = []
 
     private let completeOnboarding: any CompleteOnboardingUseCase
-    private let restoreFromBackup: any RestoreFromBackupUseCase
+    /// `nil` in builds without the Keepwell API: the account step isn't offered.
+    private let restoreFromAccount: (any RestoreFromAccountUseCase)?
     private let notifications: any NotificationAuthorizing
 
     static let defaultRateText = "1.0000"
@@ -62,12 +63,12 @@ public final class OnboardingViewModel {
 
     public init(
         completeOnboarding: any CompleteOnboardingUseCase,
-        restoreFromBackup: any RestoreFromBackupUseCase,
+        restoreFromAccount: (any RestoreFromAccountUseCase)?,
         notifications: any NotificationAuthorizing,
         regionCurrency: String? = Locale.current.currency?.identifier,
     ) {
         self.completeOnboarding = completeOnboarding
-        self.restoreFromBackup = restoreFromBackup
+        self.restoreFromAccount = restoreFromAccount
         self.notifications = notifications
         // The region's currency is the likeliest main one; anything unknown falls back to USD.
         let principal = regionCurrency.flatMap { code in
@@ -196,14 +197,43 @@ public final class OnboardingViewModel {
 
     // MARK: Navigation
 
-    /// "Start" on the welcome: asks whether there's a backup to bring before setting anything up.
-    public func begin() {
-        path = [.returning]
+    /// Whether the welcome leads to the account step; builds without the API go straight to setup.
+    public var offersAccount: Bool {
+        restoreFromAccount != nil
     }
 
-    /// "Start from scratch": the setup steps, with the question still one step back.
-    public func start() {
-        path = [.returning, .name]
+    /// "Start" on the welcome: the account step first, so an account's data can come down before
+    /// anything is set up by hand.
+    public func begin() {
+        path = offersAccount ? [.account] : [.name]
+    }
+
+    /// "Continue without an account": everything stays on this iPhone. The account step stays one
+    /// step back.
+    public func continueWithoutAccount() {
+        showSetUp()
+    }
+
+    /// Signed in on the account step. An account that syncs and already has finished settings
+    /// brings them down and onboarding ends (the returned settings); otherwise the setup steps
+    /// follow, and what they save syncs up.
+    public func signedIn(canSync: Bool) async -> Settings? {
+        guard restoreState == .idle else { return nil }
+        if canSync, let restoreFromAccount {
+            restoreState = .searching
+            let restored = try? await restoreFromAccount.execute()
+            restoreState = .idle
+            if let restored {
+                return restored
+            }
+        }
+        showSetUp()
+        return nil
+    }
+
+    /// The setup steps, with the account step (when offered) one step back.
+    private func showSetUp() {
+        path = offersAccount ? [.account, .name] : [.name]
     }
 
     /// The trimmed name, or `nil` while the field is blank.
@@ -254,14 +284,6 @@ public final class OnboardingViewModel {
 
     public func skipNotifications() async {
         await finish()
-    }
-
-    /// Returns restored settings when a backup arrived; the caller then leaves onboarding.
-    public func restore() async -> Settings? {
-        restoreState = .searching
-        let restored = try? await restoreFromBackup.execute()
-        restoreState = restored == nil ? .notFound : .idle
-        return restored
     }
 
     // MARK: Done summary

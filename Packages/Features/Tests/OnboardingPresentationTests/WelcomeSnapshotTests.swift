@@ -15,18 +15,4 @@ struct WelcomeSnapshotTests {
     func welcome() {
         assertScreenSnapshot(of: WelcomeView(onStart: {}))
     }
-
-    @Test
-    func returning() {
-        assertScreenSnapshot(of: ReturningView(
-            restoreState: .idle, onBack: {}, onRestoreFromAccount: {}, onRestoreFromFile: {}, onStartFresh: {},
-        ))
-    }
-
-    @Test
-    func returningAfterFailedRestore() {
-        assertScreenSnapshot(of: ReturningView(
-            restoreState: .notFound, onBack: {}, onRestoreFromAccount: {}, onRestoreFromFile: {}, onStartFresh: {},
-        ))
-    }
 }

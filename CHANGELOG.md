@@ -9,11 +9,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Removed
 
-- iCloud backup (CloudKit). Your data stays on this iPhone, in the same place; the Keepwell account
-  syncs it with the web and other iPhones, and the backup file keeps working. A copy left in iCloud
-  by earlier versions can be removed in iOS Settings → your name → iCloud → Manage Storage.
+- iCloud backup (CloudKit). Your data stays on this iPhone, in the same place, and keeps working
+  after the update; the Keepwell account syncs it with the web and other iPhones. A copy left in
+  iCloud by earlier versions can be removed in iOS Settings → your name → iCloud → Manage Storage.
+- The JSON backup file: "Back up now" and "Restore" in Settings, and restoring one during
+  onboarding ("Have you used Keepwell before?"). Export CSV and Import CSV stay as the way to keep a
+  copy of your movements.
 
 ### Added
+
+- Onboarding asks to sign in to a Keepwell account right after the welcome: Sign in with Apple, a
+  passkey, or an invitation code for a new account. An account that already has data brings it down
+  and skips the setup. "Continue without an account" keeps everything on this iPhone, as before; you
+  can sign in later from Settings and what you recorded syncs up.
 
 - "Invite me a coffee": a one-time purchase that turns on sync and Claude for your Keepwell account,
   with Restore purchases for a new iPhone. A purchase interrupted before Keepwell confirmed it is

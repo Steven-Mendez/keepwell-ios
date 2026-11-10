@@ -51,6 +51,26 @@
         }
       }
     },
+    "Continue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        }
+      }
+    },
+    "Continue without an account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar sin cuenta"
+          }
+        }
+      }
+    },
     "Couldn't reach Keepwell. Try again." : {
       "localizations" : {
         "es" : {
@@ -121,6 +141,26 @@
         }
       }
     },
+    "Have an invitation code?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Tienes un código de invitación?"
+          }
+        }
+      }
+    },
+    "Invitation code" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de invitación"
+          }
+        }
+      }
+    },
     "Invitation code (new accounts)" : {
       "localizations" : {
         "es" : {
@@ -157,6 +197,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Las cuentas de Keepwell son solo por invitación por ahora. Escribe primero un código de invitación."
+          }
+        }
+      }
+    },
+    "Looking for your data…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando tus datos…"
+          }
+        }
+      }
+    },
+    "New accounts need one. Then sign in with Apple or a passkey." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las cuentas nuevas lo necesitan. Luego inicia sesión con Apple o una passkey."
           }
         }
       }
@@ -201,6 +261,16 @@
         }
       }
     },
+    "Sign in to Keepwell" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicia sesión en Keepwell"
+          }
+        }
+      }
+    },
     "Sign out" : {
       "localizations" : {
         "es" : {
@@ -241,6 +311,16 @@
         }
       }
     },
+    "Signed in as" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesión iniciada como"
+          }
+        }
+      }
+    },
     "Sync included during early access." : {
       "localizations" : {
         "es" : {
@@ -277,6 +357,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La sincronización con la web y Claude vienen con un café, una sola vez. Todo lo demás sigue siendo gratis y funciona en este iPhone."
+          }
+        }
+      }
+    },
+    "Sync your accounts and movements with Keepwell on the web and your other devices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincroniza tus cuentas y movimientos con Keepwell en la web y tus otros dispositivos."
           }
         }
       }
@@ -377,6 +467,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se cierra tu sesión en todos lados al instante y tus datos sincronizados se borran de los servidores de Keepwell. Las copias de seguridad los conservan hasta 35 días más. Lo que hay en este iPhone se queda aquí."
+          }
+        }
+      }
+    },
+    "Your data stays only on this iPhone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus datos se quedan solo en este iPhone."
+          }
+        }
+      }
+    },
+    "or" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "o"
           }
         }
       }

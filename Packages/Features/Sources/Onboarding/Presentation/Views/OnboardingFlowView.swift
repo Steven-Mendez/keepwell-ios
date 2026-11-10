@@ -10,27 +10,25 @@ public struct OnboardingFlowView: View {
     }
 
     @Bindable private var viewModel: OnboardingViewModel
+    private let accountStep: AnyView?
     private let onImportCSV: () -> Void
-    private let onRestoreFile: () -> Void
-    private let onSignInToRestore: ((@escaping () -> Void) -> Void)?
     private let onSetUpPasscode: () -> Void
     private let onFinish: (Exit) -> Void
 
-    /// `onSetUpPasscode` shows the lock feature's own passcode setup; once it saves, the app calls
-    /// `passcodeCreated()` on the view model. `onSignInToRestore` shows the account sign-in and calls
-    /// its argument once signed in; `nil` in builds without the Keepwell API.
+    /// `accountStep` is the sign-in screen the app builds from the account feature; it calls
+    /// `continueWithoutAccount()` or `signedIn(canSync:)` on the view model. `nil` in builds
+    /// without the Keepwell API. `onSetUpPasscode` shows the lock feature's own passcode setup;
+    /// once it saves, the app calls `passcodeCreated()` on the view model.
     public init(
         viewModel: OnboardingViewModel,
+        accountStep: AnyView? = nil,
         onImportCSV: @escaping () -> Void,
-        onRestoreFile: @escaping () -> Void = {},
-        onSignInToRestore: ((@escaping () -> Void) -> Void)? = nil,
         onSetUpPasscode: @escaping () -> Void,
         onFinish: @escaping (Exit) -> Void,
     ) {
         self.viewModel = viewModel
+        self.accountStep = accountStep
         self.onImportCSV = onImportCSV
-        self.onRestoreFile = onRestoreFile
-        self.onSignInToRestore = onSignInToRestore
         self.onSetUpPasscode = onSetUpPasscode
         self.onFinish = onFinish
     }
@@ -49,24 +47,8 @@ public struct OnboardingFlowView: View {
     @ViewBuilder
     private func destination(_ step: OnboardingViewModel.Step) -> some View {
         switch step {
-        case .returning:
-            ReturningView(
-                restoreState: viewModel.restoreState,
-                onBack: back,
-                onRestoreFromAccount: onSignInToRestore.map { signIn in
-                    {
-                        signIn {
-                            Task {
-                                if await viewModel.restore() != nil {
-                                    onFinish(.home)
-                                }
-                            }
-                        }
-                    }
-                },
-                onRestoreFromFile: onRestoreFile,
-                onStartFresh: viewModel.start,
-            )
+        case .account:
+            accountStep
         case .name:
             NameView(viewModel: viewModel, onBack: back)
         case .currencies:

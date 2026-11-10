@@ -18,32 +18,44 @@ public struct DefaultGetSettingsUseCase: GetSettingsUseCase {
     }
 }
 
-/// "I've used it before: restore from my Keepwell account". Once the person signs in, sync brings
-/// the data down on its own; this waits for finished settings to arrive.
-public protocol RestoreFromBackupUseCase: Sendable {
-    /// The restored settings, or `nil` when nothing arrived within the wait.
+/// Signing in during onboarding: an account that already holds Keepwell data (from the web or
+/// another iPhone) brings it down through sync, and the setup steps are skipped. Waits until
+/// finished settings arrive, or until a sync round ends without them (a new or empty account).
+public protocol RestoreFromAccountUseCase: Sendable {
+    /// The synced settings, or `nil` when the account has none to bring.
     func execute() async throws(DomainError) -> Settings?
 }
 
-public struct DefaultRestoreFromBackupUseCase: RestoreFromBackupUseCase {
+public struct DefaultRestoreFromAccountUseCase: RestoreFromAccountUseCase {
     private let settings: any SettingsRepository
+    private let completedSyncRounds: @Sendable () async -> Int
     private let attempts: Int
     private let interval: Duration
 
+    /// `completedSyncRounds` counts the sync rounds that have ended, failed ones included; a round
+    /// that ends after the wait began has pulled whatever the account had. `attempts` bounds the
+    /// wait when sync never answers (offline).
     public init(
         settings: any SettingsRepository,
-        attempts: Int = 30,
-        interval: Duration = .seconds(1),
+        completedSyncRounds: @escaping @Sendable () async -> Int,
+        attempts: Int = 60,
+        interval: Duration = .milliseconds(500),
     ) {
         self.settings = settings
+        self.completedSyncRounds = completedSyncRounds
         self.attempts = attempts
         self.interval = interval
     }
 
     public func execute() async throws(DomainError) -> Settings? {
+        let roundsBefore = await completedSyncRounds()
         for attempt in 0 ..< attempts {
-            if let restored = try await settings.load(), restored.hasCompletedOnboarding {
-                return restored
+            let roundEnded = await completedSyncRounds() > roundsBefore
+            if let synced = try await settings.load(), synced.hasCompletedOnboarding {
+                return synced
+            }
+            if roundEnded {
+                return nil
             }
             if attempt < attempts - 1 {
                 try? await Task.sleep(for: interval)

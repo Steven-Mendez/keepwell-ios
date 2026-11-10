@@ -109,15 +109,7 @@ public protocol DataEraser: Sendable {
     func eraseAll() async throws(DomainError)
 }
 
-/// The whole store at once, deleted records and their metadata included, for the backup file
-/// the iOS and web apps share.
-public protocol BackupStore: Sendable {
-    func exportContents() async throws(DomainError) -> BackupContents
-    /// Replaces everything with `contents` in a single save: a failure leaves the store as it was.
-    func replaceAll(with contents: BackupContents) async throws(DomainError)
-}
-
-/// The app passcode, kept on this device only (never in the synced store or a backup). The
+/// The app passcode, kept on this device only (never in the synced store). The
 /// implementation stores a salted hash, so the code itself can't be read back.
 public protocol PasscodeRepository: Sendable {
     func hasPasscode() async -> Bool

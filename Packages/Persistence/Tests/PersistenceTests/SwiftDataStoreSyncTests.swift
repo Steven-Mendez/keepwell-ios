@@ -5,7 +5,7 @@ import SwiftData
 import Testing
 @testable import Persistence
 
-@Suite("SwiftData store soft deletes, audit dates and backups")
+@Suite("SwiftData store soft deletes and audit dates")
 struct SwiftDataStoreSyncTests {
     private let sample = SampleData.standard
 
@@ -44,7 +44,7 @@ struct SwiftDataStoreSyncTests {
         #expect(try await !store.fetchTransactions(in: nil).contains { $0.id == transaction.id })
         #expect(try await !store.fetchCards().contains { $0.id == card.id })
         #expect(try await !store.fetchAccounts().contains { $0.id == account.id })
-        let contents = try await store.exportContents()
+        let contents = try await store.auditedContents()
         #expect(contents.transactions.first { $0.value.id == transaction.id }?.metadata.isDeleted == true)
         #expect(contents.cards.first { $0.value.id == card.id }?.metadata.isDeleted == true)
         #expect(contents.accounts.first { $0.value.id == account.id }?.metadata.isDeleted == true)
@@ -63,12 +63,12 @@ struct SwiftDataStoreSyncTests {
     func savingStampsTheChangeKeepsCreationAndBringsBackADeletedRecord() async throws {
         let store = try await seeded()
         let transaction = try #require(sample.transactions.first)
-        let before = try #require(await store.exportContents().transactions.first { $0.value.id == transaction.id })
+        let before = try #require(await store.auditedContents().transactions.first { $0.value.id == transaction.id })
 
         try await store.deleteTransaction(id: transaction.id)
         try await store.save(transaction.with(status: .planned))
 
-        let after = try #require(await store.exportContents().transactions.first { $0.value.id == transaction.id })
+        let after = try #require(await store.auditedContents().transactions.first { $0.value.id == transaction.id })
         #expect(after.metadata.createdAt == before.metadata.createdAt)
         #expect(after.metadata.updatedAt > before.metadata.updatedAt)
         #expect(!after.metadata.isDeleted)
@@ -83,7 +83,7 @@ struct SwiftDataStoreSyncTests {
         try await store.deleteCategory(id: boat.id)
 
         #expect(try await !store.fetchCategories().contains { $0.id == boat.id })
-        let row = try #require(await store.exportContents().categories.first { $0.value.id == boat.id })
+        let row = try #require(await store.auditedContents().categories.first { $0.value.id == boat.id })
         #expect(row.metadata.isDeleted)
 
         try await store.save(boat)
@@ -107,46 +107,8 @@ struct SwiftDataStoreSyncTests {
 
         let reopened = SwiftDataStore(modelContainer: container)
         #expect(try await reopened.fetchCategories().contains { $0.id == "pets" })
-        let row = try #require(await reopened.exportContents().categories.first { $0.value.id == "pets" })
+        let row = try #require(await reopened.auditedContents().categories.first { $0.value.id == "pets" })
         #expect(!row.metadata.isDeleted)
-    }
-
-    @Test
-    func replacingEverythingKeepsIDsAuditDatesAndTombstones() async throws {
-        let source = try await seeded()
-        let deletedID = try #require(sample.transactions.first?.id)
-        try await source.deleteTransaction(id: deletedID)
-        try await source.deleteCategory(id: "pets")
-        try await source.deleteRecurringRule(id: SampleData.IDs.cashRule)
-        try await source.deleteSavingsGoal(id: SampleData.IDs.phoneGoal)
-        try await source.deletePersonalDebt(id: SampleData.IDs.settledDebt)
-        let contents = try await source.exportContents()
-
-        let target = try makeStore()
-        try await target.save(TransactionCategory(id: "custom-old", name: "Old", kind: .expense))
-        try await target.replaceAll(with: contents)
-
-        let restored = try await target.exportContents()
-        // Records saved in the same instant may list in either order, so rows compare as sets.
-        #expect(restored.settings == contents.settings)
-        #expect(Set(restored.accounts) == Set(contents.accounts))
-        #expect(Set(restored.cards) == Set(contents.cards))
-        #expect(Set(restored.transactions) == Set(contents.transactions))
-        #expect(restored.categories == contents.categories)
-        #expect(Set(restored.recurringRules) == Set(contents.recurringRules))
-        #expect(restored.recurringRules.first { $0.value.id == SampleData.IDs.cashRule }?.metadata.isDeleted == true)
-        #expect(try await target.fetchRecurringRules().count == sample.recurringRules.count - 1)
-        #expect(Set(restored.savingsGoals) == Set(contents.savingsGoals))
-        #expect(restored.savingsGoals.first { $0.value.id == SampleData.IDs.phoneGoal }?.metadata.isDeleted == true)
-        #expect(try await target.fetchSavingsGoals().count == sample.savingsGoals.count - 1)
-        #expect(Set(restored.loans) == Set(contents.loans))
-        #expect(try await target.fetchLoans() == sample.loans)
-        #expect(Set(restored.personalDebts) == Set(contents.personalDebts))
-        #expect(restored.personalDebts.first { $0.value.id == SampleData.IDs.settledDebt }?.metadata.isDeleted == true)
-        #expect(try await target.fetchPersonalDebts().count == sample.personalDebts.count - 1)
-        #expect(try await Set(target.fetchTransactions(in: nil)) == Set(sample.transactions.filter { $0.id != deletedID }))
-        let categories = try await target.fetchCategories()
-        #expect(!categories.contains { $0.id == "pets" || $0.id == "custom-old" })
     }
 
     @Test
@@ -154,7 +116,7 @@ struct SwiftDataStoreSyncTests {
         let store = try await seeded()
         try await store.deleteTransaction(id: #require(sample.transactions.first?.id))
         try await store.eraseAll()
-        let contents = try await store.exportContents()
+        let contents = try await store.auditedContents()
         #expect(contents.transactions.isEmpty && contents.accounts.isEmpty && contents.cards.isEmpty)
         #expect(contents.recurringRules.isEmpty)
         #expect(contents.savingsGoals.isEmpty)

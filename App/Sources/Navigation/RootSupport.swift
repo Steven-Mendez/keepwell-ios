@@ -1,5 +1,6 @@
 import AccountsPresentation
 import AddCardPresentation
+import CloudAccountDomain
 import CloudAccountPresentation
 import Core
 import CreateTransactionPresentation
@@ -81,52 +82,56 @@ final class MainScreens {
 // Each pushed screen keeps its view model in `@State`, so re-rendering the stack doesn't
 // recreate it and lose what the person was doing.
 
-/// Onboarding with the lock feature's passcode setup over it, so the protect step reuses the
-/// same screen and rules as Settings.
+/// Onboarding with the account feature's sign-in as its account step and the lock feature's
+/// passcode setup over it, so both reuse the same screens and rules as Settings.
 struct OnboardingRoute: View {
     let container: AppContainer
     let viewModel: OnboardingViewModel
     let onImportCSV: () -> Void
-    let onRestoreFile: () -> Void
     let onFinish: (OnboardingFlowView.Exit) -> Void
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
-    /// "Restore from your Keepwell account": the sign-in sheet, and what to do once signed in.
-    @State private var restoreAfterSignIn: (() -> Void)?
 
     var body: some View {
         OnboardingFlowView(
             viewModel: viewModel,
+            accountStep: accountStep,
             onImportCSV: onImportCSV,
-            onRestoreFile: onRestoreFile,
-            onSignInToRestore: container.cloudAccount == nil ? nil : { restore in restoreAfterSignIn = restore },
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onFinish: onFinish,
         )
-        .sheet(isPresented: Binding(get: { restoreAfterSignIn != nil }, set: {
-            if !$0 {
-                restoreAfterSignIn = nil
-            }
-        })) {
-            if let account = container.cloudAccount {
-                ScrollView {
-                    CloudAccountSection(viewModel: account).padding()
-                }
-                .presentationDetents([.medium])
-                .onChange(of: account.state) { _, state in
-                    // Signed in: sync starts on its own, and onboarding waits for the data to arrive.
-                    if case .signedIn = state, let restore = restoreAfterSignIn {
-                        restoreAfterSignIn = nil
-                        restore()
-                    }
-                }
-            }
-        }
         .fullScreenCover(item: $passcodeSetup) { flow in
             PasscodeSetupView(viewModel: flow.viewModel, isChanging: viewModel.hasPasscode) {
                 if flow.viewModel.isSaved {
                     viewModel.passcodeCreated()
                 }
                 passcodeSetup = nil
+            }
+        }
+    }
+
+    private var accountStep: AnyView? {
+        guard viewModel.offersAccount, let account = container.cloudAccount else { return nil }
+        return AnyView(
+            AccountSignInView(
+                viewModel: account,
+                isFindingData: viewModel.restoreState == .searching,
+                onBack: { _ = viewModel.path.popLast() },
+                onContinue: signedIn,
+                onContinueWithoutAccount: viewModel.continueWithoutAccount,
+            )
+            // A sign-in on this step moves on by itself; the account's data comes down first.
+            .onChange(of: account.state) { old, new in
+                if case .signedOut = old, case let .signedIn(user) = new, viewModel.path.last == .account {
+                    signedIn(user)
+                }
+            },
+        )
+    }
+
+    private func signedIn(_ user: CloudAccountUser) {
+        Task {
+            if await viewModel.signedIn(canSync: user.canSync) != nil {
+                onFinish(.home)
             }
         }
     }

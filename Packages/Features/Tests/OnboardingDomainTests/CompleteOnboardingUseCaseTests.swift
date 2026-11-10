@@ -156,21 +156,52 @@ struct CompleteOnboardingUseCaseTests {
     }
 }
 
-@Suite("Restore from backup")
-struct RestoreFromBackupUseCaseTests {
+/// Counts sync rounds as the coordinator would; `finishAfter` reads end a round.
+private final class SyncRounds: @unchecked Sendable {
+    private let lock = NSLock()
+    private var reads = 0
+    private let finishAfter: Int?
+
+    init(finishAfter: Int?) {
+        self.finishAfter = finishAfter
+    }
+
+    func completed() -> Int {
+        lock.withLock {
+            reads += 1
+            guard let finishAfter else { return 0 }
+            return reads > finishAfter ? 1 : 0
+        }
+    }
+}
+
+@Suite("Restore from the Keepwell account")
+struct RestoreFromAccountUseCaseTests {
     @Test
     func returnsTheSettingsSyncBroughtDown() async throws {
         var settings = SampleData.standard.settings
         settings.hasCompletedOnboarding = true
-        let store = InMemoryStore(settings: settings)
-        let restored = try await DefaultRestoreFromBackupUseCase(settings: store, attempts: 1).execute()
+        let rounds = SyncRounds(finishAfter: nil)
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(settings: settings), completedSyncRounds: { rounds.completed() }, attempts: 1,
+        ).execute()
         #expect(restored == settings)
     }
 
     @Test
-    func givesUpWhenNothingArrives() async throws {
-        let restored = try await DefaultRestoreFromBackupUseCase(
-            settings: InMemoryStore(), attempts: 2, interval: .milliseconds(1),
+    func stopsWaitingOnceASyncRoundEndsWithNothing() async throws {
+        let rounds = SyncRounds(finishAfter: 2)
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(), completedSyncRounds: { rounds.completed() }, attempts: 1000, interval: .milliseconds(1),
+        ).execute()
+        #expect(restored == nil)
+    }
+
+    @Test
+    func givesUpWhenSyncNeverAnswers() async throws {
+        let rounds = SyncRounds(finishAfter: nil)
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(), completedSyncRounds: { rounds.completed() }, attempts: 2, interval: .milliseconds(1),
         ).execute()
         #expect(restored == nil)
     }

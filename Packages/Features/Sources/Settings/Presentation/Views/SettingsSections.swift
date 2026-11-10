@@ -206,22 +206,16 @@ struct SecuritySection: View {
     }
 }
 
-/// The backup file and CSV. Syncing with other devices is the Keepwell account's job (Account).
+/// The CSV export and import: the one way to keep a copy or move movements by hand. Syncing with
+/// other devices is the Keepwell account's job (Account).
 struct DataSection: View {
     let viewModel: SettingsViewModel
     let overview: SettingsOverview
     @State private var isImporting = false
-    @State private var isPickingBackup = false
-    @State private var pendingRestore: URL?
 
     var body: some View {
         SettingsSection(title: String(localized: "Data", bundle: #bundle)) {
             KWGroupedCard {
-                VStack(alignment: .leading, spacing: 10) {
-                    backupHeader
-                    backupActions
-                }
-                .padding(.vertical, 14)
                 csvRows
             }
             if let message = viewModel.importMessage {
@@ -234,29 +228,6 @@ struct DataSection: View {
             if case let .success(url) = result {
                 Task { await viewModel.importFile(at: url) }
             }
-        }
-        .background {
-            // A second importer can't share a view with the first, so it lives on the background.
-            Color.clear.fileImporter(isPresented: $isPickingBackup, allowedContentTypes: [.json]) { result in
-                if case let .success(url) = result {
-                    pendingRestore = url
-                }
-            }
-        }
-        .confirmationDialog(
-            String(localized: "Replace your data with this backup?", bundle: #bundle),
-            isPresented: isConfirmingRestore,
-            titleVisibility: .visible,
-        ) {
-            Button(role: .destructive) {
-                if let url = pendingRestore {
-                    Task { _ = await viewModel.restore(from: url) }
-                }
-            } label: {
-                Text("Restore", bundle: #bundle)
-            }
-        } message: {
-            Text("What's on this iPhone now is replaced by the backup.", bundle: #bundle)
         }
     }
 
@@ -276,54 +247,5 @@ struct DataSection: View {
         }
         .buttonStyle(.plain)
         .disabled(viewModel.isWorking)
-    }
-
-    private var isConfirmingRestore: Binding<Bool> {
-        Binding(get: { pendingRestore != nil }, set: {
-            if !$0 {
-                pendingRestore = nil
-            }
-        })
-    }
-
-    private var backupActions: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: KWSpacing.xs) {
-                Button {
-                    Task { await viewModel.backUpNow() }
-                } label: {
-                    Text("Back up now", bundle: #bundle)
-                }
-                .buttonStyle(.kw(.primary, size: .small))
-                Button { isPickingBackup = true } label: {
-                    Text("Restore", bundle: #bundle)
-                }
-                .buttonStyle(.kw(.secondary, size: .small))
-            }
-            .disabled(viewModel.isWorking)
-            if let message = viewModel.backupMessage {
-                Text(message)
-                    .font(KWTextStyle.captionSm.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(.leading, 52)
-    }
-
-    private var backupHeader: some View {
-        HStack(spacing: KWSpacing.sm) {
-            KWIconView(.download, size: 20)
-                .foregroundStyle(KWColor.Brand.link)
-                .frame(width: 40, height: 40)
-                .background(KWColor.Tint.accent, in: Circle())
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Backup file", bundle: #bundle).font(KWTextStyle.body.font)
-                Text("Everything in one file you keep, in iCloud Drive or Files. The web app opens it too.", bundle: #bundle)
-                    .font(KWTextStyle.captionSm.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
     }
 }

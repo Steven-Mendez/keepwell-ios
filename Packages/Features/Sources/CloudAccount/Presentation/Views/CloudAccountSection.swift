@@ -1,4 +1,3 @@
-import AuthenticationServices
 import CloudAccountDomain
 import DesignSystem
 import SwiftUI
@@ -72,27 +71,8 @@ public struct CloudAccountSection: View {
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .font(KWTextStyle.body.font.monospaced())
-            SignInWithAppleButton(.signIn) { request in
-                request.requestedScopes = [.fullName, .email]
-                request.nonce = viewModel.prepareAppleRequest()
-            } onCompletion: { result in
-                switch result {
-                case let .success(authorization):
-                    guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
-                          let data = credential.identityToken,
-                          let token = String(data: data, encoding: .utf8)
-                    else {
-                        viewModel.appleSignInFailed(cancelled: false)
-                        return
-                    }
-                    Task { await viewModel.completeAppleSignIn(idToken: token) }
-                case let .failure(error):
-                    viewModel.appleSignInFailed(cancelled: (error as? ASAuthorizationError)?.code == .canceled)
-                }
-            }
-            .signInWithAppleButtonStyle(.white)
-            .frame(height: 48)
-            .disabled(viewModel.isWorking)
+            AppleSignInButton(viewModel: viewModel)
+                .frame(height: 48)
             if viewModel.canUsePasskeys {
                 Button {
                     Task { await viewModel.signInWithPasskey(using: passkeyAuthorizer) }

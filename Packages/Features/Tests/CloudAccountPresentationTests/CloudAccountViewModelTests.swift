@@ -37,6 +37,20 @@ private struct StubDelete: DeleteCloudAccountUseCase {
     }
 }
 
+/// Counts sync rounds the coordinator runs.
+private final class SyncRuns: @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+
+    var value: Int {
+        lock.withLock { count }
+    }
+
+    func run() {
+        lock.withLock { count += 1 }
+    }
+}
+
 @MainActor
 @Suite("Cloud account view model")
 struct CloudAccountViewModelTests {
@@ -115,5 +129,51 @@ struct CloudAccountViewModelTests {
         await model.deleteAccount()
         #expect(model.state == .signedIn(ana))
         #expect(model.errorMessage != nil)
+    }
+
+    @Test
+    func aMissingInvitationAsksForTheCodeUntilASignInWorks() async {
+        let model = model(signIn: RecordingSignIn(result: .failure(.notInvited)))
+        await model.refresh()
+        _ = model.prepareAppleRequest()
+        await model.completeAppleSignIn(idToken: "jwt")
+        #expect(model.needsInvitation)
+
+        let invited = self.model(signIn: RecordingSignIn(result: .failure(.invalidInvitation)))
+        _ = invited.prepareAppleRequest()
+        await invited.completeAppleSignIn(idToken: "jwt")
+        #expect(invited.needsInvitation)
+    }
+
+    /// Someone who started without an account signs in later from Settings: the session starts
+    /// sync, which pushes the outbox of everything recorded locally.
+    @Test
+    func signingInLaterFromSettingsStartsSync() async throws {
+        let runs = SyncRuns()
+        let sync = SyncCoordinator(run: { runs.run() }, status: { (nil, 0) })
+        let syncing = CloudAccountUser(id: "u1", name: "Ana", email: "ana@example.com", capabilities: ["cloud_sync"])
+        let model = CloudAccountViewModel(
+            load: StubLoad(result: .success(nil)),
+            signIn: RecordingSignIn(result: .success(syncing)),
+            signOut: StubSignOut(),
+            delete: StubDelete(),
+            sync: sync,
+        )
+        await model.refresh()
+        #expect(model.state == .signedOut)
+        #expect(sync.completedRounds == 0)
+
+        _ = model.prepareAppleRequest()
+        await model.completeAppleSignIn(idToken: "jwt")
+        #expect(model.state == .signedIn(syncing))
+        for _ in 0 ..< 200 where sync.completedRounds == 0 {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(runs.value >= 1)
+        #expect(sync.completedRounds >= 1)
+
+        // Signing out goes back to local use: sync stops and nothing else changes.
+        await model.signOut(everywhere: false)
+        #expect(model.state == .signedOut)
     }
 }
