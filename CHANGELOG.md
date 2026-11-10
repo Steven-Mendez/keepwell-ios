@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-09
+
 ### Removed
 
 - iCloud backup (CloudKit). Your data stays on this iPhone, in the same place, and keeps working
