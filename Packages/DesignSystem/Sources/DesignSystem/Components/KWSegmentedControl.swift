@@ -63,11 +63,12 @@ public struct KWSegmentedControl<Value: Hashable>: View {
     }
 
     private var selectedBackground: Color {
-        style == .accent ? KWColor.Brand.accent : .white
+        style == .accent ? KWColor.Brand.accent : KWColor.Semantic.primary
     }
 
     private var selectedForeground: Color {
-        style == .accent ? KWColor.Text.primary : .black
+        // White in both modes: the accent is deep enough in light mode for white text to pass AA.
+        style == .accent ? Color.white : KWColor.Semantic.primaryForeground
     }
 }
 

@@ -2,6 +2,7 @@ import AccountsDomain
 import AccountsPresentation
 import AddCardDomain
 import AddCardPresentation
+import CloudAccountPresentation
 import Core
 import CreateTransactionDomain
 import CreateTransactionPresentation
@@ -41,26 +42,18 @@ final class AppContainer {
     let preferences = StorePreferences()
     /// The app passcode's hash, in this device's Keychain only.
     let passcodes: any PasscodeRepository = KeychainPasscodeStore()
-    /// Started with the container so it hears CloudKit uploads from launch on.
-    let backupStatus = BackupStatusTracker()
+    /// The Keepwell account and its sync, one per app; `nil` in builds without an API.
+    private(set) lazy var cloudAccount: CloudAccountViewModel? = makeCloudAccountViewModel()
 
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
     }
 
-    /// Gives every bank account exactly one card before any screen reads them: older versions
-    /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
-    func normalizeBankCards() async {
-        do {
-            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store, recurringRules: store).execute()
-        } catch {
-            Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
-        }
-    }
-
     #if DEBUG
     func seedSampleData() async {
-        let sample = SampleData(referenceDate: .now)
+        // In the app's own language, so Spanish screenshots don't show English movements.
+        let language = SampleLanguage(languageCode: Bundle.main.preferredLocalizations.first)
+        let sample = SampleData(referenceDate: .now, language: language)
         do {
             try await store.seed(
                 settings: sample.settings,
@@ -89,9 +82,9 @@ final class AppContainer {
     func makeOnboardingViewModel() -> OnboardingViewModel {
         OnboardingViewModel(
             completeOnboarding: DefaultCompleteOnboardingUseCase(
-                settings: store, accounts: store, cards: store, backup: preferences, profile: preferences, passcodes: passcodes,
+                settings: store, accounts: store, cards: store, profile: preferences, passcodes: passcodes,
             ),
-            restoreFromBackup: DefaultRestoreFromBackupUseCase(settings: store, backup: preferences),
+            restoreFromAccount: makeRestoreFromAccount(),
             notifications: UserNotificationAuthorizer(),
         )
     }
@@ -126,6 +119,7 @@ final class AppContainer {
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
+            discard: DefaultDeleteTransactionUseCase(transactions: store),
         )
     }
 
@@ -159,16 +153,13 @@ final class AppContainer {
     func makeSettingsViewModel() -> SettingsViewModel {
         SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
-                settings: store, categories: store, cards: store, backup: preferences, status: backupStatus,
+                settings: store, categories: store, cards: store,
                 passcodes: passcodes, profile: preferences,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
-            setICloudBackup: DefaultSetICloudBackupUseCase(backup: preferences, settings: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
             importTransactions: makeImportTransactions(),
-            createBackup: DefaultCreateBackupUseCase(store: store),
-            restoreBackup: makeRestoreBackup(),
-            eraseAllData: DefaultEraseAllDataUseCase(eraser: store, cloud: makeCloudCopyEraser()),
+            eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
         )
@@ -186,10 +177,6 @@ final class AppContainer {
 
     func makePasscodeSetupViewModel() -> PasscodeSetupViewModel {
         PasscodeSetupViewModel(setPasscode: DefaultSetPasscodeUseCase(passcodes: passcodes))
-    }
-
-    func makeRestoreBackup() -> any RestoreBackupUseCase {
-        DefaultRestoreBackupUseCase(store: store)
     }
 
     func makePaymentMethodsViewModel() -> PaymentMethodsViewModel {
@@ -239,14 +226,6 @@ final class AppContainer {
         widgetSnapshots.clear()
         WidgetCenter.shared.reloadAllTimelines()
         await reminders.removeAll()
-    }
-
-    /// Sample-data and UI-test runs keep an in-memory store, so erasing them must never reach the
-    /// real iCloud copy.
-    private func makeCloudCopyEraser() -> (any CloudCopyEraser)? {
-        let environment = AppEnvironment.current
-        guard !environment.isUITesting, !environment.usesSampleData else { return nil }
-        return CloudKitCopyEraser(containerIdentifier: environment.cloudKitContainer)
     }
 
     // MARK: - Credit card
@@ -347,5 +326,17 @@ final class AppContainer {
         DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
         )
+    }
+}
+
+extension AppContainer {
+    /// Gives every bank account exactly one card before any screen reads them: older versions
+    /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
+    func normalizeBankCards() async {
+        do {
+            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store, recurringRules: store).execute()
+        } catch {
+            Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
+        }
     }
 }

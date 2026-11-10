@@ -138,13 +138,13 @@ public enum RecurringSchedule {
         today: Date,
         exchangeRate: ExchangeRate,
         calendar: Calendar,
-        makeID: () -> UUID = UUID.init,
     ) -> Materialization {
         var recordedDays: [UUID: Set<Date>] = [:]
         for transaction in transactions {
             guard let ruleID = transaction.recurringID else { continue }
             recordedDays[ruleID, default: []].insert(calendar.startOfDay(for: transaction.date))
         }
+        let knownIDs = Set(transactions.map(\.id))
         var created: [Transaction] = []
         var advanced: [RecurringRule] = []
         for rule in rules {
@@ -152,7 +152,9 @@ public enum RecurringSchedule {
             guard !dates.isEmpty else { continue }
             var lastRecorded: Date?
             for date in dates where !(recordedDays[rule.id]?.contains(calendar.startOfDay(for: date)) ?? false) {
-                created.append(movement(from: rule, on: date, exchangeRate: exchangeRate, id: makeID()))
+                let id = occurrenceID(of: rule, on: date, calendar: calendar)
+                guard !knownIDs.contains(id) else { continue }
+                created.append(movement(from: rule, on: date, exchangeRate: exchangeRate, id: id))
                 recordedDays[rule.id, default: []].insert(calendar.startOfDay(for: date))
                 lastRecorded = date
             }
@@ -162,6 +164,37 @@ public enum RecurringSchedule {
             }
         }
         return Materialization(transactions: created, rules: advanced)
+    }
+
+    /// The id of the movement for the occurrence on `date`'s day, derived from the rule, its
+    /// schedule and the occurrence's index. Two devices (or the server) recording the same
+    /// occurrence produce the same row; keepwell-web computes the same value (`ids.json`).
+    public static func occurrenceID(of rule: RecurringRule, on date: Date, calendar: Calendar) -> UUID {
+        let index = occurrenceIndex(of: rule, on: date, calendar: calendar) ?? 0
+        return NameBasedID.occurrence(
+            ruleID: rule.id,
+            startDate: rule.startDate,
+            frequency: rule.frequency,
+            interval: rule.interval,
+            index: index,
+        )
+    }
+
+    /// Which occurrence (0 is `startDate`) falls on `date`'s calendar day, if any.
+    public static func occurrenceIndex(of rule: RecurringRule, on date: Date, calendar: Calendar) -> Int? {
+        let day = calendar.startOfDay(for: date)
+        var index = max(estimatedIndex(of: rule, near: day, calendar: calendar) - 1, 0)
+        while let candidate = occurrence(of: rule, index, calendar: calendar) {
+            let candidateDay = calendar.startOfDay(for: candidate)
+            if candidateDay == day {
+                return index
+            }
+            if candidateDay > day {
+                return nil
+            }
+            index += 1
+        }
+        return nil
     }
 
     /// The movement a rule records on `date`, at today's rate like any new movement.

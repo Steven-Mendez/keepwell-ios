@@ -88,7 +88,7 @@ public struct LockView: View {
             Text(String(initial).uppercased())
                 .font(.kw(28, weight: 800, relativeTo: .title2))
                 .frame(width: 72, height: 72)
-                .background(KWColor.Overlay.white14, in: Circle())
+                .background(KWColor.Text.primary.opacity(0.14), in: Circle())
                 .accessibilityHidden(true)
         } else {
             KWAppIconTile().scaleEffect(0.75).frame(width: 72, height: 72)
@@ -170,7 +170,7 @@ public struct LockView: View {
                     KWIconView(biometricIcon, size: viewModel.biometry == .touchID ? 56 : 52, lineWidth: 1.6)
                         .foregroundStyle(viewModel.biometry == .touchID ? KWColor.State.negative : KWColor.Text.primary)
                         .frame(width: 104, height: 104)
-                        .background(KWColor.Overlay.white10, in: Circle())
+                        .background(KWColor.Text.primary.opacity(0.10), in: Circle())
                         .contentShape(Circle())
                 }
                 .buttonStyle(.plain)

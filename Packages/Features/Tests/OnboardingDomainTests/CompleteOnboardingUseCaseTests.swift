@@ -4,14 +4,6 @@ import Foundation
 import Testing
 @testable import OnboardingDomain
 
-final class BackupSpy: BackupPreference, @unchecked Sendable {
-    private(set) var isICloudBackupEnabled = true
-
-    func setICloudBackupEnabled(_ isEnabled: Bool) {
-        isICloudBackupEnabled = isEnabled
-    }
-}
-
 @Suite("Complete onboarding")
 struct CompleteOnboardingUseCaseTests {
     private let date = Date(timeIntervalSince1970: 1_790_000_000)
@@ -23,24 +15,23 @@ struct CompleteOnboardingUseCaseTests {
     private func run(
         _ draft: OnboardingDraft,
         profile: InMemoryPasscodeStore = InMemoryPasscodeStore(),
-    ) async throws -> (InMemoryStore, BackupSpy, Settings) {
+    ) async throws -> (InMemoryStore, Settings) {
         let store = InMemoryStore()
-        let backup = BackupSpy()
         let useCase = DefaultCompleteOnboardingUseCase(
-            settings: store, accounts: store, cards: store, backup: backup, profile: profile, passcodes: profile,
+            settings: store, accounts: store, cards: store, profile: profile, passcodes: profile,
         ) { [date] in date }
         let settings = try await useCase.execute(draft)
-        return (store, backup, settings)
+        return (store, settings)
     }
 
     @Test
-    func savesFinishedSettingsAndBackupChoice() async throws {
-        let draft = try OnboardingDraft(currencies: currencies(), accounts: [], locksWithBiometrics: false, backsUpToICloud: false)
-        let (store, backup, settings) = try await run(draft)
+    func savesFinishedSettingsWithoutICloud() async throws {
+        let draft = try OnboardingDraft(currencies: currencies(), accounts: [], locksWithBiometrics: false)
+        let (store, settings) = try await run(draft)
         #expect(settings.hasCompletedOnboarding)
         #expect(settings.unlockMethod == .disabled)
         #expect(await store.load() == settings)
-        #expect(!backup.isICloudBackupEnabled)
+        #expect(!settings.isICloudBackupEnabled)
     }
 
     @Test
@@ -70,7 +61,7 @@ struct CompleteOnboardingUseCaseTests {
     func lockFollowsFaceIDAndPasscodeChoices(biometrics: Bool, passcode: Bool, expected: UnlockMethod) async throws {
         let profile = try InMemoryPasscodeStore(passcode: passcode ? Passcode("135790") : nil)
         let draft = try OnboardingDraft(currencies: currencies(), accounts: [], locksWithBiometrics: biometrics, hasPasscode: passcode)
-        let (_, _, settings) = try await run(draft, profile: profile)
+        let (_, settings) = try await run(draft, profile: profile)
         #expect(settings.unlockMethod == expected)
         #expect(await profile.hasPasscode() == passcode)
     }
@@ -93,7 +84,7 @@ struct CompleteOnboardingUseCaseTests {
             balance: 9443.6,
             lastFour: "1234",
         )
-        let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [bank]))
+        let (store, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [bank]))
         let account = try #require(await store.fetchAccounts().first)
         #expect(account.kind == .deposit)
         #expect(account.openingBalances == [Money(9443.6, "USD")])
@@ -106,7 +97,7 @@ struct CompleteOnboardingUseCaseTests {
     @Test
     func bankAccountWithoutDigitsStillGetsItsCard() async throws {
         let bank = OnboardingAccountDraft(kind: .bank, name: "Savings", bank: "Bank One", currency: "USD", balance: 10)
-        let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [bank]))
+        let (store, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [bank]))
         let cards = await store.fetchCards()
         #expect(cards.map(\.kind) == [.debit, .transfer])
         #expect(cards.first?.lastFour == nil)
@@ -118,7 +109,7 @@ struct CompleteOnboardingUseCaseTests {
             kind: .credit, name: "Mastercard", bank: "Bank One", currency: "USD",
             balance: 16.79, secondBalance: 197.02, lastFour: "4321", network: .mastercard, debtMode: .dual,
         )
-        let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [card]))
+        let (store, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [card]))
         let account = try #require(await store.fetchAccounts().first)
         #expect(account.openingBalances == [Money(-16.79, "USD"), Money(-197.02, "NIO")])
         #expect(account.creditTerms?.debtMode == .dual)
@@ -128,7 +119,7 @@ struct CompleteOnboardingUseCaseTests {
     @Test
     func singleCurrencyForcesPrincipalDebtMode() async throws {
         let card = OnboardingAccountDraft(kind: .credit, name: "Visa", currency: "USD", balance: 10, debtMode: .dual)
-        let (store, _, _) = try await run(OnboardingDraft(currencies: CurrencySettings(), accounts: [card]))
+        let (store, _) = try await run(OnboardingDraft(currencies: CurrencySettings(), accounts: [card]))
         let account = try #require(await store.fetchAccounts().first)
         #expect(account.openingBalances == [Money(-10, "USD")])
         #expect(account.creditTerms?.debtMode == .principal)
@@ -137,7 +128,7 @@ struct CompleteOnboardingUseCaseTests {
     @Test
     func cashAccountHasNoCards() async throws {
         let cash = OnboardingAccountDraft(kind: .cash, name: "Cash", currency: "NIO", balance: 560)
-        let (store, _, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [cash]))
+        let (store, _) = try await run(OnboardingDraft(currencies: currencies(), accounts: [cash]))
         #expect(await store.fetchAccounts().first?.kind == .cash)
         #expect(await store.fetchCards().isEmpty)
     }
@@ -165,24 +156,52 @@ struct CompleteOnboardingUseCaseTests {
     }
 }
 
-@Suite("Restore from backup")
-struct RestoreFromBackupUseCaseTests {
+/// Counts sync rounds as the coordinator would; `finishAfter` reads end a round.
+private final class SyncRounds: @unchecked Sendable {
+    private let lock = NSLock()
+    private var reads = 0
+    private let finishAfter: Int?
+
+    init(finishAfter: Int?) {
+        self.finishAfter = finishAfter
+    }
+
+    func completed() -> Int {
+        lock.withLock {
+            reads += 1
+            guard let finishAfter else { return 0 }
+            return reads > finishAfter ? 1 : 0
+        }
+    }
+}
+
+@Suite("Restore from the Keepwell account")
+struct RestoreFromAccountUseCaseTests {
     @Test
-    func returnsFinishedSettingsAndTurnsBackupOn() async throws {
+    func returnsTheSettingsSyncBroughtDown() async throws {
         var settings = SampleData.standard.settings
         settings.hasCompletedOnboarding = true
-        let store = InMemoryStore(settings: settings)
-        let backup = BackupSpy()
-        backup.setICloudBackupEnabled(false)
-        let restored = try await DefaultRestoreFromBackupUseCase(settings: store, backup: backup, attempts: 1).execute()
+        let rounds = SyncRounds(finishAfter: nil)
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(settings: settings), completedSyncRounds: { rounds.completed() }, attempts: 1,
+        ).execute()
         #expect(restored == settings)
-        #expect(backup.isICloudBackupEnabled)
     }
 
     @Test
-    func givesUpWhenNothingArrives() async throws {
-        let restored = try await DefaultRestoreFromBackupUseCase(
-            settings: InMemoryStore(), backup: BackupSpy(), attempts: 2, interval: .milliseconds(1),
+    func stopsWaitingOnceASyncRoundEndsWithNothing() async throws {
+        let rounds = SyncRounds(finishAfter: 2)
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(), completedSyncRounds: { rounds.completed() }, attempts: 1000, interval: .milliseconds(1),
+        ).execute()
+        #expect(restored == nil)
+    }
+
+    @Test
+    func givesUpWhenSyncNeverAnswers() async throws {
+        let rounds = SyncRounds(finishAfter: nil)
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(), completedSyncRounds: { rounds.completed() }, attempts: 2, interval: .milliseconds(1),
         ).execute()
         #expect(restored == nil)
     }

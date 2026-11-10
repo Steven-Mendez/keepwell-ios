@@ -59,7 +59,6 @@ public struct OnboardingDraft: Sendable {
     public var currencies: CurrencySettings
     public var accounts: [OnboardingAccountDraft]
     public var locksWithBiometrics: Bool
-    public var backsUpToICloud: Bool
     public var hidesAmountsInAppSwitcher: Bool
     /// What to call the person; `nil` when they skipped the step.
     public var preferredName: String?
@@ -71,7 +70,6 @@ public struct OnboardingDraft: Sendable {
         currencies: CurrencySettings,
         accounts: [OnboardingAccountDraft],
         locksWithBiometrics: Bool = true,
-        backsUpToICloud: Bool = true,
         hidesAmountsInAppSwitcher: Bool = true,
         preferredName: String? = nil,
         hasPasscode: Bool = false,
@@ -79,7 +77,6 @@ public struct OnboardingDraft: Sendable {
         self.currencies = currencies
         self.accounts = accounts
         self.locksWithBiometrics = locksWithBiometrics
-        self.backsUpToICloud = backsUpToICloud
         self.hidesAmountsInAppSwitcher = hidesAmountsInAppSwitcher
         self.preferredName = preferredName
         self.hasPasscode = hasPasscode

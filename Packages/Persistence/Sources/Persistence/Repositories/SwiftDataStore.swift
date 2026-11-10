@@ -19,7 +19,7 @@ public actor SwiftDataStore {
     }
 
     func saveChanges() throws(DomainError) {
-        try perform { context in try context.save() }
+        try perform { context in try context.saveWithOutbox() }
     }
 }
 
@@ -41,7 +41,7 @@ extension SwiftDataStore: AccountRepository {
                 ?? AccountRecord(id: id).inserted(into: context)
             record.update(from: account)
             record.stampSaved()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -52,7 +52,7 @@ extension SwiftDataStore: AccountRepository {
                 throw DomainError.notFound(id)
             }
             record.stampDeleted()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 }
@@ -76,7 +76,7 @@ extension SwiftDataStore: CardRepository {
                 ?? CardRecord(id: id).inserted(into: context)
             record.update(from: card)
             record.stampSaved()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -87,7 +87,7 @@ extension SwiftDataStore: CardRepository {
                 throw DomainError.notFound(id)
             }
             record.stampDeleted()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 }
@@ -115,7 +115,7 @@ extension SwiftDataStore: TransactionRepository {
                 ?? TransactionRecord(id: id).inserted(into: context)
             record.update(from: transaction)
             record.stampSaved()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -126,7 +126,7 @@ extension SwiftDataStore: TransactionRepository {
                 throw DomainError.notFound(id)
             }
             record.stampDeleted()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 }
@@ -145,7 +145,7 @@ extension SwiftDataStore: RecurringRuleRepository {
     public func save(_ rule: RecurringRule) throws(DomainError) {
         try perform { context in
             try upsert(rule, in: context)
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -156,7 +156,7 @@ extension SwiftDataStore: RecurringRuleRepository {
                 throw DomainError.notFound(id)
             }
             record.stampDeleted()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -173,7 +173,7 @@ extension SwiftDataStore: RecurringRuleRepository {
                 for rule in rules {
                     try upsert(rule, in: context)
                 }
-                try context.save()
+                try context.saveWithOutbox()
             } catch {
                 context.rollback()
                 throw error
@@ -208,7 +208,7 @@ extension SwiftDataStore: SavingsGoalRepository {
                 ?? SavingsGoalRecord(id: id).inserted(into: context)
             record.update(from: goal)
             record.stampSaved()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -219,7 +219,7 @@ extension SwiftDataStore: SavingsGoalRepository {
                 throw DomainError.notFound(id)
             }
             record.stampDeleted()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 }
@@ -241,7 +241,7 @@ extension SwiftDataStore: CategoryRepository {
                 rows.append((record, false))
             }
             if !missing.isEmpty {
-                try context.save()
+                try context.saveWithOutbox()
             }
             return try TransactionCategory.ordered(rows.filter { !$0.isRemoved }.map { try $0.record.toDomain() })
         }
@@ -260,7 +260,7 @@ extension SwiftDataStore: CategoryRepository {
                 duplicate.isRemoved = false
                 duplicate.stampSaved()
             }
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -281,7 +281,7 @@ extension SwiftDataStore: CategoryRepository {
                 record.isRemoved = true
                 record.stampDeleted()
             }
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -294,7 +294,7 @@ extension SwiftDataStore: CategoryRepository {
                 record.sortIndex = index
                 record.updatedAt = .now
             }
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -317,7 +317,7 @@ extension SwiftDataStore: CategoryRepository {
                 record.sortIndex = TransactionCategory.defaults.count + offset
                 record.updatedAt = .now
             }
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -355,7 +355,7 @@ extension SwiftDataStore: SettingsRepository {
                 context.delete(duplicate)
             }
             record.update(from: settings)
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 }
@@ -376,6 +376,8 @@ extension SwiftDataStore: DataEraser {
             try context.delete(model: AccountRecord.self)
             try context.delete(model: CategoryRecord.self)
             try context.delete(model: SettingsRecord.self)
+            // Erasing this iPhone is local: nothing pending is sent afterwards.
+            try context.delete(model: OutboxRecord.self)
             try context.save()
         }
     }

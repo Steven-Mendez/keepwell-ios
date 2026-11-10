@@ -81,9 +81,13 @@ public struct DebitCardView: View {
     /// The card's color bleeds into the top of the screen, so each card's page feels like its own.
     private var glow: some View {
         let palette = CardDisplay.palette(for: viewModel.detail?.card.color)
-        return LinearGradient(colors: [Color(hex: palette.hexStops.end).opacity(0.55), .black], startPoint: .top, endPoint: .bottom)
-            .frame(height: 460)
-            .animation(.snappy, value: viewModel.detail?.card)
+        return LinearGradient(
+            colors: [Color(hex: palette.hexStops.end).opacity(0.55), KWColor.Surface.bg],
+            startPoint: .top,
+            endPoint: .bottom,
+        )
+        .frame(height: 460)
+        .animation(.snappy, value: viewModel.detail?.card)
     }
 
     private func art(_ detail: DebitCardDetail) -> KWCardArt {

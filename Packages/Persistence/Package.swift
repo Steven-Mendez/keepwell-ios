@@ -1,8 +1,8 @@
 // swift-tools-version: 6.2
 import PackageDescription
 
-/// On-device persistence with SwiftData, synced to the CloudKit private database. Implements the
-/// shared repository protocols from `Domain`.
+/// On-device persistence with SwiftData, with the outbox the Keepwell account's sync pushes.
+/// Implements the shared repository protocols from `Domain`.
 let package = Package(
     name: "Persistence",
     platforms: [.iOS(.v26)],
@@ -24,6 +24,8 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+            // `wire-columns.json`, copied verbatim from keepwell-web's shared fixtures.
+            resources: [.copy("Fixtures")],
         ),
     ],
     swiftLanguageModes: [.v6],

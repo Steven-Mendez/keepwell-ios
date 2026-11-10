@@ -221,16 +221,7 @@ public struct HomeView: View {
                 .fixedSize(horizontal: false, vertical: true)
             if let display = viewModel.display {
                 ForEach(overview.planned.prefix(plannedPreviewCount)) { transaction in
-                    KWTransactionRow(.planned, title: transaction.description, subtitle: display.subtitle(of: transaction)) {
-                        Button {
-                            Task { await viewModel.confirm(transaction.id) }
-                        } label: {
-                            Text("Confirm", bundle: #bundle)
-                        }
-                        .buttonStyle(.kw(.primary, size: .mini))
-                        .disabled(viewModel.confirming.contains(transaction.id))
-                    }
-                    .padding(.vertical, -KWSpacing.sm)
+                    PlannedDraftRow(viewModel: viewModel, transaction: transaction, display: display)
                 }
             }
             if let error = viewModel.actionError {

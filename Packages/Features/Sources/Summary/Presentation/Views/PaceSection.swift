@@ -47,7 +47,7 @@ struct PaceSection: View {
     private func legend(_ summary: SummaryViewModel.PaceSummary) -> some View {
         HStack(spacing: KWSpacing.md) {
             HStack(spacing: 6) {
-                Capsule().fill(Color.white).frame(width: 14, height: 3)
+                Capsule().fill(KWColor.Text.primary).frame(width: 14, height: 3)
                 Text(summary.currentLegend)
             }
             HStack(spacing: 6) {
@@ -111,12 +111,12 @@ struct PaceSection: View {
                 series: .value(ChartAxis.month, summary.currentLegend),
             )
             .interpolationMethod(.stepEnd)
-            .foregroundStyle(Color.white)
+            .foregroundStyle(KWColor.Text.primary)
             .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
         }
         if let last = current.last {
             PointMark(x: .value(ChartAxis.day, last.day), y: .value(ChartAxis.amount, last.cumulative))
-                .foregroundStyle(summary.tone == .neutral ? Color.white : summary.tone.color)
+                .foregroundStyle(summary.tone == .neutral ? KWColor.Text.primary : summary.tone.color)
                 .symbolSize(70)
         }
     }

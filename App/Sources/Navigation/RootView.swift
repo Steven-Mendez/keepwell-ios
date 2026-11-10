@@ -47,7 +47,6 @@ struct RootView: View {
     /// A CSV picked during onboarding; it's imported once onboarding has saved the accounts.
     @State private var pendingImport: String?
     @State private var isPickingImport = false
-    @State private var isPickingBackup = false
     @State private var banner: String?
     @State private var coverWindow = CoverWindow()
     /// Bumped on every store save so home, and with it the widgets, reload.
@@ -67,17 +66,12 @@ struct RootView: View {
                 allowedContentTypes: [.commaSeparatedText, .plainText],
                 onCompletion: readPickedCSV,
             )
-            .background {
-                // A second importer can't share a view with the first, so it lives on the background.
-                Color.clear.fileImporter(isPresented: $isPickingBackup, allowedContentTypes: [.json]) { result in
-                    guard case let .success(url) = result else { return }
-                    Task { await restoreFromFile(url) }
-                }
-            }
             .animation(.snappy, value: banner)
             .task {
                 notifications.handler = handleNotification
                 await load()
+                // Signs the account back in from the Keychain and starts sync when it has cloud_sync.
+                await container.cloudAccount?.refresh()
             }
             .onOpenURL(perform: open)
             .onChange(of: screens?.home.overview) { _, overview in
@@ -86,6 +80,9 @@ struct RootView: View {
             }
             .onChange(of: scenePhase) { _, newPhase in
                 Task { await sceneChanged(to: newPhase) }
+                if newPhase == .active {
+                    container.cloudAccount?.sync?.trigger(after: 0)
+                }
             }
             // Any write (a movement logged, edited or deleted from any screen, an import, a widget
             // quick log) changes what home and the widgets show, even when home isn't on screen.
@@ -112,7 +109,6 @@ struct RootView: View {
                 container: container,
                 viewModel: viewModel,
                 onImportCSV: { isPickingImport = true },
-                onRestoreFile: { isPickingBackup = true },
                 onFinish: finishOnboarding,
             )
         case .main:
@@ -290,16 +286,6 @@ extension RootView {
         if exit == .logFirstExpense {
             presentNewMovement()
         }
-    }
-
-    /// A Keepwell backup brings accounts, cards and movements at once and marks onboarding done.
-    private func restoreFromFile(_ url: URL) async {
-        guard let data = PickedFile.data(at: url), let summary = try? await container.makeRestoreBackup().execute(data) else {
-            banner = String(localized: "That file isn't a Keepwell backup.")
-            return
-        }
-        finishOnboarding(.home)
-        banner = String(localized: "Restored \(summary.accounts) accounts and \(summary.transactions) movements")
     }
 
     private func importAfterOnboarding(_ csv: String) async {

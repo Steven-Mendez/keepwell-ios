@@ -130,11 +130,15 @@ public enum DebtDirection: String, Codable, CaseIterable, Sendable {
 
 /// Part of a personal debt paid back, in the debt's currency.
 public struct DebtRepayment: Hashable, Sendable, Codable {
+    /// Its own id, so a repayment syncs as a row of its own (ADR 0005 in keepwell-api) and two
+    /// devices can each record one. Older stores and backups get `NameBasedID.legacyRepayment`.
+    public let id: UUID
     /// Always positive.
     public let amount: Decimal
     public let date: Date
 
-    public init(amount: Decimal, date: Date) {
+    public init(id: UUID = UUID(), amount: Decimal, date: Date) {
+        self.id = id
         self.amount = amount
         self.date = date
     }
@@ -232,5 +236,13 @@ public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
             id: id, person: person, direction: direction, amount: amount, date: date, note: note,
             repayments: repayments, settledAt: settledAt, transactionID: transactionID,
         )
+    }
+}
+
+extension Loan {
+    /// A paid installment's id when it syncs as its own row: the same installment paid on two
+    /// devices is one record (`loanPayment` in keepwell-web's schema/id.ts).
+    public func paymentID(for payment: LoanPayment) -> UUID {
+        NameBasedID.loanPayment(loanID: id, number: payment.number)
     }
 }

@@ -104,12 +104,13 @@ public struct DebtView: View {
                     .font(KWTextStyle.caption.font.weight(.regular))
                     .foregroundStyle(isSelected ? KWColor.Surface.controlOff : KWColor.Text.muted)
             }
-            .foregroundStyle(isSelected ? Color.black : KWColor.Text.primary)
+            .foregroundStyle(isSelected ? KWColor.Semantic.primaryForeground : KWColor.Text.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 14)
             .padding(.horizontal, KWSpacing.md)
-            .background(isSelected ? Color.white : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWSpacing.md))
-            .overlay(RoundedRectangle(cornerRadius: KWSpacing.md).strokeBorder(isSelected ? Color.white : KWColor.Surface.border))
+            .background(isSelected ? KWColor.Semantic.primary : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWSpacing.md))
+            .overlay(RoundedRectangle(cornerRadius: KWSpacing.md)
+                .strokeBorder(isSelected ? KWColor.Semantic.primary : KWColor.Surface.border))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

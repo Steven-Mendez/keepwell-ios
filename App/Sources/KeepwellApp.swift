@@ -25,7 +25,6 @@ struct KeepwellApp: App {
                     SplashView()
                 }
             }
-            .preferredColorScheme(.dark)
             .task { await bootstrap() }
         }
     }

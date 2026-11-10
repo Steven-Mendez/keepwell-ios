@@ -53,7 +53,7 @@ public struct SampleData: Sendable {
 
     public static let standard = Self(referenceDate: defaultReferenceDate)
 
-    public init(referenceDate: Date, calendar: Calendar = .current) {
+    public init(referenceDate: Date, calendar: Calendar = .current, language: SampleLanguage = .english) {
         let rateValue = Decimal(string: "36.6243") ?? 1
         let currencies = (try? CurrencySettings(principal: "USD", second: "NIO", rate: rateValue)) ?? Self.fallbackCurrencies
         settings = Settings(currencies: currencies, hasCompletedOnboarding: true)
@@ -68,13 +68,13 @@ public struct SampleData: Sendable {
             return calendar.date(byAdding: DateComponents(day: number - 1, hour: 12), to: start) ?? start
         }
 
-        accounts = Self.makeAccounts(opening: opening)
+        accounts = Self.makeAccounts(opening: opening, language: language)
         cards = Self.makeCards()
-        transactions = Self.makeTransactions(rate: rate, day: day)
-        recurringRules = Self.makeRecurringRules(day: day)
-        savingsGoals = Self.makeSavingsGoals(month: month)
-        loans = Self.makeLoans(day: day)
-        personalDebts = Self.makePersonalDebts(day: day)
+        transactions = Self.makeTransactions(rate: rate, day: day, language: language)
+        recurringRules = Self.makeRecurringRules(day: day, language: language)
+        savingsGoals = Self.makeSavingsGoals(month: month, language: language)
+        loans = Self.makeLoans(day: day, language: language)
+        personalDebts = Self.makePersonalDebts(day: day, language: language)
         categorizationRules = [
             CategorizationRule(id: IDs.uberRule, match: "Uber", categoryID: "transport", kind: .expense),
             CategorizationRule(id: IDs.salaryMatchRule, match: "Payroll", categoryID: "salary", kind: .income, tags: ["work"]),
@@ -83,10 +83,10 @@ public struct SampleData: Sendable {
 
     /// A motorbike loan started two months ago with its first two installments paid; the third is
     /// due on the 28th of this month.
-    static func makeLoans(day: (Int, Int) -> Date) -> [Loan] {
+    static func makeLoans(day: (Int, Int) -> Date, language: SampleLanguage) -> [Loan] {
         [
             Loan(
-                id: IDs.motorbikeLoan, name: "Motorbike", lender: "Banpro", borrowed: Money(60000, "NIO"),
+                id: IDs.motorbikeLoan, name: text("Motorbike", language), lender: "Banpro", borrowed: Money(60000, "NIO"),
                 installmentAmount: 5500, installmentCount: 12, frequency: .monthly, firstDueDate: day(28, -2),
                 payments: [LoanPayment(number: 1, paidAt: day(27, -2)), LoanPayment(number: 2, paidAt: day(28, -1))],
             ),
@@ -95,13 +95,20 @@ public struct SampleData: Sendable {
 
     /// Juan owes part of a dinner, the person owes Ana for concert tickets, and an old loan to
     /// Carlos is settled.
-    static func makePersonalDebts(day: (Int, Int) -> Date) -> [PersonalDebt] {
+    static func makePersonalDebts(day: (Int, Int) -> Date, language: SampleLanguage) -> [PersonalDebt] {
         [
             PersonalDebt(
                 id: IDs.juanDebt, person: "Juan", direction: .theyOweMe, amount: Money(500, "NIO"), date: day(12, 0),
-                note: "Dinner", repayments: [DebtRepayment(amount: 200, date: day(15, 0))],
+                note: text("Dinner", language), repayments: [DebtRepayment(amount: 200, date: day(15, 0))],
             ),
-            PersonalDebt(id: IDs.anaDebt, person: "Ana", direction: .iOwe, amount: Money(40, "USD"), date: day(5, 0), note: "Concert"),
+            PersonalDebt(
+                id: IDs.anaDebt,
+                person: "Ana",
+                direction: .iOwe,
+                amount: Money(40, "USD"),
+                date: day(5, 0),
+                note: text("Concert", language),
+            ),
             PersonalDebt(
                 id: IDs.settledDebt, person: "Carlos", direction: .theyOweMe, amount: Money(1000, "NIO"), date: day(3, -1),
                 repayments: [DebtRepayment(amount: 1000, date: day(20, -1))], settledAt: day(20, -1),
@@ -110,42 +117,42 @@ public struct SampleData: Sendable {
     }
 
     /// A trip due in two months, an emergency fund without a date and a phone already paid for.
-    static func makeSavingsGoals(month: YearMonth) -> [SavingsGoal] {
+    static func makeSavingsGoals(month: YearMonth, language: SampleLanguage) -> [SavingsGoal] {
         [
             SavingsGoal(
-                id: IDs.tripGoal, name: "Trip", target: Money(15000, "NIO"), saved: 4500,
+                id: IDs.tripGoal, name: text("Trip", language), target: Money(15000, "NIO"), saved: 4500,
                 targetMonth: try? TargetMonth(month.adding(months: 2)), icon: "airplane", color: "blue",
             ),
             SavingsGoal(
-                id: IDs.emergencyGoal, name: "Emergency fund", target: Money(3000, "USD"), saved: 1200,
+                id: IDs.emergencyGoal, name: text("Emergency fund", language), target: Money(3000, "USD"), saved: 1200,
                 icon: "umbrella", color: "green",
             ),
             SavingsGoal(
-                id: IDs.phoneGoal, name: "New phone", target: Money(800, "USD"), saved: 800, icon: "phone", color: "purple",
+                id: IDs.phoneGoal, name: text("New phone", language), target: Money(800, "USD"), saved: 800, icon: "phone", color: "purple",
             ),
         ]
     }
 
     /// A subscription on the credit card, rent and a weekly cash top-up from savings, and the salary.
-    static func makeRecurringRules(day: (Int, Int) -> Date) -> [RecurringRule] {
+    static func makeRecurringRules(day: (Int, Int) -> Date, language: SampleLanguage) -> [RecurringRule] {
         [
             RecurringRule(
-                id: IDs.streamingRule, name: "Streaming", kind: .expense, categoryID: "subscriptions",
+                id: IDs.streamingRule, name: text("Streaming", language), kind: .expense, categoryID: "subscriptions",
                 amount: Decimal(string: "15.99") ?? 0, currency: "USD", accountID: IDs.mastercard, cardID: IDs.mastercardHolder,
                 frequency: .monthly, startDate: day(23, -2), nextDate: day(23, 0), isSubscription: true, autoConfirm: true,
             ),
             RecurringRule(
-                id: IDs.rentRule, name: "Rent", kind: .expense, categoryID: "housing",
+                id: IDs.rentRule, name: text("Rent", language), kind: .expense, categoryID: "housing",
                 amount: 18000, currency: "NIO", accountID: IDs.savings, cardID: IDs.savingsTransfer,
                 frequency: .monthly, startDate: day(1, -2), nextDate: day(1, 1),
             ),
             RecurringRule(
-                id: IDs.cashRule, name: "Cash for the week", kind: .transfer, categoryID: nil,
+                id: IDs.cashRule, name: text("Cash for the week", language), kind: .transfer, categoryID: nil,
                 amount: 1000, currency: "NIO", accountID: IDs.savings, cardID: IDs.savingsTransfer,
                 destinationAccountID: IDs.cash, frequency: .weekly, interval: 2, startDate: day(10, 0), nextDate: day(24, 0),
             ),
             RecurringRule(
-                id: IDs.salaryRule, name: "Salary", kind: .income, categoryID: "salary",
+                id: IDs.salaryRule, name: text("Salary", language), kind: .income, categoryID: "salary",
                 amount: 1500, currency: "USD", accountID: IDs.payroll, cardID: IDs.payrollTransfer,
                 frequency: .monthly, startDate: day(30, -2), nextDate: day(30, 0), autoConfirm: true, isPaused: true,
             ),

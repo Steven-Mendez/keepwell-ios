@@ -13,7 +13,7 @@ struct ReceiptImageView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            KWWordmark(markSize: 26, fontSize: 24)
+            KWWordmark(height: 26)
                 .padding(.bottom, 52)
             ReceiptTicket(viewModel: viewModel, saved: saved, backdrop: KWColor.Brand.b500) {
                 Color.clear.frame(height: KWSpacing.sm)

@@ -118,7 +118,10 @@ public final class RecurringViewModel {
 
     /// "Every month · Tomorrow · Debit •••• 3922", or "Paused" in place of the date.
     public func subtitle(of rule: RecurringRule) -> String {
-        let when = rule.isPaused ? String(localized: "Paused", bundle: #bundle) : nextLabel(of: rule)
+        // A rule an assistant proposed waits paused until the person resumes (confirms) or deletes it.
+        let when = rule.source == .mcp && rule.isPaused
+            ? String(localized: "Proposed by Claude · resume to confirm", bundle: #bundle)
+            : rule.isPaused ? String(localized: "Paused", bundle: #bundle) : nextLabel(of: rule)
         return [RecurringDisplay.frequency(of: rule), when, methodName(of: rule)]
             .filter { !$0.isEmpty }
             .joined(separator: " · ")

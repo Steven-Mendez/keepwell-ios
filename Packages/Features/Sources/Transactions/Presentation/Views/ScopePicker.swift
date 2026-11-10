@@ -41,8 +41,8 @@ struct ScopeChip: View {
                 .accessibilityLabel(Text("Show all accounts", bundle: #bundle))
             }
         }
-        .foregroundStyle(isFiltered ? Color.black : KWColor.Text.secondary)
-        .background(isFiltered ? Color.white : KWColor.Surface.surface, in: Capsule())
+        .foregroundStyle(isFiltered ? KWColor.Semantic.primaryForeground : KWColor.Text.secondary)
+        .background(isFiltered ? KWColor.Semantic.primary : KWColor.Surface.surface, in: Capsule())
         .animation(.snappy, value: isFiltered)
     }
 }

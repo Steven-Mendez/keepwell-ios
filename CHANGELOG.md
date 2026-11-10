@@ -7,13 +7,63 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-09
+
+### Removed
+
+- iCloud backup (CloudKit). Your data stays on this iPhone, in the same place, and keeps working
+  after the update; the Keepwell account syncs it with the web and other iPhones. A copy left in
+  iCloud by earlier versions can be removed in iOS Settings → your name → iCloud → Manage Storage.
+- The JSON backup file: "Back up now" and "Restore" in Settings, and restoring one during
+  onboarding ("Have you used Keepwell before?"). Export CSV and Import CSV stay as the way to keep a
+  copy of your movements.
+
+### Added
+
+- Light mode. Keepwell follows the iPhone's appearance: in light mode screens, onboarding, the lock
+  screen, the splash and the widgets are white and light gray with navy text, the brand blue for
+  buttons and links (deepened where needed to stay readable), and the logo in blue. The home hero
+  card, card art, the app icon tile and the saved receipt image keep their look in both modes. Dark
+  mode looks exactly as before.
+- Onboarding asks to sign in to a Keepwell account right after the welcome: Sign in with Apple, a
+  passkey, or an invitation code for a new account. An account that already has data brings it down
+  and skips the setup. "Continue without an account" keeps everything on this iPhone, as before; you
+  can sign in later from Settings and what you recorded syncs up.
+
+- "Invite me a coffee": a one-time purchase that turns on sync and Claude for your Keepwell account,
+  with Restore purchases for a new iPhone. A purchase interrupted before Keepwell confirmed it is
+  finished on the next launch.
+- New accounts can sign in with an invitation code.
+- Sign in to your Keepwell account with a passkey made on Keepwell for the web.
+- Movements Claude records through the Keepwell connector say "Recorded by Claude". Its drafts on Home
+  can be confirmed or discarded; recurring payments it proposes wait paused until you resume them.
+  Settings can disconnect every connected assistant at once.
+- Sync with Keepwell on the web through your Keepwell account: changes made offline are kept and sent
+  when the iPhone is back online, a moment after each edit, when the app opens and every minute while
+  it is open. Settings shows whether everything is up to date.
+- Recurring movements, loan installments and debt repayments get ids that are the same on every
+  device, ready for syncing with the web: recording the same occurrence twice yields one movement.
+- Settings: a Keepwell account with Sign in with Apple, in builds that have the API configured. The
+  session lives in the Keychain on this iPhone only; sign out here or on every device. Registration
+  is invite-only for now. Local use needs no account. The account can be deleted from Settings:
+  sessions end at once and the server erases the synced data; backups keep it up to 35 more days.
+
 ### Fixed
 
+- Month titles in Spanish read "Noviembre de 2026" instead of "Noviembre De 2026" on Transactions and
+  Summary.
+- The Keepwell account card shows the email once when Apple shares no name, and "Sign out" and "Sign
+  out on all devices" sit one above the other instead of squeezed into one line.
+- "Buy a coffee" while the App Store hasn't loaded the coffee says it isn't available right now,
+  instead of a vague "couldn't complete the purchase".
+- The sample data (Debug builds) is written in Spanish when the app runs in Spanish.
 - Deleting a category kept its movements' tags and the recurring movement that recorded them; they
   used to be dropped when the movements moved to "Other".
 
 ### Changed
 
+- New Keepwell logo: the wallet-and-padlock symbol is the app icon, and appears on the launch
+  splash, lock screen, app switcher cover, saved receipts and the widget's first-run prompt.
 - Accounts: the card stack rolls like an endless deck. Drag over it to turn the cards one at a time
   in either direction, or tap a card behind to roll it to the front; tapping the front card opens
   it.

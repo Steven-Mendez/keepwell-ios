@@ -59,7 +59,6 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-        INFOPLIST_KEY_UIUserInterfaceStyle: Dark
         INFOPLIST_KEY_NSFaceIDUsageDescription: Keepwell uses Face ID to protect your financial data.
         INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: Keepwell saves the receipts you choose to your photo library.
         CODE_SIGN_ENTITLEMENTS: $(APP_ENTITLEMENTS)
@@ -133,6 +132,12 @@ targets:
         product: DebtsDomain
       - package: Features
         product: DebtsPresentation
+      - package: Features
+        product: CloudAccountDomain
+      - package: Features
+        product: CloudAccountData
+      - package: Features
+        product: CloudAccountPresentation
       - package: Features
         product: SharedPresentation
     preBuildScripts:
@@ -248,6 +253,9 @@ schemes:
         - package: Features/GoalsPresentationTests
         - package: Features/DebtsDomainTests
         - package: Features/DebtsPresentationTests
+        - package: Features/CloudAccountDomainTests
+        - package: Features/CloudAccountDataTests
+        - package: Features/CloudAccountPresentationTests
         - name: KeepwellUITests
     profile:
       config: Release

@@ -18,7 +18,7 @@ extension SampleData {
     }
 
     // swiftlint:disable:next function_body_length
-    static func makeTransactions(rate: ExchangeRate, day: (Int, Int) -> Date) -> [Transaction] {
+    static func makeTransactions(rate: ExchangeRate, day: (Int, Int) -> Date, language: SampleLanguage) -> [Transaction] {
         let rows: [Row] = [
             Row(
                 date: day(28, 0),
@@ -228,7 +228,7 @@ extension SampleData {
                 id: UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", index + 1)) ?? UUID(),
                 date: row.date,
                 status: row.status,
-                description: row.description,
+                description: text(row.description, language),
                 kind: row.kind,
                 categoryID: row.category,
                 amount: Decimal(string: row.amount) ?? 0,

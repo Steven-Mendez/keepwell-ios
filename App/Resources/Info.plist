@@ -17,12 +17,8 @@
 	</array>
 	<key>KeepwellAppGroup</key>
 	<string>$(APP_GROUP_ID)</string>
-	<key>KeepwellCloudKitContainer</key>
-	<string>$(CLOUDKIT_CONTAINER_ID)</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
+	<key>KeepwellAPIBaseURL</key>
+	<string>$(API_BASE_URL)</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

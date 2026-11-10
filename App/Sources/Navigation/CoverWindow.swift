@@ -10,7 +10,7 @@ final class CoverWindow {
 
     func show(_ content: some View) {
         guard let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else { return }
-        let host = UIHostingController(rootView: AnyView(content.preferredColorScheme(.dark)))
+        let host = UIHostingController(rootView: AnyView(content))
         host.view.backgroundColor = .clear
         let window = window ?? UIWindow(windowScene: scene)
         window.windowLevel = .alert + 1

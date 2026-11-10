@@ -293,10 +293,10 @@ public struct CardColorSheet: View {
                 Button { color = option } label: {
                     Circle()
                         .fill(palette.largeGradient)
-                        // Keeps the black swatch from disappearing into the black sheet.
-                        .overlay { Circle().strokeBorder(.white.opacity(0.18), lineWidth: 1) }
+                        // Keeps the black swatch from disappearing into a dark sheet, and the white one into a light one.
+                        .overlay { Circle().strokeBorder(KWColor.Text.primary.opacity(0.18), lineWidth: 1) }
                         .frame(width: 32, height: 32)
-                        .overlay { Circle().strokeBorder(.white, lineWidth: color == option ? 2 : 0).padding(-4) }
+                        .overlay { Circle().strokeBorder(KWColor.Text.primary, lineWidth: color == option ? 2 : 0).padding(-4) }
                         .frame(width: KWLayout.minTouch, height: KWLayout.minTouch)
                 }
                 .buttonStyle(.plain)

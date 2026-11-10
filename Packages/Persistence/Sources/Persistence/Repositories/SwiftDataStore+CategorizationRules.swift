@@ -22,7 +22,7 @@ extension SwiftDataStore: CategorizationRuleRepository {
             let record = existing ?? CategorizationRuleRecord(id: id).inserted(into: context)
             record.update(from: rule, sortIndex: existing?.sortIndex ?? (last.map { $0.sortIndex + 1 } ?? 0))
             record.stampSaved()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -33,7 +33,7 @@ extension SwiftDataStore: CategorizationRuleRepository {
                 throw DomainError.notFound(id)
             }
             record.stampDeleted()
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 
@@ -48,7 +48,7 @@ extension SwiftDataStore: CategorizationRuleRepository {
                 record.sortIndex = index
                 record.updatedAt = .now
             }
-            try context.save()
+            try context.saveWithOutbox()
         }
     }
 }

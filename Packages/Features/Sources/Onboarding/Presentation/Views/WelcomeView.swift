@@ -28,8 +28,8 @@ public struct WelcomeView: View {
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: 14) {
-                    feature(.personOff, String(localized: "No account or sign-up", bundle: #bundle))
-                    feature(.phone, String(localized: "On your iPhone, backed up to your iCloud", bundle: #bundle))
+                    feature(.personOff, String(localized: "No account needed", bundle: #bundle))
+                    feature(.phone, String(localized: "On your iPhone, synced with the web if you want", bundle: #bundle))
                     feature(.transfer, String(localized: "Any currency, with your own rate", bundle: #bundle))
                 }
                 .padding(.top, KWSpacing.xl)
@@ -44,7 +44,7 @@ public struct WelcomeView: View {
         HStack(spacing: KWSpacing.sm) {
             KWIconView(icon, size: 18)
                 .frame(width: 36, height: 36)
-                .background(KWColor.Overlay.white12, in: Circle())
+                .background(KWColor.Text.primary.opacity(0.12), in: Circle())
             Text(text).font(KWTextStyle.body.font)
         }
     }
@@ -82,6 +82,8 @@ private struct CardsIllustration: View {
             .offset(x: 90, y: 92)
         }
         .frame(maxWidth: .infinity, minHeight: 260, maxHeight: 260, alignment: .topLeading)
+        // Card art: the same lime, graphite and blue cards in both appearances.
+        .kwBrandSurface()
         .accessibilityHidden(true)
     }
 }

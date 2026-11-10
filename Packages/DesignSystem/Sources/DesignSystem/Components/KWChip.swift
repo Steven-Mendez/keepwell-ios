@@ -51,14 +51,14 @@ public struct KWChip: View {
 
     private var foreground: Color {
         switch style {
-        case .filled, .outlined: isSelected ? .black : KWColor.Text.secondary
+        case .filled, .outlined: isSelected ? KWColor.Semantic.primaryForeground : KWColor.Text.secondary
         case .extra: isSelected ? KWColor.State.extra : KWColor.Text.secondary
         }
     }
 
     private var background: Color {
         switch style {
-        case .filled, .outlined: isSelected ? .white : KWColor.Surface.surface
+        case .filled, .outlined: isSelected ? KWColor.Semantic.primary : KWColor.Surface.surface
         case .extra: isSelected ? KWColor.Tint.extra : KWColor.Surface.surface
         }
     }
@@ -66,7 +66,7 @@ public struct KWChip: View {
     private var border: Color? {
         switch style {
         case .filled: nil
-        case .outlined: isSelected ? .white : KWColor.Surface.border
+        case .outlined: isSelected ? KWColor.Semantic.primary : KWColor.Surface.border
         case .extra: isSelected ? KWColor.State.extra : KWColor.Surface.border
         }
     }

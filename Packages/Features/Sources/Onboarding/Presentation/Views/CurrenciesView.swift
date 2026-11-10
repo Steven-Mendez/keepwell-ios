@@ -221,7 +221,6 @@ struct CurrencyPickerView: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
         }
-        .preferredColorScheme(.dark)
     }
 
     private func rows(_ codes: [String]) -> some View {
