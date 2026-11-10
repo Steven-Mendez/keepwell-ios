@@ -14,7 +14,7 @@ public struct PasscodeSetupView: View {
     }
 
     public var body: some View {
-        KWScreen(top: KWSpacing.xl, bottom: 40, horizontal: KWSpacing.xl) {
+        KWScreen(top: KWSpacing.xl, bottom: 40) {
             KWColor.Surface.bg
         } content: {
             VStack(spacing: 0) {
