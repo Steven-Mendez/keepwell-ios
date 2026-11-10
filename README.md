@@ -130,7 +130,7 @@ Conventional Commits validation; `pre-push` → build + unit tests. See [CONTRIB
 
 ## CI
 
-GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, build and tests on
+GitHub Actions ([`.github/workflows/ios-ci.yml`](.github/workflows/ios-ci.yml)) runs lint, build and tests on
 the `xcode-27` runner, explicitly selecting Xcode 27.1 with `xcode-select`, for pull requests and pushes
 to `develop`, `staging` and `main`. [`pr-title.yml`](.github/workflows/pr-title.yml) validates the PR
 title. Dependabot updates SPM packages and GitHub Actions weekly against `develop`.
