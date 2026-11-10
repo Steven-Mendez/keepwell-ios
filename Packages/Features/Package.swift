@@ -372,7 +372,7 @@ let package = Package(
         ),
         .testTarget(
             name: "CloudAccountPresentationTests",
-            dependencies: ["CloudAccountPresentation", "CloudAccountDomain", "FeatureTestSupport"],
+            dependencies: ["CloudAccountPresentation", "CloudAccountDomain", "OnboardingPresentation", "FeatureTestSupport"],
             exclude: ["__Snapshots__"],
         ),
 

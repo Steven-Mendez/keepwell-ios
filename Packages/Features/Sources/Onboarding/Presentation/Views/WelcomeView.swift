@@ -1,43 +1,72 @@
 import DesignSystem
 import SwiftUI
 
-/// Step 1 · Welcome.
+/// Step 1 · Welcome, and the one decision before setup: an existing Keepwell account or none.
+/// With the Keepwell API, `accountChoice` (the account feature's sign-in) takes the place of
+/// "Start": signing in comes first, right on the welcome (Mobbin: Monarch, Wise, Fuse), and using
+/// Keepwell without an account sits under it as a real choice (Buddy's "Continue Anonymous").
 public struct WelcomeView: View {
+    private let accountChoice: AnyView?
     private let onStart: () -> Void
 
-    public init(onStart: @escaping () -> Void) {
+    public init(accountChoice: AnyView? = nil, onStart: @escaping () -> Void) {
+        self.accountChoice = accountChoice
         self.onStart = onStart
     }
 
     public var body: some View {
-        KWScreen(top: 64, bottom: 40, horizontal: 20) {
-            KWGlowBackground(.brand)
-        } content: {
-            VStack(alignment: .leading, spacing: 0) {
-                CardsIllustration()
-                Text("Your money, clear, in one or two currencies", bundle: #bundle)
-                    .font(.kw(30, weight: 800, relativeTo: .title))
-                    .tracking(-1)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 28)
-                    .padding(.bottom, 12)
-                    .accessibilityAddTraits(.isHeader)
-                Text("Log expenses, income and transfers. Cards, cash and drafts to confirm later.", bundle: #bundle)
-                    .font(.kw(17, weight: 400))
-                    .foregroundStyle(KWColor.Text.onBrand)
-                    .lineSpacing(4)
-                    .fixedSize(horizontal: false, vertical: true)
-                VStack(alignment: .leading, spacing: 14) {
-                    feature(.personOff, String(localized: "No account needed", bundle: #bundle))
-                    feature(.phone, String(localized: "On your iPhone, synced with the web if you want", bundle: #bundle))
-                    feature(.transfer, String(localized: "Any currency, with your own rate", bundle: #bundle))
+        if let accountChoice {
+            // The sign-in options and the invitation field don't fit every iPhone under the pitch:
+            // it scrolls when it has to, and the field can scroll above the keyboard.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    CardsIllustration(height: 200)
+                    pitch
+                    accountChoice
+                        .padding(.top, KWSpacing.xl)
                 }
-                .padding(.top, KWSpacing.xl)
-                Spacer(minLength: KWSpacing.md)
-                Button(action: onStart) { Text("Start", bundle: #bundle) }
-                    .buttonStyle(.kw())
+                .padding(.top, KWLayout.safeTop)
+                .padding(.bottom, KWSpacing.lg)
+                .padding(.horizontal, 20)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollDismissesKeyboard(.interactively)
+            .foregroundStyle(KWColor.Text.primary)
+            .background { KWGlowBackground(.brand).ignoresSafeArea() }
+        } else {
+            KWScreen(top: 64, bottom: 40, horizontal: 20) {
+                KWGlowBackground(.brand)
+            } content: {
+                VStack(alignment: .leading, spacing: 0) {
+                    CardsIllustration(height: 260)
+                    pitch
+                    VStack(alignment: .leading, spacing: 14) {
+                        feature(.phone, String(localized: "Stays on your iPhone", bundle: #bundle))
+                        feature(.transfer, String(localized: "Any currency, with your own rate", bundle: #bundle))
+                    }
+                    .padding(.top, KWSpacing.xl)
+                    Spacer(minLength: KWSpacing.md)
+                    Button(action: onStart) { Text("Start", bundle: #bundle) }
+                        .buttonStyle(.kw())
+                }
             }
         }
+    }
+
+    private var pitch: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Your money, clear, in one or two currencies", bundle: #bundle)
+                .font(.kw(30, weight: 800, relativeTo: .title))
+                .tracking(-1)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text("Log expenses, income and transfers. Cards, cash and drafts to confirm later.", bundle: #bundle)
+                .font(.kw(17, weight: 400))
+                .foregroundStyle(KWColor.Text.onBrand)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.top, 28)
     }
 
     private func feature(_ icon: KWIcon, _ text: String) -> some View {
@@ -52,6 +81,8 @@ public struct WelcomeView: View {
 
 /// Three fanned cards from the welcome artwork.
 private struct CardsIllustration: View {
+    let height: CGFloat
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 16)
@@ -82,6 +113,9 @@ private struct CardsIllustration: View {
             .offset(x: 90, y: 92)
         }
         .frame(maxWidth: .infinity, minHeight: 260, maxHeight: 260, alignment: .topLeading)
+        // Drawn at the artwork's 260 points and scaled, so a shorter welcome keeps every card whole.
+        .scaleEffect(height / 260, anchor: .topLeading)
+        .frame(height: height, alignment: .topLeading)
         // Card art: the same lime, graphite and blue cards in both appearances.
         .kwBrandSurface()
         .accessibilityHidden(true)

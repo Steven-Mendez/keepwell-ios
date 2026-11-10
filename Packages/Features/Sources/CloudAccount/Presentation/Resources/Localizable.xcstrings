@@ -11,6 +11,16 @@
         }
       }
     },
+    "Already use Keepwell?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Ya usas Keepwell?"
+          }
+        }
+      }
+    },
     "An account syncs this iPhone with Keepwell on the web. Without one, your data stays only here." : {
       "localizations" : {
         "es" : {
@@ -57,16 +67,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continuar"
-          }
-        }
-      }
-    },
-    "Continue without an account" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Continuar sin cuenta"
           }
         }
       }
@@ -137,6 +137,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cada iPhone y navegador con esta cuenta tendrá que volver a iniciar sesión."
+          }
+        }
+      }
+    },
+    "Everything stays only on this iPhone. You can sign in later from Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo se queda solo en este iPhone. Puedes iniciar sesión después desde Ajustes."
           }
         }
       }
@@ -261,12 +271,12 @@
         }
       }
     },
-    "Sign in to Keepwell" : {
+    "Sign in and your accounts and movements come back as they were." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inicia sesión en Keepwell"
+            "value" : "Inicia sesión y tus cuentas y movimientos vuelven tal como estaban."
           }
         }
       }
@@ -361,16 +371,6 @@
         }
       }
     },
-    "Sync your accounts and movements with Keepwell on the web and your other devices." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sincroniza tus cuentas y movimientos con Keepwell en la web y tus otros dispositivos."
-          }
-        }
-      }
-    },
     "Syncing…" : {
       "localizations" : {
         "es" : {
@@ -451,6 +451,16 @@
         }
       }
     },
+    "Use without an account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar sin cuenta"
+          }
+        }
+      }
+    },
     "You were signed out. Sign in again to keep syncing." : {
       "localizations" : {
         "es" : {
@@ -467,16 +477,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se cierra tu sesión en todos lados al instante y tus datos sincronizados se borran de los servidores de Keepwell. Las copias de seguridad los conservan hasta 35 días más. Lo que hay en este iPhone se queda aquí."
-          }
-        }
-      }
-    },
-    "Your data stays only on this iPhone." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tus datos se quedan solo en este iPhone."
           }
         }
       }

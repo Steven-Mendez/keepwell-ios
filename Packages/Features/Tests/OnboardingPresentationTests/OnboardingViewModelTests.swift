@@ -95,7 +95,7 @@ struct OnboardingViewModelTests {
         viewModel.continueFromCurrencies()
         viewModel.continueFromAccounts()
         viewModel.continueFromProtect()
-        #expect(viewModel.path == [.account, .name, .currencies, .accounts, .protect, .privacy])
+        #expect(viewModel.path == [.name, .currencies, .accounts, .protect, .privacy])
     }
 
     @Test
@@ -118,7 +118,7 @@ struct OnboardingViewModelTests {
         viewModel.continueWithoutAccount()
         viewModel.nameText = "Typo"
         viewModel.skipName()
-        #expect(viewModel.path == [.account, .name, .currencies])
+        #expect(viewModel.path == [.name, .currencies])
         #expect(viewModel.preferredName == nil)
         #expect(viewModel.doneTitle == "All set")
         await viewModel.skipNotifications()
@@ -199,14 +199,7 @@ struct OnboardingViewModelTests {
         #expect(viewModel.errorMessage != nil)
     }
 
-    // MARK: Account step
-
-    @Test
-    func startLeadsToTheAccountStep() {
-        let viewModel = OnboardingFactory.make()
-        viewModel.begin()
-        #expect(viewModel.path == [.account])
-    }
+    // MARK: Account on the welcome
 
     @Test
     func withoutTheKeepwellAPIStartGoesStraightToSetUp() {
@@ -221,9 +214,8 @@ struct OnboardingViewModelTests {
         let complete = CompleteOnboardingStub()
         let restore = RestoreStub()
         let viewModel = OnboardingFactory.make(complete: complete, restore: restore)
-        viewModel.begin()
         viewModel.continueWithoutAccount()
-        #expect(viewModel.path == [.account, .name])
+        #expect(viewModel.path == [.name])
         viewModel.skipName()
         viewModel.continueFromCurrencies()
         viewModel.continueFromAccounts()
@@ -240,19 +232,17 @@ struct OnboardingViewModelTests {
         var synced = SampleData.standard.settings
         synced.hasCompletedOnboarding = true
         let viewModel = OnboardingFactory.make(restore: RestoreStub(settings: synced))
-        viewModel.begin()
         #expect(await viewModel.signedIn(canSync: true) == synced)
         #expect(viewModel.restoreState == .idle)
-        #expect(viewModel.path == [.account])
+        #expect(viewModel.path.isEmpty)
     }
 
     @Test
     func signingInToANewAccountContinuesWithSetUp() async {
         let complete = CompleteOnboardingStub()
         let viewModel = OnboardingFactory.make(complete: complete, restore: RestoreStub())
-        viewModel.begin()
         #expect(await viewModel.signedIn(canSync: true) == nil)
-        #expect(viewModel.path == [.account, .name])
+        #expect(viewModel.path == [.name])
         viewModel.skipName()
         viewModel.continueFromCurrencies()
         viewModel.continueFromAccounts()
@@ -265,9 +255,8 @@ struct OnboardingViewModelTests {
     func anAccountWithoutSyncDoesNotWaitForData() async {
         let restore = RestoreStub(settings: SampleData.standard.settings)
         let viewModel = OnboardingFactory.make(restore: restore)
-        viewModel.begin()
         #expect(await viewModel.signedIn(canSync: false) == nil)
         #expect(restore.calls == 0)
-        #expect(viewModel.path == [.account, .name])
+        #expect(viewModel.path == [.name])
     }
 }

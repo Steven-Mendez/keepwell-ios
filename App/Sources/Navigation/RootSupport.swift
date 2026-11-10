@@ -82,7 +82,7 @@ final class MainScreens {
 // Each pushed screen keeps its view model in `@State`, so re-rendering the stack doesn't
 // recreate it and lose what the person was doing.
 
-/// Onboarding with the account feature's sign-in as its account step and the lock feature's
+/// Onboarding with the account feature's sign-in on its welcome and the lock feature's
 /// passcode setup over it, so both reuse the same screens and rules as Settings.
 struct OnboardingRoute: View {
     let container: AppContainer
@@ -94,7 +94,7 @@ struct OnboardingRoute: View {
     var body: some View {
         OnboardingFlowView(
             viewModel: viewModel,
-            accountStep: accountStep,
+            accountChoice: accountChoice,
             onImportCSV: onImportCSV,
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onFinish: onFinish,
@@ -109,19 +109,18 @@ struct OnboardingRoute: View {
         }
     }
 
-    private var accountStep: AnyView? {
+    private var accountChoice: AnyView? {
         guard viewModel.offersAccount, let account = container.cloudAccount else { return nil }
         return AnyView(
             AccountSignInView(
                 viewModel: account,
                 isFindingData: viewModel.restoreState == .searching,
-                onBack: { _ = viewModel.path.popLast() },
                 onContinue: signedIn,
                 onContinueWithoutAccount: viewModel.continueWithoutAccount,
             )
-            // A sign-in on this step moves on by itself; the account's data comes down first.
+            // A sign-in on the welcome moves on by itself; the account's data comes down first.
             .onChange(of: account.state) { old, new in
-                if case .signedOut = old, case let .signedIn(user) = new, viewModel.path.last == .account {
+                if case .signedOut = old, case let .signedIn(user) = new, viewModel.path.isEmpty {
                     signedIn(user)
                 }
             },

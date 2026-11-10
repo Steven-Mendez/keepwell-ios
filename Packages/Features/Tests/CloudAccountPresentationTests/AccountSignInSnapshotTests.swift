@@ -1,5 +1,6 @@
 import CloudAccountDomain
 import FeatureTestSupport
+import OnboardingPresentation
 import SwiftUI
 import Testing
 @testable import CloudAccountPresentation
@@ -33,17 +34,23 @@ struct AccountSignInSnapshotTests {
         return viewModel
     }
 
+    /// The sign-in as people see it: on the onboarding welcome, in place of "Start".
     private func view(_ viewModel: CloudAccountViewModel) -> some View {
-        AccountSignInView(viewModel: viewModel, isFindingData: false, onBack: {}, onContinue: { _ in }, onContinueWithoutAccount: {})
+        WelcomeView(
+            accountChoice: AnyView(
+                AccountSignInView(viewModel: viewModel, isFindingData: false, onContinue: { _ in }, onContinueWithoutAccount: {}),
+            ),
+            onStart: {},
+        )
     }
 
     @Test
-    func signInStep() async {
+    func welcomeWithSignIn() async {
         await assertScreenSnapshot(of: view(signedOut()))
     }
 
     @Test
-    func signInStepLight() async {
+    func welcomeWithSignInLight() async {
         await assertScreenSnapshot(of: view(signedOut()), named: "light", colorScheme: .light)
     }
 }

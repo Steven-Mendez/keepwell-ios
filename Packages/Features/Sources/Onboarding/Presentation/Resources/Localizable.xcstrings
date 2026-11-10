@@ -451,16 +451,6 @@
         }
       }
     },
-    "No account needed" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No necesitas una cuenta"
-          }
-        }
-      }
-    },
     "Not now" : {
       "localizations" : {
         "es" : {
@@ -487,16 +477,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activado"
-          }
-        }
-      }
-    },
-    "On your iPhone, synced with the web if you want" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En tu iPhone, sincronizado con la web si quieres"
           }
         }
       }
@@ -677,6 +657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Corte y pago de tus tarjetas"
+          }
+        }
+      }
+    },
+    "Stays on your iPhone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se queda en tu iPhone"
           }
         }
       }
