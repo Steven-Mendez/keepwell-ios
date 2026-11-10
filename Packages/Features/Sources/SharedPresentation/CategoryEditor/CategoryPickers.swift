@@ -20,7 +20,7 @@ public struct CategoryColorPicker: View {
                         .fill(KWColor.categoryPalette(key: key) ?? KWColor.Text.faint)
                         .frame(width: 36, height: 36)
                         .padding(3)
-                        .overlay(Circle().strokeBorder(isSelected ? Color.white : .clear, lineWidth: 2))
+                        .overlay(Circle().strokeBorder(isSelected ? KWColor.Text.primary : .clear, lineWidth: 2))
                         .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -45,10 +45,10 @@ public struct CategorySymbolPicker: View {
                 let isSelected = symbol == selection
                 Button { selection = symbol } label: {
                     CategorySymbol(symbol: symbol, size: 22)
-                        .foregroundStyle(isSelected ? Color.black : KWColor.Text.primary)
+                        .foregroundStyle(isSelected ? KWColor.Semantic.primaryForeground : KWColor.Text.primary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
-                        .background(isSelected ? Color.white : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: 12))
+                        .background(isSelected ? KWColor.Semantic.primary : KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: 12))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

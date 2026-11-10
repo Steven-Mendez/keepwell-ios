@@ -16,7 +16,7 @@ public struct KWPasscodeDots: View {
         HStack(spacing: 18) {
             ForEach(0 ..< length, id: \.self) { index in
                 Circle()
-                    .fill(index < filled ? fill : KWColor.Overlay.white18)
+                    .fill(index < filled ? fill : KWColor.Text.primary.opacity(0.18))
                     .frame(width: 14, height: 14)
                     .scaleEffect(index < filled ? 1.1 : 1)
             }
@@ -118,9 +118,9 @@ public struct KWKeyStyle: ButtonStyle {
 
     private func background(isPressed: Bool) -> Color {
         if isPressed {
-            return KWColor.Overlay.white18
+            return KWColor.Text.primary.opacity(0.18)
         }
-        return filled ? KWColor.Overlay.white10 : .clear
+        return filled ? KWColor.Text.primary.opacity(0.10) : .clear
     }
 }
 

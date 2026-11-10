@@ -95,6 +95,8 @@ public struct KWCardArt: View {
                     face
                         .scaleEffect(proxy.size.width / Self.designWidth, anchor: .topLeading)
                 }
+                // Card art stays as designed in both appearances.
+                .kwBrandSurface()
             }
             // The face's decoration bleeds far past the plastic; without bounding it, a card in a
             // stack swallowed taps meant for the header's add button above it.

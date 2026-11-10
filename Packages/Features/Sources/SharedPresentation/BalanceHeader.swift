@@ -56,7 +56,7 @@ public struct BalanceHeader: View {
                             .monospacedDigit()
                             .padding(.horizontal, 10)
                             .frame(height: 26)
-                            .background(KWColor.Overlay.white14, in: Capsule())
+                            .background(KWColor.Text.primary.opacity(0.14), in: Capsule())
                     }
                 }
             }

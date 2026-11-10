@@ -5,11 +5,11 @@ public struct KWActionButton: View {
     public enum Style: Sendable {
         /// `surface2` circle.
         case neutral
-        /// White circle, black icon: the main action.
+        /// `primary` circle and icon (white and black in dark mode): the main action.
         case prominent
-        /// Translucent white circle on gradients.
+        /// Translucent circle on gradients: white in dark mode and on brand surfaces.
         case translucent
-        /// Link-colored circle with a black icon: an action currently on.
+        /// Link-colored circle with a `primaryForeground` icon: an action currently on.
         case active
     }
 
@@ -48,15 +48,15 @@ public struct KWActionButton: View {
     private var background: Color {
         switch style {
         case .neutral: KWColor.Surface.surface2
-        case .prominent: .white
-        case .translucent: KWColor.Overlay.white18
+        case .prominent: KWColor.Semantic.primary
+        case .translucent: KWColor.Text.primary.opacity(0.18)
         case .active: KWColor.Brand.link
         }
     }
 
     private var iconColor: Color {
         switch style {
-        case .prominent, .active: .black
+        case .prominent, .active: KWColor.Semantic.primaryForeground
         case .neutral, .translucent: KWColor.Text.primary
         }
     }

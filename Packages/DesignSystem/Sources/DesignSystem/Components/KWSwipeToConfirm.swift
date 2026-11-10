@@ -71,9 +71,9 @@ public struct KWSwipeToConfirm: View {
 
     private func thumbView(size: CGFloat) -> some View {
         KWIconView(isConfirmed ? .check : .arrowRight, size: 22, lineWidth: 2.4)
-            .foregroundStyle(isConfirmed ? KWColor.Text.onPositive : Color.black)
+            .foregroundStyle(isConfirmed ? KWColor.Text.onPositive : KWColor.Semantic.primaryForeground)
             .frame(width: size, height: size)
-            .background(isConfirmed ? KWColor.State.positive : Color.white, in: Circle())
+            .background(isConfirmed ? KWColor.State.positive : KWColor.Semantic.primary, in: Circle())
             .contentShape(Circle())
     }
 

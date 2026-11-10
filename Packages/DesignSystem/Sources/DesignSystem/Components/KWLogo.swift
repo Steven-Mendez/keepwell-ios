@@ -39,7 +39,8 @@ public struct KWAppIconTile: View {
     }
 }
 
-/// The horizontal lockup (symbol and "KEEPWELL") in one color, tinted by `foregroundStyle`.
+/// The horizontal lockup (symbol and "KEEPWELL") in the logo color: white on dark and brand
+/// surfaces, the brand blue on light ones.
 public struct KWWordmark: View {
     private let height: CGFloat
 
@@ -54,7 +55,7 @@ public struct KWWordmark: View {
             .renderingMode(.template)
             .scaledToFit()
             .frame(height: height)
-            .foregroundStyle(.white)
+            .foregroundStyle(KWColor.Semantic.logo)
             .accessibilityElement()
             .accessibilityLabel(Text(verbatim: "Keepwell"))
     }
@@ -64,7 +65,7 @@ public struct KWWordmark: View {
     VStack(spacing: KWSpacing.xl) {
         KWAppIconTile()
         KWWordmark()
-        KWLogoMark(size: 28).foregroundStyle(.white)
+        KWLogoMark(size: 28).foregroundStyle(KWColor.Semantic.logo)
     }
     .padding(KWLayout.gutter)
     .background(KWColor.Brand.b700)

@@ -6,6 +6,7 @@ import SwiftUI
 struct AppleSignInButton: View {
     let viewModel: CloudAccountViewModel
     var label: SignInWithAppleButton.Label = .signIn
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         SignInWithAppleButton(label) { request in
@@ -26,7 +27,8 @@ struct AppleSignInButton: View {
                 viewModel.appleSignInFailed(cancelled: (error as? ASAuthorizationError)?.code == .canceled)
             }
         }
-        .signInWithAppleButtonStyle(.white)
+        // Apple's guidance: the white button on dark backgrounds, the black one on light ones.
+        .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
         .disabled(viewModel.isWorking)
     }
 }
