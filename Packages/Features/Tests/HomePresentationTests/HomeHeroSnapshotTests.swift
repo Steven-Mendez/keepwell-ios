@@ -12,6 +12,12 @@ import Testing
 @Suite("Home hero snapshots")
 struct HomeHeroSnapshotTests {
     private let now = SampleData.defaultReferenceDate
+    /// The greeting reads the hour in this calendar: fixed, so the snapshot is the same on any machine.
+    private static let gmt: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        return calendar
+    }()
 
     private func loadedViewModel() async throws -> HomeViewModel {
         let store = InMemoryStore(sample: .standard)
@@ -25,7 +31,7 @@ struct HomeHeroSnapshotTests {
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),
-            calendar: .current,
+            calendar: Self.gmt,
         )
         await viewModel.load()
         return viewModel
@@ -39,6 +45,7 @@ struct HomeHeroSnapshotTests {
                 allTransactions: {},
             ),
             hidesBalances: .constant(false),
+            fixedDate: now,
         )
     }
 
