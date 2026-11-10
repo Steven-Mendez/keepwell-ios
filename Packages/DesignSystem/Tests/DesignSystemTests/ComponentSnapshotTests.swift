@@ -21,18 +21,9 @@ struct ComponentSnapshotTests {
             }
         }
         .padding(KWLayout.gutter)
-        .frame(width: 390)
-        .background(KWColor.Surface.bg)
-        .environment(\.colorScheme, .dark)
 
-        assertSnapshot(
-            of: view,
-            as: .image(
-                precision: 0.99,
-                perceptualPrecision: 0.98,
-                layout: .fixed(width: 390, height: 140),
-                traits: UITraitCollection(displayScale: 2),
-            ),
-        )
+        // The shared helper paints the background over the whole 390×140 canvas; a width-only
+        // frame left the edges to the host window, white or black depending on earlier tests.
+        assertComponentSnapshot(of: view, height: 140)
     }
 }
