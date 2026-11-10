@@ -120,7 +120,7 @@ public struct DebtsView: View {
                 .foregroundStyle(KWColor.Text.muted)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }

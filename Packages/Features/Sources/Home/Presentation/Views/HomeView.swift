@@ -174,7 +174,7 @@ public struct HomeView: View {
                 )
             }
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }
@@ -228,13 +228,13 @@ public struct HomeView: View {
                 Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
             }
         }
-        .padding(18)
+        .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }
 
     private func balancesCard(_ overview: HomeOverview) -> some View {
-        KWGroupedCard(horizontalPadding: 18, verticalPadding: 6) {
+        KWGroupedCard(verticalPadding: 6) {
             ForEach(overview.balances) { line in
                 balanceRow(
                     CardDisplay.name(of: line.account),

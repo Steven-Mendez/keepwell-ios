@@ -186,7 +186,6 @@ extension RecurringRuleEditorView {
             Text("Off: it waits as a draft for you to confirm.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.muted)
-                .padding(.horizontal, KWSpacing.xxs)
         }
     }
 

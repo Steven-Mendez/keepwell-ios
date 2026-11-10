@@ -56,7 +56,7 @@ public struct CategoryView: View {
                     .foregroundStyle(KWColor.Text.primary)
             }
             .foregroundStyle(KWColor.Text.muted)
-            .padding(.horizontal, 14)
+            .padding(.horizontal, KWSpacing.md)
             .frame(height: 44)
             .background(KWColor.Surface.surface, in: Capsule())
             ScrollView {

@@ -9,7 +9,7 @@ struct HomeBudgetAlertsCard: View {
     let hidesBalances: Bool
 
     var body: some View {
-        KWGroupedCard(horizontalPadding: 18, verticalPadding: 6) {
+        KWGroupedCard(verticalPadding: 6) {
             ForEach(alerts) { alert in
                 row(alert)
             }

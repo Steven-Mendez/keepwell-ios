@@ -14,6 +14,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   the setup. "Use without an account" sits under it and keeps everything only on this iPhone; you
   can sign in later from Settings. The separate account screen after "Start" is gone.
 
+### Fixed
+
+- Things stacked down a screen now share the same edges. Every card keeps its content 16 points
+  in, so icons and text in Home, Transactions, Recurring, Debts, Goals, Summary and the payment
+  method step line up with the summary cards and search field above them (some used 14 or 18).
+  Empty-state buttons reach the same edges as the header buttons and cards, the welcome, "All set"
+  and passcode screens use the same side margins as the rest of the app, and small notes and
+  titles under cards no longer sit a few points off the card's edge.
+
 ## [1.0.1] - 2026-11-09
 
 ### Removed
