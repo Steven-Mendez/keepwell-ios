@@ -25,23 +25,29 @@ public struct KWAppIconTile: View {
     public init() {}
 
     public var body: some View {
-        // Placed as on the icon: 52% of the tile wide, slightly above center.
+        // Placed as on the designer's icon (KEEPWELL LOGO-02): 52% of the tile wide, a touch left
+        // of and above center.
         KWLogoMark(size: 40)
             .foregroundStyle(.white)
-            .offset(y: -2.5)
+            .offset(x: -0.85, y: -2.5)
             .frame(width: 72, height: 72)
             .background(
-                // Same stops as App/Resources/AppIcon.icon/Assets/background.png.
-                LinearGradient(colors: [KWColor.Brand.b500, KWColor.Brand.b700], startPoint: .top, endPoint: .bottom),
+                // The designer's icon gradient (LOGO-02), as in App/Resources/AppIcon.icon/Assets/background.png.
+                LinearGradient(
+                    colors: [Color(hex: 0x4A74FF), Color(hex: 0x233F91)],
+                    startPoint: UnitPoint(x: 0.5, y: -0.076),
+                    endPoint: UnitPoint(x: 0.5, y: 0.933),
+                ),
                 in: RoundedRectangle(cornerRadius: 17, style: .continuous),
             )
-            .overlay { TopHighlight(shape: RoundedRectangle(cornerRadius: 17, style: .continuous), opacity: 0.3) }
     }
 }
 
-/// The horizontal lockup (symbol and "KEEPWELL") in the logo color: white on dark and brand
-/// surfaces, the brand blue on light ones.
+/// The horizontal lockup (symbol and "KEEPWELL") as the designer drew it for each surface: the
+/// full-color lockup (KEEPWELL LOGO-06) on light ones, the white one (LOGO-05) on dark and brand
+/// surfaces, which draw in dark.
 public struct KWWordmark: View {
+    @Environment(\.colorScheme) private var colorScheme
     private let height: CGFloat
 
     /// - Parameter height: Height of the lockup; the symbol fills it and the name is centered on it.
@@ -50,14 +56,21 @@ public struct KWWordmark: View {
     }
 
     public var body: some View {
-        Image("KeepwellLockupTemplate", bundle: .module)
-            .resizable()
-            .renderingMode(.template)
-            .scaledToFit()
-            .frame(height: height)
-            .foregroundStyle(KWColor.Semantic.logo)
-            .accessibilityElement()
-            .accessibilityLabel(Text(verbatim: "Keepwell"))
+        Group {
+            if colorScheme == .dark {
+                Image("KeepwellLockupTemplate", bundle: .module)
+                    .resizable()
+                    .renderingMode(.template)
+                    .foregroundStyle(KWColor.Semantic.logo)
+            } else {
+                Image("KeepwellLockupColor", bundle: .module)
+                    .resizable()
+            }
+        }
+        .scaledToFit()
+        .frame(height: height)
+        .accessibilityElement()
+        .accessibilityLabel(Text(verbatim: "Keepwell"))
     }
 }
 
