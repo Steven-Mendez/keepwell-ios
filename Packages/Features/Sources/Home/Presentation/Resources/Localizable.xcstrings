@@ -341,6 +341,16 @@
         }
       }
     },
+    "Doesn't include balances in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No incluye saldos en %@"
+          }
+        }
+      }
+    },
     "Draft for today" : {
       "localizations" : {
         "es" : {

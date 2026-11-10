@@ -5,12 +5,22 @@ import Foundation
 /// iOS twin of keepwell-web's sync engine (ADR 0005 in keepwell-api): push the outbox, settle each
 /// answer, then pull until caught up. The first sync with an account loads a snapshot first, and
 /// when this device and the account both hold data it stops for the person to keep one side.
+///
+/// Things worth knowing when changing it:
+/// - Nothing local is cleared before the account's whole snapshot is fetched, and clearing and
+///   applying it is one save. A first sync cut short leaves no choice behind to resume: it asks again.
+/// - An id the account already deleted can't be revived by "Keep this iPhone's data": the server
+///   keeps its tombstone, so the row stays deleted.
+/// - Switching accounts on one device treats unsent changes as this device's data: with an account
+///   that has data the person is asked which to keep; with an empty one this device's rows upload.
 public actor SyncEngine {
     /// Settings come first: a download cut short still has the account's currencies.
     static let entities = [
         "settings", "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
         "personalDebt", "personalDebtRepayment", "categorizationRule",
     ]
+
+    private static let legacyChoiceKey = "sync.choosing"
 
     private let client: APIClient
     private let store: any SyncConflictStore
@@ -47,7 +57,8 @@ public actor SyncEngine {
         defaults.removeObject(forKey: "sync.cursor")
         defaults.removeObject(forKey: "sync.lastAt")
         defaults.removeObject(forKey: "sync.rejected")
-        defaults.removeObject(forKey: "sync.choosing")
+        defaults.removeObject(forKey: Self.legacyChoiceKey)
+        defaults.removeObject(forKey: "sync.account")
     }
 
     /// One round. Throws `CloudAccountError` as the API answered. `account` is the signed-in
@@ -55,11 +66,11 @@ public actor SyncEngine {
     @discardableResult
     public func syncOnce(account: String? = nil) async throws(CloudAccountError) -> SyncRoundOutcome {
         bind(to: account)
-        if cursor == nil, let choice = choiceUnderWay {
-            try await resolve(choice)
-            return .synced
-        }
         if cursor == nil {
+            // Older versions recorded a choice under way and finished it on the next round, which
+            // could clear data entered since. Nothing resumes now: a first sync cut short finds
+            // what it brought down here and asks.
+            defaults.removeObject(forKey: Self.legacyChoiceKey)
             let snapshot = try await fetchSnapshot()
             let device = try await deviceSummary()
             let remote = Self.summary(of: snapshot.rows)
@@ -69,16 +80,24 @@ public actor SyncEngine {
                 return .needsChoice(SyncConflict(device: device, account: remote))
             case (false, true):
                 // Only the account has data: it comes down whole, the onboarding's categories and
-                // settings included, and nothing of this device's goes up over it.
-                choiceUnderWay = .useAccount
+                // settings included, and nothing of this device's goes up over it. No choice is
+                // recorded: the snapshot is in hand and the replace is one save, so a failure
+                // changes nothing and the next round looks at both sides again.
                 try await replaceLocal(with: snapshot.rows)
-            default:
-                for remoteRow in snapshot.rows {
-                    try await adopt(entity: remoteRow.entity, data: remoteRow.row)
+            case (true, false):
+                // The account has nothing (a new one, or switched to from another whose outbox was
+                // already sent): this device's rows would never go up, as nothing is queued for
+                // them. Its own settings win, as `adopt` skips rows with a pending event.
+                do {
+                    try await store.queueFullUpload(replacing: [], at: .now)
+                } catch {
+                    throw .server(code: "local_write_failed", requestID: nil)
                 }
+                try await adoptAll(snapshot.rows)
+            case (false, false):
+                try await adoptAll(snapshot.rows)
             }
             cursor = snapshot.cursor
-            choiceUnderWay = nil
         }
         try await push()
         try await pull()
@@ -90,7 +109,8 @@ public actor SyncEngine {
     /// here: another device may have changed them while the choice waited.
     public func resolve(_ choice: SyncChoice, account: String? = nil) async throws(CloudAccountError) {
         bind(to: account)
-        choiceUnderWay = choice
+        // The account's rows come first: when they can't be fetched nothing local has changed and
+        // no choice is recorded, so the person is asked again with whatever they entered since.
         let snapshot = try await fetchSnapshot()
         switch choice {
         case .useAccount:
@@ -102,10 +122,9 @@ public actor SyncEngine {
                 throw .server(code: "local_write_failed", requestID: nil)
             }
         }
-        // Saved once the outbox holds the whole upload: a round cut short sends the rest later
-        // instead of asking again.
+        // Saved once the outbox holds the whole upload (or the account's data is down): a round
+        // cut short sends the rest later instead of asking again.
         cursor = snapshot.cursor
-        choiceUnderWay = nil
         try await push()
         try await pull()
         defaults.set(Date.now, forKey: "sync.lastAt")
@@ -296,25 +315,6 @@ public actor SyncEngine {
 // MARK: - First sync
 
 extension SyncEngine {
-    /// A choice (or a first download) under way: a round cut short finishes it instead of finding
-    /// half the account's data here and asking again.
-    private var choiceUnderWay: SyncChoice? {
-        get {
-            switch defaults.string(forKey: "sync.choosing") {
-            case "useAccount": .useAccount
-            case "keepDevice": .keepDevice
-            default: nil
-            }
-        }
-        set {
-            switch newValue {
-            case .useAccount: defaults.set("useAccount", forKey: "sync.choosing")
-            case .keepDevice: defaults.set("keepDevice", forKey: "sync.choosing")
-            case nil: defaults.removeObject(forKey: "sync.choosing")
-            }
-        }
-    }
-
     /// A cursor only means something for the account that made it: signing in to another account
     /// starts over with that account's first sync. A cursor from before accounts were recorded is
     /// taken to be the current account's, as it was.
@@ -335,11 +335,20 @@ extension SyncEngine {
         }
     }
 
+    /// Clears and applies the account's rows in one save, the snapshot already in hand. A row that
+    /// can't be stored fails the whole replace with nothing changed (and no cursor), so it is tried
+    /// again instead of being missing for good.
     private func replaceLocal(with rows: [RemoteRow]) async throws(CloudAccountError) {
         do {
             try await store.replaceSyncedData(with: rows)
         } catch {
             throw .server(code: "apply_failed", requestID: nil)
+        }
+    }
+
+    private func adoptAll(_ rows: [RemoteRow]) async throws(CloudAccountError) {
+        for remoteRow in rows {
+            try await adopt(entity: remoteRow.entity, data: remoteRow.row)
         }
     }
 

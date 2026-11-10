@@ -40,6 +40,9 @@ public final class SettingsViewModel {
     private let removePasscode: any RemovePasscodeUseCase
     private let setPreferredName: any SetPreferredNameUseCase
     private let now: () -> Date
+    /// Signed in, erasing this iPhone first signs out, so the account's copy can't come back down.
+    /// `false` means the sign-out failed and nothing may be erased.
+    private let signOutBeforeErasing: (@MainActor () async -> Bool)?
     let formatter = CurrencyFormatter()
 
     public init(
@@ -51,7 +54,9 @@ public final class SettingsViewModel {
         removePasscode: any RemovePasscodeUseCase,
         setPreferredName: any SetPreferredNameUseCase,
         now: @escaping () -> Date = { .now },
+        signOutBeforeErasing: (@MainActor () async -> Bool)? = nil,
     ) {
+        self.signOutBeforeErasing = signOutBeforeErasing
         self.removePasscode = removePasscode
         self.setPreferredName = setPreferredName
         self.getOverview = getOverview
@@ -209,6 +214,10 @@ public final class SettingsViewModel {
     public func eraseAll() async -> Bool {
         isWorking = true
         defer { isWorking = false }
+        if let signOutBeforeErasing, await !signOutBeforeErasing() {
+            errorMessage = String(localized: "We couldn't delete your data. Try again.", bundle: #bundle)
+            return false
+        }
         do {
             try await eraseAllData.execute()
             return true

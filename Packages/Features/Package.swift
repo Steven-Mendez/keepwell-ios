@@ -265,9 +265,11 @@ let package = Package(
             dependencies: [
                 "HomePresentation",
                 "HomeDomain",
+                "FeatureTestSupport",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
+            exclude: ["__Snapshots__"],
         ),
         .testTarget(
             name: "HomeDomainTests",

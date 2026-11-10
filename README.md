@@ -5,6 +5,11 @@ Keepwell account (Sign in with Apple or a passkey, invite-only) syncs it with Ke
 through the Keepwell API; without one, everything stays on the device. CSV export and import are
 the manual way to keep or move a copy.
 
+Sync notes (`SyncEngine`): an id the account already deleted can't be revived by "Keep this
+iPhone's data". Switching accounts on one device treats unsent changes as this device's data: the
+person is asked which side to keep if the new account has data, and this device's data uploads if
+it is empty. "Delete all my data" while signed in signs out first, then erases this iPhone only.
+
 > Status: **in development**. Screens are built feature by feature from `design/keepwell-design`.
 
 ## Requirements

@@ -10,6 +10,8 @@ actor FakeSyncStore: SyncConflictStore {
     var counts: [String: Int] = [:]
     private(set) var replacedWith: [RemoteRow]?
     private(set) var uploadedOver: [RemoteRow]?
+    /// The replace can't store a row: nothing is replaced, as the real store does.
+    var failsToReplace = false
 
     init(events: [OutboxEvent] = [], counts: [String: Int] = [:]) {
         self.events = events
@@ -46,6 +48,9 @@ actor FakeSyncStore: SyncConflictStore {
     }
 
     func replaceSyncedData(with rows: [RemoteRow]) throws(DomainError) {
+        if failsToReplace {
+            throw .persistence("unreadable row")
+        }
         replacedWith = rows
         events = []
     }
@@ -53,6 +58,9 @@ actor FakeSyncStore: SyncConflictStore {
     /// Stands in for the real upload: one delete per live remote row, enough to see it was sent.
     func queueFullUpload(replacing rows: [RemoteRow], at now: Date) throws(DomainError) {
         uploadedOver = rows
+        // Nothing of the account's to delete: the real store queues this device's rows, here the
+        // events already pending stand for them.
+        guard !rows.isEmpty else { return }
         events = rows.compactMap { remote in
             guard var row = try? JSONSerialization.jsonObject(with: remote.row) as? [String: Any], let id = row["id"] as? String
             else { return nil }
@@ -62,6 +70,10 @@ actor FakeSyncStore: SyncConflictStore {
                 payload: (try? JSONSerialization.data(withJSONObject: row)) ?? Data(), createdAt: now,
             )
         }
+    }
+
+    func setFailsToReplace(_ value: Bool) {
+        failsToReplace = value
     }
 
     func appliedNames() -> [String] {

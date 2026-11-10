@@ -90,13 +90,21 @@ struct SyncConflictStoreTests {
         #expect(contents.accounts.count == 1)
     }
 
+    /// The cursor moves past the snapshot, so a row skipped here would never come down again.
     @Test
-    func aRowThatCantBeReadDoesNotStopTheRest() async throws {
+    func aRowThatCantBeReadFailsTheReplaceAndLeavesThisIPhoneAsItWas() async throws {
         let store = try await device()
+        let pending = await store.pendingCount()
         let broken = RemoteRow(entity: "transaction", row: Data(#"{"id":"\#(UUID().uuidString)","amount":"1"}"#.utf8))
-        try await store.replaceSyncedData(with: [broken] + cloudRows())
-        #expect(try await store.fetchAccounts().map(\.name) == ["From the web"])
-        #expect(try await store.fetchTransactions(in: nil).isEmpty)
+        await #expect(throws: DomainError.self) {
+            try await store.replaceSyncedData(with: [broken] + cloudRows())
+        }
+        #expect(try await store.fetchAccounts().count == sample.accounts.count)
+        #expect(try await store.fetchTransactions(in: nil).count == sample.transactions.count)
+        #expect(try await store.fetchSavingsGoals().count == sample.savingsGoals.count)
+        #expect(await store.pendingCount() == pending)
+        let settings = try #require(try await store.load())
+        #expect(settings.unlockMethod == .passcode)
     }
 
     @Test

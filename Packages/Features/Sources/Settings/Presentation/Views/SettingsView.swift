@@ -15,12 +15,16 @@ public struct SettingsAccountViews {
     let sections: AnyView
     /// Signing out and deleting the account, at the bottom with the other destructive rows.
     let destructiveRows: AnyView
+    /// Whether a Keepwell account is signed in: erasing this iPhone then signs out too, and the
+    /// confirmation says so.
+    let isSignedIn: Bool
 
-    public init(header: AnyView, syncRow: AnyView, sections: AnyView, destructiveRows: AnyView) {
+    public init(header: AnyView, syncRow: AnyView, sections: AnyView, destructiveRows: AnyView, isSignedIn: Bool = false) {
         self.header = header
         self.syncRow = syncRow
         self.sections = sections
         self.destructiveRows = destructiveRows
+        self.isSignedIn = isSignedIn
     }
 }
 
@@ -106,12 +110,22 @@ public struct SettingsView: View {
         ) {
             eraseConfirmation
         } message: {
-            Text(
-                // swiftlint:disable:next line_length
-                "Your accounts, cards and transactions are deleted from this iPhone. This can't be undone. Data synced to your Keepwell account goes when you delete the account.",
-                bundle: #bundle,
-            )
+            Text(eraseMessage)
         }
+    }
+
+    private var eraseMessage: String {
+        let base = String(
+            // swiftlint:disable:next line_length
+            localized: "Your accounts, cards and transactions are deleted from this iPhone. This can't be undone. Data synced to your Keepwell account goes when you delete the account.",
+            bundle: #bundle,
+        )
+        guard account?.isSignedIn == true else { return base }
+        return [
+            base,
+            String(localized: "Your Keepwell account keeps its copy; to erase it too, delete your account.", bundle: #bundle),
+            String(localized: "You'll be signed out on this iPhone.", bundle: #bundle),
+        ].joined(separator: " ")
     }
 
     @ViewBuilder

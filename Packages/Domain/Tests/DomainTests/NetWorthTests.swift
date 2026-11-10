@@ -30,6 +30,17 @@ struct NetWorthTests {
     }
 
     @Test
+    func excludedCurrenciesAreTheNonZeroUnconvertibleOnesSortedAndUnique() throws {
+        let settings = try CurrencySettings(second: "NIO", rate: 36)
+        let balances = [
+            Money(1, "GBP"), Money(2, "EUR"), Money(3, "EUR"), Money(0, "CHF"), Money(5, "USD"), Money(7, "NIO"),
+        ]
+        #expect(NetWorth.excludedCurrencies(of: balances, settings: settings) == ["EUR", "GBP"])
+        #expect(NetWorth.excludedCurrencies(of: [Money(5, "USD"), Money(7, "NIO")], settings: settings).isEmpty)
+        #expect(NetWorth.excludedCurrencies(of: [], settings: settings).isEmpty)
+    }
+
+    @Test
     func singleCurrencyHasNoSecondTotal() throws {
         let settings = try CurrencySettings()
         #expect(NetWorth.inSecondCurrency(Money(5, "USD"), settings: settings) == nil)

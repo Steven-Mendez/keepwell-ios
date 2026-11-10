@@ -86,6 +86,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             settings: currencies,
             netWorth: netWorth,
             netWorthInSecond: NetWorth.inSecondCurrency(netWorth, settings: currencies),
+            netWorthExcluded: NetWorth.excludedCurrencies(of: allBalances, settings: currencies),
             accountCount: accounts.count { $0.kind != .credit },
             cardCount: cards.count { $0.kind != .transfer },
             month: month,

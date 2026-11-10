@@ -30,12 +30,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   and "Keep this iPhone's data" (after a second confirmation) replaces the account's data on every
   device. Each option shows how many movements and accounts it holds. "Decide later" keeps sync
   paused while everything keeps working on this iPhone; Settings → Data & sync → "Choose which data
-  to keep" asks again. A download or upload cut short (the app closed, no connection) finishes on
-  its own without asking again. Your passcode, name and lock settings stay either way. If only one side has
+  to keep" asks again. An upload cut short (the app closed, no connection) finishes on its own
+  without asking again. Your passcode, name and lock settings stay either way. If only one side has
   data, it syncs as before without asking.
 
 ### Fixed
 
+- Sync no longer clears this iPhone before it has the whole account in hand: using your account's
+  data fetches everything first, then replaces your data in one step, and a first download cut
+  short asks again instead of finishing by clearing what you entered since. A row that can't be
+  read now fails the download (it is retried) instead of being skipped for good.
+- Signing in to an empty account on an iPhone that has data (for example after switching from
+  another account) now uploads this iPhone's data.
+- "Delete all my data" while signed in signs you out first and then erases this iPhone, so your
+  account's copy doesn't come back; if signing out fails nothing is erased. The confirmation says
+  that your account keeps its copy until you delete the account.
+- Net worth says which currencies it leaves out ("Doesn't include balances in EUR") instead of
+  silently dropping those balances.
 - Home no longer fails when an account holds a currency outside the settings; net worth leaves those balances out, and a card limit in such a currency shows no "available".
 - Signing in on the welcome to an account that has no data of yours yet (for example one made on
   the web) no longer skips the setup: your name (filled in from the account when Apple or the

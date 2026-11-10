@@ -18,6 +18,8 @@ struct BalancePage: Identifiable, Hashable {
     let amount: Money
     /// The conversion or count under the amount.
     let caption: String?
+    /// Smaller, under the caption: what the amount leaves out ("Doesn't include balances in EUR").
+    var note: String?
 
     var id: Kind { kind }
 }
@@ -56,6 +58,10 @@ extension HomeViewModel {
             title: String(localized: "Net worth · \(overview.settings.principal)", bundle: #bundle),
             amount: overview.netWorth,
             caption: secondCurrencyLine(overview),
+            note: overview.netWorthExcluded.isEmpty ? nil : String(
+                localized: "Doesn't include balances in \(overview.netWorthExcluded.joined(separator: ", "))",
+                bundle: #bundle,
+            ),
         )
         let accounts = overview.balances.map { line in
             BalancePage(

@@ -24,52 +24,51 @@ extension SwiftDataStore: SyncConflictStore {
         }
     }
 
+    /// All or nothing: the clearing and every row of the account are one save. A row that can't be
+    /// read fails the whole replace with this device's data as it was, because the cursor moves
+    /// past the snapshot and the row would never come down again.
     public func replaceSyncedData(with rows: [RemoteRow]) throws(DomainError) {
         try perform { context in
-            // Physical deletes: these rows were never the account's, so no tombstone must stay to
-            // block the account's copy of a row with the same id (a default category).
-            try context.delete(model: TransactionRecord.self)
-            try context.delete(model: RecurringRuleRecord.self)
-            try context.delete(model: SavingsGoalRecord.self)
-            try context.delete(model: LoanRecord.self)
-            try context.delete(model: PersonalDebtRecord.self)
-            try context.delete(model: CategorizationRuleRecord.self)
-            try context.delete(model: CardRecord.self)
-            try context.delete(model: AccountRecord.self)
-            try context.delete(model: CategoryRecord.self)
-            try context.delete(model: OutboxRecord.self)
-            // The settings row stays for its device-only columns; the account's row overwrites the
-            // synced ones below.
-            try context.save()
-            for batch in stride(from: 0, to: rows.count, by: 200).map({ Array(rows[$0 ..< min($0 + 200, rows.count)]) }) {
-                store(batch, in: context)
+            do {
+                // Physical deletes: these rows were never the account's, so no tombstone must stay
+                // to block the account's copy of a row with the same id (a default category).
+                // One by one, not `delete(model:)`: that goes straight to the store and a rollback
+                // couldn't bring the rows back.
+                try deleteAll(TransactionRecord.self, in: context)
+                try deleteAll(RecurringRuleRecord.self, in: context)
+                try deleteAll(SavingsGoalRecord.self, in: context)
+                try deleteAll(LoanRecord.self, in: context)
+                try deleteAll(PersonalDebtRecord.self, in: context)
+                try deleteAll(CategorizationRuleRecord.self, in: context)
+                try deleteAll(CardRecord.self, in: context)
+                try deleteAll(AccountRecord.self, in: context)
+                try deleteAll(CategoryRecord.self, in: context)
+                try deleteAll(OutboxRecord.self, in: context)
+                // The settings row stays for its device-only columns; the account's row overwrites
+                // the synced ones below.
+                var unreadable = 0
+                for remote in rows where (try? applyRow(remote, in: context)) == nil {
+                    unreadable += 1
+                }
+                guard unreadable == 0 else {
+                    throw DomainError.persistence("\(unreadable) rows of the account couldn't be read")
+                }
+                try context.save()
+            } catch {
+                context.rollback()
+                throw error
             }
         }
     }
 
-    /// One unreadable row must not leave the device without the rest of the account's data, so a
-    /// batch that fails is stored again row by row, skipping the bad ones.
-    private func store(_ batch: [RemoteRow], in context: ModelContext) {
-        do {
-            for remote in batch {
-                try applyRow(remote, in: context)
-            }
-            try context.save()
-        } catch {
-            context.rollback()
-            for remote in batch {
-                do {
-                    try applyRow(remote, in: context)
-                    try context.save()
-                } catch {
-                    context.rollback()
-                }
-            }
+    private func deleteAll<Model: PersistentModel>(_: Model.Type, in context: ModelContext) throws {
+        for record in try context.fetch(FetchDescriptor<Model>()) {
+            context.delete(record)
         }
     }
 
     private func applyRow(_ remote: RemoteRow, in context: ModelContext) throws {
-        guard let object = try JSONSerialization.jsonObject(with: remote.row) as? [String: Any] else { return }
+        guard let object = try JSONSerialization.jsonObject(with: remote.row) as? [String: Any] else { throw RowUnreadable() }
         _ = try apply(entity: remote.entity, WireReader(row: object), in: context)
     }
 
@@ -142,6 +141,8 @@ extension SwiftDataStore: SyncConflictStore {
         }
     }
 }
+
+private struct RowUnreadable: Error {}
 
 /// The outbox that makes the account match this device, built before anything is written.
 private struct FullUpload {
