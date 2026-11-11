@@ -55,6 +55,9 @@ public struct TrendReport: Hashable, Sendable {
     /// Every category of either period, largest in this one first.
     public let expenseCategories: [CategoryChange]
     public let incomeCategories: [CategoryChange]
+    /// The ring of each side: only what moved in this period, the long tail folded into one slice.
+    public let expenseBreakdown: CategoryBreakdown
+    public let incomeBreakdown: CategoryBreakdown
     /// The category whose spending grew the most in money, and the one that dropped the most.
     public let biggestIncrease: CategoryChange?
     public let biggestDecrease: CategoryChange?
@@ -223,8 +226,7 @@ extension TrendReport {
         self.comparisonCashFlow = comparisonCashFlow
         hasComparison = comparisonCashFlow.income > 0 || comparisonCashFlow.expense > 0
         self.isRunning = isRunning
-        averageExpense = Self.average(of: months.map(\.expense))
-        averageIncome = Self.average(of: months.map(\.income))
+        (averageExpense, averageIncome) = (Self.average(of: months.map(\.expense)), Self.average(of: months.map(\.income)))
         bestMonth = best
         worstMonth = worst
         self.expenseCategories = expenseCategories
@@ -232,6 +234,8 @@ extension TrendReport {
             current: Self.totals(of: months, pick: \.incomeCategories),
             previous: Self.totals(of: comparisonMonths, pick: \.incomeCategories),
         )
+        expenseBreakdown = CategoryBreakdown(changes: expenseCategories)
+        incomeBreakdown = CategoryBreakdown(changes: incomeCategories)
         biggestIncrease = increases.first
         biggestDecrease = decreases.first
         cumulativeSavings = Self.running(months.map(\.savings))

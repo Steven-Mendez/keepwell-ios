@@ -106,6 +106,9 @@ struct TrendReportTests {
         #expect(result.expenseCategories.first?.changeRate == 2)
         #expect(result.biggestIncrease?.categoryID == "food")
         #expect(result.biggestDecrease?.categoryID == "transport")
+        // The ring only holds what was spent in this period.
+        #expect(result.expenseBreakdown.entries.count == 2)
+        #expect(result.expenseBreakdown.total == 350)
         #expect(result.categoryTrends.first?.amounts == [300])
         #expect(result.categoryTrends.count == 2)
     }

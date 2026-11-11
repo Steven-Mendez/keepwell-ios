@@ -271,6 +271,16 @@
         }
       }
     },
+    "Before: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes: %@"
+          }
+        }
+      }
+    },
     "Best month" : {
       "localizations" : {
         "es" : {
@@ -547,6 +557,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Patrimonio neto"
+          }
+        }
+      }
+    },
+    "New" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva"
           }
         }
       }

@@ -6,8 +6,9 @@ import SwiftUI
 /// A period read as one: its four answers, then month by month, savings building up, the top
 /// categories, highlights and every year side by side. Cards stack vertically on the phone.
 struct RangeSection: View {
-    let viewModel: SummaryViewModel
+    @Bindable var viewModel: SummaryViewModel
     @ScaledMetric(relativeTo: .body) var chartHeight: CGFloat = 190
+    @ScaledMetric(relativeTo: .body) var ringSize: CGFloat = 220
 
     var body: some View {
         VStack(alignment: .leading, spacing: KWSpacing.md) {
@@ -16,6 +17,7 @@ struct RangeSection: View {
                 .foregroundStyle(KWColor.Text.muted)
             tiles
             monthByMonth
+            byCategory
             savings
             categories
             highlights
