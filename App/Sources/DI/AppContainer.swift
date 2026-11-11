@@ -276,6 +276,17 @@ final class AppContainer {
         )
     }
 
+    // MARK: - Cash
+
+    func makeCashViewModel(accountID: UUID) -> CashViewModel {
+        CashViewModel(
+            accountID: accountID,
+            getDetail: DefaultGetCashDetailUseCase(accounts: store, cards: store, transactions: store, categories: store, settings: store),
+            renameAccount: DefaultRenameAccountUseCase(accounts: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
+        )
+    }
+
     // MARK: - Recurring
 
     /// Records the recurring movements whose day has come. Runs at launch, on returning to the

@@ -213,7 +213,7 @@ struct RootView: View {
                 onAdd: { presentAddCard() },
                 onOpenCreditCard: { router.push(.creditCard(accountID: $0)) },
                 onOpenBankAccount: { router.push(.bankAccount(accountID: $0)) },
-                onOpenAccountMovements: { router.push(.transactions(accountID: $0)) },
+                onOpenCash: { router.push(.cash(accountID: $0)) },
             )
         case .summary:
             SummaryView(viewModel: screens.summary) { presentMovementMenu() }
