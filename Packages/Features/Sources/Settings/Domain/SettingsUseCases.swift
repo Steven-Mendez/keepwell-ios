@@ -8,6 +8,11 @@ public struct SettingsOverview: Hashable, Sendable {
     public let incomeCategoryCount: Int
     /// Cards and transfer channels.
     public let paymentMethodCount: Int
+    public let categorizationRuleCount: Int
+    /// Only while there are no accounts and no movements.
+    public let canChangeMainCurrency: Bool
+    /// Only while no balance or movement is kept in it.
+    public let canChangeSecondCurrency: Bool
     /// Whether this iPhone has an app passcode; it's device-local, so not part of `settings`.
     public let hasPasscode: Bool
     /// The name the lock screen greets with.
@@ -18,6 +23,9 @@ public struct SettingsOverview: Hashable, Sendable {
         expenseCategoryCount: Int,
         incomeCategoryCount: Int,
         paymentMethodCount: Int,
+        categorizationRuleCount: Int = 0,
+        canChangeMainCurrency: Bool = false,
+        canChangeSecondCurrency: Bool = false,
         hasPasscode: Bool = false,
         preferredName: String? = nil,
     ) {
@@ -27,6 +35,9 @@ public struct SettingsOverview: Hashable, Sendable {
         self.expenseCategoryCount = expenseCategoryCount
         self.incomeCategoryCount = incomeCategoryCount
         self.paymentMethodCount = paymentMethodCount
+        self.categorizationRuleCount = categorizationRuleCount
+        self.canChangeMainCurrency = canChangeMainCurrency
+        self.canChangeSecondCurrency = canChangeSecondCurrency
     }
 }
 
@@ -38,6 +49,9 @@ public struct DefaultGetSettingsOverviewUseCase: GetSettingsOverviewUseCase {
     private let settings: any SettingsRepository
     private let categories: any CategoryRepository
     private let cards: any CardRepository
+    private let accounts: any AccountRepository
+    private let transactions: any TransactionRepository
+    private let rules: any CategorizationRuleRepository
     private let passcodes: (any PasscodeRepository)?
     private let profile: (any ProfileRepository)?
 
@@ -45,6 +59,9 @@ public struct DefaultGetSettingsOverviewUseCase: GetSettingsOverviewUseCase {
         settings: any SettingsRepository,
         categories: any CategoryRepository,
         cards: any CardRepository,
+        accounts: any AccountRepository,
+        transactions: any TransactionRepository,
+        rules: any CategorizationRuleRepository,
         passcodes: (any PasscodeRepository)? = nil,
         profile: (any ProfileRepository)? = nil,
     ) {
@@ -53,16 +70,26 @@ public struct DefaultGetSettingsOverviewUseCase: GetSettingsOverviewUseCase {
         self.settings = settings
         self.categories = categories
         self.cards = cards
+        self.accounts = accounts
+        self.transactions = transactions
+        self.rules = rules
     }
 
     public func execute() async throws(DomainError) -> SettingsOverview {
         let current = try await settings.load() ?? Settings(currencies: .initial)
         let allCategories = try await categories.fetchCategories()
+        let allAccounts = try await accounts.fetchAccounts()
+        let allTransactions = try await transactions.fetchTransactions(in: nil)
         return try await SettingsOverview(
             settings: current,
             expenseCategoryCount: allCategories.count { $0.kind == .expense },
             incomeCategoryCount: allCategories.count { $0.kind == .income },
             paymentMethodCount: cards.fetchCards().count,
+            categorizationRuleCount: rules.fetchCategorizationRules().count,
+            canChangeMainCurrency: CurrencyUsage.canChangeMain(accounts: allAccounts, transactions: allTransactions),
+            canChangeSecondCurrency: CurrencyUsage.canChangeSecond(
+                current.currencies.second, accounts: allAccounts, transactions: allTransactions,
+            ),
             hasPasscode: passcodes?.hasPasscode() ?? false,
             preferredName: profile?.preferredName(),
         )

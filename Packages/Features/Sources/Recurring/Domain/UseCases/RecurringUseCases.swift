@@ -12,6 +12,7 @@ public struct DefaultGetRecurringOverviewUseCase: GetRecurringOverviewUseCase {
     private let categories: any CategoryRepository
     private let transactions: any TransactionRepository
     private let settings: any SettingsRepository
+    private let calendar: Calendar
 
     public init(
         rules: any RecurringRuleRepository,
@@ -20,7 +21,9 @@ public struct DefaultGetRecurringOverviewUseCase: GetRecurringOverviewUseCase {
         categories: any CategoryRepository,
         transactions: any TransactionRepository,
         settings: any SettingsRepository,
+        calendar: Calendar = .current,
     ) {
+        self.calendar = calendar
         self.rules = rules
         self.accounts = accounts
         self.cards = cards
@@ -38,6 +41,7 @@ public struct DefaultGetRecurringOverviewUseCase: GetRecurringOverviewUseCase {
             cards: cards.fetchCards(),
             categories: categories.fetchCategories(),
             recorded: transactions.fetchTransactions(in: nil).filter { $0.recurringID != nil },
+            calendar: calendar,
         )
     }
 }

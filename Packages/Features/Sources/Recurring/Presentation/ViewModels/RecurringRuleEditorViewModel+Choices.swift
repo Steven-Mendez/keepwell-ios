@@ -88,12 +88,8 @@ extension RecurringRuleEditorViewModel {
         overview?.categories.first { $0.id == categoryID }
     }
 
-    /// Choosing "Subscriptions" marks the rule as one, which is almost always what it is.
     public func selectCategory(_ id: String) {
         categoryID = id
-        if id == Subscriptions.categoryID, kind == .expense {
-            isSubscription = true
-        }
     }
 
     public func selectMethod(_ method: Method) {
@@ -122,11 +118,24 @@ extension RecurringRuleEditorViewModel {
 
     // MARK: Detail
 
-    /// The next three days it falls on, from today.
+    /// The next three days it falls on, from today, for the schedule as it is now: they follow the
+    /// start, frequency, interval and end while the person edits, also for a rule not saved yet.
     public var nextDates: [String] {
-        guard let rule, !rule.isPaused else { return [] }
-        return RecurringSchedule.next(3, of: rule, calendar: calendar).map {
-            RecurringDisplay.day($0, today: now(), calendar: calendar)
+        guard intervalRange.contains(interval) else { return [] }
+        let today = now()
+        // The end is ignored while it is before the start; saving reports that.
+        let end = hasEndDate && calendar.startOfDay(for: endDate) >= calendar.startOfDay(for: startDate) ? endDate : nil
+        let candidate = RecurringRule(
+            id: ruleID ?? UUID(), name: "", kind: kind, categoryID: nil, amount: 1, currency: currency, accountID: UUID(),
+            frequency: frequency, interval: interval, startDate: startDate, endDate: end,
+        )
+        let keepsSchedule = rule.map {
+            $0.startDate == startDate && $0.frequency == frequency && $0.interval == interval
+        } ?? false
+        let first = rule.flatMap { keepsSchedule ? $0.nextDate : nil }
+            ?? RecurringSchedule.rescheduledNextDate(of: candidate, today: today, calendar: calendar)
+        return RecurringSchedule.next(3, of: candidate.with(nextDate: first), calendar: calendar).map {
+            RecurringDisplay.day($0, today: today, calendar: calendar)
         }
     }
 

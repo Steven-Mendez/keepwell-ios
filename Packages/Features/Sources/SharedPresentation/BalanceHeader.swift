@@ -11,14 +11,23 @@ public struct BalanceHeader: View {
     private let label: String
     private let amount: String
     private let details: [String]
+    private let footnote: String?
     private let alignment: HorizontalAlignment
     @AppStorage(Self.hidesBalanceKey) private var isHidden = false
 
     /// `details` are smaller per-currency pills under the amount (a dual credit card's debts).
-    public init(_ label: String, amount: String, details: [String] = [], alignment: HorizontalAlignment = .center) {
+    /// `footnote` is a muted line under everything ("Total $1,234.00").
+    public init(
+        _ label: String,
+        amount: String,
+        details: [String] = [],
+        footnote: String? = nil,
+        alignment: HorizontalAlignment = .center,
+    ) {
         self.label = label
         self.amount = amount
         self.details = details
+        self.footnote = footnote
         self.alignment = alignment
     }
 
@@ -59,6 +68,12 @@ public struct BalanceHeader: View {
                             .background(KWColor.Text.primary.opacity(0.14), in: Capsule())
                     }
                 }
+            }
+            if let footnote {
+                Text(isHidden ? Self.mask : footnote)
+                    .font(KWTextStyle.label.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.onBrand)
+                    .monospacedDigit()
             }
         }
         .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .center))

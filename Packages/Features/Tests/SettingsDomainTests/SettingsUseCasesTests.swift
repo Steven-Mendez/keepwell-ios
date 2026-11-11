@@ -45,8 +45,9 @@ struct SettingsUseCasesTests {
     @Test
     func overviewCountsCategoriesAndMethods() async throws {
         let store = InMemoryStore(sample: sample)
-        let overview = try await DefaultGetSettingsOverviewUseCase(settings: store, categories: store, cards: store)
-            .execute()
+        let overview = try await DefaultGetSettingsOverviewUseCase(
+            settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
+        ).execute()
         #expect(overview.expenseCategoryCount == sample.categories.count { $0.kind == .expense })
         #expect(overview.incomeCategoryCount == sample.categories.count { $0.kind == .income })
         #expect(overview.paymentMethodCount == sample.cards.count)
@@ -77,7 +78,8 @@ struct SettingsLockProfileTests {
         let store = InMemoryStore(sample: .standard)
         let lock = try InMemoryPasscodeStore(passcode: Passcode("482915"), name: "Steven")
         let overview = try await DefaultGetSettingsOverviewUseCase(
-            settings: store, categories: store, cards: store, passcodes: lock, profile: lock,
+            settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
+            passcodes: lock, profile: lock,
         ).execute()
         #expect(overview.hasPasscode)
         #expect(overview.preferredName == "Steven")
@@ -105,5 +107,68 @@ struct SettingsLockProfileTests {
         try await DefaultEraseAllDataUseCase(eraser: store).execute()
         #expect(await store.fetchTransactions(in: nil).isEmpty)
         #expect(await store.fetchAccounts().isEmpty)
+    }
+}
+
+@Suite("Settings currencies")
+struct SettingsCurrencyChangeTests {
+    private func settings(second: String? = "NIO") throws -> Settings {
+        try Settings(currencies: CurrencySettings(principal: "USD", second: second, rate: 36), hasCompletedOnboarding: true)
+    }
+
+    private func overview(_ store: InMemoryStore) async throws -> SettingsOverview {
+        try await DefaultGetSettingsOverviewUseCase(
+            settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
+        ).execute()
+    }
+
+    @Test
+    func theOverviewCountsRulesAndLocksCurrenciesInUse() async throws {
+        let sample = SampleData.standard
+        let used = try await overview(InMemoryStore(sample: sample))
+        #expect(used.categorizationRuleCount == sample.categorizationRules.count)
+        #expect(!used.canChangeMainCurrency)
+        #expect(!used.canChangeSecondCurrency)
+
+        let empty = try await overview(InMemoryStore(settings: settings()))
+        #expect(empty.canChangeMainCurrency)
+        #expect(empty.canChangeSecondCurrency)
+    }
+
+    @Test
+    func theMainCurrencyChangesOnlyOnAnEmptyLedger() async throws {
+        let empty = try InMemoryStore(settings: settings())
+        let change = DefaultChangeCurrenciesUseCase(settings: empty, accounts: empty, transactions: empty)
+        try await change.execute(.main("EUR"))
+        let saved = await empty.load()?.currencies
+        #expect(saved?.principal == "EUR")
+        #expect(saved?.second == "NIO")
+        #expect(saved?.rate == 36)
+
+        let used = InMemoryStore(sample: .standard)
+        await #expect(throws: DomainError.invalidCurrency("USD")) {
+            try await DefaultChangeCurrenciesUseCase(settings: used, accounts: used, transactions: used).execute(.main("EUR"))
+        }
+    }
+
+    @Test
+    func theSecondCurrencyCanChangeOrGoAwayWhileUnused() async throws {
+        let store = try InMemoryStore(settings: settings())
+        let change = DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store)
+        try await change.execute(.second("EUR"))
+        #expect(await store.load()?.currencies.second == "EUR")
+        // A new second currency starts at rate 1; the old rate belonged to the old one.
+        #expect(await store.load()?.currencies.rate == 1)
+        try await change.execute(.second(nil))
+        #expect(await store.load()?.currencies.second == nil)
+        await #expect(throws: DomainError.invalidCurrency("ZZZ")) { try await change.execute(.second("ZZZ")) }
+    }
+
+    @Test
+    func aSecondCurrencyWithBalancesStaysPut() async throws {
+        let store = InMemoryStore(sample: .standard)
+        await #expect(throws: DomainError.invalidCurrency("NIO")) {
+            try await DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store).execute(.second(nil))
+        }
     }
 }

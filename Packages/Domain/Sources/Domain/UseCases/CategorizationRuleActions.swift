@@ -90,9 +90,8 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
 
     public func applyToPast(_ rule: CategorizationRule) async throws(DomainError) -> Int {
         let matches = try await CategorizationRules.pastMatches(of: rule, in: transactions.fetchTransactions(in: nil))
-        for transaction in matches {
-            try await transactions.save(CategorizationRules.applying(rule, to: transaction))
-        }
+        // One save, so a failure leaves every movement as it was.
+        try await transactions.save(matches.map { CategorizationRules.applying(rule, to: $0) })
         return matches.count
     }
 

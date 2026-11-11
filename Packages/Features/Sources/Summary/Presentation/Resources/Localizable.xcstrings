@@ -11,12 +11,32 @@
         }
       }
     },
+    "%@ less than %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ menos que en %2$@"
+          }
+        }
+      }
+    },
     "%@ less than %@ by the same day" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ menos que en %2$@ al mismo día"
+          }
+        }
+      }
+    },
+    "%@ more than %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ más que en %2$@"
           }
         }
       }
@@ -67,6 +87,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Total de %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@ · through today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · hasta hoy"
           }
         }
       }
@@ -171,6 +201,26 @@
         }
       }
     },
+    "%lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "%lld so far" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld (en curso)"
+          }
+        }
+      }
+    },
     "Amount" : {
       "localizations" : {
         "es" : {
@@ -207,6 +257,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Promedio %@ / mes"
+          }
+        }
+      }
+    },
+    "Average spending" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto promedio"
+          }
+        }
+      }
+    },
+    "Before: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes: %@"
+          }
+        }
+      }
+    },
+    "Best month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mejor mes"
           }
         }
       }
@@ -271,6 +351,16 @@
         }
       }
     },
+    "Custom" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizado"
+          }
+        }
+      }
+    },
     "Day" : {
       "localizations" : {
         "es" : {
@@ -291,6 +381,26 @@
         }
       }
     },
+    "Dropped the most" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que más bajó"
+          }
+        }
+      }
+    },
+    "Every year you've logged, whatever range is picked above" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los años que registraste, sin importar el rango elegido arriba"
+          }
+        }
+      }
+    },
     "Expenses" : {
       "localizations" : {
         "es" : {
@@ -301,12 +411,52 @@
         }
       }
     },
+    "From" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde"
+          }
+        }
+      }
+    },
+    "Grew the most" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que más subió"
+          }
+        }
+      }
+    },
+    "Highlights" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo más destacado"
+          }
+        }
+      }
+    },
     "Income" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ingresos"
+          }
+        }
+      }
+    },
+    "Income averages %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingreso promedio: %@"
           }
         }
       }
@@ -351,6 +501,16 @@
         }
       }
     },
+    "Last 12 months" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Últimos 12 meses"
+          }
+        }
+      }
+    },
     "Log transaction" : {
       "localizations" : {
         "es" : {
@@ -371,12 +531,42 @@
         }
       }
     },
+    "Month by month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes a mes"
+          }
+        }
+      }
+    },
+    "Months you saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meses en que ahorraste"
+          }
+        }
+      }
+    },
     "Net worth" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Patrimonio neto"
+          }
+        }
+      }
+    },
+    "New" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva"
           }
         }
       }
@@ -491,6 +681,16 @@
         }
       }
     },
+    "Period" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Período"
+          }
+        }
+      }
+    },
     "Previous month" : {
       "localizations" : {
         "es" : {
@@ -521,12 +721,62 @@
         }
       }
     },
+    "Running total of what you kept, month after month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que fuiste guardando, sumado mes a mes"
+          }
+        }
+      }
+    },
     "Same as %@ by the same day" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Igual que en %@ al mismo día"
+          }
+        }
+      }
+    },
+    "Saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorrado"
+          }
+        }
+      }
+    },
+    "Saved so far" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorrado hasta ahí"
+          }
+        }
+      }
+    },
+    "Savings over time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorro acumulado"
+          }
+        }
+      }
+    },
+    "Spending changes %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambios en gastos %@"
           }
         }
       }
@@ -561,12 +811,63 @@
         }
       }
     },
+    "This year" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este año"
+          }
+        }
+      }
+    },
+    "To" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hasta"
+          }
+        }
+      },
+      "comment" : "End of a custom date range, as in 'From March To August'"
+    },
+    "Top categories over time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus categorías principales"
+          }
+        }
+      }
+    },
+    "Toughest month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes más difícil"
+          }
+        }
+      }
+    },
     "Went out" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salió"
+          }
+        }
+      }
+    },
+    "Year over year" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Año contra año"
           }
         }
       }
@@ -581,6 +882,16 @@
         }
       }
     },
+    "You kept %@ of what came in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardaste el %@ de lo que entró"
+          }
+        }
+      }
+    },
     "You kept %@ of what came in." : {
       "localizations" : {
         "es" : {
@@ -591,12 +902,32 @@
         }
       }
     },
+    "You overspent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gastaste de más"
+          }
+        }
+      }
+    },
     "You overspent in %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gastaste de más en %@"
+          }
+        }
+      }
+    },
+    "You saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorraste"
           }
         }
       }
@@ -641,6 +972,16 @@
         }
       }
     },
+    "Your largest spending categories, month by month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las categorías en que más gastas, mes a mes"
+          }
+        }
+      }
+    },
     "Your summary starts with one transaction" : {
       "localizations" : {
         "es" : {
@@ -681,6 +1022,16 @@
         }
       }
     },
+    "per month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "por mes"
+          }
+        }
+      }
+    },
     "received" : {
       "localizations" : {
         "es" : {
@@ -707,6 +1058,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "gastado"
+          }
+        }
+      }
+    },
+    "vs %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vs %@"
           }
         }
       }

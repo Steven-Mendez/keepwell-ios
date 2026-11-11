@@ -550,6 +550,36 @@
           }
         }
       }
+    },
+    "%@ · cutoff day %lld." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · corte día %2$lld."
+          }
+        }
+      }
+    },
+    "%@ · due day %lld." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · pago día %2$lld."
+          }
+        }
+      }
+    },
+    "%@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

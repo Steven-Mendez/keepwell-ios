@@ -93,7 +93,7 @@ public final class GoalEditorViewModel: Identifiable {
 
     public var canSave: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !targetText.trimmingCharacters(in: .whitespaces).isEmpty
+            && (AmountInput.decimal(from: targetText) ?? 0) > 0
             && !isSaving
     }
 
@@ -134,11 +134,7 @@ public final class GoalEditorViewModel: Identifiable {
     // MARK: Actions
 
     public func save() async -> SavingsGoal? {
-        guard canSave else { return nil }
-        guard let amount = AmountInput.decimal(from: targetText), amount > 0 else {
-            errorMessage = Self.message(for: .invalidAmount)
-            return nil
-        }
+        guard canSave, let amount = AmountInput.decimal(from: targetText) else { return nil }
         isSaving = true
         defer { isSaving = false }
         do {

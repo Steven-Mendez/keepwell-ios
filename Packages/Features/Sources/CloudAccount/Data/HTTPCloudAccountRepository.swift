@@ -119,6 +119,44 @@ public struct HTTPCloudAccountRepository: CloudAccountRepository, EntitlementRep
         guard (200 ..< 300).contains(response.status) else { throw failure(response) }
     }
 
+    private struct ClientsDTO: Decodable {
+        struct Client: Decodable {
+            let client_id: String // swiftlint:disable:this identifier_name
+            let name: String?
+            let scopes: [String]?
+            let connected_at: String? // swiftlint:disable:this identifier_name
+        }
+
+        let clients: [Client]
+    }
+
+    public func connectedAssistants() async throws(CloudAccountError) -> [ConnectedAssistant] {
+        let response = try await client.send("GET", "mcp/clients")
+        if response.status == 401 {
+            throw .signedOut
+        }
+        let list = try decode(ClientsDTO.self, response)
+        let parser = ISO8601DateFormatter()
+        parser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return list.clients.map { client in
+            ConnectedAssistant(
+                id: client.client_id,
+                name: client.name,
+                scopes: client.scopes ?? [],
+                connectedAt: client.connected_at.flatMap { parser.date(from: $0) ?? ISO8601DateFormatter().date(from: $0) },
+            )
+        }
+    }
+
+    public func disconnectAssistant(id: String) async throws(CloudAccountError) {
+        // `send` percent-encodes the path itself.
+        let response = try await client.send("DELETE", "mcp/clients/\(id)")
+        if response.status == 401 {
+            throw .signedOut
+        }
+        guard (200 ..< 300).contains(response.status) else { throw failure(response) }
+    }
+
     public func deleteAccount() async throws(CloudAccountError) {
         let response = try await client.send("DELETE", "me")
         if response.status == 401 {

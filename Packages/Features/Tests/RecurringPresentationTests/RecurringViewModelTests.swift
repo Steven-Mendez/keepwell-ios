@@ -88,6 +88,55 @@ struct RecurringViewModelTests {
     }
 
     @Test
+    func newRulesShowThreeUpcomingDatesAndFollowTheSchedule() async {
+        let viewModel = RecurringPreview.editorViewModel(ruleID: nil)
+        await viewModel.load()
+        #expect(viewModel.nextDates.count == 3)
+        #expect(viewModel.nextDates.first == "Today")
+        viewModel.frequency = .weekly
+        viewModel.interval = 2
+        viewModel.startDate = SampleData.defaultReferenceDate.addingTimeInterval(86400 * 3)
+        let weekly = viewModel.nextDates
+        #expect(weekly.count == 3)
+        #expect(weekly.first != "Today")
+        viewModel.hasEndDate = true
+        viewModel.endDate = viewModel.startDate
+        #expect(viewModel.nextDates.count == 1)
+    }
+
+    @Test
+    func theSubscriptionSwitchFollowsTheCategoryUntilTheUserFlipsIt() async {
+        let viewModel = RecurringPreview.editorViewModel(ruleID: nil)
+        await viewModel.load()
+        #expect(!viewModel.isSubscription)
+        viewModel.selectCategory(Subscriptions.categoryID)
+        #expect(viewModel.isSubscription)
+        viewModel.selectCategory("health")
+        #expect(!viewModel.isSubscription)
+        viewModel.selectCategory(Subscriptions.categoryID)
+        viewModel.isSubscription = false
+        viewModel.selectCategory("health")
+        viewModel.selectCategory(Subscriptions.categoryID)
+        #expect(!viewModel.isSubscription)
+    }
+
+    @Test
+    func finishedSubscriptionsDoNotCountTowardTheMonthlyTotal() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let streaming = try #require(SampleData.standard.recurringRules.first { $0.id == IDs.streamingRule })
+        let past = SampleData.defaultReferenceDate.addingTimeInterval(-86400 * 60)
+        let finished = RecurringRule(
+            name: "Old", kind: .expense, categoryID: streaming.categoryID, amount: 100, currency: streaming.currency,
+            accountID: streaming.accountID, cardID: streaming.cardID, frequency: .monthly, startDate: past.addingTimeInterval(-86400 * 30),
+            nextDate: past, endDate: past.addingTimeInterval(-86400), isSubscription: true,
+        )
+        await store.save(finished)
+        let viewModel = RecurringPreview.listViewModel(store: store)
+        await viewModel.load()
+        #expect(viewModel.monthlyTotal(hidden: false) == "$15.99")
+    }
+
+    @Test
     func switchingToATransferDropsTheCategoryAndAsksForADestination() async {
         let viewModel = RecurringPreview.editorViewModel(ruleID: nil)
         await viewModel.load()
@@ -115,7 +164,8 @@ struct RecurringViewModelTests {
         await viewModel.load()
         await viewModel.togglePaused()
         #expect(viewModel.isPaused)
-        #expect(viewModel.nextDates.isEmpty)
+        // Paused rules still show where they would fall; the view dims them.
+        #expect(viewModel.nextDates.count == 3)
         #expect(await viewModel.delete())
         #expect(await !store.fetchRecurringRules().contains { $0.id == IDs.rentRule })
     }

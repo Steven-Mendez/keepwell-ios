@@ -169,3 +169,22 @@ public struct CategorySymbol: View {
             .accessibilityHidden(true)
     }
 }
+
+/// A category's symbol on a disc of its own color, as on the web's `CategoryBadge`.
+public struct CategoryBadge: View {
+    private let category: TransactionCategory?
+    private let size: CGFloat
+
+    public init(_ category: TransactionCategory?, size: CGFloat = 24) {
+        self.category = category
+        self.size = size
+    }
+
+    public var body: some View {
+        let color = CategoryDisplay.color(for: category)
+        CategorySymbol(category, size: size * 0.55)
+            .foregroundStyle(color)
+            .frame(width: size, height: size)
+            .background(color.opacity(0.16), in: Circle())
+    }
+}

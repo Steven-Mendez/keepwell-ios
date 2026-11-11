@@ -12,6 +12,7 @@ import GoalsPresentation
 import HomePresentation
 import LockPresentation
 import OnboardingPresentation
+import PlanPresentation
 import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
@@ -60,12 +61,14 @@ final class MainScreens {
     let transactions: TransactionsViewModel
     let accounts: AccountsViewModel
     let summary: SummaryViewModel
+    let plan: PlanViewModel
 
     init(container: AppContainer) {
         home = container.makeHomeViewModel()
         transactions = container.makeTransactionsViewModel()
         accounts = container.makeAccountsViewModel()
         summary = container.makeSummaryViewModel()
+        plan = container.makePlanViewModel()
     }
 
     func reload() async {
@@ -73,7 +76,8 @@ final class MainScreens {
         async let transactions: Void = transactions.load()
         async let accounts: Void = accounts.load()
         async let summary: Void = summary.load()
-        _ = await (home, transactions, accounts, summary)
+        async let plan: Void = plan.load()
+        _ = await (home, transactions, accounts, summary, plan)
     }
 }
 
@@ -148,8 +152,8 @@ struct SettingsRoute: View {
     let onErased: () -> Void
     let onOpenCategories: (TransactionKind) -> Void
     let onOpenPaymentMethods: () -> Void
-    let onOpenRecurring: () -> Void
     let onOpenRules: () -> Void
+    let onShowKeyboardShortcuts: () -> Void
 
     init(
         container: AppContainer,
@@ -157,8 +161,8 @@ struct SettingsRoute: View {
         onErased: @escaping () -> Void,
         onOpenCategories: @escaping (TransactionKind) -> Void,
         onOpenPaymentMethods: @escaping () -> Void,
-        onOpenRecurring: @escaping () -> Void,
         onOpenRules: @escaping () -> Void,
+        onShowKeyboardShortcuts: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         _cloudAccount = State(initialValue: container.cloudAccount)
@@ -167,8 +171,8 @@ struct SettingsRoute: View {
         self.onErased = onErased
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
-        self.onOpenRecurring = onOpenRecurring
         self.onOpenRules = onOpenRules
+        self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
 
     var body: some View {
@@ -179,8 +183,8 @@ struct SettingsRoute: View {
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onOpenCategories: onOpenCategories,
             onOpenPaymentMethods: onOpenPaymentMethods,
-            onOpenRecurring: onOpenRecurring,
             onOpenRules: onOpenRules,
+            onShowKeyboardShortcuts: onShowKeyboardShortcuts,
             account: cloudAccount.map { account in
                 SettingsAccountViews(
                     header: AnyView(CloudAccountHeader(viewModel: account)),
@@ -299,6 +303,28 @@ struct DebitCardRoute: View {
     }
 }
 
+struct CashRoute: View {
+    @State private var viewModel: CashViewModel
+    let onBack: () -> Void
+    let onSeeAllMovements: (UUID) -> Void
+
+    init(
+        container: AppContainer,
+        accountID: UUID,
+        onBack: @escaping () -> Void,
+        onSeeAllMovements: @escaping (UUID) -> Void,
+    ) {
+        _viewModel = State(initialValue: container.makeCashViewModel(accountID: accountID))
+        self.onBack = onBack
+        self.onSeeAllMovements = onSeeAllMovements
+    }
+
+    var body: some View {
+        CashView(viewModel: viewModel, onBack: onBack, onSeeAllMovements: onSeeAllMovements)
+            .navigationBarBackButtonHidden()
+    }
+}
+
 /// The movement list pushed from an account. It has its own view model so filtering it
 /// leaves the Transactions tab as the person left it.
 struct TransactionsRoute: View {
@@ -406,14 +432,16 @@ extension View {
 struct RecurringRuleRoute: View {
     @State private var viewModel: RecurringRuleEditorViewModel
     let onBack: () -> Void
+    let onOpenTransaction: (UUID) -> Void
 
-    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void) {
+    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void, onOpenTransaction: @escaping (UUID) -> Void) {
         _viewModel = State(initialValue: container.makeRecurringRuleEditorViewModel(ruleID: ruleID))
         self.onBack = onBack
+        self.onOpenTransaction = onOpenTransaction
     }
 
     var body: some View {
-        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack)
+        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack, onOpenTransaction: onOpenTransaction)
             .navigationBarBackButtonHidden()
     }
 }

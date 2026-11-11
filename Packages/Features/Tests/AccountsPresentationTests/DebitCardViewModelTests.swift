@@ -15,6 +15,7 @@ enum DebitCardFactory {
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
             setDetails: DefaultSetCardDetailsUseCase(cards: store),
+            setNumber: DefaultSetCardNumberUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),
@@ -48,6 +49,16 @@ struct DebitCardViewModelTests {
         let viewModel = await DebitCardFactory.loaded()
         #expect(await viewModel.setColor(.verde))
         #expect(viewModel.detail?.card.color == .verde)
+    }
+
+    @Test
+    func theNumberCanBeEditedAndCleared() async {
+        let viewModel = await DebitCardFactory.loaded()
+        #expect(await viewModel.setNumber(lastFour: "4321", network: .mastercard))
+        #expect(viewModel.detail?.card.lastFour == "4321")
+        #expect(viewModel.detail?.card.network == .mastercard)
+        #expect(await viewModel.setNumber(lastFour: "", network: nil))
+        #expect(viewModel.detail?.card.lastFour == nil)
     }
 
     @Test

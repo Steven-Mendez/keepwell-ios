@@ -13,6 +13,7 @@ import LockPresentation
 import OnboardingPresentation
 import SettingsDomain
 import SettingsPresentation
+import SharedPresentation
 import SummaryPresentation
 import SwiftData
 import SwiftUI
@@ -35,21 +36,27 @@ struct RootView: View {
     @State private var router = AppRouter()
     /// For the route mapping in `RootView+Routes`; `AppRouter` is a reference, so pushes reach this stack.
     var navigator: AppRouter { router }
-    @State private var tab = MainTab.home
-    @State private var screens: MainScreens?
-    @State private var addCard: PresentedFlow<AddCardViewModel>?
-    @State private var newMovement: PresentedFlow<CreateTransactionViewModel>?
-    @State private var movementMenu: PresentedFlow<NewMovementMenuViewModel>?
     /// Chosen in the menu sheet; the flow opens once the sheet has finished closing.
     @State private var chosenMovement: MovementType?
-    /// "Split" on an expense in the movement list.
-    @State private var splitBill: SplitBillViewModel?
-    @State private var lock = LockState()
     /// A CSV picked during onboarding; it's imported once onboarding has saved the accounts.
     @State private var pendingImport: String?
     @State private var isPickingImport = false
     @State private var banner: String?
     @State private var coverWindow = CoverWindow()
+    // Read by the keyboard handling in `RootView+Keyboard`, which lives in its own file.
+    // swiftlint:disable private_swiftui_state
+    @State var tab = MainTab.home
+    @State var screens: MainScreens?
+    @State var addCard: PresentedFlow<AddCardViewModel>?
+    @State var newMovement: PresentedFlow<CreateTransactionViewModel>?
+    @State var movementMenu: PresentedFlow<NewMovementMenuViewModel>?
+    /// "Split" on an expense in the movement list.
+    @State var splitBill: SplitBillViewModel?
+    @State var lock = LockState()
+    @State var keySequence = KeyboardShortcutSequence()
+    @State var showsShortcuts = false
+    @FocusState var hasKeyboardFocus: Bool
+    // swiftlint:enable private_swiftui_state
     /// Bumped on every store save so home, and with it the widgets, reload.
     @State private var storeRevision = 0
 
@@ -153,6 +160,7 @@ struct RootView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: AppRoute.self, destination: destination)
         }
+        .rootKeyboard(self)
         .onChange(of: router.path.count) { oldCount, newCount in
             // Pushed screens edit cards and settings that the tabs summarize.
             if newCount < oldCount {
@@ -205,6 +213,7 @@ struct RootView: View {
                 onOpenTransaction: { router.push(.transaction(id: $0)) },
                 onOpenRecurringRule: { router.push(.recurringRule(id: $0)) },
                 onSplit: { splitBill = container.makeSplitBillViewModel($0) },
+                onCommand: perform,
                 onNewMovement: { presentMovementMenu() },
             )
         case .accounts:
@@ -213,25 +222,23 @@ struct RootView: View {
                 onAdd: { presentAddCard() },
                 onOpenCreditCard: { router.push(.creditCard(accountID: $0)) },
                 onOpenBankAccount: { router.push(.bankAccount(accountID: $0)) },
-                onOpenAccountMovements: { router.push(.transactions(accountID: $0)) },
+                onOpenCash: { router.push(.cash(accountID: $0)) },
             )
         case .summary:
             SummaryView(viewModel: screens.summary) { presentMovementMenu() }
+        case .plan:
+            planTab(screens)
         }
     }
 
     private func homeActions(_ screens: MainScreens) -> HomeView.Actions {
         HomeView.Actions(
-            search: {
-                screens.transactions.filter = .all
-                screens.transactions.scope = .all
-                screens.transactions.wantsSearchFocus = true
-                tab = .transactions
-            },
+            search: { focusSearch(screens) },
             summary: { tab = .summary },
             settings: { router.push(.settings) },
             accounts: { tab = .accounts },
             newMovement: { presentNewMovement(MovementType($0)) },
+            logExpense: { presentNewMovement(.expense, category: $0) },
             payCard: {
                 // With a single card there's nothing to choose; otherwise the flow asks which one.
                 let cards = screens.home.overview?.accounts.filter { $0.kind == .credit } ?? []
@@ -253,13 +260,6 @@ struct RootView: View {
             debts: { router.push(.debts) },
             openTransaction: { router.push(.transaction(id: $0)) },
         )
-    }
-
-    /// A tag tapped in a movement's detail: Transactions, narrowed to it, as the web does.
-    func showTag(_ tag: String) {
-        router.path = NavigationPath()
-        screens?.transactions.showOnly(tag: tag)
-        tab = .transactions
     }
 }
 

@@ -32,19 +32,7 @@ public struct SummaryView: View {
                     )
                     .padding(.top, 120)
                 } else if viewModel.report != nil {
-                    KWSegmentedControl(
-                        SummaryViewModel.Chart.allCases.map { (value: $0, title: viewModel.title(of: $0)) },
-                        selection: $viewModel.chart,
-                    )
-                    monthStepper
-                    switch viewModel.chart {
-                    case .cashFlow: CashFlowSection(viewModel: viewModel)
-                    case .categories: CategorySection(viewModel: viewModel)
-                    case .pace: PaceSection(viewModel: viewModel)
-                    }
-                    // A year of month ends, whatever month the stepper picks.
-                    NetWorthSection(viewModel: viewModel)
-                        .padding(.top, KWSpacing.xs)
+                    content
                 }
             }
             .padding(.horizontal, KWLayout.gutter)
@@ -53,12 +41,46 @@ public struct SummaryView: View {
             .animation(.snappy, value: viewModel.chart)
             .animation(.snappy, value: viewModel.mode)
             .animation(.snappy, value: viewModel.selectedIndex)
+            .animation(.snappy, value: viewModel.period)
         }
         .scrollIndicators(.hidden)
         .ignoresSafeArea(edges: .top)
         .background(KWColor.Surface.bg)
         .foregroundStyle(KWColor.Text.primary)
         .task { await viewModel.load() }
+        .task(id: viewModel.rangeRequest) { await viewModel.loadRange() }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if viewModel.getRange != nil {
+            PeriodPicker(viewModel: viewModel)
+        }
+        if viewModel.showsRange {
+            if viewModel.period == .custom {
+                CustomRangePicker(viewModel: viewModel)
+            }
+            if viewModel.range != nil {
+                RangeSection(viewModel: viewModel)
+                // The web ends range mode with it too; pace stays a month-only chart.
+                NetWorthSection(viewModel: viewModel)
+                    .padding(.top, KWSpacing.xs)
+            }
+        } else {
+            KWSegmentedControl(
+                SummaryViewModel.Chart.allCases.map { (value: $0, title: viewModel.title(of: $0)) },
+                selection: $viewModel.chart,
+            )
+            monthStepper
+            switch viewModel.chart {
+            case .cashFlow: CashFlowSection(viewModel: viewModel)
+            case .categories: CategorySection(viewModel: viewModel)
+            case .pace: PaceSection(viewModel: viewModel)
+            }
+            // A year of month ends, whatever month the stepper picks.
+            NetWorthSection(viewModel: viewModel)
+                .padding(.top, KWSpacing.xs)
+        }
     }
 
     /// Tapping a bar also picks a month, but the categories and pace charts have no bars, and

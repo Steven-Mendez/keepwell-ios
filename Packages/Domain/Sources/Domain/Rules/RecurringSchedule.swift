@@ -111,6 +111,16 @@ public enum RecurringSchedule {
         return dates
     }
 
+    /// A rule whose next occurrence is past its end: it will never record anything again.
+    public static func isFinished(_ rule: RecurringRule, calendar: Calendar) -> Bool {
+        !isWithinEnd(rule.nextDate, of: rule, calendar: calendar)
+    }
+
+    /// Recording movements: neither paused nor finished.
+    public static func isActive(_ rule: RecurringRule, calendar: Calendar) -> Bool {
+        !rule.isPaused && !isFinished(rule, calendar: calendar)
+    }
+
     /// What the rule costs per month, for totals only: monthly ÷ interval, weekly × 52 ÷ 12 ÷
     /// interval, yearly ÷ (12 × interval). Unrounded; screens round when they show it.
     public static func monthlyEquivalent(of rule: RecurringRule) -> Decimal {
@@ -131,7 +141,7 @@ public enum RecurringSchedule {
     /// Records every due occurrence of the active rules as a movement, at most `catchUpLimit` per
     /// rule (the latest ones). An occurrence is skipped when a movement of the same rule already
     /// sits on that day, so two devices, or a restore, never record it twice. Each rule then moves
-    /// to its first occurrence after the last one recorded (or after today, when all were skipped).
+    /// to its first occurrence after the last one due.
     public static func materialize(
         _ rules: [RecurringRule],
         transactions: [Transaction],
@@ -150,15 +160,15 @@ public enum RecurringSchedule {
         for rule in rules {
             let dates = due(rule, today: today, calendar: calendar).suffix(catchUpLimit)
             guard !dates.isEmpty else { continue }
-            var lastRecorded: Date?
             for date in dates where !(recordedDays[rule.id]?.contains(calendar.startOfDay(for: date)) ?? false) {
                 let id = occurrenceID(of: rule, on: date, calendar: calendar)
                 guard !knownIDs.contains(id) else { continue }
                 created.append(movement(from: rule, on: date, exchangeRate: exchangeRate, id: id))
                 recordedDays[rule.id, default: []].insert(calendar.startOfDay(for: date))
-                lastRecorded = date
             }
-            let next = firstOccurrence(of: rule, after: lastRecorded ?? today, calendar: calendar) ?? rule.nextDate
+            // Past the last owed occurrence, recorded now or before, so a trailing one already on
+            // the ledger is not owed again.
+            let next = dates.last.flatMap { firstOccurrence(of: rule, after: $0, calendar: calendar) } ?? rule.nextDate
             if next != rule.nextDate {
                 advanced.append(rule.with(nextDate: next))
             }

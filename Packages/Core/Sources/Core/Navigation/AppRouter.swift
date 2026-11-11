@@ -15,6 +15,8 @@ public enum AppRoute: Hashable, Sendable {
     case creditCard(accountID: UUID)
     /// A bank account and its one debit card, which share a screen.
     case bankAccount(accountID: UUID)
+    /// A cash account's detail: rename, latest movements and delete.
+    case cash(accountID: UUID)
     /// The movement list opened from an account, already filtered to it.
     case transactions(accountID: UUID? = nil)
     /// One movement's detail, with its actions (edit, receipt, split, delete).

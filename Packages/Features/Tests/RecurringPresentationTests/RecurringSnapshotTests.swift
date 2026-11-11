@@ -29,13 +29,19 @@ struct RecurringSnapshotTests {
     func editingARule() async {
         let viewModel = RecurringPreview.editorViewModel(ruleID: SampleData.IDs.streamingRule)
         await viewModel.load()
-        assertScreenSnapshot(of: RecurringRuleEditorView(viewModel: viewModel, onBack: {}, onDone: {}), height: 1450)
+        assertScreenSnapshot(
+            of: RecurringRuleEditorView(viewModel: viewModel, onBack: {}, onDone: {}, onOpenTransaction: { _ in }),
+            height: 1450,
+        )
     }
 
     @Test
     func newRule() async {
         let viewModel = RecurringPreview.editorViewModel(ruleID: nil)
         await viewModel.load()
-        assertScreenSnapshot(of: RecurringRuleEditorView(viewModel: viewModel, onBack: {}, onDone: {}), height: 1200)
+        assertScreenSnapshot(
+            of: RecurringRuleEditorView(viewModel: viewModel, onBack: {}, onDone: {}, onOpenTransaction: { _ in }),
+            height: 1200,
+        )
     }
 }

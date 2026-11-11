@@ -90,3 +90,35 @@ public struct DefaultDisconnectAssistantsUseCase: DisconnectAssistantsUseCase {
         try await repository.disconnectAssistants()
     }
 }
+
+public protocol ListConnectedAssistantsUseCase: Sendable {
+    func execute() async throws(CloudAccountError) -> [ConnectedAssistant]
+}
+
+public struct DefaultListConnectedAssistantsUseCase: ListConnectedAssistantsUseCase {
+    private let repository: any CloudAccountRepository
+
+    public init(repository: any CloudAccountRepository) {
+        self.repository = repository
+    }
+
+    public func execute() async throws(CloudAccountError) -> [ConnectedAssistant] {
+        try await repository.connectedAssistants()
+    }
+}
+
+public protocol DisconnectAssistantUseCase: Sendable {
+    func execute(id: String) async throws(CloudAccountError)
+}
+
+public struct DefaultDisconnectAssistantUseCase: DisconnectAssistantUseCase {
+    private let repository: any CloudAccountRepository
+
+    public init(repository: any CloudAccountRepository) {
+        self.repository = repository
+    }
+
+    public func execute(id: String) async throws(CloudAccountError) {
+        try await repository.disconnectAssistant(id: id)
+    }
+}

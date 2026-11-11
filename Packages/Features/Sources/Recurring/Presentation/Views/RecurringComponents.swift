@@ -88,20 +88,22 @@ struct SelectedMark: View {
 /// A rule's next dates and the movements it recorded, under the editor's fields.
 struct RecurringRuleDetail: View {
     let viewModel: RecurringRuleEditorViewModel
+    let onOpenTransaction: (UUID) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: KWSpacing.xs) {
             KWSectionHeader(String(localized: "Next dates", bundle: #bundle))
             KWGroupedCard {
-                if viewModel.nextDates.isEmpty {
-                    KWValueRow(
-                        viewModel.isPaused ? String(localized: "Paused", bundle: #bundle) : String(localized: "Ended", bundle: #bundle),
-                        value: "",
-                        style: .placeholder,
-                    )
+                if viewModel.isPaused {
+                    KWValueRow(String(localized: "Paused", bundle: #bundle), value: "", style: .placeholder)
+                }
+                if viewModel.nextDates.isEmpty, !viewModel.isPaused {
+                    KWValueRow(String(localized: "Ended", bundle: #bundle), value: "", style: .placeholder)
                 }
                 ForEach(Array(viewModel.nextDates.enumerated()), id: \.offset) { _, day in
                     KWValueRow(day, value: viewModel.repeatsTitle, style: .navigation)
+                        // Paused: they show where it would fall again, not that it will.
+                        .opacity(viewModel.isPaused ? 0.55 : 1)
                 }
             }
             if let display = viewModel.display, !viewModel.recorded.isEmpty {
@@ -109,14 +111,18 @@ struct RecurringRuleDetail: View {
                     .padding(.top, KWSpacing.xs)
                 KWGroupedCard(verticalPadding: KWSpacing.xxs) {
                     ForEach(viewModel.recorded) { transaction in
-                        KWTransactionRow(
-                            display.style(of: transaction),
-                            title: viewModel.recordedDay(transaction),
-                            subtitle: transaction.isConfirmed
-                                ? display.methodName(of: transaction)
-                                : String(localized: "Draft", bundle: #bundle),
-                            amount: display.amount(of: transaction),
-                        )
+                        Button { onOpenTransaction(transaction.id) } label: {
+                            KWTransactionRow(
+                                display.style(of: transaction),
+                                title: viewModel.recordedDay(transaction),
+                                subtitle: transaction.isConfirmed
+                                    ? display.methodName(of: transaction)
+                                    : String(localized: "Draft", bundle: #bundle),
+                                amount: display.amount(of: transaction),
+                            )
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }

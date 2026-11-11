@@ -13,8 +13,9 @@ public struct CreditCardDraft: Sendable {
     /// Dual cards: what is owed in the second currency.
     public var secondDebt: Decimal
     public var limit: Decimal?
-    public var cutoffDay: Int
-    public var dueDay: Int
+    /// Both days are optional: the web and the API treat a card without them as valid.
+    public var cutoffDay: Int?
+    public var dueDay: Int?
 
     public init(
         bank: String,
@@ -25,8 +26,8 @@ public struct CreditCardDraft: Sendable {
         principalDebt: Decimal = 0,
         secondDebt: Decimal = 0,
         limit: Decimal? = nil,
-        cutoffDay: Int,
-        dueDay: Int,
+        cutoffDay: Int? = nil,
+        dueDay: Int? = nil,
     ) {
         self.bank = bank
         self.lastFour = lastFour
