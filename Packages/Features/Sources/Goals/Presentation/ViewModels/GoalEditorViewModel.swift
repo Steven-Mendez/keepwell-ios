@@ -134,7 +134,8 @@ public final class GoalEditorViewModel: Identifiable {
     // MARK: Actions
 
     public func save() async -> SavingsGoal? {
-        guard canSave else { return nil }
+        // A zero target passes this guard on purpose, so the editor can say why it isn't saved.
+        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !isSaving else { return nil }
         guard let amount = AmountInput.decimal(from: targetText), amount > 0 else {
             errorMessage = Self.message(for: .invalidAmount)
             return nil

@@ -99,7 +99,7 @@ struct GoalsViewModelTests {
         editor.targetText = "0"
         #expect(await editor.save() == nil)
         #expect(editor.errorMessage == "The target has to be greater than zero.")
-        editor.setName(String(repeating: "x", count: 60))
+        editor.setName(String(repeating: "x", count: 80))
         #expect(editor.name.count == SavingsGoal.maxNameLength)
         #expect(editor.targetMonthTitle == "No date")
     }

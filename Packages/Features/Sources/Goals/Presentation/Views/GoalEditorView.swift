@@ -95,17 +95,7 @@ struct GoalEditorView: View {
                     text: $viewModel.targetText,
                 )
                 .focused($isTargetFocused)
-                if viewModel.showsCurrencyPicker {
-                    Menu {
-                        ForEach(viewModel.currencyOptions, id: \.self) { code in
-                            Button(code) { viewModel.currency = code }
-                        }
-                    } label: {
-                        KWValueRow(String(localized: "Currency", bundle: #bundle), value: "\(viewModel.currency) ›", verticalPadding: 14)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
+                currencyRow
                 targetMonth
             }
             KWSectionHeader(String(localized: "Color", bundle: #bundle))
@@ -123,6 +113,21 @@ struct GoalEditorView: View {
                 .buttonStyle(.kw(.destructive, size: .row))
                 .padding(.top, KWSpacing.xs)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var currencyRow: some View {
+        if viewModel.showsCurrencyPicker {
+            Menu {
+                ForEach(viewModel.currencyOptions, id: \.self) { code in
+                    Button(code) { viewModel.currency = code }
+                }
+            } label: {
+                KWValueRow(String(localized: "Currency", bundle: #bundle), value: "\(viewModel.currency) ›", verticalPadding: 14)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 
