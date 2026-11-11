@@ -81,6 +81,16 @@
         }
       }
     },
+    "All your money, in one place" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo tu dinero, en un solo lugar"
+          }
+        }
+      }
+    },
     "Allow notifications" : {
       "localizations" : {
         "es" : {
@@ -391,6 +401,16 @@
         }
       }
     },
+    "Keep clear accounts in one or more currencies. Log expenses, transfers and drafts at your own pace." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lleva tus cuentas claras en una o más monedas. Anota gastos, transferencias y borradores a tu propio ritmo."
+          }
+        }
+      }
+    },
     "Keepwell passcode" : {
       "localizations" : {
         "es" : {
@@ -407,16 +427,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Últimos 4 dígitos"
-          }
-        }
-      }
-    },
-    "Log expenses, income and transfers. Cards, cash and drafts to confirm later." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anota gastos, ingresos y transferencias. Tarjetas, efectivo y borradores para confirmar después."
           }
         }
       }
@@ -837,16 +847,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nombre"
-          }
-        }
-      }
-    },
-    "Your money, clear, in one or two currencies" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tu dinero claro, en una o dos monedas"
           }
         }
       }
