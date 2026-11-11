@@ -38,7 +38,6 @@ public struct SettingsView: View {
     private let onSetUpPasscode: () -> Void
     private let onOpenCategories: (TransactionKind) -> Void
     private let onOpenPaymentMethods: () -> Void
-    private let onOpenRecurring: () -> Void
     private let onOpenRules: () -> Void
     private let onShowKeyboardShortcuts: () -> Void
     private let account: SettingsAccountViews?
@@ -53,7 +52,6 @@ public struct SettingsView: View {
         onSetUpPasscode: @escaping () -> Void = {},
         onOpenCategories: @escaping (TransactionKind) -> Void = { _ in },
         onOpenPaymentMethods: @escaping () -> Void = {},
-        onOpenRecurring: @escaping () -> Void = {},
         onOpenRules: @escaping () -> Void = {},
         onShowKeyboardShortcuts: @escaping () -> Void = {},
         account: SettingsAccountViews? = nil,
@@ -67,7 +65,6 @@ public struct SettingsView: View {
         self.onSetUpPasscode = onSetUpPasscode
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
-        self.onOpenRecurring = onOpenRecurring
         self.onOpenRules = onOpenRules
         self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
@@ -170,21 +167,10 @@ public struct SettingsView: View {
                         overview.paymentMethodCount,
                     )
                 }
-                Button(action: onOpenRecurring) { recurringRow }
                 Button(action: onOpenRules) { rulesRow(count: overview.categorizationRuleCount) }
             }
             .buttonStyle(.plain)
         }
-    }
-
-    private var recurringRow: some View {
-        KWSettingsRow(
-            String(localized: "Recurring", bundle: #bundle),
-            description: String(localized: "Subscriptions and regular movements", bundle: #bundle),
-            icon: .subscription,
-            tint: KWSettingsTint.reminders,
-            accessory: .chevron,
-        )
     }
 
     private func rulesRow(count: Int) -> some View {

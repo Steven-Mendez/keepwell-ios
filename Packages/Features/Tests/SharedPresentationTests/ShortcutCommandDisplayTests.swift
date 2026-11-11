@@ -6,7 +6,7 @@ struct ShortcutCommandDisplayTests {
     @Test
     func emptyQueryOffersEverything() {
         #expect(ShortcutCommandDisplay.suggestions(for: "", in: ShortcutCommand.actions).count == 8)
-        #expect(ShortcutCommandDisplay.suggestions(for: "  ", in: ShortcutCommand.destinations).count == 8)
+        #expect(ShortcutCommandDisplay.suggestions(for: "  ", in: ShortcutCommand.destinations).count == 9)
     }
 
     @Test
@@ -33,8 +33,8 @@ struct ShortcutCommandDisplayTests {
     @Test
     func listHasOneRowPerShortcut() {
         let rows = ShortcutCommandDisplay.shortcutRows
-        // ⌘K, N, E, I, T, /, four digits, eight "G" jumps and "?".
-        #expect(rows.count == 6 + 4 + 8 + 1)
+        // ⌘K, N, E, I, T, /, five digits, nine "G" jumps and "?".
+        #expect(rows.count == 6 + 5 + 9 + 1)
         #expect(rows.first?.keys == ["⌘", "K"])
         #expect(rows.last?.keys == ["?"])
     }

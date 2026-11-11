@@ -88,6 +88,7 @@ extension RootView {
         case .transactions: tab = .transactions
         case .accounts: tab = .accounts
         case .summary: tab = .summary
+        case .plan: tab = .plan
         case .recurring: navigator.push(.recurring)
         case .goals: navigator.push(.goals)
         case .debts: navigator.push(.debts)

@@ -9,8 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- A fifth tab, Plan, after Summary: one card each for Recurring (subscriptions per month and the
+  next movement), Savings goals (the first goal with its progress) and Debts (what you owe and
+  are owed, and the next installment), each opening its screen. Keyboard: 5 and G then P.
 - Hardware-keyboard shortcuts, as Keepwell for the web has: N logs a transaction, E, I and T start
-  an expense, income or transfer, 1 to 4 switch tabs, G then H, T, A, S, R, G or D jumps to a
+  an expense, income or transfer, 1 to 5 switch tabs, G then H, T, A, S, R, G or D jumps to a
   screen, "," opens Settings, "/" and Command-K open search, and "?" lists them all. The keys
   stay out of the way while you type or a sheet is open. Settings > Profile & preferences >
   Keyboard shortcuts shows the same list.
@@ -63,6 +66,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Recurring moved out of Settings: it lives under the Plan tab. Settings rows for your name and
+  payment reminders now carry a one-line description, as on the web.
 - Goals, loans, lenders and personal debts accept names up to 60 characters.
 - Adding a credit card no longer requires the cutoff and payment days: they start as "Not set",
   and the steppers begin at a value only once you choose to set one. The reminder is only

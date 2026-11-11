@@ -133,6 +133,10 @@ targets:
       - package: Features
         product: DebtsPresentation
       - package: Features
+        product: PlanDomain
+      - package: Features
+        product: PlanPresentation
+      - package: Features
         product: CloudAccountDomain
       - package: Features
         product: CloudAccountData
@@ -223,6 +227,8 @@ schemes:
         - package: Features/GoalsPresentation
         - package: Features/DebtsDomain
         - package: Features/DebtsPresentation
+        - package: Features/PlanDomain
+        - package: Features/PlanPresentation
       targets:
         - package: Core/CoreTests
         - package: DesignSystem/DesignSystemTests
@@ -253,6 +259,8 @@ schemes:
         - package: Features/GoalsPresentationTests
         - package: Features/DebtsDomainTests
         - package: Features/DebtsPresentationTests
+        - package: Features/PlanDomainTests
+        - package: Features/PlanPresentationTests
         - package: Features/CloudAccountDomainTests
         - package: Features/CloudAccountDataTests
         - package: Features/CloudAccountPresentationTests

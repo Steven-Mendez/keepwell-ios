@@ -21,6 +21,16 @@
         }
       }
     },
+    "Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planificar"
+          }
+        }
+      }
+    },
     "Saves an expense in Keepwell with its amount, category and how you paid." : {
       "localizations" : {
         "es" : {

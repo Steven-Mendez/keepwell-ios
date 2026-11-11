@@ -1,12 +1,13 @@
 import Foundation
 
-/// A place the keyboard can jump to: the four tabs, the sections Home pushes and Settings. Same
+/// A place the keyboard can jump to: the five tabs, the sections Home pushes and Settings. Same
 /// set and letters as the web's `MAIN_NAV`, `SECTION_NAV` and `SETTINGS_NAV`.
 public enum ShortcutDestination: CaseIterable, Hashable, Sendable {
     case home
     case transactions
     case accounts
     case summary
+    case plan
     case recurring
     case goals
     case debts
@@ -19,6 +20,7 @@ public enum ShortcutDestination: CaseIterable, Hashable, Sendable {
         case .transactions: "t"
         case .accounts: "a"
         case .summary: "s"
+        case .plan: "p"
         case .recurring: "r"
         case .goals: "g"
         case .debts: "d"
@@ -33,6 +35,7 @@ public enum ShortcutDestination: CaseIterable, Hashable, Sendable {
         case .transactions: 2
         case .accounts: 3
         case .summary: 4
+        case .plan: 5
         default: nil
         }
     }

@@ -30,6 +30,7 @@ struct SettingsSection<Content: View>: View {
 /// A settings row whose value opens a menu of fixed choices.
 struct SettingsMenuRow<Option: Hashable>: View {
     let label: String
+    var description: String?
     let icon: KWIcon
     let tint: Color
     let value: String
@@ -43,7 +44,7 @@ struct SettingsMenuRow<Option: Hashable>: View {
                 Button(title(option)) { select(option) }
             }
         } label: {
-            KWSettingsRow(label, icon: icon, tint: tint, value: value, accessory: .chevron)
+            KWSettingsRow(label, description: description, icon: icon, tint: tint, value: value, accessory: .chevron)
         }
         .buttonStyle(.plain)
     }
@@ -103,7 +104,12 @@ struct ProfileSection: View {
 
     /// The name the lock screen, home and the cards greet with ("Good morning, Steven").
     private var nameRow: some View {
-        KWSettingsRow(String(localized: "Your name", bundle: #bundle), icon: .person, tint: KWSettingsTint.profile) {
+        KWSettingsRow(
+            String(localized: "Your name", bundle: #bundle),
+            description: String(localized: "For the greeting", bundle: #bundle),
+            icon: .person,
+            tint: KWSettingsTint.profile,
+        ) {
             TextField(String(localized: "For the greeting", bundle: #bundle), text: $viewModel.nameText)
                 .multilineTextAlignment(.trailing)
                 .font(KWTextStyle.body.font.weight(.semibold))

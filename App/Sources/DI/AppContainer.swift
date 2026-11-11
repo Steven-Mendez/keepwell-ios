@@ -264,7 +264,7 @@ final class AppContainer {
         }
     }
 
-    private func makeGetRecurringOverview() -> any GetRecurringOverviewUseCase {
+    func makeGetRecurringOverview() -> any GetRecurringOverviewUseCase {
         DefaultGetRecurringOverviewUseCase(
             rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
         )

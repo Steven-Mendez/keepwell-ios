@@ -13,6 +13,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     case bell
     case bolt
     case bus
+    case calendarCheck
     case cart
     case cash
     case chartBars
@@ -74,7 +75,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
     /// The SVG `stroke-linejoin` each icon was drawn with; the rest use the SVG default (miter).
     var roundJoins: Bool {
         switch self {
-        case .arrowDown, .arrowDownLeft, .arrowRight, .arrowUp, .arrowUpRight, .bank, .bolt, .bus, .cart, .cash, .check,
+        case .arrowDown, .arrowDownLeft, .arrowRight, .arrowUp, .arrowUpRight, .bank, .bolt, .bus, .calendarCheck, .cart, .cash, .check,
              .cloud, .creditCard, .download, .droplet, .faceID, .health, .heart, .home, .pencil, .phone, .settings, .share, .subscription,
              .tools, .transfer, .trash, .wallet, .bell, .coffee, .document, .externalLink, .key, .lock, .logOut, .refresh,
              .shield, .sparkles, .tag:
@@ -101,6 +102,7 @@ public enum KWIcon: String, CaseIterable, Sendable {
                 .rect(x: 4, y: 4, width: 16, height: 13, radius: 3),
                 .path("M4 11h16M8 20l-1 1M16 20l1 1M8 14h.01M16 14h.01"),
             ]
+        case .calendarCheck: [.rect(x: 3, y: 4, width: 18, height: 18, radius: 2), .path("M16 2v4M8 2v4M3 10h18m-12 6 2 2 4-4")]
         case .cart:
             [.path("M3 4h2l2.4 11h11L21 7H6.2"), .circle(cx: 9, cy: 19, radius: 1.5), .circle(cx: 17, cy: 19, radius: 1.5)]
         case .cash: [.rect(x: 3, y: 6, width: 18, height: 12, radius: 2), .circle(cx: 12, cy: 12, radius: 2.5)]
