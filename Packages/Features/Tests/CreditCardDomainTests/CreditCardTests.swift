@@ -26,6 +26,27 @@ struct CreditCardTests {
     }
 
     @Test
+    func countsEveryMovementThatDeletingWouldRemove() async throws {
+        let store = InMemoryStore(sample: sample)
+        let result = try await detail(store)
+        let touching = await store.fetchTransactions(in: nil).count { TransactionScope.account(SampleData.IDs.mastercard).includes($0) }
+        #expect(result.movementCount == touching)
+        #expect(touching > 0)
+    }
+
+    @Test
+    func aDualCardTotalsItsDebtOnlyWithARate() async throws {
+        let result = try await detail(InMemoryStore(sample: sample))
+        #expect(result.showsTotalDebt)
+        let withoutRate = try CreditCardDetail(
+            account: result.account, holder: result.holder, balances: result.balances, totalDebt: result.totalDebt,
+            available: nil, cycle: nil, cycleTransactions: [], nextCutoff: nil, nextDue: nil,
+            settings: CurrencySettings(principal: "USD"), accounts: [], cards: [], categories: [],
+        )
+        #expect(!withoutRate.showsTotalDebt)
+    }
+
+    @Test
     func cycleMovementsBelongToTheCardAndTheCycle() async throws {
         let result = try await detail(InMemoryStore(sample: sample))
         let cycle = try #require(result.cycle)

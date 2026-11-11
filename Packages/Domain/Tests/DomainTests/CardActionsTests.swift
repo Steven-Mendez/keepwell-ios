@@ -67,6 +67,49 @@ struct CardActionsTests {
     }
 
     @Test
+    func cardNumberIsSavedAndKeepsTheArt() async throws {
+        let store = InMemoryStore(sample: .standard)
+        try await DefaultSetCardNumberUseCase(cards: store).execute(cardID: IDs.visaHolder, lastFour: "4321", network: .mastercard)
+        let after = try await card(IDs.visaHolder, in: store)
+        #expect(after.lastFour == "4321")
+        #expect(after.network == .mastercard)
+        #expect(after.color == .grafito)
+    }
+
+    @Test
+    func aCreditCardCannotLoseItsDigits() async {
+        let store = InMemoryStore(sample: .standard)
+        await #expect(throws: DomainError.invalidLastFour("")) {
+            try await DefaultSetCardNumberUseCase(cards: store).execute(cardID: IDs.visaHolder, lastFour: nil, network: .visa)
+        }
+    }
+
+    @Test
+    func aDebitCardMayClearItsDigits() async throws {
+        let store = InMemoryStore(sample: .standard)
+        try await DefaultSetCardNumberUseCase(cards: store).execute(cardID: IDs.savingsDebit, lastFour: "", network: nil)
+        let after = try await card(IDs.savingsDebit, in: store)
+        #expect(after.lastFour == nil)
+        #expect(after.network == nil)
+    }
+
+    @Test
+    func digitsMustBeFour() async {
+        let store = InMemoryStore(sample: .standard)
+        await #expect(throws: DomainError.invalidLastFour("12")) {
+            try await DefaultSetCardNumberUseCase(cards: store).execute(cardID: IDs.visaHolder, lastFour: "12", network: nil)
+        }
+    }
+
+    @Test
+    func aTransferChannelHasNoNumber() async {
+        let store = InMemoryStore(sample: .standard)
+        await #expect(throws: DomainError.notFound(IDs.savingsTransfer)) {
+            try await DefaultSetCardNumberUseCase(cards: store).execute(cardID: IDs.savingsTransfer, lastFour: "1234", network: nil)
+        }
+    }
+
+    @Test
     func renamingTrimsTheName() async throws {
         let store = InMemoryStore(sample: .standard)
         try await DefaultRenameAccountUseCase(accounts: store).execute(accountID: IDs.savings, name: "  Travel  ")
