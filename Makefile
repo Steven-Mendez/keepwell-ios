@@ -26,12 +26,13 @@ XCODEBUILD = xcodebuild \
 	$(XCODEBUILD_FLAGS)
 # Tests assert the English source strings, so they must not depend on the machine's language.
 # xcodebuild rejects these flags for any action other than `test`, so `build` must not get them.
-XCODEBUILD_TEST = $(XCODEBUILD) -testLanguage en -testRegion US
+# XCODEBUILD_TEST_FLAGS is empty locally; CI uses it for test timeouts.
+XCODEBUILD_TEST = $(XCODEBUILD) -testLanguage en -testRegion US $(XCODEBUILD_TEST_FLAGS)
 
 APP_PATH      := $(DERIVED_DATA)/Build/Products/$(CONFIG)-iphonesimulator/Keepwell.app
 DEVICE_HUB    := $(shell xcode-select -p)/../Applications/DeviceHub.app
 
-.PHONY: help bootstrap tools generate resolve hooks open run lint format build test test-unit test-ui test-record-snapshots clean
+.PHONY: help bootstrap tools generate resolve hooks open run lint format build test test-unit test-ui test-record-snapshots testflight clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}'
@@ -101,6 +102,9 @@ test-record-snapshots: generate ## Re-record snapshot reference images that chan
 		$(XCODEBUILD_TEST) -skip-testing:KeepwellUITests test
 	$(XCODEBUILD_TEST) -skip-testing:KeepwellUITests test
 	@echo "Review and commit the changes under Packages/*/Tests/**/__Snapshots__."
+
+testflight: generate ## Archive Release and upload to TestFlight (needs an Xcode account, or ASC_KEY_PATH/ASC_KEY_ID/ASC_ISSUER_ID)
+	scripts/testflight.sh
 
 clean: ## Delete build artifacts and the generated project
 	rm -rf build $(PROJECT)

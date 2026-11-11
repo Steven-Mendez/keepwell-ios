@@ -1,10 +1,29 @@
 name: CI
 
+# Cost model: the macOS runner is the only expensive part (GitHub bills macOS at ~10x a Linux minute and
+# a free private repo only includes a small monthly budget), so everything is built around running it
+# as rarely and as briefly as possible:
+#   - docs-only changes do not trigger CI;
+#   - develop/staging/main share one commit (fast-forward promotion): only develop runs the macOS job,
+#     staging/main wait for that result on Linux (see scripts/ci-gate.sh);
+#   - the app is compiled once: the separate build step is gone and the test steps share DerivedData.
 on:
   pull_request:
     branches: [develop, staging, main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/pull_request_template.md"
+      - ".github/dependabot.yml"
+      - "LICENSE"
   push:
     branches: [develop, staging, main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/pull_request_template.md"
+      - ".github/dependabot.yml"
+      - "LICENSE"
   workflow_dispatch:
 
 concurrency:
@@ -17,13 +36,44 @@ permissions:
 env:
   XCODE_PATH: /Applications/Xcode_27.1.app
   SIMULATOR_NAME: iPhone 17e
+  # CI-only xcodebuild settings (local builds keep Xcode's defaults): no index store (nothing reads
+  # it on a runner) and no dSYM generation.
+  XCODEBUILD_FLAGS: COMPILER_INDEX_STORE_ENABLE=NO DEBUG_INFORMATION_FORMAT=dwarf
 
 jobs:
+  gate:
+    name: Decide whether to test
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      run_tests: ${{ steps.gate.outputs.run_tests }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts
+
+      - name: Reuse the develop result for promoted commits
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          WORKFLOW_FILE: ios-ci.yml
+        run: scripts/ci-gate.sh
+
   lint-build-test:
     name: Lint, build and tests
-    # GitHub image with Xcode 27.x (macOS 27). Xcode is selected explicitly below.
+    needs: gate
+    if: needs.gate.outputs.run_tests == 'true'
+    # GitHub-hosted arm64 image with Xcode 27.x (preview label). Xcode is selected explicitly below.
     runs-on: xcode-27
-    timeout-minutes: 45
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,10 +82,9 @@ jobs:
         run: |
           sudo xcode-select --switch "$XCODE_PATH/Contents/Developer"
           xcodebuild -version
-          swift --version
 
       - name: Install tools (mise)
-        uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
         with:
           install: true
           cache: true
@@ -50,11 +99,36 @@ jobs:
           key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved', 'Packages/*/Package.swift') }}
           restore-keys: spm-${{ runner.os }}-
 
-      - name: Build
-        run: make build
+      - name: Boot simulator
+        # Starts booting now (returns immediately) so it is ready by the time the unit tests have compiled.
+        run: xcrun simctl boot "$(scripts/simulator-destination.sh | sed 's/.*id=//')" || true
 
-      - name: Tests (unit + UI, with coverage)
-        run: make test
+      # No separate `make build` step: `test` compiles the app and the test bundles itself, so a build
+      # step only compiled everything twice. (build-for-testing + test-without-building was tried and
+      # dropped: the coverage report came out empty.) The UI step reuses the unit step's DerivedData.
+      - name: Unit tests (with coverage)
+        run: make test-unit
+
+      - name: UI tests (with coverage)
+        id: ui
+        # A runner that "hung before establishing a connection" never finishes by itself: cap the step
+        # and retry once on a clean simulator. A real failure fails both attempts.
+        timeout-minutes: 12
+        continue-on-error: true
+        env:
+          XCODEBUILD_TEST_FLAGS: -test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300
+        run: make test-ui
+
+      - name: UI tests (retry)
+        if: steps.ui.outcome != 'success'
+        timeout-minutes: 12
+        env:
+          XCODEBUILD_TEST_FLAGS: -test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300
+        run: |
+          xcrun simctl shutdown all || true
+          xcrun simctl boot "$(scripts/simulator-destination.sh | sed 's/.*id=//')" || true
+          xcrun simctl bootstatus "$(scripts/simulator-destination.sh | sed 's/.*id=//')" -b >/dev/null
+          make test-ui
 
       - name: Check Package.resolved
         if: always()
@@ -66,7 +140,10 @@ jobs:
 
       - name: Coverage report
         if: success()
-        run: xcrun xccov view --report --only-targets build/Results/All.xcresult | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          rm -rf build/Results/All.xcresult
+          xcrun xcresulttool merge build/Results/Unit.xcresult build/Results/UI.xcresult --output-path build/Results/All.xcresult
+          xcrun xccov view --report --only-targets build/Results/All.xcresult | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload test results
         if: failure()
