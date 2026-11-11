@@ -253,7 +253,9 @@ final class AppContainer {
             updateTerms: DefaultUpdateCreditTermsUseCase(accounts: store),
             setCardColor: DefaultSetCardColorUseCase(cards: store),
             setCardDetails: DefaultSetCardDetailsUseCase(cards: store),
+            setCardNumber: DefaultSetCardNumberUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
             getPreferredName: makeGetPreferredName(),
         )
     }
@@ -268,9 +270,21 @@ final class AppContainer {
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
             setDetails: DefaultSetCardDetailsUseCase(cards: store),
+            setNumber: DefaultSetCardNumberUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
             getPreferredName: makeGetPreferredName(),
+        )
+    }
+
+    // MARK: - Cash
+
+    func makeCashViewModel(accountID: UUID) -> CashViewModel {
+        CashViewModel(
+            accountID: accountID,
+            getDetail: DefaultGetCashDetailUseCase(accounts: store, cards: store, transactions: store, categories: store, settings: store),
+            renameAccount: DefaultRenameAccountUseCase(accounts: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
         )
     }
 

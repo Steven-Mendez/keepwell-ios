@@ -1046,6 +1046,56 @@
           }
         }
       }
+    },
+    "Card number" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de la tarjeta"
+          }
+        }
+      }
+    },
+    "Last 4 digits" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Últimos 4 dígitos"
+          }
+        }
+      }
+    },
+    "Network" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Red"
+          }
+        }
+      }
+    },
+    "We never ask for the full number or the CVV." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nunca pedimos el número completo ni el CVV."
+          }
+        }
+      }
+    },
+    "Enter the last 4 digits." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe los últimos 4 dígitos."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

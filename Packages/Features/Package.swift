@@ -443,6 +443,15 @@ let package = Package(
             resources: [.process("Resources")],
         ),
         .testTarget(
+            name: "CreditCardPresentationTests",
+            dependencies: [
+                "CreditCardPresentation",
+                "CreditCardDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
             name: "CreditCardDomainTests",
             dependencies: [
                 "CreditCardDomain",

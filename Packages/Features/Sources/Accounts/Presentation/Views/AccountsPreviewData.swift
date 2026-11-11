@@ -23,6 +23,7 @@ enum AccountsPreviewData {
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
             setDetails: DefaultSetCardDetailsUseCase(cards: store),
+            setNumber: DefaultSetCardNumberUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore(name: "Steven")),

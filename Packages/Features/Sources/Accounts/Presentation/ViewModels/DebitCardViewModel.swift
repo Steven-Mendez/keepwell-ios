@@ -28,6 +28,7 @@ public final class DebitCardViewModel {
     private let getDetail: any GetDebitCardDetailUseCase
     private let setColor: any SetCardColorUseCase
     private let setDetails: any SetCardDetailsUseCase
+    private let setNumber: any SetCardNumberUseCase
     private let renameAccount: any RenameAccountUseCase
     private let deleteAccount: any DeleteAccountUseCase
     private let getPreferredName: any GetPreferredNameUseCase
@@ -38,6 +39,7 @@ public final class DebitCardViewModel {
         getDetail: any GetDebitCardDetailUseCase,
         setColor: any SetCardColorUseCase,
         setDetails: any SetCardDetailsUseCase,
+        setNumber: any SetCardNumberUseCase,
         renameAccount: any RenameAccountUseCase,
         deleteAccount: any DeleteAccountUseCase,
         getPreferredName: any GetPreferredNameUseCase,
@@ -47,6 +49,7 @@ public final class DebitCardViewModel {
         self.getDetail = getDetail
         self.setColor = setColor
         self.setDetails = setDetails
+        self.setNumber = setNumber
         self.renameAccount = renameAccount
         self.deleteAccount = deleteAccount
     }
@@ -88,6 +91,14 @@ public final class DebitCardViewModel {
         guard let cardID = detail?.card.id else { return false }
         return await perform { () async throws(DomainError) in
             try await setDetails.execute(cardID: cardID, productName: productName, expiry: expiry)
+        }
+    }
+
+    /// The digits and network on the plastic; empty digits clear them. Returns whether the sheet can close.
+    public func setNumber(lastFour: String, network: CardNetwork?) async -> Bool {
+        guard let cardID = detail?.card.id else { return false }
+        return await perform { () async throws(DomainError) in
+            try await setNumber.execute(cardID: cardID, lastFour: lastFour, network: network)
         }
     }
 

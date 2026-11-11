@@ -12,12 +12,14 @@ public struct CreditCardView: View {
     private let onSeeAllMovements: () -> Void
     @Environment(\.colorScheme) private var colorScheme
     @State private var sheet: Sheet?
+    @State private var isConfirmingDeletion = false
 
     enum Sheet: String, Identifiable {
         case terms
         case name
         case color
         case details
+        case number
         var id: String { rawValue }
     }
 
@@ -45,6 +47,7 @@ public struct CreditCardView: View {
                     terms(detail)
                     manage(detail)
                     cycle(detail)
+                    deleteButton
                 } else {
                     KWNavigationHeader("", buttonStyle: .translucent, onBack: onBack)
                     if viewModel.state == .failed {
@@ -73,6 +76,25 @@ public struct CreditCardView: View {
         .foregroundStyle(KWColor.Text.primary)
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
+        .confirmationDialog(
+            viewModel.detail.map(viewModel.deleteTitle) ?? "",
+            isPresented: $isConfirmingDeletion,
+            titleVisibility: .visible,
+        ) {
+            Button(role: .destructive) {
+                Task {
+                    if await viewModel.delete() {
+                        onBack()
+                    }
+                }
+            } label: {
+                Text("Delete account", bundle: #bundle)
+            }
+        } message: {
+            if let detail = viewModel.detail {
+                Text(viewModel.deleteMessage(detail))
+            }
+        }
         .sheet(item: $sheet, onDismiss: viewModel.clearError) { sheet in
             sheetContent(sheet)
                 .presentationDetents([.large])
@@ -104,6 +126,17 @@ public struct CreditCardView: View {
                     errorMessage: viewModel.errorMessage,
                     isSaving: viewModel.isSaving,
                     onSave: viewModel.setHolderDetails,
+                    onClose: { self.sheet = nil },
+                )
+            }
+        case .number:
+            if let holder = viewModel.detail?.holder {
+                CardNumberSheet(
+                    card: holder,
+                    requiresDigits: true,
+                    errorMessage: viewModel.errorMessage,
+                    isSaving: viewModel.isSaving,
+                    onSave: viewModel.setHolderNumber,
                     onClose: { self.sheet = nil },
                 )
             }
@@ -141,8 +174,8 @@ public struct CreditCardView: View {
     private func debt(_ detail: CreditCardDetail) -> some View {
         BalanceHeader(
             String(localized: "Current debt", bundle: #bundle),
-            amount: viewModel.owed(detail.totalDebt),
-            details: detail.balances.count > 1 ? viewModel.debtsSecondFirst(detail).map(viewModel.owed) : [],
+            amount: viewModel.headline(detail),
+            footnote: viewModel.totalDebtLine(detail),
         )
     }
 
@@ -219,7 +252,25 @@ extension CreditCardView {
                         sheet = .details
                     }
                 }
+                if let holder = detail.holder {
+                    CardManageRow(
+                        String(localized: "Card number", bundle: #bundle),
+                        icon: .creditCard,
+                        value: CardDisplay.numberSummary(of: holder),
+                    ) {
+                        sheet = .number
+                    }
+                }
                 CardManageRow(String(localized: "Billing details", bundle: #bundle), icon: .creditCard) { sheet = .terms }
+            }
+        }
+    }
+
+    /// Apart from the edits, as on a bank account, so it isn't tapped on the way to "Card color".
+    private var deleteButton: some View {
+        KWGroupedCard(verticalPadding: KWSpacing.xxs) {
+            CardManageRow(String(localized: "Delete account", bundle: #bundle), icon: .trash, isDestructive: true) {
+                isConfirmingDeletion = true
             }
         }
     }

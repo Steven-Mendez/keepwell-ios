@@ -38,8 +38,9 @@ public final class AddCardViewModel {
     public var principalDebtText = "0.00"
     public var secondDebtText = "0.00"
     public var limitText = ""
-    public private(set) var cutoffDay = 28
-    public private(set) var dueDay = 15
+    /// `nil` is "Not set": a card needn't have a billing cycle.
+    public private(set) var cutoffDay: Int?
+    public private(set) var dueDay: Int?
     /// Debit only: the bank account the card is.
     public var accountName = ""
     public var accountCurrency = ""
@@ -123,12 +124,24 @@ public final class AddCardViewModel {
         }
     }
 
+    /// Where a day starts once the person chooses to set it: a typical cycle, not their first tap's direction.
+    static let startingCutoffDay = 28
+    static let startingDueDay = 15
+
     public func stepCutoff(by delta: Int) {
-        cutoffDay = Self.wrapDay(cutoffDay + delta)
+        cutoffDay = cutoffDay.map { Self.wrapDay($0 + delta) } ?? Self.startingCutoffDay
     }
 
     public func stepDue(by delta: Int) {
-        dueDay = Self.wrapDay(dueDay + delta)
+        dueDay = dueDay.map { Self.wrapDay($0 + delta) } ?? Self.startingDueDay
+    }
+
+    public func clearCutoff() {
+        cutoffDay = nil
+    }
+
+    public func clearDue() {
+        dueDay = nil
     }
 
     public var canAddCreditCard: Bool {
@@ -237,8 +250,14 @@ public final class AddCardViewModel {
         case .principal: String(localized: "Debt in \(first)", bundle: #bundle)
         case .second: String(localized: "Debt in \(other)", bundle: #bundle)
         }
-        let (cutoffDay, dueDay) = (cutoffDay, dueDay)
-        let cycle = String(localized: "\(debt) · cutoff day \(cutoffDay) · due day \(dueDay).", bundle: #bundle)
+        let cycle = switch (cutoffDay, dueDay) {
+        case let (cutoff?, due?): String(localized: "\(debt) · cutoff day \(cutoff) · due day \(due).", bundle: #bundle)
+        case let (cutoff?, nil): String(localized: "\(debt) · cutoff day \(cutoff).", bundle: #bundle)
+        case let (nil, due?): String(localized: "\(debt) · due day \(due).", bundle: #bundle)
+        case (nil, nil): String(localized: "\(debt).", bundle: #bundle)
+        }
+        // Without a due day there is nothing to remind about.
+        guard dueDay != nil else { return cycle }
         let days = context?.paymentReminderDaysBefore ?? 3
         let reminder = String(localized: "We'll remind you \(days) days before the due date.", bundle: #bundle)
         return "\(cycle) \(reminder)"

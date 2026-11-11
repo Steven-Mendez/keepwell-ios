@@ -13,6 +13,8 @@ public final class CreditCardViewModel {
         case loading
         case loaded(CreditCardDetail)
         case failed
+        /// The account was deleted from this screen; there is nothing left to show.
+        case deleted
     }
 
     public let accountID: UUID
@@ -26,7 +28,9 @@ public final class CreditCardViewModel {
     private let updateTerms: any UpdateCreditTermsUseCase
     private let setCardColor: any SetCardColorUseCase
     private let setCardDetails: any SetCardDetailsUseCase
+    private let setCardNumber: any SetCardNumberUseCase
     private let renameAccount: any RenameAccountUseCase
+    private let deleteAccount: any DeleteAccountUseCase
     private let getPreferredName: any GetPreferredNameUseCase
     let formatter = CurrencyFormatter()
 
@@ -36,7 +40,9 @@ public final class CreditCardViewModel {
         updateTerms: any UpdateCreditTermsUseCase,
         setCardColor: any SetCardColorUseCase,
         setCardDetails: any SetCardDetailsUseCase,
+        setCardNumber: any SetCardNumberUseCase,
         renameAccount: any RenameAccountUseCase,
+        deleteAccount: any DeleteAccountUseCase,
         getPreferredName: any GetPreferredNameUseCase,
     ) {
         self.getPreferredName = getPreferredName
@@ -45,7 +51,9 @@ public final class CreditCardViewModel {
         self.updateTerms = updateTerms
         self.setCardColor = setCardColor
         self.setCardDetails = setCardDetails
+        self.setCardNumber = setCardNumber
         self.renameAccount = renameAccount
+        self.deleteAccount = deleteAccount
     }
 
     public var detail: CreditCardDetail? {
@@ -57,6 +65,7 @@ public final class CreditCardViewModel {
     }
 
     public func load() async {
+        guard state != .deleted else { return }
         ownerName = await getPreferredName.execute()
         do {
             state = try await .loaded(getDetail.execute(accountID: accountID))
@@ -99,6 +108,30 @@ public final class CreditCardViewModel {
         guard let holderID = detail?.holder?.id else { return false }
         return await perform { () async throws(DomainError) in
             try await setCardDetails.execute(cardID: holderID, productName: productName, expiry: expiry)
+        }
+    }
+
+    /// Saves the plastic's last four digits (required on a credit card) and network. Returns whether
+    /// the sheet can close.
+    public func setHolderNumber(lastFour: String, network: CardNetwork?) async -> Bool {
+        guard let holderID = detail?.holder?.id else { return false }
+        return await perform { () async throws(DomainError) in
+            try await setCardNumber.execute(cardID: holderID, lastFour: lastFour, network: network)
+        }
+    }
+
+    /// Returns whether the account is gone, so the screen can close.
+    public func delete() async -> Bool {
+        isSaving = true
+        defer { isSaving = false }
+        do {
+            try await deleteAccount.execute(accountID: accountID)
+            errorMessage = nil
+            state = .deleted
+            return true
+        } catch {
+            errorMessage = Self.saveError
+            return false
         }
     }
 
@@ -146,9 +179,42 @@ public final class CreditCardViewModel {
         detail.balances.reversed()
     }
 
+    /// A dual card's headline: each currency's debt side by side, second currency first, so no
+    /// amounts in different currencies are ever added without the rate.
+    func headline(_ detail: CreditCardDetail) -> String {
+        guard detail.balances.count > 1 else { return owed(detail.totalDebt) }
+        return debtsSecondFirst(detail).map(owed).joined(separator: " · ")
+    }
+
     /// Debt reads as a positive amount owed.
     func owed(_ money: Money) -> String {
         formatter.string(Money(-money.amount, money.currency))
+    }
+
+    /// "Delete Bank One Premia?"
+    func deleteTitle(_ detail: CreditCardDetail) -> String {
+        let name = CardDisplay.name(of: detail.account)
+        return String(localized: "Delete \(name)?", bundle: #bundle)
+    }
+
+    /// Says what goes with the account before the person confirms, including the transfers that
+    /// reach other accounts, whose balances change too.
+    func deleteMessage(_ detail: CreditCardDetail) -> String {
+        let count = detail.movementCount
+        guard count > 0 else {
+            return String(localized: "The account and its card are deleted. This can't be undone.", bundle: #bundle)
+        }
+        return String(
+            localized: "The account, its card and its \(count) movements are deleted, including transfers with your other accounts, so their balances change too. This can't be undone.",
+            bundle: #bundle,
+        )
+    }
+
+    /// "Total $1,234.00": the whole debt of a dual card, only when the rate allows adding it up.
+    func totalDebtLine(_ detail: CreditCardDetail) -> String? {
+        guard detail.showsTotalDebt else { return nil }
+        let total = owed(detail.totalDebt)
+        return String(localized: "Total \(total)", bundle: #bundle)
     }
 
     func dayOfMonth(_ day: Int?, next: Date?) -> String? {

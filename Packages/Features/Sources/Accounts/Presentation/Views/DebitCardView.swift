@@ -18,6 +18,7 @@ public struct DebitCardView: View {
         case name
         case color
         case details
+        case number
         var id: String { rawValue }
     }
 
@@ -142,6 +143,13 @@ public struct DebitCardView: View {
                 ) {
                     sheet = .details
                 }
+                CardManageRow(
+                    String(localized: "Card number", bundle: #bundle),
+                    icon: .creditCard,
+                    value: CardDisplay.numberSummary(of: detail.card),
+                ) {
+                    sheet = .number
+                }
             }
         }
     }
@@ -173,6 +181,15 @@ extension DebitCardView {
                         )
                     },
                     onSave: viewModel.setColor,
+                    onClose: { self.sheet = nil },
+                )
+            case .number:
+                CardNumberSheet(
+                    card: detail.card,
+                    requiresDigits: false,
+                    errorMessage: viewModel.errorMessage,
+                    isSaving: viewModel.isSaving,
+                    onSave: viewModel.setNumber,
                     onClose: { self.sheet = nil },
                 )
             case .details:

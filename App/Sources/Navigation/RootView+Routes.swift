@@ -19,9 +19,7 @@ extension RootView {
         case .categorizationRules:
             RulesRoute(container: container, onBack: navigator.pop)
         case .paymentMethods:
-            PaymentMethodsRoute(container: container, onBack: navigator.pop) { account in
-                navigator.push(account.kind == .credit ? .creditCard(accountID: account.id) : .bankAccount(accountID: account.id))
-            }
+            PaymentMethodsRoute(container: container, onBack: navigator.pop, onOpenAccount: openAccount)
         case let .creditCard(accountID):
             CreditCardRoute(
                 container: container,
@@ -32,6 +30,13 @@ extension RootView {
             )
         case let .bankAccount(accountID):
             DebitCardRoute(
+                container: container,
+                accountID: accountID,
+                onBack: navigator.pop,
+                onSeeAllMovements: { navigator.push(.transactions(accountID: $0)) },
+            )
+        case let .cash(accountID):
+            CashRoute(
                 container: container,
                 accountID: accountID,
                 onBack: navigator.pop,
@@ -54,6 +59,14 @@ extension RootView {
             GoalsRoute(container: container, onBack: navigator.pop)
         case .debts:
             DebtsRoute(container: container, onBack: navigator.pop)
+        }
+    }
+
+    private func openAccount(_ account: Account) {
+        switch account.kind {
+        case .credit: navigator.push(.creditCard(accountID: account.id))
+        case .cash: navigator.push(.cash(accountID: account.id))
+        case .deposit: navigator.push(.bankAccount(accountID: account.id))
         }
     }
 

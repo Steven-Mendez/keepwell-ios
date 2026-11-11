@@ -241,6 +241,99 @@ public struct CardDetailsSheet: View {
     }
 }
 
+/// The last four digits and the network of a plastic, editable after it was created. Credit cards
+/// must keep their four digits; debit cards may leave them empty.
+public struct CardNumberSheet: View {
+    private let errorMessage: String?
+    private let isSaving: Bool
+    private let requiresDigits: Bool
+    private let onSave: (String, CardNetwork?) async -> Bool
+    private let onClose: () -> Void
+    @State private var digits: String
+    @State private var network: CardNetwork?
+
+    /// `onSave` returns whether the sheet can close.
+    public init(
+        card: Card,
+        requiresDigits: Bool,
+        errorMessage: String?,
+        isSaving: Bool,
+        onSave: @escaping (String, CardNetwork?) async -> Bool,
+        onClose: @escaping () -> Void,
+    ) {
+        _digits = State(initialValue: card.lastFour ?? "")
+        _network = State(initialValue: card.network)
+        self.requiresDigits = requiresDigits
+        self.errorMessage = errorMessage
+        self.isSaving = isSaving
+        self.onSave = onSave
+        self.onClose = onClose
+    }
+
+    public var body: some View {
+        KWScreen(top: KWSpacing.xl, bottom: KWSpacing.xl) {
+            VStack(alignment: .leading, spacing: KWSpacing.md) {
+                KWFlowHeader(.close, action: onClose)
+                Text("Card number", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
+                KWGroupedCard {
+                    KWTextFieldRow(
+                        String(localized: "Last 4 digits", bundle: #bundle),
+                        placeholder: "0000",
+                        text: $digits,
+                        digitLimit: 4,
+                        width: 110,
+                    )
+                    networkRow
+                }
+                Text("We never ask for the full number or the CVV.", bundle: #bundle)
+                    .font(KWTextStyle.captionSm.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.muted)
+                if let message = isValid ? errorMessage : String(localized: "Enter the last 4 digits.", bundle: #bundle) {
+                    Text(message)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.State.negative)
+                }
+                Spacer(minLength: 0)
+                Button(action: save) { Text("Save", bundle: #bundle) }
+                    .buttonStyle(.kw())
+                    .disabled(isSaving || !isValid)
+            }
+        }
+    }
+
+    /// Empty is fine for a debit card; anything else must be exactly four digits.
+    private var isValid: Bool {
+        digits.isEmpty ? !requiresDigits : digits.count == 4
+    }
+
+    private var networkRow: some View {
+        let notSet = String(localized: "Not set", bundle: #bundle)
+        return Menu {
+            Button { network = nil } label: { Text(notSet) }
+            ForEach(CardNetwork.allCases, id: \.self) { option in
+                Button(CardDisplay.networkName(option)) { network = option }
+            }
+        } label: {
+            KWValueRow(
+                String(localized: "Network", bundle: #bundle),
+                value: (network.map { CardDisplay.networkName($0) } ?? notSet) + " ›",
+                style: network == nil ? .placeholder : .detail,
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func save() {
+        KWKeyboard.dismiss()
+        Task {
+            if await onSave(digits, network) {
+                onClose()
+            }
+        }
+    }
+}
+
 /// Picks a card's color with a live preview of the art.
 public struct CardColorSheet: View {
     private let preview: (CardColor) -> KWCardArt
