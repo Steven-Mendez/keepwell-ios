@@ -150,7 +150,8 @@ final class AppContainer {
 
     func makeSummaryViewModel() -> SummaryViewModel {
         let report = DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store, accounts: store)
-        return SummaryViewModel(getReport: report)
+        let range = DefaultGetRangeSummaryUseCase(transactions: store, settings: store)
+        return SummaryViewModel(getReport: report, getRange: range)
     }
 
     // MARK: - Settings and lock

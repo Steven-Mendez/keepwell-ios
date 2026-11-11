@@ -7,8 +7,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- Summary reads longer periods, as Keepwell for the web does: pick Month, This year, Last 12
+  months or a Custom From/To range. A period shows what you saved against the same months a year
+  earlier, the average spending, month-by-month bars, savings building up over time, your top
+  categories month by month, highlights (best and toughest month, months you saved, what grew and
+  dropped the most) and every year side by side.
+
 ### Changed
 
+- Goals, loans, lenders and personal debts accept names up to 60 characters.
 - The welcome has a new headline, "All your money, in one place", and a shorter description:
   one or more currencies, and expenses, transfers and drafts at your own pace.
 - Signing in to an account is faster. The first sync now downloads all your data at once instead
