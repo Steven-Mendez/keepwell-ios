@@ -82,8 +82,18 @@ public struct DebtView: View {
                 text: $viewModel.limitText,
             )
             .kwFocused($focus, equals: .limit)
-            stepper(String(localized: "Cutoff day", bundle: #bundle), value: viewModel.cutoffDay) { viewModel.stepCutoff(by: $0) }
-            stepper(String(localized: "Due day", bundle: #bundle), value: viewModel.dueDay) { viewModel.stepDue(by: $0) }
+            stepper(
+                String(localized: "Cutoff day", bundle: #bundle),
+                value: viewModel.cutoffDay,
+                step: { viewModel.stepCutoff(by: $0) },
+                clear: viewModel.clearCutoff,
+            )
+            stepper(
+                String(localized: "Due day", bundle: #bundle),
+                value: viewModel.dueDay,
+                step: { viewModel.stepDue(by: $0) },
+                clear: viewModel.clearDue,
+            )
         }
     }
 
@@ -116,17 +126,36 @@ public struct DebtView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    private func stepper(_ label: String, value: Int, step: @escaping (Int) -> Void) -> some View {
+    /// "Not set" until the person taps to set it; once set, − and + move it and "Not set" clears it again.
+    private func stepper(_ label: String, value: Int?, step: @escaping (Int) -> Void, clear: @escaping () -> Void) -> some View {
         HStack {
             Text(label).foregroundStyle(KWColor.Text.secondary).font(KWTextStyle.body.font)
             Spacer()
-            HStack(spacing: 10) {
-                stepButton("−", label: String(localized: "Decrease", bundle: #bundle)) { step(-1) }
-                Text("\(value)")
-                    .font(KWTextStyle.heading.font)
-                    .monospacedDigit()
-                    .frame(width: 28)
-                stepButton("+", label: String(localized: "Increase", bundle: #bundle)) { step(1) }
+            if let value {
+                HStack(spacing: 10) {
+                    stepButton("−", label: String(localized: "Decrease", bundle: #bundle)) { step(-1) }
+                    Text("\(value)")
+                        .font(KWTextStyle.heading.font)
+                        .monospacedDigit()
+                        .frame(width: 28)
+                    stepButton("+", label: String(localized: "Increase", bundle: #bundle)) { step(1) }
+                }
+                Button(action: clear) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(KWColor.Text.faint)
+                        .frame(width: 32, height: 32)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Not set", bundle: #bundle))
+            } else {
+                Button { step(1) } label: {
+                    Text("Not set", bundle: #bundle)
+                        .font(KWTextStyle.body.font)
+                        .foregroundStyle(KWColor.Text.muted)
+                        .frame(minHeight: KWLayout.minTouch)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(.vertical, 10)
