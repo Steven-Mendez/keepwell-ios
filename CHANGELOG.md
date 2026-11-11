@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- The welcome has a new headline, "All your money, in one place", and a shorter description:
+  one or more currencies, and expenses, transfers and drafts at your own pace.
 - The app icon now uses the designer's artwork exactly: the blue fades to a deeper navy, and the
   dark icon's wallet and gold padlock are drawn and placed as on the brand board. The small icon on
   the lock screen matches it. In light mode the logo is now in full color, with the gold padlock,
