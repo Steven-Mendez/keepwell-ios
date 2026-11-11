@@ -49,7 +49,12 @@ extension RootView {
                 onOpen: { navigator.push(.recurringRule(id: $0)) },
             )
         case let .recurringRule(id):
-            RecurringRuleRoute(container: container, ruleID: id, onBack: navigator.pop)
+            RecurringRuleRoute(
+                container: container,
+                ruleID: id,
+                onBack: navigator.pop,
+                onOpenTransaction: { navigator.push(.transaction(id: $0)) },
+            )
         case .goals:
             GoalsRoute(container: container, onBack: navigator.pop)
         case .debts:

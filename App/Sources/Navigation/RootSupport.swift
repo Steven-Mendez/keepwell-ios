@@ -406,14 +406,16 @@ extension View {
 struct RecurringRuleRoute: View {
     @State private var viewModel: RecurringRuleEditorViewModel
     let onBack: () -> Void
+    let onOpenTransaction: (UUID) -> Void
 
-    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void) {
+    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void, onOpenTransaction: @escaping (UUID) -> Void) {
         _viewModel = State(initialValue: container.makeRecurringRuleEditorViewModel(ruleID: ruleID))
         self.onBack = onBack
+        self.onOpenTransaction = onOpenTransaction
     }
 
     var body: some View {
-        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack)
+        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack, onOpenTransaction: onOpenTransaction)
             .navigationBarBackButtonHidden()
     }
 }
