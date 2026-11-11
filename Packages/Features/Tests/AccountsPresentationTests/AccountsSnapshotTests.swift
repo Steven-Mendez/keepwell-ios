@@ -16,7 +16,7 @@ struct AccountsSnapshotTests {
                 onAdd: {},
                 onOpenCreditCard: { _ in },
                 onOpenBankAccount: { _ in },
-                onOpenAccountMovements: { _ in },
+                onOpenCash: { _ in },
             ),
             height: 1500,
         )
@@ -52,7 +52,7 @@ struct AccountsLightModeSnapshotTests {
                 onAdd: {},
                 onOpenCreditCard: { _ in },
                 onOpenBankAccount: { _ in },
-                onOpenAccountMovements: { _ in },
+                onOpenCash: { _ in },
             ),
             height: 1500,
             named: "light",

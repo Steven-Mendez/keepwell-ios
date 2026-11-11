@@ -14,19 +14,30 @@ public struct DefaultMaterializeRecurringUseCase: MaterializeRecurringUseCase {
     private let rules: any RecurringRuleRepository
     private let transactions: any TransactionRepository
     private let settings: any SettingsRepository
+    private let accounts: any AccountRepository
+    private let cards: any CardRepository
+    private let categories: any CategoryRepository
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
+    /// Accounts, cards and categories are there so a rule that no longer validates (its category,
+    /// account or currency is gone) is skipped and left as it was, not recorded as bad data.
     public init(
         rules: any RecurringRuleRepository,
         transactions: any TransactionRepository,
         settings: any SettingsRepository,
+        accounts: any AccountRepository,
+        cards: any CardRepository,
+        categories: any CategoryRepository,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
         self.rules = rules
         self.transactions = transactions
         self.settings = settings
+        self.accounts = accounts
+        self.cards = cards
+        self.categories = categories
         self.calendar = calendar
         self.now = now
     }
@@ -37,7 +48,7 @@ public struct DefaultMaterializeRecurringUseCase: MaterializeRecurringUseCase {
         guard !active.isEmpty else { return 0 }
         let currencies = try await settings.load()?.currencies ?? .initial
         let result = try await RecurringSchedule.materialize(
-            active,
+            validRules(active, currencies: currencies),
             transactions: transactions.fetchTransactions(in: nil),
             today: now(),
             // Today's rate, as any movement recorded today gets.
@@ -47,6 +58,17 @@ public struct DefaultMaterializeRecurringUseCase: MaterializeRecurringUseCase {
         guard !result.isEmpty else { return 0 }
         try await rules.saveMaterialized(transactions: result.transactions, rules: result.rules)
         return result.transactions.count
+    }
+
+    private func validRules(_ all: [RecurringRule], currencies: CurrencySettings) async throws(DomainError) -> [RecurringRule] {
+        let accounts = try await accounts.fetchAccounts()
+        let cards = try await cards.fetchCards()
+        let categories = try await categories.fetchCategories()
+        return all.filter { rule in
+            (try? rule.validated(
+                currencies: currencies, accounts: accounts, cards: cards, categories: categories, calendar: calendar,
+            )) != nil
+        }
     }
 }
 

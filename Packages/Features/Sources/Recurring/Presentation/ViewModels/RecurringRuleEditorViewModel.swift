@@ -47,7 +47,15 @@ public final class RecurringRuleEditorViewModel {
     public var startDate: Date
     public var hasEndDate = false
     public var endDate: Date
-    public var isSubscription = false
+    /// What the person chose with the switch; `nil` while it still follows the category.
+    private var subscriptionChoice: Bool?
+    /// On while "Subscriptions" is the category, off once it moves away, until the person flips
+    /// the switch themselves.
+    public var isSubscription: Bool {
+        get { subscriptionChoice ?? (kind == .expense && categoryID == Subscriptions.categoryID) }
+        set { subscriptionChoice = newValue }
+    }
+
     public var autoConfirm = false
     public var note = ""
     public private(set) var isSaving = false
@@ -225,7 +233,7 @@ public final class RecurringRuleEditorViewModel {
         startDate = rule.startDate
         hasEndDate = rule.endDate != nil
         endDate = rule.endDate ?? endDate
-        isSubscription = rule.isSubscription
+        subscriptionChoice = rule.isSubscription
         autoConfirm = rule.autoConfirm
         note = rule.note ?? ""
     }
@@ -239,7 +247,6 @@ public final class RecurringRuleEditorViewModel {
         }
         if kind != .transfer {
             destinationAccountID = nil
-            isSubscription = isSubscription && kind == .expense
         }
         if !methodOptions.contains(where: { $0.method == method }) {
             let account = sourceAccountID

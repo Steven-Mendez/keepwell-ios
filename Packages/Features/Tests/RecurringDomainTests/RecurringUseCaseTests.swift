@@ -14,7 +14,15 @@ struct RecurringUseCaseTests {
         let now = today
         return DefaultSaveRecurringRuleUseCase(
             rules: store, accounts: store, cards: store, categories: store, settings: store,
-            materialize: DefaultMaterializeRecurringUseCase(rules: store, transactions: store, settings: store, now: { now }),
+            materialize: DefaultMaterializeRecurringUseCase(
+                rules: store,
+                transactions: store,
+                settings: store,
+                accounts: store,
+                cards: store,
+                categories: store,
+                now: { now },
+            ),
             now: { now },
         )
     }
@@ -99,7 +107,15 @@ struct RecurringUseCaseTests {
         let now = today
         let useCase = DefaultSetRecurringRulePausedUseCase(
             rules: store,
-            materialize: DefaultMaterializeRecurringUseCase(rules: store, transactions: store, settings: store, now: { now }),
+            materialize: DefaultMaterializeRecurringUseCase(
+                rules: store,
+                transactions: store,
+                settings: store,
+                accounts: store,
+                cards: store,
+                categories: store,
+                now: { now },
+            ),
             now: { now },
         )
         let salary = try #require(sample.recurringRules.first { $0.id == IDs.salaryRule })

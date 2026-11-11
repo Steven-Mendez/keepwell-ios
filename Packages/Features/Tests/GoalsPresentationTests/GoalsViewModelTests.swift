@@ -97,9 +97,10 @@ struct GoalsViewModelTests {
         let editor = try #require(viewModel.editor)
         editor.setName("Trip")
         editor.targetText = "0"
+        // A zero target leaves Save disabled instead of failing after the tap.
+        #expect(!editor.canSave)
         #expect(await editor.save() == nil)
-        #expect(editor.errorMessage == "The target has to be greater than zero.")
-        editor.setName(String(repeating: "x", count: 60))
+        editor.setName(String(repeating: "x", count: 80))
         #expect(editor.name.count == SavingsGoal.maxNameLength)
         #expect(editor.targetMonthTitle == "No date")
     }

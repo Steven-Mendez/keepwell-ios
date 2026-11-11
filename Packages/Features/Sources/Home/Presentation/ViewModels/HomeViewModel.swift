@@ -3,6 +3,7 @@ import Domain
 import Foundation
 import HomeDomain
 import Observation
+import RecurringDomain
 import SharedPresentation
 
 @MainActor
@@ -26,6 +27,9 @@ public final class HomeViewModel {
     /// Throws away a draft an assistant recorded; `nil` where nothing can be discarded (previews).
     private let discard: (any DeleteTransactionUseCase)?
     private let getPreferredName: any GetPreferredNameUseCase
+    /// Confirming (resuming) or discarding (deleting) a rule an assistant proposed; `nil` in previews.
+    private let resumeRule: (any SetRecurringRulePausedUseCase)?
+    private let deleteRule: (any DeleteRecurringRuleUseCase)?
     let calendar: Calendar
     let formatter = CurrencyFormatter()
 
@@ -34,11 +38,15 @@ public final class HomeViewModel {
         confirmPlanned: any ConfirmPlannedTransactionUseCase,
         getPreferredName: any GetPreferredNameUseCase,
         discard: (any DeleteTransactionUseCase)? = nil,
+        resumeRule: (any SetRecurringRulePausedUseCase)? = nil,
+        deleteRule: (any DeleteRecurringRuleUseCase)? = nil,
         calendar: Calendar = .current,
     ) {
         self.getOverview = getOverview
         self.confirmPlanned = confirmPlanned
         self.discard = discard
+        self.resumeRule = resumeRule
+        self.deleteRule = deleteRule
         self.getPreferredName = getPreferredName
         self.calendar = calendar
     }
@@ -83,6 +91,38 @@ public final class HomeViewModel {
         } catch {
             actionError = String(localized: "We couldn't confirm it. Try again.", bundle: #bundle)
         }
+    }
+
+    public var canResolveProposals: Bool {
+        resumeRule != nil && deleteRule != nil
+    }
+
+    /// Confirms a proposed rule: it starts from today, as when resumed from Recurring.
+    public func confirmProposal(_ rule: RecurringRule) async {
+        guard let resumeRule else { return }
+        await resolve { () async throws(DomainError) in try await resumeRule.execute(id: rule.id, isPaused: false) }
+    }
+
+    /// Discards a proposed rule, which never started, by deleting it.
+    public func discardProposal(_ rule: RecurringRule) async {
+        guard let deleteRule else { return }
+        await resolve { () async throws(DomainError) in try await deleteRule.execute(id: rule.id) }
+    }
+
+    private func resolve(_ work: () async throws(DomainError) -> Void) async {
+        do {
+            try await work()
+            actionError = nil
+            await load()
+        } catch {
+            actionError = String(localized: "We couldn't save the change. Try again.", bundle: #bundle)
+        }
+    }
+
+    /// "10 USD · Monthly", as the web lists a proposal.
+    func proposalSubtitle(_ rule: RecurringRule, hidden: Bool) -> String {
+        let amount = hidden ? Self.maskedAmount : formatter.string(from: rule.amount, currencyCode: rule.currency)
+        return amount + " · " + RecurringDisplay.frequency(of: rule)
     }
 
     public var canDiscardDrafts: Bool {

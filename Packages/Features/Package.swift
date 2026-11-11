@@ -252,6 +252,7 @@ let package = Package(
             name: "HomePresentation",
             dependencies: [
                 "HomeDomain",
+                "RecurringDomain",
                 "SharedPresentation",
                 .product(name: "Core", package: "Core"),
                 .product(name: "DesignSystem", package: "DesignSystem"),
@@ -265,6 +266,7 @@ let package = Package(
             dependencies: [
                 "HomePresentation",
                 "HomeDomain",
+                "RecurringDomain",
                 "FeatureTestSupport",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
@@ -441,6 +443,15 @@ let package = Package(
             ],
             path: "Sources/CreditCard/Presentation",
             resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "CreditCardPresentationTests",
+            dependencies: [
+                "CreditCardPresentation",
+                "CreditCardDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
         ),
         .testTarget(
             name: "CreditCardDomainTests",

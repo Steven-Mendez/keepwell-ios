@@ -137,6 +137,10 @@ struct GoalRow: View {
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                Text(viewModel.percent(progress))
+                    .font(KWTextStyle.caption.font)
+                    .foregroundStyle(KWColor.Text.secondary)
+                    .monospacedDigit()
             }
             KWProgressBar(
                 viewModel.barFraction(progress),

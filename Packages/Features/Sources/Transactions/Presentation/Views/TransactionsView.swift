@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import Domain
 import SharedPresentation
@@ -16,19 +17,22 @@ public struct TransactionsView: View {
     private let onOpenRecurringRule: ((UUID) -> Void)?
     private let onSplit: ((Domain.Transaction) -> Void)?
     private let onOpenTransaction: ((UUID) -> Void)?
+    private let onCommand: ((ShortcutCommand) -> Void)?
     @FocusState private var isSearchFocused: Bool
     @State private var pendingDeletion: Domain.Transaction?
     @State private var isPickingScope = false
 
     /// `onOpenTransaction` opens a movement's detail; `onOpenRecurringRule` opens the rule that
     /// recorded a movement, from its menu; `onSplit` splits an expense between the person and
-    /// others, who then owe their share.
+    /// others, who then owe their share. `onCommand` runs a suggestion of the search field ("Go to",
+    /// "Actions"), which the screen offers only on the main tab.
     public init(
         viewModel: TransactionsViewModel,
         onBack: (() -> Void)? = nil,
         onOpenTransaction: ((UUID) -> Void)? = nil,
         onOpenRecurringRule: ((UUID) -> Void)? = nil,
         onSplit: ((Domain.Transaction) -> Void)? = nil,
+        onCommand: ((ShortcutCommand) -> Void)? = nil,
         onNewMovement: @escaping () -> Void,
     ) {
         self.viewModel = viewModel
@@ -36,6 +40,7 @@ public struct TransactionsView: View {
         self.onOpenTransaction = onOpenTransaction
         self.onOpenRecurringRule = onOpenRecurringRule
         self.onSplit = onSplit
+        self.onCommand = onCommand
         self.onNewMovement = onNewMovement
     }
 
@@ -94,8 +99,14 @@ public struct TransactionsView: View {
                 .padding(.bottom, KWSpacing.xxs)
         }
         searchField
+        if let onCommand, isSearchFocused {
+            CommandSuggestions(query: viewModel.query, onSelect: onCommand)
+        }
         chips
         monthTotals
+        if let cells = viewModel.movementTotals {
+            MovementTotalsStrip(cells: cells)
+        }
         if let error = viewModel.actionError {
             Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
         }

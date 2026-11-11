@@ -125,6 +125,8 @@ final class AppContainer {
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
             discard: DefaultDeleteTransactionUseCase(transactions: store),
+            resumeRule: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
+            deleteRule: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
         )
     }
 
@@ -150,7 +152,8 @@ final class AppContainer {
 
     func makeSummaryViewModel() -> SummaryViewModel {
         let report = DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store, accounts: store)
-        return SummaryViewModel(getReport: report)
+        let range = DefaultGetRangeSummaryUseCase(transactions: store, settings: store)
+        return SummaryViewModel(getReport: report, getRange: range)
     }
 
     // MARK: - Settings and lock
@@ -158,10 +161,11 @@ final class AppContainer {
     func makeSettingsViewModel() -> SettingsViewModel {
         SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
-                settings: store, categories: store, cards: store,
+                settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
                 passcodes: passcodes, profile: preferences,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
+            changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
             importTransactions: makeImportTransactions(),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
@@ -237,48 +241,19 @@ final class AppContainer {
         await reminders.removeAll()
     }
 
-    // MARK: - Credit card
-
-    func makeCreditCardViewModel(accountID: UUID) -> CreditCardViewModel {
-        CreditCardViewModel(
-            accountID: accountID,
-            getDetail: DefaultGetCreditCardDetailUseCase(
-                accounts: store,
-                cards: store,
-                transactions: store,
-                categories: store,
-                settings: store,
-            ),
-            updateTerms: DefaultUpdateCreditTermsUseCase(accounts: store),
-            setCardColor: DefaultSetCardColorUseCase(cards: store),
-            setCardDetails: DefaultSetCardDetailsUseCase(cards: store),
-            renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            getPreferredName: makeGetPreferredName(),
-        )
-    }
-
-    // MARK: - Bank account and its card
-
-    func makeDebitCardViewModel(accountID: UUID) -> DebitCardViewModel {
-        DebitCardViewModel(
-            accountID: accountID,
-            getDetail: DefaultGetDebitCardDetailUseCase(
-                accounts: store, cards: store, transactions: store, categories: store, settings: store,
-            ),
-            setColor: DefaultSetCardColorUseCase(cards: store),
-            setDetails: DefaultSetCardDetailsUseCase(cards: store),
-            renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
-            getPreferredName: makeGetPreferredName(),
-        )
-    }
-
     // MARK: - Recurring
 
     /// Records the recurring movements whose day has come. Runs at launch, on returning to the
     /// app and after a rule is saved; it skips what another device already recorded.
     func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
-        DefaultMaterializeRecurringUseCase(rules: store, transactions: store, settings: store)
+        DefaultMaterializeRecurringUseCase(
+            rules: store,
+            transactions: store,
+            settings: store,
+            accounts: store,
+            cards: store,
+            categories: store,
+        )
     }
 
     func materializeRecurring() async {

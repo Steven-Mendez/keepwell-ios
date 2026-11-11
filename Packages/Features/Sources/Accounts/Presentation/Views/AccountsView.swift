@@ -12,7 +12,7 @@ public struct AccountsView: View {
     private let onAdd: () -> Void
     private let onOpenCreditCard: (UUID) -> Void
     private let onOpenBankAccount: (UUID) -> Void
-    private let onOpenAccountMovements: (UUID) -> Void
+    private let onOpenCash: (UUID) -> Void
     private let formatter = CurrencyFormatter()
 
     public init(
@@ -20,13 +20,13 @@ public struct AccountsView: View {
         onAdd: @escaping () -> Void,
         onOpenCreditCard: @escaping (UUID) -> Void,
         onOpenBankAccount: @escaping (UUID) -> Void,
-        onOpenAccountMovements: @escaping (UUID) -> Void,
+        onOpenCash: @escaping (UUID) -> Void,
     ) {
         self.viewModel = viewModel
         self.onAdd = onAdd
         self.onOpenCreditCard = onOpenCreditCard
         self.onOpenBankAccount = onOpenBankAccount
-        self.onOpenAccountMovements = onOpenAccountMovements
+        self.onOpenCash = onOpenCash
     }
 
     public var body: some View {
@@ -76,7 +76,7 @@ public struct AccountsView: View {
         switch card {
         case let .credit(credit): onOpenCreditCard(credit.id)
         case let .debit(deposit): onOpenBankAccount(deposit.id)
-        case let .cash(cash): onOpenAccountMovements(cash.id)
+        case let .cash(cash): onOpenCash(cash.id)
         }
     }
 
@@ -123,7 +123,7 @@ private struct AccountsPreview: View {
             onAdd: {},
             onOpenCreditCard: { _ in },
             onOpenBankAccount: { _ in },
-            onOpenAccountMovements: { _ in },
+            onOpenCash: { _ in },
         )
         .onAppear { KWFonts.register() }
     }

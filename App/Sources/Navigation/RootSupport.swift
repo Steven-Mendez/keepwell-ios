@@ -150,6 +150,7 @@ struct SettingsRoute: View {
     let onOpenPaymentMethods: () -> Void
     let onOpenRecurring: () -> Void
     let onOpenRules: () -> Void
+    let onShowKeyboardShortcuts: () -> Void
 
     init(
         container: AppContainer,
@@ -159,6 +160,7 @@ struct SettingsRoute: View {
         onOpenPaymentMethods: @escaping () -> Void,
         onOpenRecurring: @escaping () -> Void,
         onOpenRules: @escaping () -> Void,
+        onShowKeyboardShortcuts: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         _cloudAccount = State(initialValue: container.cloudAccount)
@@ -169,6 +171,7 @@ struct SettingsRoute: View {
         self.onOpenPaymentMethods = onOpenPaymentMethods
         self.onOpenRecurring = onOpenRecurring
         self.onOpenRules = onOpenRules
+        self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
 
     var body: some View {
@@ -181,6 +184,7 @@ struct SettingsRoute: View {
             onOpenPaymentMethods: onOpenPaymentMethods,
             onOpenRecurring: onOpenRecurring,
             onOpenRules: onOpenRules,
+            onShowKeyboardShortcuts: onShowKeyboardShortcuts,
             account: cloudAccount.map { account in
                 SettingsAccountViews(
                     header: AnyView(CloudAccountHeader(viewModel: account)),
@@ -299,6 +303,28 @@ struct DebitCardRoute: View {
     }
 }
 
+struct CashRoute: View {
+    @State private var viewModel: CashViewModel
+    let onBack: () -> Void
+    let onSeeAllMovements: (UUID) -> Void
+
+    init(
+        container: AppContainer,
+        accountID: UUID,
+        onBack: @escaping () -> Void,
+        onSeeAllMovements: @escaping (UUID) -> Void,
+    ) {
+        _viewModel = State(initialValue: container.makeCashViewModel(accountID: accountID))
+        self.onBack = onBack
+        self.onSeeAllMovements = onSeeAllMovements
+    }
+
+    var body: some View {
+        CashView(viewModel: viewModel, onBack: onBack, onSeeAllMovements: onSeeAllMovements)
+            .navigationBarBackButtonHidden()
+    }
+}
+
 /// The movement list pushed from an account. It has its own view model so filtering it
 /// leaves the Transactions tab as the person left it.
 struct TransactionsRoute: View {
@@ -406,14 +432,16 @@ extension View {
 struct RecurringRuleRoute: View {
     @State private var viewModel: RecurringRuleEditorViewModel
     let onBack: () -> Void
+    let onOpenTransaction: (UUID) -> Void
 
-    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void) {
+    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void, onOpenTransaction: @escaping (UUID) -> Void) {
         _viewModel = State(initialValue: container.makeRecurringRuleEditorViewModel(ruleID: ruleID))
         self.onBack = onBack
+        self.onOpenTransaction = onOpenTransaction
     }
 
     var body: some View {
-        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack)
+        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack, onOpenTransaction: onOpenTransaction)
             .navigationBarBackButtonHidden()
     }
 }

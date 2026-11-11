@@ -27,7 +27,7 @@ public struct LoanPayment: Hashable, Sendable, Codable {
 /// schedule and which installments are paid, so balances always come from movements.
 public struct Loan: Identifiable, Hashable, Sendable, Codable {
     /// Same as a goal's: one line in a row.
-    public static let maxNameLength = 40
+    public static let maxNameLength = 60
     /// Fifty years of monthly installments, or about eleven of weekly ones.
     public static let installmentCountRange = 1 ... 600
 
@@ -148,7 +148,7 @@ public struct DebtRepayment: Hashable, Sendable, Codable {
 /// goals it is only tracked: recording, repaying or settling it never records a movement or
 /// changes a balance, because the cash may have changed hands in ways the ledger never saw.
 public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
-    public static let maxNameLength = 40
+    public static let maxNameLength = 60
 
     public let id: UUID
     /// Who lent or borrowed.
