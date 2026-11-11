@@ -77,11 +77,6 @@ extension HomeViewModel {
         )
     }
 
-    /// The frequent expense categories "Log quickly" offers, most used first.
-    func quickLogCategories(_ overview: HomeOverview) -> [TransactionCategory] {
-        overview.frequentExpenseCategoryIDs.compactMap { id in overview.categories.first { $0.id == id } }
-    }
-
     /// Planned movements on their day, card payments and loan installments ahead of time, statement
     /// cutoffs on their day, plastics in their expiry month, and budgets near or over their line and
     /// subscriptions that went up in price right away. Only what's still ahead is returned.
@@ -106,17 +101,12 @@ extension HomeViewModel {
                   let date = morning(of: dayBefore, calendar: calendar),
                   date > now
             else { return nil }
-            let amount = formatter.string(from: rule.amount, currencyCode: rule.currency)
-            let method = display.methodName(of: RecurringSchedule.movement(
-                from: rule,
-                on: occurrence.date,
-                exchangeRate: .single(rule.currency),
-            ))
+            let wording = renewalWording(occurrence, display: display)
             return Reminder(
                 id: "renewal-\(rule.id)-\(Int(occurrence.date.timeIntervalSince1970))",
                 kind: .subscription(rule.id),
-                title: String(localized: "\(rule.name) renews tomorrow", bundle: #bundle),
-                body: String(localized: "\(amount) on \(method)", bundle: #bundle),
+                title: wording.title,
+                body: wording.body,
                 date: date,
             )
         }
@@ -144,12 +134,12 @@ extension HomeViewModel {
                   let dueDay = account.creditTerms?.dueDay,
                   let reminder = nextPaymentReminder(dueDay: dueDay, daysBefore: days, now: now, calendar: calendar)
             else { return nil }
-            let name = cardName(of: account, in: overview)
+            let wording = paymentWording(account, dueDay: dueDay, days: days, in: overview)
             return Reminder(
                 id: "payment-\(account.id)-\(Int(reminder.due.timeIntervalSince1970))",
                 kind: .payment(account.id),
-                title: String(localized: "\(name): payment in \(days) days", bundle: #bundle),
-                body: String(localized: "Pay before day \(dueDay) so it doesn't generate interest.", bundle: #bundle),
+                title: wording.title,
+                body: wording.body,
                 date: reminder.date,
             )
         }
@@ -166,12 +156,12 @@ extension HomeViewModel {
                   date > now
             else { return nil }
             let loan = progress.loan
-            let amount = formatter.string(from: loan.installmentAmount, currencyCode: loan.borrowed.currency)
+            let wording = installmentWording(loan, next: next, days: days)
             return Reminder(
                 id: "installment-\(loan.id)-\(next.number)",
                 kind: .loanInstallment(loan.id),
-                title: String(localized: "\(loan.name): installment in \(days) days", bundle: #bundle),
-                body: String(localized: "Installment \(next.number) of \(loan.installmentCount) · \(amount)", bundle: #bundle),
+                title: wording.title,
+                body: wording.body,
                 date: date,
             )
         }
@@ -184,11 +174,12 @@ extension HomeViewModel {
                   let cutoffDay = account.creditTerms?.cutoffDay,
                   let date = nextMorning(onDay: cutoffDay, after: now, calendar: calendar)
             else { return nil }
+            let wording = cutoffWording(account, in: overview)
             return Reminder(
                 id: "cutoff-\(account.id)-\(Int(date.timeIntervalSince1970))",
                 kind: .cutoff(account.id),
-                title: String(localized: "\(cardName(of: account, in: overview)): statement closes today", bundle: #bundle),
-                body: String(localized: "From tomorrow, purchases go to next month's statement.", bundle: #bundle),
+                title: wording.title,
+                body: wording.body,
                 date: date,
             )
         }
@@ -202,24 +193,15 @@ extension HomeViewModel {
                   let date = morning(of: day, calendar: calendar),
                   date > now
             else { return nil }
-            let name = CardDisplay.shortName(of: card)
-            let services = overview.cardSubscriptions[card.id] ?? []
-            let body = services.isEmpty
-                ? String(localized: "Update it wherever it's saved before it stops working.", bundle: #bundle)
-                : String(localized: "Update it in \(services.formatted(.list(type: .and))) before it stops working.", bundle: #bundle)
+            let wording = expiryWording(card, in: overview)
             return Reminder(
                 id: "expiry-\(card.id)-\(expiry.year)-\(expiry.month)",
                 kind: .cardExpiry(card.id),
-                title: String(localized: "\(name) expires this month", bundle: #bundle),
-                body: body,
+                title: wording.title,
+                body: wording.body,
                 date: date,
             )
         }
-    }
-
-    private func cardName(of account: Account, in overview: HomeOverview) -> String {
-        let holder = overview.cards.first { $0.accountID == account.id && $0.kind == .creditHolder }
-        return holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: account)
     }
 
     /// The reminder hour on the next `day` of a month that is still ahead of `now`.
