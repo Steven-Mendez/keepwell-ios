@@ -5,6 +5,8 @@ import Observation
 import SharedPresentation
 import TransactionsDomain
 
+enum MovementTone { case neutral, positive, negative }
+
 @MainActor
 @Observable
 public final class TransactionsViewModel {
@@ -208,6 +210,31 @@ public final class TransactionsViewModel {
         let spent = formatter.string(from: -summary.expense, currencyCode: summary.currency)
         let earned = formatter.string(from: summary.income, currencyCode: summary.currency, sign: .always)
         return (title, spent, earned)
+    }
+
+    /// "Movements", "Money in", "Money out" and "Net" for what the chips, the account and the search
+    /// leave visible, in the principal currency. `nil` until the list loads.
+    var movementTotals: [(title: String, value: String, tone: MovementTone)]? {
+        guard let list else { return nil }
+        let totals = MovementTotals(of: visibleTransactions(), currency: list.settings.principal)
+        return [
+            (String(localized: "Movements", bundle: #bundle), String(totals.count), .neutral),
+            (
+                String(localized: "Money in", bundle: #bundle),
+                formatter.string(from: totals.moneyIn, currencyCode: totals.currency),
+                .positive,
+            ),
+            (
+                String(localized: "Money out", bundle: #bundle),
+                formatter.string(from: totals.moneyOut, currencyCode: totals.currency),
+                .negative,
+            ),
+            (
+                String(localized: "Net", bundle: #bundle),
+                formatter.string(from: totals.net, currencyCode: totals.currency, sign: .always),
+                .neutral,
+            ),
+        ]
     }
 
     // MARK: - Account filter

@@ -38,13 +38,24 @@ public final class SummaryViewModel {
     public var mode = Mode.expenses
     /// Index into `report.months`; the current month until the person picks another.
     public var selectedIndex = DefaultGetSummaryReportUseCase.monthCount - 1
+    /// One month with its stepper, or a longer span read as one period (`SummaryViewModel+Range`).
+    public var period = SummaryPeriod.month
+    /// The span picked under `.custom`; the last six months until the person picks one.
+    public var customRange: MonthRange?
+    public internal(set) var range: RangeSummary?
 
     private let getReport: any GetSummaryReportUseCase
+    let getRange: (any GetRangeSummaryUseCase)?
     let calendar: Calendar
     let formatter = CurrencyFormatter()
 
-    public init(getReport: any GetSummaryReportUseCase, calendar: Calendar = .current) {
+    public init(
+        getReport: any GetSummaryReportUseCase,
+        getRange: (any GetRangeSummaryUseCase)? = nil,
+        calendar: Calendar = .current,
+    ) {
         self.getReport = getReport
+        self.getRange = getRange
         self.calendar = calendar
     }
 

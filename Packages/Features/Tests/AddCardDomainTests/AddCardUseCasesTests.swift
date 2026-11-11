@@ -16,6 +16,16 @@ struct AddCardUseCasesTests {
     }
 
     @Test
+    func billingDaysAreOptional() async throws {
+        var noDays = draft()
+        noDays.cutoffDay = nil
+        noDays.dueDay = nil
+        let (account, _) = try await DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store).execute(noDays)
+        #expect(account.creditTerms?.cutoffDay == nil)
+        #expect(account.creditTerms?.dueDay == nil)
+    }
+
+    @Test
     func creditCardIsItsOwnAccountWithNegativeDebts() async throws {
         let (account, holder) = try await DefaultAddCreditCardUseCase(accounts: store, cards: store, settings: store).execute(draft())
         #expect(account.kind == .credit)

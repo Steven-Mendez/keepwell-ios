@@ -171,6 +171,32 @@ struct RecurringScheduleTests {
     }
 
     @Test
+    func aTrailingOccurrenceAlreadyRecordedIsNotOwedAgain() {
+        let monthly = rule(start: Fixtures.date(2026, 10, 5, hour: 9))
+        // November is already on the ledger, October is not: the rule must still move past November.
+        let recorded = RecurringSchedule.movement(from: monthly, on: Fixtures.date(2026, 11, 5, hour: 9), exchangeRate: Fixtures.usdNio)
+        let result = RecurringSchedule.materialize(
+            [monthly], transactions: [recorded], today: Fixtures.date(2026, 11, 6), exchangeRate: Fixtures.usdNio, calendar: calendar,
+        )
+        #expect(result.transactions.map { day($0.date) } == [ymd(2026, 10, 5)])
+        #expect(result.rules.map { day($0.nextDate) } == [ymd(2026, 12, 5)])
+    }
+
+    @Test
+    func aRuleIsFinishedOnceItsNextOccurrenceIsPastItsEnd() {
+        let live = rule(start: Fixtures.date(2026, 10, 5, hour: 9), end: Fixtures.date(2026, 12, 31))
+        let done = rule(
+            start: Fixtures.date(2026, 10, 5, hour: 9),
+            next: Fixtures.date(2027, 1, 5, hour: 9),
+            end: Fixtures.date(2026, 12, 31),
+        )
+        #expect(RecurringSchedule.isActive(live, calendar: calendar))
+        #expect(RecurringSchedule.isFinished(done, calendar: calendar))
+        #expect(!RecurringSchedule.isActive(done, calendar: calendar))
+        #expect(!RecurringSchedule.isActive(rule(isPaused: true), calendar: calendar))
+    }
+
+    @Test
     func pausedRulesRecordNothingAndKeepTheirNextDate() {
         let paused = rule(start: Fixtures.date(2026, 10, 5, hour: 9), isPaused: true)
         let result = RecurringSchedule.materialize(

@@ -88,30 +88,15 @@ struct GoalEditorView: View {
                     .font(KWTextStyle.caption.font)
                     .foregroundStyle(KWColor.State.negative)
             }
-            KWGroupedCard {
-                KWAmountFieldRow(
-                    String(localized: "Target", bundle: #bundle),
-                    symbol: CurrencyFormatter.symbol(for: viewModel.currency),
-                    text: $viewModel.targetText,
-                )
-                .focused($isTargetFocused)
-                if viewModel.showsCurrencyPicker {
-                    Menu {
-                        ForEach(viewModel.currencyOptions, id: \.self) { code in
-                            Button(code) { viewModel.currency = code }
-                        }
-                    } label: {
-                        KWValueRow(String(localized: "Currency", bundle: #bundle), value: "\(viewModel.currency) ›", verticalPadding: 14)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
-                targetMonth
-            }
+            targetCard
             KWSectionHeader(String(localized: "Color", bundle: #bundle))
             CategoryColorPicker(selection: $viewModel.color)
             KWSectionHeader(String(localized: "Icon", bundle: #bundle))
             CategorySymbolPicker(selection: $viewModel.icon)
+            Text("What you've set aside is only tracked here; your accounts don't change.", bundle: #bundle)
+                .font(KWTextStyle.caption.font.weight(.regular))
+                .foregroundStyle(KWColor.Text.muted)
+                .fixedSize(horizontal: false, vertical: true)
             if viewModel.canDelete {
                 Button { isConfirmingDelete = true } label: {
                     Text("Delete goal", bundle: #bundle)
@@ -119,6 +104,29 @@ struct GoalEditorView: View {
                 .buttonStyle(.kw(.destructive, size: .row))
                 .padding(.top, KWSpacing.xs)
             }
+        }
+    }
+
+    private var targetCard: some View {
+        KWGroupedCard {
+            KWAmountFieldRow(
+                String(localized: "Target", bundle: #bundle),
+                symbol: CurrencyFormatter.symbol(for: viewModel.currency),
+                text: $viewModel.targetText,
+            )
+            .focused($isTargetFocused)
+            if viewModel.showsCurrencyPicker {
+                Menu {
+                    ForEach(viewModel.currencyOptions, id: \.self) { code in
+                        Button(code) { viewModel.currency = code }
+                    }
+                } label: {
+                    KWValueRow(String(localized: "Currency", bundle: #bundle), value: "\(viewModel.currency) ›", verticalPadding: 14)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            targetMonth
         }
     }
 

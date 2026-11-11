@@ -86,10 +86,52 @@ public protocol CloudAccountRepository: Sendable {
     func deleteAccount() async throws(CloudAccountError)
     /// Cuts every assistant connected through MCP at once (their tokens stop working right away).
     func disconnectAssistants() async throws(CloudAccountError)
+    /// The assistants connected through MCP, most recent first.
+    func connectedAssistants() async throws(CloudAccountError) -> [ConnectedAssistant]
+    /// Cuts one assistant off; the others stay connected.
+    func disconnectAssistant(id: String) async throws(CloudAccountError)
 }
 
 extension CloudAccountRepository {
     public func disconnectAssistants() async throws(CloudAccountError) {}
+    public func connectedAssistants() async throws(CloudAccountError) -> [ConnectedAssistant] {
+        []
+    }
+
+    public func disconnectAssistant(id _: String) async throws(CloudAccountError) {}
+}
+
+/// An assistant (Claude or another MCP client) the person authorized to reach their data.
+public struct ConnectedAssistant: Identifiable, Hashable, Sendable {
+    /// What it is allowed to do, the highest scope it holds.
+    public enum Access: Hashable, Sendable {
+        case read
+        case readAndRecord
+        case fullControl
+    }
+
+    public let id: String
+    /// `nil` when the client never gave itself a name.
+    public let name: String?
+    public let scopes: [String]
+    public let connectedAt: Date?
+
+    public init(id: String, name: String?, scopes: [String], connectedAt: Date? = nil) {
+        self.id = id
+        self.name = name
+        self.scopes = scopes
+        self.connectedAt = connectedAt
+    }
+
+    public var access: Access {
+        if scopes.contains("manage") {
+            .fullControl
+        } else if scopes.contains("write") {
+            .readAndRecord
+        } else {
+            .read
+        }
+    }
 }
 
 /// What the server sends to start a passkey sign-in.

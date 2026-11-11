@@ -7,8 +7,71 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- A fifth tab, Plan, after Summary: one card each for Recurring (subscriptions per month and the
+  next movement), Savings goals (the first goal with its progress) and Debts (what you owe and
+  are owed, and the next installment), each opening its screen. Keyboard: 5 and G then P.
+- Hardware-keyboard shortcuts, as Keepwell for the web has: N logs a transaction, E, I and T start
+  an expense, income or transfer, 1 to 5 switch tabs, G then H, T, A, S, R, G or D jumps to a
+  screen, "," opens Settings, "/" and Command-K open search, and "?" lists them all. The keys
+  stay out of the way while you type or a sheet is open. Settings > Profile & preferences >
+  Keyboard shortcuts shows the same list.
+- Search on Transactions offers "Actions" (new expense, income, transfer, add account or card,
+  add recurring, Categories, Rules, Keyboard shortcuts) and "Go to" (every
+  screen) while it is empty or what you type matches them.
+- Summary shows the Net worth history at the bottom of This year, Last 12 months and Custom, as
+  the web does.
+- Home "Log quickly" chips show each category's icon, and the Transactions totals strip lays out
+  as one row of four on iPad.
+- Transactions shows a totals strip above the list, as Keepwell for the web does: Movements,
+  Money in, Money out and Net for whatever the filter, account and search leave visible, in your
+  main currency. Drafts and transfers count as movements but not in the money.
+- Home "Log quickly": your three most-used expense categories as one-tap shortcuts that open a new
+  expense with that category already chosen.
+- Summary reads longer periods, as Keepwell for the web does: pick Month, This year, Last 12
+  months or a Custom From/To range. A period shows what you saved against the same months a year
+  earlier, the average spending, month-by-month bars, savings building up over time, your top
+  categories month by month, highlights (best and toughest month, months you saved, what grew and
+  dropped the most) and every year side by side. A ring shows where the period's money went (or
+  came from), with each category's change against the same months a year earlier.
+- "Card number" on credit and debit card screens: edit a card's last four digits and network after
+  creating it. A credit card needs its four digits; a debit card can leave them empty.
+- Credit cards can be deleted from their screen, with the same confirmation as a bank account: it
+  says how many movements go with it, transfers included.
+- Cash accounts have their own screen: rename, latest movements with "See all", and delete with
+  confirmation. Tapping cash in Accounts opens it instead of its movement list.
+- A credit card in two currencies shows each debt side by side and, when there is an exchange rate,
+  a "Total" line with the whole debt in your main currency.
+- Signing in to a Keepwell account that already has data, on an iPhone that has its own, asks
+  which to keep instead of mixing them: "Use your account's data" replaces what's on this iPhone,
+  and "Keep this iPhone's data" (after a second confirmation) replaces the account's data on every
+  device. Each option shows how many movements and accounts it holds. "Decide later" keeps sync
+  paused while everything keeps working on this iPhone; Settings → Data & sync → "Choose which data
+  to keep" asks again. An upload cut short (the app closed, no connection) finishes on its own
+  without asking again. Your passcode, name and lock settings stay either way. If only one side has
+  data, it syncs as before without asking.
+- Recurring: the "Next dates" in the editor also show for a new rule and follow the start,
+  frequency, interval and end as you change them; a paused rule shows them dimmed under "Paused".
+  The Subscription switch follows the category (on for Subscriptions, off when you move away) until
+  you flip it yourself. The movements a rule recorded, newest first, open their detail when tapped.
+- Home shows a "Proposed by Claude" card for recurring rules an assistant created, with Confirm
+  (starts the rule) and Discard (deletes it), as the web does. Recurring still marks them too.
+- Settings can change the main currency while there are no accounts or movements, and the second
+  currency (pick another, or "None") while no balance or movement uses it; otherwise the row says
+  "Used by your accounts, so it can't change here." The Rules row shows how many rules you have.
+- Settings → Connected assistants lists each assistant with what it can do (Can read, Can read and
+  record, Full control) and a Disconnect, a "How to connect Claude" link and a confirmation before
+  "Disconnect assistants" cuts them all.
+
 ### Changed
 
+- Recurring moved out of Settings: it lives under the Plan tab. Settings rows for your name and
+  payment reminders now carry a one-line description, as on the web.
+- Goals, loans, lenders and personal debts accept names up to 60 characters.
+- Adding a credit card no longer requires the cutoff and payment days: they start as "Not set",
+  and the steppers begin at a value only once you choose to set one. The reminder is only
+  mentioned when there is a payment day.
 - The welcome has a new headline, "All your money, in one place", and a shorter description:
   one or more currencies, and expenses, transfers and drafts at your own pace.
 - Signing in to an account is faster. The first sync now downloads all your data at once instead
@@ -34,19 +97,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   bottom in red. The version is at the foot of the list. Rows adapt to the largest text sizes and
   to small iPhones.
 
-### Added
-
-- Signing in to a Keepwell account that already has data, on an iPhone that has its own, asks
-  which to keep instead of mixing them: "Use your account's data" replaces what's on this iPhone,
-  and "Keep this iPhone's data" (after a second confirmation) replaces the account's data on every
-  device. Each option shows how many movements and accounts it holds. "Decide later" keeps sync
-  paused while everything keeps working on this iPhone; Settings → Data & sync → "Choose which data
-  to keep" asks again. An upload cut short (the app closed, no connection) finishes on its own
-  without asking again. Your passcode, name and lock settings stay either way. If only one side has
-  data, it syncs as before without asking.
-
 ### Fixed
 
+- Swift 6 concurrency warning in Summary's custom period picker.
+- Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
+  whose category, account or currency is gone is skipped instead of recording a movement nobody can
+  use, and a rule moves past occurrences already recorded so none is owed twice.
+- "Apply to past movements" for a categorization rule saves every movement in one go, so a failure
+  changes none.
+- A goal's Save is disabled for a target of zero.
 - "Continue with Apple" works again in TestFlight builds: release builds always carry the Sign in
   with Apple and passkey entitlements, whatever a local development config says.
 - Sync no longer clears this iPhone before it has the whole account in hand: using your account's

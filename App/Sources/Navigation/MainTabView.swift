@@ -1,18 +1,20 @@
 import DesignSystem
 import SwiftUI
 
-/// The four tabs of the design. Each tab's screen arrives with its feature.
+/// The five tabs: the design's four plus Plan, the hub over recurring movements, goals and debts.
 enum MainTab: Hashable {
     case home
     case transactions
     case accounts
     case summary
+    case plan
 
     static let items = [
         KWTabItem(id: Self.home, icon: .home, title: String(localized: "Home")),
         KWTabItem(id: Self.transactions, icon: .list, title: String(localized: "Transactions")),
         KWTabItem(id: Self.accounts, icon: .tabAccounts, title: String(localized: "Accounts")),
         KWTabItem(id: Self.summary, icon: .chartBars, title: String(localized: "Summary")),
+        KWTabItem(id: Self.plan, icon: .calendarCheck, title: String(localized: "Plan")),
     ]
 }
 

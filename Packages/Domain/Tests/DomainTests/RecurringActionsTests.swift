@@ -14,7 +14,8 @@ struct RecurringActionsTests {
         // The sample's streaming rule is due on the 23rd; run it on the 24th.
         let today = Fixtures.calendar.date(byAdding: .day, value: 2, to: SampleData.defaultReferenceDate) ?? .now
         let useCase = DefaultMaterializeRecurringUseCase(
-            rules: store, transactions: store, settings: store, calendar: .current, now: { today },
+            rules: store, transactions: store, settings: store, accounts: store, cards: store, categories: store, calendar: .current,
+            now: { today },
         )
         let recorded = try await useCase.execute()
         let movements = await store.fetchTransactions(in: nil).filter { $0.recurringID == IDs.streamingRule }
@@ -26,6 +27,23 @@ struct RecurringActionsTests {
         #expect(try #require(streaming?.nextDate) > today)
 
         #expect(try await useCase.execute() == 0)
+    }
+
+    @Test
+    func aRuleThatNoLongerValidatesIsSkippedAndLeftWhereItWas() async throws {
+        let store = InMemoryStore(sample: sample)
+        let broken = RecurringRule(
+            name: "Gym", kind: .expense, categoryID: "gone-category", amount: 10, currency: "USD", accountID: IDs.savings,
+            frequency: .monthly, startDate: SampleData.defaultReferenceDate,
+        )
+        await store.save(broken)
+        let today = Fixtures.calendar.date(byAdding: .day, value: 40, to: SampleData.defaultReferenceDate) ?? .now
+        let useCase = DefaultMaterializeRecurringUseCase(
+            rules: store, transactions: store, settings: store, accounts: store, cards: store, categories: store, now: { today },
+        )
+        try await useCase.execute()
+        #expect(await store.fetchTransactions(in: nil).allSatisfy { $0.recurringID != broken.id })
+        #expect(await store.fetchRecurringRules().first { $0.id == broken.id }?.nextDate == broken.nextDate)
     }
 
     @Test

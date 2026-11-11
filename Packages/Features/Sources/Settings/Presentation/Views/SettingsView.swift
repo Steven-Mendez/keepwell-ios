@@ -38,8 +38,8 @@ public struct SettingsView: View {
     private let onSetUpPasscode: () -> Void
     private let onOpenCategories: (TransactionKind) -> Void
     private let onOpenPaymentMethods: () -> Void
-    private let onOpenRecurring: () -> Void
     private let onOpenRules: () -> Void
+    private let onShowKeyboardShortcuts: () -> Void
     private let account: SettingsAccountViews?
     private let about: SettingsAbout
     @State private var isConfirmingErase = false
@@ -52,8 +52,8 @@ public struct SettingsView: View {
         onSetUpPasscode: @escaping () -> Void = {},
         onOpenCategories: @escaping (TransactionKind) -> Void = { _ in },
         onOpenPaymentMethods: @escaping () -> Void = {},
-        onOpenRecurring: @escaping () -> Void = {},
         onOpenRules: @escaping () -> Void = {},
+        onShowKeyboardShortcuts: @escaping () -> Void = {},
         account: SettingsAccountViews? = nil,
         about: SettingsAbout = SettingsAbout(),
     ) {
@@ -65,8 +65,8 @@ public struct SettingsView: View {
         self.onSetUpPasscode = onSetUpPasscode
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
-        self.onOpenRecurring = onOpenRecurring
         self.onOpenRules = onOpenRules
+        self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
 
     public var body: some View {
@@ -130,8 +130,8 @@ public struct SettingsView: View {
 
     @ViewBuilder
     private func sections(_ overview: SettingsOverview) -> some View {
-        ProfileSection(viewModel: viewModel)
-        MoneySection(viewModel: viewModel, settings: overview.settings)
+        ProfileSection(viewModel: viewModel, onShowKeyboardShortcuts: onShowKeyboardShortcuts)
+        MoneySection(viewModel: viewModel, overview: overview)
         organization(overview)
         DataSection(viewModel: viewModel, syncRow: account?.syncRow)
         SecuritySection(viewModel: viewModel, overview: overview, onSetUpPasscode: onSetUpPasscode)
@@ -167,29 +167,19 @@ public struct SettingsView: View {
                         overview.paymentMethodCount,
                     )
                 }
-                Button(action: onOpenRecurring) { recurringRow }
-                Button(action: onOpenRules) { rulesRow }
+                Button(action: onOpenRules) { rulesRow(count: overview.categorizationRuleCount) }
             }
             .buttonStyle(.plain)
         }
     }
 
-    private var recurringRow: some View {
-        KWSettingsRow(
-            String(localized: "Recurring", bundle: #bundle),
-            description: String(localized: "Subscriptions and regular movements", bundle: #bundle),
-            icon: .subscription,
-            tint: KWSettingsTint.reminders,
-            accessory: .chevron,
-        )
-    }
-
-    private var rulesRow: some View {
+    private func rulesRow(count: Int) -> some View {
         KWSettingsRow(
             String(localized: "Rules", bundle: #bundle),
             description: String(localized: "Categorize movements by their description", bundle: #bundle),
             icon: .list,
             tint: KWSettingsTint.security,
+            value: "\(count)",
             accessory: .chevron,
         )
     }

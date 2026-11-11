@@ -261,6 +261,36 @@
         }
       }
     },
+    "Assistants like Claude can read your data and record movements you then confirm here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asistentes como Claude pueden leer tus datos y registrar movimientos que luego confirmas aquí."
+          }
+        }
+      }
+    },
+    "Can read" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puede leer"
+          }
+        }
+      }
+    },
+    "Can read and record" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puede leer y registrar"
+          }
+        }
+      }
+    },
     "Choose which data to keep" : {
       "localizations" : {
         "es" : {
@@ -381,12 +411,42 @@
         }
       }
     },
+    "Disconnect" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar"
+          }
+        }
+      }
+    },
+    "Disconnect all" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar todos"
+          }
+        }
+      }
+    },
     "Disconnect assistants" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desconectar asistentes"
+          }
+        }
+      }
+    },
+    "Disconnect every assistant?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Desconectar todos los asistentes?"
           }
         }
       }
@@ -451,12 +511,32 @@
         }
       }
     },
+    "Full control" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control total"
+          }
+        }
+      }
+    },
     "Have an invitation code?" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Tienes un código de invitación?"
+          }
+        }
+      }
+    },
+    "How to connect Claude" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo conectar Claude"
           }
         }
       }
@@ -557,6 +637,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay compras que restaurar para este Apple ID."
+          }
+        }
+      }
+    },
+    "None connected" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguno conectado"
           }
         }
       }
@@ -741,6 +831,16 @@
         }
       }
     },
+    "Step by step, on the web, desktop, phone and Claude Code." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paso a paso, en la web, el escritorio, el teléfono y Claude Code."
+          }
+        }
+      }
+    },
     "Support Keepwell" : {
       "localizations" : {
         "es" : {
@@ -907,6 +1007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El café no está disponible en el App Store en este momento. Revisa tu conexión e inténtalo más tarde."
+          }
+        }
+      }
+    },
+    "They lose access right away and would have to be connected again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pierden el acceso de inmediato y habría que volver a conectarlos."
           }
         }
       }

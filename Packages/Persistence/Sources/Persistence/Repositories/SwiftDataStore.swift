@@ -119,6 +119,10 @@ extension SwiftDataStore: TransactionRepository {
         }
     }
 
+    public func save(_ transactions: [Transaction]) throws(DomainError) {
+        try saveMaterialized(transactions: transactions, rules: [])
+    }
+
     public func deleteTransaction(id: UUID) throws(DomainError) {
         try perform { context in
             let alive = #Predicate<TransactionRecord> { $0.id == id && $0.deletedAt == nil }

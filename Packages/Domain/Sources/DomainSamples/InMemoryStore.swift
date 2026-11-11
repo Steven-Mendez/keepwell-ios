@@ -106,6 +106,12 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         try remove(id, from: &recurringRules)
     }
 
+    public func save(_ transactions: [Transaction]) {
+        for transaction in transactions {
+            upsert(transaction, into: &self.transactions)
+        }
+    }
+
     public func saveMaterialized(transactions: [Transaction], rules: [RecurringRule]) {
         for transaction in transactions {
             upsert(transaction, into: &self.transactions)

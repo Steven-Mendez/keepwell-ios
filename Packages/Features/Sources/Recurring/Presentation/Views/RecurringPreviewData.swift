@@ -15,7 +15,15 @@ public enum RecurringPreview {
     }
 
     public static func useCases(store: InMemoryStore, now: Date = SampleData.defaultReferenceDate) -> UseCases {
-        let materialize = DefaultMaterializeRecurringUseCase(rules: store, transactions: store, settings: store, now: { now })
+        let materialize = DefaultMaterializeRecurringUseCase(
+            rules: store,
+            transactions: store,
+            settings: store,
+            accounts: store,
+            cards: store,
+            categories: store,
+            now: { now },
+        )
         return UseCases(
             overview: DefaultGetRecurringOverviewUseCase(
                 rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
@@ -52,6 +60,11 @@ public enum RecurringPreview {
     }
 
     static func editor() -> some View {
-        RecurringRuleEditorView(viewModel: editorViewModel(ruleID: SampleData.IDs.streamingRule), onBack: {}, onDone: {})
+        RecurringRuleEditorView(
+            viewModel: editorViewModel(ruleID: SampleData.IDs.streamingRule),
+            onBack: {},
+            onDone: {},
+            onOpenTransaction: { _ in },
+        )
     }
 }

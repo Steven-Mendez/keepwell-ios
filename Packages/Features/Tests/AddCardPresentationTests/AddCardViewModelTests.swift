@@ -37,10 +37,39 @@ struct AddCardViewModelTests {
         await viewModel.continueFromPlastic()
         #expect(viewModel.path == [.plastic, .debt])
         viewModel.secondDebtText = "250"
+        viewModel.stepCutoff(by: 1)
+        viewModel.stepDue(by: 1)
         await viewModel.addCreditCard()
         #expect(viewModel.path.last == .done)
         #expect(viewModel.createdAccount?.openingBalances == [Money(0, "USD"), Money(-250, "NIO")])
         #expect(viewModel.summary == "Debt in USD and NIO · cutoff day 28 · due day 15. We'll remind you 3 days before the due date.")
+    }
+
+    @Test
+    func billingDaysAreNotSetByDefault() async {
+        let store = InMemoryStore(sample: .standard)
+        let viewModel = AddCardFactory.make(store: store)
+        await viewModel.load()
+        viewModel.choose(.credit)
+        viewModel.bank = "Bank Three"
+        viewModel.lastFour = "2468"
+        #expect(viewModel.cutoffDay == nil)
+        #expect(viewModel.dueDay == nil)
+        await viewModel.addCreditCard()
+        #expect(viewModel.createdAccount?.creditTerms?.cutoffDay == nil)
+        #expect(viewModel.createdAccount?.creditTerms?.dueDay == nil)
+        #expect(viewModel.summary == "Debt in USD and NIO.")
+    }
+
+    @Test
+    func aDayStartsFromAValueOnceChosen() async {
+        let viewModel = await AddCardFactory.loaded()
+        viewModel.stepCutoff(by: -1)
+        #expect(viewModel.cutoffDay == 28)
+        viewModel.clearCutoff()
+        #expect(viewModel.cutoffDay == nil)
+        viewModel.stepDue(by: 1)
+        #expect(viewModel.dueDay == 15)
     }
 
     @Test
@@ -90,8 +119,10 @@ struct AddCardViewModelTests {
     @Test
     func daysWrapAroundTheMonth() async {
         let viewModel = await AddCardFactory.loaded()
+        viewModel.stepCutoff(by: 1)
         viewModel.stepCutoff(by: 4)
         #expect(viewModel.cutoffDay == 1)
+        viewModel.stepDue(by: 1)
         viewModel.stepDue(by: -15)
         #expect(viewModel.dueDay == 31)
     }

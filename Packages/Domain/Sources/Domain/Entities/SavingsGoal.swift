@@ -34,7 +34,7 @@ public struct TargetMonth: Hashable, Sendable, Codable, Comparable {
 /// movement or changes an account's balance, so the ledger stays a record of what really moved.
 public struct SavingsGoal: Identifiable, Hashable, Sendable, Codable {
     /// Long enough for "Emergency fund for the car", short enough for one line in a row.
-    public static let maxNameLength = 40
+    public static let maxNameLength = 60
 
     public let id: UUID
     public let name: String

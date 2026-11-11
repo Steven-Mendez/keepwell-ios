@@ -13,37 +13,46 @@ public struct KWChip: View {
     private let isSelected: Bool
     private let style: Style
     private let height: CGFloat
+    private let leading: AnyView?
     private let action: () -> Void
 
+    /// `leading` is a small mark before the title, such as a category's badge; the chip then trims
+    /// its leading padding so the mark sits close to the edge, like the web's quick-log chips.
     public init(
         _ title: String,
         isSelected: Bool,
         style: Style = .filled,
         height: CGFloat = KWComponentMetrics.chipHeight,
+        leading: (any View)? = nil,
         action: @escaping () -> Void,
     ) {
         self.title = title
         self.isSelected = isSelected
         self.style = style
         self.height = height
+        self.leading = leading.map { AnyView($0) }
         self.action = action
     }
 
     public var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(KWTextStyle.label.font)
-                .lineLimit(1)
-                .foregroundStyle(foreground)
-                .padding(.horizontal, style == .filled ? KWSpacing.md : 14)
-                .frame(height: height)
-                .background(background, in: Capsule())
-                .overlay {
-                    if let border {
-                        Capsule().inset(by: 0.5).stroke(border, lineWidth: 1)
-                    }
+            HStack(spacing: KWSpacing.xs) {
+                leading
+                Text(title)
+                    .font(KWTextStyle.label.font)
+                    .lineLimit(1)
+            }
+            .foregroundStyle(foreground)
+            .padding(.leading, leading == nil ? (style == .filled ? KWSpacing.md : 14) : 4)
+            .padding(.trailing, style == .filled ? KWSpacing.md : 14)
+            .frame(height: height)
+            .background(background, in: Capsule())
+            .overlay {
+                if let border {
+                    Capsule().inset(by: 0.5).stroke(border, lineWidth: 1)
                 }
-                .contentShape(Capsule())
+            }
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
