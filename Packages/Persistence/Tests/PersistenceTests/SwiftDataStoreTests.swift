@@ -262,6 +262,17 @@ struct SwiftDataStoreTests {
     }
 
     @Test
+    func savingSeveralTransactionsAtOnceStoresAllOfThem() async throws {
+        let store = try makeStore()
+        for account in sample.accounts {
+            try await store.save(account)
+        }
+        let batch = Array(sample.transactions.prefix(3))
+        try await store.save(batch)
+        #expect(try await Set(store.fetchTransactions(in: nil).map(\.id)) == Set(batch.map(\.id)))
+    }
+
+    @Test
     func materializingSavesMovementsAndRulesTogether() async throws {
         let store = try makeStore()
         let rule = try #require(sample.recurringRules.first)

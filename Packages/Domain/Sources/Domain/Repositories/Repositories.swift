@@ -22,7 +22,18 @@ public protocol TransactionRepository: Sendable {
     /// Newest first. `period` is half-open (`start` included, `end` excluded); `nil` returns everything.
     func fetchTransactions(in period: DateInterval?) async throws(DomainError) -> [Transaction]
     func save(_ transaction: Transaction) async throws(DomainError)
+    /// Saves all of them in one save: a failure changes none.
+    func save(_ transactions: [Transaction]) async throws(DomainError)
     func deleteTransaction(id: UUID) async throws(DomainError)
+}
+
+extension TransactionRepository {
+    /// For stores with no atomic save of their own.
+    public func save(_ transactions: [Transaction]) async throws(DomainError) {
+        for transaction in transactions {
+            try await save(transaction)
+        }
+    }
 }
 
 public protocol RecurringRuleRepository: Sendable {
