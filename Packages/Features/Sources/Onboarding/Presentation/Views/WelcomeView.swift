@@ -55,12 +55,12 @@ public struct WelcomeView: View {
 
     private var pitch: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Your money, clear, in one or two currencies", bundle: #bundle)
+            Text("All your money, in one place", bundle: #bundle)
                 .font(.kw(30, weight: 800, relativeTo: .title))
                 .tracking(-1)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-            Text("Log expenses, income and transfers. Cards, cash and drafts to confirm later.", bundle: #bundle)
+            Text("Keep clear accounts in one or more currencies. Log expenses, transfers and drafts at your own pace.", bundle: #bundle)
                 .font(.kw(17, weight: 400))
                 .foregroundStyle(KWColor.Text.onBrand)
                 .lineSpacing(4)
