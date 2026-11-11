@@ -81,6 +81,8 @@ struct CloudAccountSettingsSnapshotTests {
     private func paused() async throws -> SyncCoordinator {
         let conflict = conflict
         let sync = SyncCoordinator(run: { _ in .needsChoice(conflict) }, status: { (nil, 0) })
+        // Rounds only run for a signed-in account (no /sync before there's a session).
+        sync.accountID = "user"
         sync.trigger(after: 0)
         for _ in 0 ..< 300 where sync.conflict == nil {
             try await Task.sleep(for: .milliseconds(10))

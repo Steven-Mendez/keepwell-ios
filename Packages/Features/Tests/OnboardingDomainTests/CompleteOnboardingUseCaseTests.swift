@@ -156,24 +156,9 @@ struct CompleteOnboardingUseCaseTests {
     }
 }
 
-/// Counts sync rounds as the coordinator would; `finishAfter` reads end a round.
-private final class SyncRounds: @unchecked Sendable {
-    private let lock = NSLock()
-    private var reads = 0
-    private let finishAfter: Int?
-
-    init(finishAfter: Int?) {
-        self.finishAfter = finishAfter
-    }
-
-    func completed() -> Int {
-        lock.withLock {
-            reads += 1
-            guard let finishAfter else { return 0 }
-            return reads > finishAfter ? 1 : 0
-        }
-    }
-}
+/// A wait that ends as a sync round does, or never (the coordinator's answer when offline).
+private let roundEnds: @Sendable (Int) async -> Void = { _ in }
+private let roundNeverEnds: @Sendable (Int) async -> Void = { _ in try? await Task.sleep(for: .seconds(3600)) }
 
 @Suite("Restore from the Keepwell account")
 struct RestoreFromAccountUseCaseTests {
@@ -181,12 +166,11 @@ struct RestoreFromAccountUseCaseTests {
     func anAccountWithDataBringsItsSettingsAndSkipsSetUp() async throws {
         var settings = SampleData.standard.settings
         settings.hasCompletedOnboarding = true
-        let rounds = SyncRounds(finishAfter: nil)
         let restored = try await DefaultRestoreFromAccountUseCase(
             settings: InMemoryStore(settings: settings),
             hasUserData: { true },
-            completedSyncRounds: { rounds.completed() },
-            attempts: 1,
+            completedSyncRounds: { 0 },
+            waitForRoundEnd: roundEnds,
         ).execute()
         #expect(restored == settings)
     }
@@ -197,7 +181,7 @@ struct RestoreFromAccountUseCaseTests {
     func dataWithoutFinishedSettingsIsMarkedAsSetUp() async throws {
         let store = InMemoryStore()
         let restored = try await DefaultRestoreFromAccountUseCase(
-            settings: store, hasUserData: { true }, completedSyncRounds: { 0 }, attempts: 1,
+            settings: store, hasUserData: { true }, completedSyncRounds: { 0 }, waitForRoundEnd: roundEnds,
         ).execute()
         #expect(restored?.hasCompletedOnboarding == true)
         #expect(try await store.load()?.hasCompletedOnboarding == true)
@@ -209,34 +193,54 @@ struct RestoreFromAccountUseCaseTests {
     func finishedSettingsWithoutUserDataGoOnWithSetUp() async throws {
         var settings = SampleData.standard.settings
         settings.hasCompletedOnboarding = true
-        let rounds = SyncRounds(finishAfter: 2)
         let restored = try await DefaultRestoreFromAccountUseCase(
             settings: InMemoryStore(settings: settings),
             hasUserData: { false },
-            completedSyncRounds: { rounds.completed() },
-            attempts: 1000,
-            interval: .milliseconds(1),
+            completedSyncRounds: { 0 },
+            waitForRoundEnd: roundEnds,
         ).execute()
         #expect(restored == nil)
     }
 
     @Test
-    func stopsWaitingOnceASyncRoundEndsWithNothing() async throws {
-        let rounds = SyncRounds(finishAfter: 2)
-        let restored = try await DefaultRestoreFromAccountUseCase(
-            settings: InMemoryStore(), hasUserData: { false }, completedSyncRounds: { rounds.completed() },
-            attempts: 1000, interval: .milliseconds(1),
+    func waitsForTheRoundThatStartedAfterTheCountItWasGiven() async throws {
+        let asked = AskedCount()
+        _ = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(), hasUserData: { false }, completedSyncRounds: { 4 },
+            waitForRoundEnd: { count in asked.record(count) },
         ).execute()
-        #expect(restored == nil)
+        #expect(asked.value == 4)
     }
 
     @Test
     func givesUpWhenSyncNeverAnswers() async throws {
-        let rounds = SyncRounds(finishAfter: nil)
         let restored = try await DefaultRestoreFromAccountUseCase(
-            settings: InMemoryStore(), hasUserData: { false }, completedSyncRounds: { rounds.completed() },
-            attempts: 2, interval: .milliseconds(1),
+            settings: InMemoryStore(), hasUserData: { false }, completedSyncRounds: { 0 },
+            waitForRoundEnd: roundNeverEnds, timeout: .milliseconds(20),
         ).execute()
         #expect(restored == nil)
+    }
+
+    /// Data that arrived but whose round is still pushing and pulling is kept when time runs out.
+    @Test
+    func dataThatArrivedIsKeptWhenTheWaitTimesOut() async throws {
+        let restored = try await DefaultRestoreFromAccountUseCase(
+            settings: InMemoryStore(), hasUserData: { true }, completedSyncRounds: { 0 },
+            waitForRoundEnd: roundNeverEnds, timeout: .milliseconds(20),
+        ).execute()
+        #expect(restored?.hasCompletedOnboarding == true)
+    }
+}
+
+private final class AskedCount: @unchecked Sendable {
+    private let lock = NSLock()
+    private var asked: Int?
+
+    var value: Int? {
+        lock.withLock { asked }
+    }
+
+    func record(_ count: Int) {
+        lock.withLock { asked = count }
     }
 }

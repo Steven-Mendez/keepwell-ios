@@ -1,0 +1,4 @@
+self-hosted-runner:
+  # GitHub-hosted arm64 macOS image with Xcode 27 (preview label, see actions/runner-images README).
+  labels:
+    - xcode-27

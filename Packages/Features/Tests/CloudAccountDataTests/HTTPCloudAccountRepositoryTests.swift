@@ -7,6 +7,11 @@ import Testing
 final class StubProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var handler: ((URLRequest) -> (Int, [String: String], Data))?
     nonisolated(unsafe) static var requests: [URLRequest] = []
+    /// Requests may arrive from several threads at once (the snapshot loads concurrently).
+    private static let lock = NSLock()
+    nonisolated(unsafe) static var delayFor: ((URLRequest) -> TimeInterval)?
+    nonisolated(unsafe) static var inFlight = 0
+    nonisolated(unsafe) static var peakInFlight = 0
 
     override static func canInit(with _: URLRequest) -> Bool {
         true
@@ -31,8 +36,23 @@ final class StubProtocol: URLProtocol, @unchecked Sendable {
             }
             recorded.httpBody = data
         }
-        Self.requests.append(recorded)
+        Self.lock.withLock {
+            Self.requests.append(recorded)
+            Self.inFlight += 1
+            Self.peakInFlight = max(Self.peakInFlight, Self.inFlight)
+        }
+        // A delay answers later on another queue, so requests can overlap as they do on the network.
+        let delay = Self.delayFor?(request) ?? 0
+        if delay > 0 {
+            DispatchQueue.global().asyncAfter(deadline: .now() + delay) { self.answer() }
+        } else {
+            answer()
+        }
+    }
+
+    private func answer() {
         let (status, headers, body) = Self.handler?(request) ?? (500, [:], Data())
+        Self.lock.withLock { Self.inFlight -= 1 }
         guard let url = request.url,
               let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: headers)
         else {

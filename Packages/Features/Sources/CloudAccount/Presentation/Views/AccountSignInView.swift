@@ -14,8 +14,8 @@ public struct AccountSignInView: View {
     @State private var passkeyAuthorizer = PasskeyAuthorizer()
 
     /// `onContinue` runs for a session that was already on this iPhone; a fresh sign-in is seen by
-    /// the caller through the view model's state. `isFindingData` shows the wait while the
-    /// account's data syncs down.
+    /// the caller through the view model's state. While signing in the view says so, and
+    /// `isFindingData` says the account's data is syncing down.
     public init(
         viewModel: CloudAccountViewModel,
         isFindingData: Bool,
@@ -63,7 +63,11 @@ public struct AccountSignInView: View {
         case let .signedIn(user):
             signedIn(user)
         case .signedOut:
-            signInOptions
+            if viewModel.isWorking {
+                progress(String(localized: "Signing in…", bundle: #bundle))
+            } else {
+                signInOptions
+            }
         }
     }
 
@@ -80,19 +84,29 @@ public struct AccountSignInView: View {
                 .padding(.vertical, 14)
             }
             if isFindingData {
-                HStack(spacing: KWSpacing.xs) {
-                    ProgressView()
-                    Text("Looking for your data…", bundle: #bundle)
-                        .font(KWTextStyle.caption.font)
-                        .foregroundStyle(KWColor.Text.muted)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: KWComponentMetrics.buttonHeight)
+                progress(String(localized: "Loading your data…", bundle: #bundle))
             } else {
                 Button { onContinue(user) } label: { Text("Continue", bundle: #bundle) }
                     .buttonStyle(.kw())
             }
         }
+    }
+
+    /// What the wait is, in place of the buttons. VoiceOver says it when it appears or changes,
+    /// as a spinner alone tells it nothing.
+    private func progress(_ text: String) -> some View {
+        HStack(spacing: KWSpacing.xs) {
+            ProgressView()
+            Text(text)
+                .font(KWTextStyle.caption.font)
+                .foregroundStyle(KWColor.Text.muted)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: KWComponentMetrics.buttonHeight)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.updatesFrequently)
+        .id(text)
+        .onAppear { AccessibilityNotification.Announcement(text).post() }
     }
 
     private var signInOptions: some View {

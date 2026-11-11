@@ -64,6 +64,7 @@ extension AppContainer {
                 return SyncDataSummary(counts: counts).hasUserData
             },
             completedSyncRounds: { await sync.completedRounds },
+            waitForRoundEnd: { count in await sync.waitForRoundEnd(after: count) },
         )
     }
 

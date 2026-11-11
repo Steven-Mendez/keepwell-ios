@@ -156,7 +156,7 @@ public actor SyncEngine {
             let events = await (try? store.pendingEvents(limit: 200)) ?? []
             guard !events.isEmpty else { return }
             let body = PushBody(client_id: clientID, events: events.map(Self.envelope))
-            let answer: PushAnswer = try await decode(client.send("POST", "sync/push", json: body))
+            let answer: PushAnswer = try await Self.decode(client.send("POST", "sync/push", json: body))
             let byID = Dictionary(uniqueKeysWithValues: events.map { ($0.id.uuidString.lowercased(), $0) })
             var answered: [UUID] = []
             var refused: [RejectedChange] = []
@@ -218,31 +218,10 @@ public actor SyncEngine {
         let next_after: String? // swiftlint:disable:this identifier_name
     }
 
-    /// Every row the account holds, tombstones included, and the cursor that follows them.
-    private func fetchSnapshot() async throws(CloudAccountError) -> (rows: [RemoteRow], cursor: Int) {
-        var lowest = Int.max
-        var rows: [RemoteRow] = []
-        for entity in Self.entities {
-            var after = ""
-            while true {
-                let page: SnapshotAnswer = try await decode(client.send(
-                    "GET",
-                    "sync/snapshot",
-                    query: ["entity": entity, "after": after, "limit": "500"],
-                ))
-                lowest = min(lowest, page.server_seq)
-                rows += page.rows.map { RemoteRow(entity: entity, row: $0.data) }
-                guard let next = page.next_after else { break }
-                after = next
-            }
-        }
-        return (rows, lowest == .max ? 0 : lowest)
-    }
-
     private func pull() async throws(CloudAccountError) {
         while true {
             let position = cursor ?? 0
-            let page: PullAnswer = try await decode(client.send(
+            let page: PullAnswer = try await Self.decode(client.send(
                 "GET",
                 "sync/pull",
                 query: ["client_id": clientID, "cursor": String(position), "limit": "500"],
@@ -292,7 +271,7 @@ public actor SyncEngine {
         return formatter.date(from: text)
     }
 
-    private func decode<T: Decodable>(_ response: APIClient.Response) throws(CloudAccountError) -> T {
+    private nonisolated static func decode<T: Decodable>(_ response: APIClient.Response) throws(CloudAccountError) -> T {
         switch response.status {
         case 200 ..< 300:
             do {
@@ -315,6 +294,62 @@ public actor SyncEngine {
 // MARK: - First sync
 
 extension SyncEngine {
+    /// Entities fetched at once. URLSession opens at most 6 connections per host (and HTTP/2
+    /// multiplexes them anyway), so more would only queue.
+    public static let snapshotConcurrency = 6
+
+    /// Every row the account holds, tombstones included, and the cursor that follows them. The
+    /// entities download concurrently (each one pages in order), but the rows come back in
+    /// `entities` order whatever finishes first, so settings still apply first. One failure fails
+    /// the whole fetch and cancels the rest: nothing is applied from a partial snapshot.
+    private func fetchSnapshot() async throws(CloudAccountError) -> (rows: [RemoteRow], cursor: Int) {
+        let entities = Self.entities
+        let client = client
+        var fetched = [[RemoteRow]](repeating: [], count: entities.count)
+        var lowest = Int.max
+        do {
+            try await withThrowingTaskGroup(of: (index: Int, rows: [RemoteRow], seq: Int).self) { group in
+                for (index, entity) in entities.enumerated() {
+                    if index >= Self.snapshotConcurrency, let done = try await group.next() {
+                        fetched[done.index] = done.rows
+                        lowest = min(lowest, done.seq)
+                    }
+                    group.addTask {
+                        let result = try await Self.fetchEntity(entity, client: client)
+                        return (index, result.rows, result.seq)
+                    }
+                }
+                for try await done in group {
+                    fetched[done.index] = done.rows
+                    lowest = min(lowest, done.seq)
+                }
+            }
+        } catch let error as CloudAccountError {
+            throw error
+        } catch {
+            throw .unreachable
+        }
+        return (fetched.flatMap(\.self), lowest == .max ? 0 : lowest)
+    }
+
+    private static func fetchEntity(_ entity: String, client: APIClient) async throws(CloudAccountError) -> (rows: [RemoteRow], seq: Int) {
+        var lowest = Int.max
+        var rows: [RemoteRow] = []
+        var after = ""
+        while true {
+            let page: SnapshotAnswer = try await decode(client.send(
+                "GET",
+                "sync/snapshot",
+                query: ["entity": entity, "after": after, "limit": "500"],
+            ))
+            lowest = min(lowest, page.server_seq)
+            rows += page.rows.map { RemoteRow(entity: entity, row: $0.data) }
+            guard let next = page.next_after else { break }
+            after = next
+        }
+        return (rows, lowest)
+    }
+
     /// A cursor only means something for the account that made it: signing in to another account
     /// starts over with that account's first sync. A cursor from before accounts were recorded is
     /// taken to be the current account's, as it was.

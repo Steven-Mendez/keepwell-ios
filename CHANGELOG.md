@@ -11,6 +11,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - The welcome has a new headline, "All your money, in one place", and a shorter description:
   one or more currencies, and expenses, transfers and drafts at your own pace.
+- Signing in to an account is faster. The first sync now downloads all your data at once instead
+  of one kind after another (about three seconds less on a fresh install), and nothing talks to
+  Keepwell's servers before you are signed in, which used to cost a second, slower start of the
+  server. The welcome says what it is doing: "Signing in…", then "Loading your data…", and the
+  wait no longer polls twice a second.
 - The app icon now uses the designer's artwork exactly: the blue fades to a deeper navy, and the
   dark icon's wallet and gold padlock are drawn and placed as on the brand board. The small icon on
   the lock screen matches it. In light mode the logo is now in full color, with the gold padlock,

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Export straight to TestFlight: `upload` sends the build to App Store Connect and returns,
+	     it does not wait for Apple's processing. -->
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>destination</key>
+	<string>upload</string>
+	<key>teamID</key>
+	<string>8FAR23849B</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<!-- Xcode picks the next build number on App Store Connect, so manual and CI uploads never collide. -->
+	<key>manageAppVersionAndBuildNumber</key>
+	<true/>
+	<key>uploadSymbols</key>
+	<true/>
+</dict>
+</plist>
