@@ -7,8 +7,49 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+
+- Summary reads longer periods, as Keepwell for the web does: pick Month, This year, Last 12
+  months or a Custom From/To range. A period shows what you saved against the same months a year
+  earlier, the average spending, month-by-month bars, savings building up over time, your top
+  categories month by month, highlights (best and toughest month, months you saved, what grew and
+  dropped the most) and every year side by side. A ring shows where the period's money went (or
+  came from), with each category's change against the same months a year earlier.
+- "Card number" on credit and debit card screens: edit a card's last four digits and network after
+  creating it. A credit card needs its four digits; a debit card can leave them empty.
+- Credit cards can be deleted from their screen, with the same confirmation as a bank account: it
+  says how many movements go with it, transfers included.
+- Cash accounts have their own screen: rename, latest movements with "See all", and delete with
+  confirmation. Tapping cash in Accounts opens it instead of its movement list.
+- A credit card in two currencies shows each debt side by side and, when there is an exchange rate,
+  a "Total" line with the whole debt in your main currency.
+- Signing in to a Keepwell account that already has data, on an iPhone that has its own, asks
+  which to keep instead of mixing them: "Use your account's data" replaces what's on this iPhone,
+  and "Keep this iPhone's data" (after a second confirmation) replaces the account's data on every
+  device. Each option shows how many movements and accounts it holds. "Decide later" keeps sync
+  paused while everything keeps working on this iPhone; Settings → Data & sync → "Choose which data
+  to keep" asks again. An upload cut short (the app closed, no connection) finishes on its own
+  without asking again. Your passcode, name and lock settings stay either way. If only one side has
+  data, it syncs as before without asking.
+- Recurring: the "Next dates" in the editor also show for a new rule and follow the start,
+  frequency, interval and end as you change them; a paused rule shows them dimmed under "Paused".
+  The Subscription switch follows the category (on for Subscriptions, off when you move away) until
+  you flip it yourself. The movements a rule recorded, newest first, open their detail when tapped.
+- Home shows a "Proposed by Claude" card for recurring rules an assistant created, with Confirm
+  (starts the rule) and Discard (deletes it), as the web does. Recurring still marks them too.
+- Settings can change the main currency while there are no accounts or movements, and the second
+  currency (pick another, or "None") while no balance or movement uses it; otherwise the row says
+  "Used by your accounts, so it can't change here." The Rules row shows how many rules you have.
+- Settings → Connected assistants lists each assistant with what it can do (Can read, Can read and
+  record, Full control) and a Disconnect, a "How to connect Claude" link and a confirmation before
+  "Disconnect assistants" cuts them all.
+
 ### Changed
 
+- Goals, loans, lenders and personal debts accept names up to 60 characters.
+- Adding a credit card no longer requires the cutoff and payment days: they start as "Not set",
+  and the steppers begin at a value only once you choose to set one. The reminder is only
+  mentioned when there is a payment day.
 - The welcome has a new headline, "All your money, in one place", and a shorter description:
   one or more currencies, and expenses, transfers and drafts at your own pace.
 - Signing in to an account is faster. The first sync now downloads all your data at once instead
@@ -33,29 +74,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   icon, and signing out, deleting the account and deleting all your data sit together at the
   bottom in red. The version is at the foot of the list. Rows adapt to the largest text sizes and
   to small iPhones.
-
-### Added
-
-- Signing in to a Keepwell account that already has data, on an iPhone that has its own, asks
-  which to keep instead of mixing them: "Use your account's data" replaces what's on this iPhone,
-  and "Keep this iPhone's data" (after a second confirmation) replaces the account's data on every
-  device. Each option shows how many movements and accounts it holds. "Decide later" keeps sync
-  paused while everything keeps working on this iPhone; Settings → Data & sync → "Choose which data
-  to keep" asks again. An upload cut short (the app closed, no connection) finishes on its own
-  without asking again. Your passcode, name and lock settings stay either way. If only one side has
-  data, it syncs as before without asking.
-- Recurring: the "Next dates" in the editor also show for a new rule and follow the start,
-  frequency, interval and end as you change them; a paused rule shows them dimmed under "Paused".
-  The Subscription switch follows the category (on for Subscriptions, off when you move away) until
-  you flip it yourself. The movements a rule recorded, newest first, open their detail when tapped.
-- Home shows a "Proposed by Claude" card for recurring rules an assistant created, with Confirm
-  (starts the rule) and Discard (deletes it), as the web does. Recurring still marks them too.
-- Settings can change the main currency while there are no accounts or movements, and the second
-  currency (pick another, or "None") while no balance or movement uses it; otherwise the row says
-  "Used by your accounts, so it can't change here." The Rules row shows how many rules you have.
-- Settings → Connected assistants lists each assistant with what it can do (Can read, Can read and
-  record, Full control) and a Disconnect, a "How to connect Claude" link and a confirmation before
-  "Disconnect assistants" cuts them all.
 
 ### Fixed
 

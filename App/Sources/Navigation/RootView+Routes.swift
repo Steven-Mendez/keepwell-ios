@@ -19,24 +19,9 @@ extension RootView {
         case .categorizationRules:
             RulesRoute(container: container, onBack: navigator.pop)
         case .paymentMethods:
-            PaymentMethodsRoute(container: container, onBack: navigator.pop) { account in
-                navigator.push(account.kind == .credit ? .creditCard(accountID: account.id) : .bankAccount(accountID: account.id))
-            }
-        case let .creditCard(accountID):
-            CreditCardRoute(
-                container: container,
-                accountID: accountID,
-                onBack: navigator.pop,
-                onPay: { presentNewMovement(.cardPayment, payingCard: accountID) },
-                onSeeAllMovements: { navigator.push(.transactions(accountID: accountID)) },
-            )
-        case let .bankAccount(accountID):
-            DebitCardRoute(
-                container: container,
-                accountID: accountID,
-                onBack: navigator.pop,
-                onSeeAllMovements: { navigator.push(.transactions(accountID: $0)) },
-            )
+            PaymentMethodsRoute(container: container, onBack: navigator.pop, onOpenAccount: openAccount)
+        case .creditCard, .bankAccount, .cash:
+            accountRoute(route)
         case let .transactions(accountID):
             transactionsRoute(accountID: accountID)
         case let .transaction(id):
@@ -59,6 +44,45 @@ extension RootView {
             GoalsRoute(container: container, onBack: navigator.pop)
         case .debts:
             DebtsRoute(container: container, onBack: navigator.pop)
+        }
+    }
+
+    /// The screen of one account, split out of `destination` to keep each switch short.
+    @ViewBuilder
+    private func accountRoute(_ route: AppRoute) -> some View {
+        switch route {
+        case let .creditCard(accountID):
+            CreditCardRoute(
+                container: container,
+                accountID: accountID,
+                onBack: navigator.pop,
+                onPay: { presentNewMovement(.cardPayment, payingCard: accountID) },
+                onSeeAllMovements: { navigator.push(.transactions(accountID: accountID)) },
+            )
+        case let .bankAccount(accountID):
+            DebitCardRoute(
+                container: container,
+                accountID: accountID,
+                onBack: navigator.pop,
+                onSeeAllMovements: { navigator.push(.transactions(accountID: $0)) },
+            )
+        case let .cash(accountID):
+            CashRoute(
+                container: container,
+                accountID: accountID,
+                onBack: navigator.pop,
+                onSeeAllMovements: { navigator.push(.transactions(accountID: $0)) },
+            )
+        default:
+            EmptyView()
+        }
+    }
+
+    private func openAccount(_ account: Account) {
+        switch account.kind {
+        case .credit: navigator.push(.creditCard(accountID: account.id))
+        case .cash: navigator.push(.cash(accountID: account.id))
+        case .deposit: navigator.push(.bankAccount(accountID: account.id))
         }
     }
 

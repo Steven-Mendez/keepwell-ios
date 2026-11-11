@@ -43,10 +43,10 @@ struct GoalsUseCaseTests {
     }
 
     @Test
-    func aLongNameIsCutAtFortyCharacters() async throws {
+    func aLongNameIsCutAtTheLimit() async throws {
         let store = store()
         let goal = try await DefaultSaveSavingsGoalUseCase(goals: store, settings: store).execute(SavingsGoalDraft(
-            name: String(repeating: "a", count: 50), target: Money(10, "USD"),
+            name: String(repeating: "a", count: 70), target: Money(10, "USD"),
         ))
         #expect(goal.name.count == SavingsGoal.maxNameLength)
     }

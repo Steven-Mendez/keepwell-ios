@@ -17,6 +17,8 @@ public struct CreditCardDetail: Hashable, Sendable {
     public let cycleTransactions: [Transaction]
     public let nextCutoff: Date?
     public let nextDue: Date?
+    /// Every movement that touches the account, planned ones included: what deleting it removes.
+    public let movementCount: Int
     public let settings: CurrencySettings
     /// For row subtitles.
     public let accounts: [Account]
@@ -33,6 +35,7 @@ public struct CreditCardDetail: Hashable, Sendable {
         cycleTransactions: [Transaction],
         nextCutoff: Date?,
         nextDue: Date?,
+        movementCount: Int = 0,
         settings: CurrencySettings,
         accounts: [Account],
         cards: [Card],
@@ -47,10 +50,17 @@ public struct CreditCardDetail: Hashable, Sendable {
         self.cycleTransactions = cycleTransactions
         self.nextCutoff = nextCutoff
         self.nextDue = nextDue
+        self.movementCount = movementCount
         self.settings = settings
         self.accounts = accounts
         self.cards = cards
         self.categories = categories
+    }
+
+    /// The whole debt is only worth showing when every currency owed converts at the current rate:
+    /// otherwise it would silently leave one out, or sum currencies without a rate.
+    public var showsTotalDebt: Bool {
+        balances.count > 1 && balances.allSatisfy { (try? settings.exchangeRate.convert($0, to: settings.principal)) != nil }
     }
 
     /// The currency the limit is kept in: the one it was set in, the second currency for a card
@@ -136,6 +146,7 @@ public struct DefaultGetCreditCardDetailUseCase: GetCreditCardDetailUseCase {
             cycleTransactions: cycleTransactions,
             nextCutoff: terms?.cutoffDay.flatMap { BillingCycle.nextOccurrence(ofDay: $0, onOrAfter: now, calendar: calendar) },
             nextDue: terms?.dueDay.flatMap { BillingCycle.nextOccurrence(ofDay: $0, onOrAfter: now, calendar: calendar) },
+            movementCount: transactions.count { TransactionScope.account(accountID).includes($0) },
             settings: currencies,
             accounts: accounts,
             cards: cards,

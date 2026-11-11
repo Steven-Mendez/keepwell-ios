@@ -110,6 +110,12 @@ public enum CardDisplay {
         [card.productName ?? networkName(card.network), card.lastFour.map { "··\($0)" }].compactMap(\.self).joined(separator: " ")
     }
 
+    /// The "Card number" row's value: "Visa ··1234", or `nil` while neither is known.
+    public static func numberSummary(of card: Card) -> String? {
+        let parts = [card.network.map { networkName($0) }, card.lastFour.map { "··\($0)" }].compactMap(\.self)
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
+    }
+
     /// "09/28", as the plastic prints it.
     public static func expiry(_ expiry: CardExpiry) -> String {
         String(format: "%02d/%02d", expiry.month, expiry.year % 100)

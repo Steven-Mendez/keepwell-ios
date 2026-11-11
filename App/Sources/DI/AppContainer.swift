@@ -152,7 +152,8 @@ final class AppContainer {
 
     func makeSummaryViewModel() -> SummaryViewModel {
         let report = DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store, accounts: store)
-        return SummaryViewModel(getReport: report)
+        let range = DefaultGetRangeSummaryUseCase(transactions: store, settings: store)
+        return SummaryViewModel(getReport: report, getRange: range)
     }
 
     // MARK: - Settings and lock
@@ -238,42 +239,6 @@ final class AppContainer {
         widgetSnapshots.clear()
         WidgetCenter.shared.reloadAllTimelines()
         await reminders.removeAll()
-    }
-
-    // MARK: - Credit card
-
-    func makeCreditCardViewModel(accountID: UUID) -> CreditCardViewModel {
-        CreditCardViewModel(
-            accountID: accountID,
-            getDetail: DefaultGetCreditCardDetailUseCase(
-                accounts: store,
-                cards: store,
-                transactions: store,
-                categories: store,
-                settings: store,
-            ),
-            updateTerms: DefaultUpdateCreditTermsUseCase(accounts: store),
-            setCardColor: DefaultSetCardColorUseCase(cards: store),
-            setCardDetails: DefaultSetCardDetailsUseCase(cards: store),
-            renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            getPreferredName: makeGetPreferredName(),
-        )
-    }
-
-    // MARK: - Bank account and its card
-
-    func makeDebitCardViewModel(accountID: UUID) -> DebitCardViewModel {
-        DebitCardViewModel(
-            accountID: accountID,
-            getDetail: DefaultGetDebitCardDetailUseCase(
-                accounts: store, cards: store, transactions: store, categories: store, settings: store,
-            ),
-            setColor: DefaultSetCardColorUseCase(cards: store),
-            setDetails: DefaultSetCardDetailsUseCase(cards: store),
-            renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
-            getPreferredName: makeGetPreferredName(),
-        )
     }
 
     // MARK: - Recurring

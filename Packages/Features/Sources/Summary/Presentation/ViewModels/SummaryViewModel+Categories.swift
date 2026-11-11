@@ -15,6 +15,15 @@ extension SummaryViewModel {
         public let category: TransactionCategory?
         /// The grouped "N more" slice, drawn in a neutral color.
         public let isOthers: Bool
+        /// Against the comparison period; only in a range.
+        var change: Change?
+
+        struct Change: Equatable {
+            let text: String
+            let tone: SummaryViewModel.Tone
+            /// "Before: $20.00", read as a hint; `nil` for a category that is new.
+            let before: String?
+        }
     }
 
     var breakdown: CategoryBreakdown? {

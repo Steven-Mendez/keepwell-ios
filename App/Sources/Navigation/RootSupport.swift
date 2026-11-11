@@ -299,6 +299,28 @@ struct DebitCardRoute: View {
     }
 }
 
+struct CashRoute: View {
+    @State private var viewModel: CashViewModel
+    let onBack: () -> Void
+    let onSeeAllMovements: (UUID) -> Void
+
+    init(
+        container: AppContainer,
+        accountID: UUID,
+        onBack: @escaping () -> Void,
+        onSeeAllMovements: @escaping (UUID) -> Void,
+    ) {
+        _viewModel = State(initialValue: container.makeCashViewModel(accountID: accountID))
+        self.onBack = onBack
+        self.onSeeAllMovements = onSeeAllMovements
+    }
+
+    var body: some View {
+        CashView(viewModel: viewModel, onBack: onBack, onSeeAllMovements: onSeeAllMovements)
+            .navigationBarBackButtonHidden()
+    }
+}
+
 /// The movement list pushed from an account. It has its own view model so filtering it
 /// leaves the Transactions tab as the person left it.
 struct TransactionsRoute: View {
