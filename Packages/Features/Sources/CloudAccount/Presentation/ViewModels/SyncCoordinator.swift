@@ -17,7 +17,9 @@ public final class SyncCoordinator {
     public var isChoosingData = false
     /// The choice being carried out, for the sheet's progress.
     public private(set) var isResolving = false
-    /// The signed-in account, so the engine can tell a first sync with it.
+    /// The signed-in account, so the engine can tell a first sync with it. Without one nothing
+    /// syncs: every /sync call needs a session, so a trigger before sign-in (the app coming back
+    /// to the foreground as Apple's sheet closes) would only earn a 401 and an extra cold start.
     public var accountID: String?
 
     private let run: @Sendable (String?) async throws(CloudAccountError) -> SyncRoundOutcome
@@ -30,6 +32,7 @@ public final class SyncCoordinator {
     private var halted = false
     private var heldForSetup = false
     private var failures = 0
+    private var roundWaiters: [UUID: (after: Int, continuation: CheckedContinuation<Void, Never>)] = [:]
 
     public init(
         run: @escaping @Sendable (String?) async throws(CloudAccountError) -> SyncRoundOutcome,
@@ -92,7 +95,7 @@ public final class SyncCoordinator {
             try await self.resolveChoice(choice, self.accountID)
         }
         running = false
-        completedRounds += 1
+        finishedRound()
         guard error == nil else {
             state = .needsChoice(conflict)
             return false
@@ -108,6 +111,38 @@ public final class SyncCoordinator {
             trigger(after: 0)
         }
         return true
+    }
+
+    private func finishedRound() {
+        completedRounds += 1
+        releaseWaiters { $0.after < completedRounds }
+    }
+
+    private func releaseWaiters(where matches: ((after: Int, continuation: CheckedContinuation<Void, Never>)) -> Bool) {
+        for (id, waiter) in roundWaiters where matches(waiter) {
+            roundWaiters[id] = nil
+            waiter.continuation.resume()
+        }
+    }
+
+    /// Suspends until a round ends after `count` rounds had ended (`completedRounds` read earlier),
+    /// or the caller is cancelled, or sync stops. Replaces polling `completedRounds`.
+    public func waitForRoundEnd(after count: Int) async {
+        guard completedRounds <= count, !Task.isCancelled else { return }
+        let id = UUID()
+        await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                if Task.isCancelled || completedRounds > count {
+                    continuation.resume()
+                } else {
+                    roundWaiters[id] = (count, continuation)
+                }
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in
+                self?.roundWaiters.removeValue(forKey: id)?.continuation.resume()
+            }
+        }
     }
 
     public func start() {
@@ -126,6 +161,8 @@ public final class SyncCoordinator {
         periodic?.cancel()
         periodic = nil
         task?.cancel()
+        accountID = nil
+        releaseWaiters { _ in true }
         if conflict != nil {
             state = .idle(lastSync: nil, pending: 0)
             isChoosingData = false
@@ -161,7 +198,7 @@ public final class SyncCoordinator {
     }
 
     public func trigger(after seconds: Double) {
-        guard !halted, !heldForSetup else { return }
+        guard accountID != nil, !halted, !heldForSetup else { return }
         task?.cancel()
         task = Task { [weak self] in
             try? await Task.sleep(for: .seconds(seconds))
@@ -187,7 +224,7 @@ public final class SyncCoordinator {
         }
         running = false
         let current = await status()
-        completedRounds += 1
+        finishedRound()
         switch error {
         case nil:
             if case let .needsChoice(conflict) = outcome {

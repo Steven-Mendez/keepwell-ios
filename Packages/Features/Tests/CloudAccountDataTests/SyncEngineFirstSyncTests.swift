@@ -222,4 +222,101 @@ extension SyncEngineTests {
         await engine.reset()
         #expect(cursor(suite) == nil)
     }
+
+    // MARK: - Concurrent snapshot
+
+    private static let order = [
+        "settings", "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
+        "personalDebt", "personalDebtRepayment", "categorizationRule",
+    ]
+
+    /// One row per entity, two pages for transactions, and later entities answering first: whatever
+    /// finishes first, the rows must come out as a sequential fetch would have produced them.
+    private static func serveStaggered(failing: String? = nil) {
+        StubProtocol.peakInFlight = 0
+        // Earlier entities answer last, so a sequential reading of the answers would come out reversed.
+        StubProtocol.delayFor = { request in
+            let entity = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }?.queryItems?
+                .first { $0.name == "entity" }?.value
+            return Double(order.count - (order.firstIndex { $0 == entity } ?? 0)) * 0.02
+        }
+        StubProtocol.handler = { request in
+            let query = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }?.queryItems ?? []
+            func value(_ name: String) -> String {
+                query.first { $0.name == name }?.value ?? ""
+            }
+            guard request.url?.path == "/sync/snapshot" else {
+                return (200, [:], json(["changes": [], "next_cursor": 7, "has_more": false, "results": [], "partial": false]))
+            }
+            let entity = value("entity")
+            let position = order.firstIndex(of: entity) ?? 0
+            if entity == failing {
+                return (500, [:], Data())
+            }
+            // Each entity reports its own sequence: the cursor is the lowest, as in a sequential fetch.
+            let seq = 100 - position
+            if entity == "transaction" {
+                if value("after").isEmpty {
+                    return (
+                        200,
+                        [:],
+                        json(["rows": [row("transaction-1"), row("transaction-2")], "server_seq": seq, "next_after": "transaction-2"]),
+                    )
+                }
+                return (200, [:], json(["rows": [row("transaction-3")], "server_seq": seq, "next_after": NSNull()]))
+            }
+            return (200, [:], json(["rows": [row("\(entity)-1")], "server_seq": seq, "next_after": NSNull()]))
+        }
+    }
+
+    @Test
+    func theConcurrentSnapshotAppliesRowsInTheSequentialOrder() async throws {
+        let store = FakeSyncStore()
+        let suite = suite()
+        Self.serveStaggered()
+        defer { StubProtocol.delayFor = nil }
+        try await engine(store, suite: suite).syncOnce(account: "u1")
+
+        let rows = try #require(await store.replacedWith)
+        var expected: [String] = []
+        for entity in Self.order {
+            expected += entity == "transaction" ? ["transaction-1", "transaction-2", "transaction-3"] : ["\(entity)-1"]
+        }
+        let ids = rows.compactMap { (try? JSONSerialization.jsonObject(with: $0.row) as? [String: Any])?["id"] as? String }
+        #expect(ids == expected)
+        #expect(rows.map(\.entity).first == "settings")
+        // The pull starts from the lowest sequence among entities, so a change made while downloading is caught.
+        let pull = try #require(StubProtocol.requests.last { $0.url?.path == "/sync/pull" })
+        #expect(pull.url?.query?.contains("cursor=\(100 - (Self.order.count - 1))") == true)
+        #expect(StubProtocol.requests.filter { $0.url?.path == "/sync/snapshot" }.count == Self.order.count + 1)
+    }
+
+    @Test
+    func theSnapshotDownloadsSeveralEntitiesAtOnceButNeverMoreThanTheCap() async throws {
+        Self.serveStaggered()
+        defer { StubProtocol.delayFor = nil }
+        try await engine(FakeSyncStore(), suite: suite()).syncOnce(account: "u1")
+        #expect(StubProtocol.peakInFlight > 1)
+        #expect(StubProtocol.peakInFlight <= SyncEngine.snapshotConcurrency)
+    }
+
+    @Test
+    func oneEntityFailingFailsTheWholeSnapshotAndAppliesNothing() async throws {
+        let store = FakeSyncStore()
+        let suite = suite()
+        Self.serveStaggered(failing: "loan")
+        defer { StubProtocol.delayFor = nil }
+        do {
+            try await engine(store, suite: suite).syncOnce(account: "u1")
+            Issue.record("The sync should have failed")
+        } catch {
+            #expect(error == .server(code: "http_500", requestID: nil))
+        }
+        #expect(await store.replacedWith == nil)
+        #expect(await store.appliedCount() == 0)
+        #expect(await store.pendingCount() == 0)
+        #expect(cursor(suite) == nil)
+        #expect(!paths().contains("/sync/push"))
+        #expect(!paths().contains("/sync/pull"))
+    }
 }

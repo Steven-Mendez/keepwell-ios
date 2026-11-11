@@ -531,12 +531,12 @@
         }
       }
     },
-    "Looking for your data…" : {
+    "Loading your data…" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscando tus datos…"
+            "value" : "Cargando tus datos…"
           }
         }
       }
@@ -727,6 +727,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sesión iniciada como"
+          }
+        }
+      }
+    },
+    "Signing in…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciando sesión…"
           }
         }
       }

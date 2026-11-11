@@ -33,42 +33,41 @@ public struct DefaultRestoreFromAccountUseCase: RestoreFromAccountUseCase {
     private let settings: any SettingsRepository
     private let hasUserData: @Sendable () async -> Bool
     private let completedSyncRounds: @Sendable () async -> Int
-    private let attempts: Int
-    private let interval: Duration
+    private let waitForRoundEnd: @Sendable (Int) async -> Void
+    private let timeout: Duration
 
     /// `hasUserData` reads this device's store, which before onboarding holds only what sync
     /// brought down. `completedSyncRounds` counts the sync rounds that have ended, failed ones
-    /// included; a round that ends after the wait began has pulled whatever the account had.
-    /// `attempts` bounds the wait when sync never answers (offline).
+    /// included, and `waitForRoundEnd(n)` suspends until one more has ended after `n` (and
+    /// returns early when cancelled); a round that ends after the wait began has pulled whatever
+    /// the account had. `timeout` bounds the wait when sync never answers (offline).
     public init(
         settings: any SettingsRepository,
         hasUserData: @escaping @Sendable () async -> Bool,
         completedSyncRounds: @escaping @Sendable () async -> Int,
-        attempts: Int = 60,
-        interval: Duration = .milliseconds(500),
+        waitForRoundEnd: @escaping @Sendable (Int) async -> Void,
+        timeout: Duration = .seconds(30),
     ) {
         self.settings = settings
         self.hasUserData = hasUserData
         self.completedSyncRounds = completedSyncRounds
-        self.attempts = attempts
-        self.interval = interval
+        self.waitForRoundEnd = waitForRoundEnd
+        self.timeout = timeout
     }
 
     public func execute() async throws(DomainError) -> Settings? {
         let roundsBefore = await completedSyncRounds()
-        for attempt in 0 ..< attempts {
-            let roundEnded = await completedSyncRounds() > roundsBefore
-            if await hasUserData() {
-                return try await completedSettings()
-            }
-            if roundEnded {
-                return nil
-            }
-            if attempt < attempts - 1 {
-                try? await Task.sleep(for: interval)
-            }
+        let wait = waitForRoundEnd
+        let limit = timeout
+        // Whichever comes first: the round ends, or the time runs out.
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await wait(roundsBefore) }
+            group.addTask { try? await Task.sleep(for: limit) }
+            await group.next()
+            group.cancelAll()
         }
-        return nil
+        guard await hasUserData() else { return nil }
+        return try await completedSettings()
     }
 
     /// The account's settings, marked as set up: the next launch must open home, even for data

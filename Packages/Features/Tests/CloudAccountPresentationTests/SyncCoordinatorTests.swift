@@ -131,6 +131,66 @@ struct SyncCoordinatorTests {
         #expect(sync.isChoosingData)
     }
 
+    /// The reported 401: coming back to the foreground as Apple's sheet closes, or an edit made
+    /// during onboarding, asked the API to sync before any session existed.
+    @Test
+    func neverSyncsBeforeSignIn() async throws {
+        let engine = Engine()
+        let sync = coordinator(engine)
+        sync.accountID = nil
+        sync.trigger(after: 0)
+        sync.changed()
+        sync.resume()
+        sync.start()
+        try await Task.sleep(for: .milliseconds(150))
+        #expect(engine.roundCount == 0)
+
+        sync.accountID = "u1"
+        sync.trigger(after: 0)
+        try await waitForRounds(sync, 1)
+        #expect(engine.roundCount == 1)
+    }
+
+    @Test
+    func signingOutForgetsTheAccountSoNothingSyncsAfterIt() async throws {
+        let engine = Engine()
+        let sync = coordinator(engine)
+        sync.stop()
+        sync.trigger(after: 0)
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(engine.roundCount == 0)
+    }
+
+    @Test
+    func waitForRoundEndResumesWhenARoundEnds() async {
+        let engine = Engine()
+        let sync = coordinator(engine)
+        let before = sync.completedRounds
+        let waiting = Task { await sync.waitForRoundEnd(after: before) }
+        await Task.yield()
+        #expect(sync.completedRounds == 0)
+        sync.trigger(after: 0)
+        await waiting.value
+        #expect(sync.completedRounds == 1)
+        // A round that already ended after the count answers at once.
+        await sync.waitForRoundEnd(after: 0)
+    }
+
+    @Test
+    func waitForRoundEndReturnsWhenCancelledOrSyncStops() async {
+        let sync = coordinator(Engine())
+        let cancelled = Task { await sync.waitForRoundEnd(after: 0) }
+        await Task.yield()
+        cancelled.cancel()
+        await cancelled.value
+
+        let stopped = Task { await sync.waitForRoundEnd(after: 0) }
+        await Task.yield()
+        sync.stop()
+        await stopped.value
+        #expect(sync.completedRounds == 0)
+    }
+
     /// Onboarding after signing in to an account without data: nothing syncs until setup ends.
     @Test
     func holdsRoundsDuringSetup() async throws {
