@@ -371,6 +371,16 @@
         }
       }
     },
+    "Credit cards" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjetas de crédito"
+          }
+        }
+      }
+    },
     "Data & sync" : {
       "localizations" : {
         "es" : {
@@ -951,16 +961,6 @@
         }
       }
     },
-    "Recurring" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recurrentes"
-          }
-        }
-      }
-    },
     "Remind me to pay" : {
       "localizations" : {
         "es" : {
@@ -1087,16 +1087,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seis dígitos, guardados solo en este iPhone. Sin él, el bloqueo usa el código de tu iPhone."
-          }
-        }
-      }
-    },
-    "Subscriptions and regular movements" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suscripciones y movimientos periódicos"
           }
         }
       }

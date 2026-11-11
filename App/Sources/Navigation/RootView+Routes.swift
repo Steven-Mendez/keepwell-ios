@@ -2,6 +2,7 @@ import AccountsPresentation
 import Core
 import Domain
 import Foundation
+import PlanPresentation
 import SettingsPresentation
 import SwiftUI
 import TransactionsPresentation
@@ -114,9 +115,26 @@ extension RootView {
             onErased: returnToOnboarding,
             onOpenCategories: { navigator.push(.categories(showsIncome: $0 == .income)) },
             onOpenPaymentMethods: { navigator.push(.paymentMethods) },
-            onOpenRecurring: { navigator.push(.recurring) },
             onOpenRules: { navigator.push(.categorizationRules) },
             onShowKeyboardShortcuts: { perform(.showShortcuts) },
+        )
+    }
+}
+
+extension RootView {
+    /// A tag tapped in a movement's detail: Transactions, narrowed to it, as the web does.
+    func showTag(_ tag: String) {
+        navigator.path = NavigationPath()
+        screens?.transactions.showOnly(tag: tag)
+        tab = .transactions
+    }
+
+    func planTab(_ screens: MainScreens) -> some View {
+        PlanView(
+            viewModel: screens.plan,
+            onOpenRecurring: { navigator.push(.recurring) },
+            onOpenGoals: { navigator.push(.goals) },
+            onOpenDebts: { navigator.push(.debts) },
         )
     }
 }

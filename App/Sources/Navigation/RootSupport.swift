@@ -12,6 +12,7 @@ import GoalsPresentation
 import HomePresentation
 import LockPresentation
 import OnboardingPresentation
+import PlanPresentation
 import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
@@ -60,12 +61,14 @@ final class MainScreens {
     let transactions: TransactionsViewModel
     let accounts: AccountsViewModel
     let summary: SummaryViewModel
+    let plan: PlanViewModel
 
     init(container: AppContainer) {
         home = container.makeHomeViewModel()
         transactions = container.makeTransactionsViewModel()
         accounts = container.makeAccountsViewModel()
         summary = container.makeSummaryViewModel()
+        plan = container.makePlanViewModel()
     }
 
     func reload() async {
@@ -73,7 +76,8 @@ final class MainScreens {
         async let transactions: Void = transactions.load()
         async let accounts: Void = accounts.load()
         async let summary: Void = summary.load()
-        _ = await (home, transactions, accounts, summary)
+        async let plan: Void = plan.load()
+        _ = await (home, transactions, accounts, summary, plan)
     }
 }
 
@@ -148,7 +152,6 @@ struct SettingsRoute: View {
     let onErased: () -> Void
     let onOpenCategories: (TransactionKind) -> Void
     let onOpenPaymentMethods: () -> Void
-    let onOpenRecurring: () -> Void
     let onOpenRules: () -> Void
     let onShowKeyboardShortcuts: () -> Void
 
@@ -158,7 +161,6 @@ struct SettingsRoute: View {
         onErased: @escaping () -> Void,
         onOpenCategories: @escaping (TransactionKind) -> Void,
         onOpenPaymentMethods: @escaping () -> Void,
-        onOpenRecurring: @escaping () -> Void,
         onOpenRules: @escaping () -> Void,
         onShowKeyboardShortcuts: @escaping () -> Void,
     ) {
@@ -169,7 +171,6 @@ struct SettingsRoute: View {
         self.onErased = onErased
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
-        self.onOpenRecurring = onOpenRecurring
         self.onOpenRules = onOpenRules
         self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
@@ -182,7 +183,6 @@ struct SettingsRoute: View {
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onOpenCategories: onOpenCategories,
             onOpenPaymentMethods: onOpenPaymentMethods,
-            onOpenRecurring: onOpenRecurring,
             onOpenRules: onOpenRules,
             onShowKeyboardShortcuts: onShowKeyboardShortcuts,
             account: cloudAccount.map { account in

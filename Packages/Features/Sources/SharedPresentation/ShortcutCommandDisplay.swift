@@ -33,6 +33,7 @@ public enum ShortcutCommandDisplay {
         case .transactions: String(localized: "Transactions", bundle: #bundle)
         case .accounts: String(localized: "Accounts", bundle: #bundle)
         case .summary: String(localized: "Summary", bundle: #bundle)
+        case .plan: String(localized: "Plan", bundle: #bundle)
         case .recurring: String(localized: "Recurring", bundle: #bundle)
         case .goals: String(localized: "Goals", bundle: #bundle)
         case .debts: String(localized: "Debts", bundle: #bundle)
@@ -62,6 +63,7 @@ public enum ShortcutCommandDisplay {
         case .transactions: "list.bullet"
         case .accounts: "creditcard"
         case .summary: "chart.bar"
+        case .plan: "calendar.badge.checkmark"
         case .recurring: "repeat"
         case .goals: "target"
         case .debts: "hand.raised"

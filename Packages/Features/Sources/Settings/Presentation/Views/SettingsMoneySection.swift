@@ -37,6 +37,7 @@ struct MoneySection: View {
                 }
                 SettingsMenuRow(
                     label: String(localized: "Remind me to pay", bundle: #bundle),
+                    description: String(localized: "Credit cards", bundle: #bundle),
                     icon: .bell,
                     tint: KWSettingsTint.reminders,
                     value: viewModel.reminderTitle(settings.paymentReminderDaysBefore),

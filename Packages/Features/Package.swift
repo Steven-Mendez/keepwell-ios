@@ -37,6 +37,8 @@ let package = Package(
         .library(name: "GoalsPresentation", targets: ["GoalsPresentation"]),
         .library(name: "DebtsDomain", targets: ["DebtsDomain"]),
         .library(name: "DebtsPresentation", targets: ["DebtsPresentation"]),
+        .library(name: "PlanDomain", targets: ["PlanDomain"]),
+        .library(name: "PlanPresentation", targets: ["PlanPresentation"]),
         .library(name: "CloudAccountDomain", targets: ["CloudAccountDomain"]),
         .library(name: "CloudAccountData", targets: ["CloudAccountData"]),
         .library(name: "CloudAccountPresentation", targets: ["CloudAccountPresentation"]),
@@ -382,6 +384,53 @@ let package = Package(
                 "OnboardingPresentation",
                 "FeatureTestSupport",
                 .product(name: "DesignSystem", package: "DesignSystem"),
+            ],
+            exclude: ["__Snapshots__"],
+        ),
+
+        // MARK: Plan (the hub over Recurring, Goals and Debts)
+
+        .target(
+            name: "PlanDomain",
+            dependencies: [.product(name: "Domain", package: "Domain")],
+            path: "Sources/Plan/Domain",
+        ),
+        .target(
+            name: "PlanPresentation",
+            dependencies: [
+                "PlanDomain",
+                "RecurringDomain",
+                "GoalsDomain",
+                "DebtsDomain",
+                "SharedPresentation",
+                .product(name: "Core", package: "Core"),
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "Domain", package: "Domain"),
+                // `#Preview` sample data only.
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+            path: "Sources/Plan/Presentation",
+            resources: [.process("Resources")],
+        ),
+        .testTarget(
+            name: "PlanDomainTests",
+            dependencies: [
+                "PlanDomain",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
+            ],
+        ),
+        .testTarget(
+            name: "PlanPresentationTests",
+            dependencies: [
+                "PlanPresentation",
+                "PlanDomain",
+                "RecurringDomain",
+                "GoalsDomain",
+                "DebtsDomain",
+                "FeatureTestSupport",
+                .product(name: "Domain", package: "Domain"),
+                .product(name: "DomainSamples", package: "Domain"),
             ],
             exclude: ["__Snapshots__"],
         ),

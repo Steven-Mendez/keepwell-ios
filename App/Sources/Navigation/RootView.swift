@@ -226,6 +226,8 @@ struct RootView: View {
             )
         case .summary:
             SummaryView(viewModel: screens.summary) { presentMovementMenu() }
+        case .plan:
+            planTab(screens)
         }
     }
 
@@ -258,13 +260,6 @@ struct RootView: View {
             debts: { router.push(.debts) },
             openTransaction: { router.push(.transaction(id: $0)) },
         )
-    }
-
-    /// A tag tapped in a movement's detail: Transactions, narrowed to it, as the web does.
-    func showTag(_ tag: String) {
-        router.path = NavigationPath()
-        screens?.transactions.showOnly(tag: tag)
-        tab = .transactions
     }
 }
 

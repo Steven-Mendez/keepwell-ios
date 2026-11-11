@@ -17,6 +17,7 @@ struct KeyboardShortcutSequenceTests {
         ("2", .goTo(.transactions)),
         ("3", .goTo(.accounts)),
         ("4", .goTo(.summary)),
+        ("5", .goTo(.plan)),
     ]
 
     static let jumps: [(Character, ShortcutDestination)] = [
@@ -27,6 +28,7 @@ struct KeyboardShortcutSequenceTests {
         ("t", .transactions),
         ("a", .accounts),
         ("s", .summary),
+        ("p", .plan),
         (",", .settings),
     ]
 
@@ -40,7 +42,7 @@ struct KeyboardShortcutSequenceTests {
     func unknownKeysAreLeftAlone() {
         var sequence = KeyboardShortcutSequence()
         #expect(sequence.press("x", at: start) == .ignored)
-        #expect(sequence.press("5", at: start) == .ignored)
+        #expect(sequence.press("6", at: start) == .ignored)
     }
 
     @Test(arguments: jumps)
