@@ -19,7 +19,12 @@ struct HomeQuickLogCard: View {
                     .accessibilityAddTraits(.isHeader)
                 KWFlowLayout {
                     ForEach(categories, id: \.id) { category in
-                        KWChip(CategoryDisplay.name(of: category), isSelected: false) { onLog(category.id) }
+                        KWChip(
+                            CategoryDisplay.name(of: category),
+                            isSelected: false,
+                            height: 32,
+                            leading: CategoryBadge(category, size: 24),
+                        ) { onLog(category.id) }
                     }
                 }
             }

@@ -9,6 +9,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Hardware-keyboard shortcuts, as Keepwell for the web has: N logs a transaction, E, I and T start
+  an expense, income or transfer, 1 to 4 switch tabs, G then H, T, A, S, R, G or D jumps to a
+  screen, "," opens Settings, "/" and Command-K open search, and "?" lists them all. The keys
+  stay out of the way while you type or a sheet is open. Settings > Profile & preferences >
+  Keyboard shortcuts shows the same list.
+- Search on Transactions offers "Actions" (new expense, income, transfer) and "Go to" (every
+  screen) while it is empty or what you type matches them.
+- Summary shows the Net worth history at the bottom of This year, Last 12 months and Custom, as
+  the web does.
+- Home "Log quickly" chips show each category's icon, and the Transactions totals strip lays out
+  as one row of four on iPad.
 - Transactions shows a totals strip above the list, as Keepwell for the web does: Movements,
   Money in, Money out and Net for whatever the filter, account and search leave visible, in your
   main currency. Drafts and transfers count as movements but not in the money.

@@ -62,6 +62,9 @@ public struct SummaryView: View {
             }
             if viewModel.range != nil {
                 RangeSection(viewModel: viewModel)
+                // The web ends range mode with it too; pace stays a month-only chart.
+                NetWorthSection(viewModel: viewModel)
+                    .padding(.top, KWSpacing.xs)
             }
         } else {
             KWSegmentedControl(

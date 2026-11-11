@@ -116,6 +116,7 @@ extension RootView {
             onOpenPaymentMethods: { navigator.push(.paymentMethods) },
             onOpenRecurring: { navigator.push(.recurring) },
             onOpenRules: { navigator.push(.categorizationRules) },
+            onShowKeyboardShortcuts: { perform(.showShortcuts) },
         )
     }
 }

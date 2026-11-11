@@ -2,12 +2,17 @@ import DesignSystem
 import SwiftUI
 
 /// Count, money in, money out and net of what the list shows (the web's totals strip), as a
-/// 2x2 grid of cells separated by hairlines.
+/// 2x2 grid of cells separated by hairlines, or one row of four where the width is regular (the
+/// web's `grid-cols-2 sm:grid-cols-4`).
 struct MovementTotalsStrip: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     let cells: [(title: String, value: String, tone: MovementTone)]
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 1), GridItem(.flexible(), spacing: 1)], spacing: 1) {
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: 1), count: horizontalSizeClass == .regular ? 4 : 2),
+            spacing: 1,
+        ) {
             ForEach(cells, id: \.title) { cell in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(cell.title)

@@ -150,6 +150,7 @@ struct SettingsRoute: View {
     let onOpenPaymentMethods: () -> Void
     let onOpenRecurring: () -> Void
     let onOpenRules: () -> Void
+    let onShowKeyboardShortcuts: () -> Void
 
     init(
         container: AppContainer,
@@ -159,6 +160,7 @@ struct SettingsRoute: View {
         onOpenPaymentMethods: @escaping () -> Void,
         onOpenRecurring: @escaping () -> Void,
         onOpenRules: @escaping () -> Void,
+        onShowKeyboardShortcuts: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
         _cloudAccount = State(initialValue: container.cloudAccount)
@@ -169,6 +171,7 @@ struct SettingsRoute: View {
         self.onOpenPaymentMethods = onOpenPaymentMethods
         self.onOpenRecurring = onOpenRecurring
         self.onOpenRules = onOpenRules
+        self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
 
     var body: some View {
@@ -181,6 +184,7 @@ struct SettingsRoute: View {
             onOpenPaymentMethods: onOpenPaymentMethods,
             onOpenRecurring: onOpenRecurring,
             onOpenRules: onOpenRules,
+            onShowKeyboardShortcuts: onShowKeyboardShortcuts,
             account: cloudAccount.map { account in
                 SettingsAccountViews(
                     header: AnyView(CloudAccountHeader(viewModel: account)),

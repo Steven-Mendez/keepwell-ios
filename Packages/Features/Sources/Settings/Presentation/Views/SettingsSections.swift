@@ -52,6 +52,7 @@ struct SettingsMenuRow<Option: Hashable>: View {
 /// Who the app greets and in which language.
 struct ProfileSection: View {
     @Bindable var viewModel: SettingsViewModel
+    let onShowKeyboardShortcuts: () -> Void
     @FocusState private var isEditingName: Bool
     @Environment(\.openURL) private var openURL
 
@@ -78,6 +79,16 @@ struct ProfileSection: View {
                         tint: KWSettingsTint.profile,
                         value: viewModel.languageName,
                         accessory: .external,
+                    )
+                }
+                .buttonStyle(.plain)
+                Button(action: onShowKeyboardShortcuts) {
+                    KWSettingsRow(
+                        String(localized: "Keyboard shortcuts", bundle: #bundle),
+                        icon: .list,
+                        tint: KWSettingsTint.profile,
+                        value: "?",
+                        accessory: .chevron,
                     )
                 }
                 .buttonStyle(.plain)

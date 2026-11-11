@@ -40,6 +40,7 @@ public struct SettingsView: View {
     private let onOpenPaymentMethods: () -> Void
     private let onOpenRecurring: () -> Void
     private let onOpenRules: () -> Void
+    private let onShowKeyboardShortcuts: () -> Void
     private let account: SettingsAccountViews?
     private let about: SettingsAbout
     @State private var isConfirmingErase = false
@@ -54,6 +55,7 @@ public struct SettingsView: View {
         onOpenPaymentMethods: @escaping () -> Void = {},
         onOpenRecurring: @escaping () -> Void = {},
         onOpenRules: @escaping () -> Void = {},
+        onShowKeyboardShortcuts: @escaping () -> Void = {},
         account: SettingsAccountViews? = nil,
         about: SettingsAbout = SettingsAbout(),
     ) {
@@ -67,6 +69,7 @@ public struct SettingsView: View {
         self.onOpenPaymentMethods = onOpenPaymentMethods
         self.onOpenRecurring = onOpenRecurring
         self.onOpenRules = onOpenRules
+        self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
 
     public var body: some View {
@@ -130,7 +133,7 @@ public struct SettingsView: View {
 
     @ViewBuilder
     private func sections(_ overview: SettingsOverview) -> some View {
-        ProfileSection(viewModel: viewModel)
+        ProfileSection(viewModel: viewModel, onShowKeyboardShortcuts: onShowKeyboardShortcuts)
         MoneySection(viewModel: viewModel, overview: overview)
         organization(overview)
         DataSection(viewModel: viewModel, syncRow: account?.syncRow)

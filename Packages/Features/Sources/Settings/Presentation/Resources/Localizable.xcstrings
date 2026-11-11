@@ -661,6 +661,16 @@
         }
       }
     },
+    "Keyboard shortcuts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atajos de teclado"
+          }
+        }
+      }
+    },
     "Main currency" : {
       "localizations" : {
         "es" : {
