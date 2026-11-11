@@ -59,6 +59,7 @@ make open              # open the project in Xcode
 | `make test-unit`             | Unit tests only (used by the pre-push hook)               |
 | `make test-ui`               | UI tests only                                             |
 | `make test-record-snapshots` | Re-record snapshot test references                        |
+| `make testflight`            | Archive Release and upload to TestFlight (see below)      |
 | `make resolve`               | Re-resolve SPM packages and update `Package.resolved`     |
 | `make clean`                 | Delete `build/` and the generated project                 |
 
@@ -139,6 +140,39 @@ GitHub Actions ([`.github/workflows/ios-ci.yml`](.github/workflows/ios-ci.yml)) 
 the `xcode-27` runner, explicitly selecting Xcode 27.1 with `xcode-select`, for pull requests and pushes
 to `develop`, `staging` and `main`. [`pr-title.yml`](.github/workflows/pr-title.yml) validates the PR
 title. Dependabot updates SPM packages and GitHub Actions weekly against `develop`.
+
+To save macOS minutes, docs-only changes do not run CI, and `staging`/`main` do not repeat the tests
+of a commit that already passed on `develop` (they wait for that run on a Linux runner, see
+`scripts/ci-gate.sh`). Push `develop` first, then promote.
+
+### TestFlight from CI
+
+[`testflight.yml`](.github/workflows/testflight.yml) (*Actions > TestFlight > Run workflow*, never
+automatic) archives the Release app and uploads it with `xcodebuild -exportArchive`; the same flow runs
+locally with `make testflight`. Signing is cloud-managed: no certificates, keychains or match. Xcode
+bumps the build number itself (`manageAppVersionAndBuildNumber`), so manual and CI uploads never collide.
+
+One-time setup:
+
+1. App Store Connect > Users and Access > Integrations > App Store Connect API > **Team Keys** >
+   generate a key with the **Admin** role. Apple's docs do not say how to grant an API key access to
+   cloud-managed distribution certificates; in practice only Admin keys can sign for distribution, and
+   App Manager/Developer keys fail with "Cloud signing permission error". Team keys need the Account
+   Holder or an Admin to create them. Download the `.p8` (it can be downloaded once) and note the
+   Key ID and Issuer ID.
+2. Add the repository secrets (the values never go in the repo):
+
+   ```sh
+   gh secret set ASC_KEY_ID --body "<key id>"
+   gh secret set ASC_ISSUER_ID --body "<issuer id>"
+   base64 -i AuthKey_<key id>.p8 | gh secret set ASC_KEY_P8_BASE64
+   ```
+
+3. Run the workflow. It refuses commits without a green CI run unless `skip_ci_check` is set, and it
+   fails if the archive lacks the Sign in with Apple entitlement.
+
+Locally, `make testflight` signs with the Xcode account; set `ASC_KEY_PATH`, `ASC_KEY_ID` and
+`ASC_ISSUER_ID` to use an API key instead.
 
 ## Dependencies
 
