@@ -25,6 +25,11 @@ struct HomeQuickLogCard: View {
                             height: 32,
                             leading: CategoryBadge(category, size: 24),
                         ) { onLog(category.id) }
+                            // "Expense · Restaurants", as the web chip's title: says what the tap
+                            // starts, and keeps it apart from the category buttons in the sheet.
+                            .accessibilityLabel(
+                                "\(String(localized: "Expense", bundle: #bundle)) · \(CategoryDisplay.name(of: category))",
+                            )
                     }
                 }
             }
