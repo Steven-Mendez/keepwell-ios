@@ -29,8 +29,10 @@ extension RootView {
     func handleKey(_ press: KeyPress) -> KeyPress.Result {
         guard ownsKeyboard, !TextInputFocus.isEditing,
               press.modifiers.isDisjoint(with: [.command, .control, .option]),
-              press.characters.count == 1, let key = press.characters.first
+              press.characters.count == 1, let typed = press.characters.first
         else { return .ignored }
+        // Some keyboards report Shift-/ as "/" with Shift held instead of "?"; both mean the list.
+        let key: Character = typed == "/" && press.modifiers.contains(.shift) ? "?" : typed
         switch keySequence.press(key) {
         case .ignored:
             return .ignored
