@@ -234,25 +234,7 @@ public struct CloudAccountSections: View {
     public var body: some View {
         if case let .signedIn(user) = viewModel.state {
             if user.capabilities.contains("mcp") {
-                section(String(localized: "Connected assistants", bundle: #bundle)) {
-                    Button {
-                        Task { await viewModel.disconnectAssistants() }
-                    } label: {
-                        KWSettingsRow(
-                            viewModel.assistantsDisconnected
-                                ? String(localized: "Assistants disconnected", bundle: #bundle)
-                                : String(localized: "Disconnect assistants", bundle: #bundle),
-                            description: String(
-                                localized: "Claude and other assistants lose access to your account at once.",
-                                bundle: #bundle,
-                            ),
-                            icon: .sparkles,
-                            tint: KWSettingsTint.assistants,
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(viewModel.assistantsDisconnected || viewModel.isWorking)
-                }
+                ConnectedAssistantsSection(viewModel: viewModel)
             }
             if user.canBeSupported, viewModel.canBuySupport {
                 section(String(localized: "Support Keepwell", bundle: #bundle)) {

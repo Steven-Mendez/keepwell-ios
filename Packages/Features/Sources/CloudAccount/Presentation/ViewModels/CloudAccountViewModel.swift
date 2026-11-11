@@ -48,6 +48,12 @@ public final class CloudAccountViewModel {
     private let signOutUseCase: any SignOutUseCase
     private let deleteUseCase: any DeleteCloudAccountUseCase
     private let disconnectUseCase: (any DisconnectAssistantsUseCase)?
+    private let listAssistantsUseCase: (any ListConnectedAssistantsUseCase)?
+    private let disconnectOneUseCase: (any DisconnectAssistantUseCase)?
+    /// The web's "How to connect Claude" page; `nil` without an API.
+    public let connectGuideURL: URL?
+    /// `nil` until the list loads (or when it can't be reached).
+    public private(set) var assistants: [ConnectedAssistant]?
     /// Passkey sign-in; `nil` in builds without the web's associated domain.
     private let passkeys: (any PasskeySignIn)?
     public private(set) var assistantsDisconnected = false
@@ -70,12 +76,18 @@ public final class CloudAccountViewModel {
         delete: any DeleteCloudAccountUseCase,
         sync: SyncCoordinator? = nil,
         disconnectAssistants: (any DisconnectAssistantsUseCase)? = nil,
+        listAssistants: (any ListConnectedAssistantsUseCase)? = nil,
+        disconnectAssistant: (any DisconnectAssistantUseCase)? = nil,
+        connectGuideURL: URL? = nil,
         passkeys: (any PasskeySignIn)? = nil,
         support: SupportActions? = nil,
     ) {
         self.support = support
         self.passkeys = passkeys
         disconnectUseCase = disconnectAssistants
+        listAssistantsUseCase = listAssistants
+        disconnectOneUseCase = disconnectAssistant
+        self.connectGuideURL = connectGuideURL
         self.sync = sync
         self.load = load
         self.signIn = signIn
@@ -218,6 +230,21 @@ public final class CloudAccountViewModel {
         }
     }
 
+    /// The assistants connected through MCP, for the list in Settings.
+    public func loadAssistants() async {
+        guard let listAssistantsUseCase else { return }
+        assistants = await (try? listAssistantsUseCase.execute()) ?? []
+    }
+
+    /// Cuts one assistant off and reloads the list.
+    public func disconnectAssistant(_ id: String) async {
+        guard let disconnectOneUseCase else { return }
+        await run { () async throws(CloudAccountError) in
+            try await disconnectOneUseCase.execute(id: id)
+        }
+        await loadAssistants()
+    }
+
     /// "Disconnect everything" for assistants connected through MCP.
     public func disconnectAssistants() async {
         guard let disconnectUseCase else { return }
@@ -225,6 +252,7 @@ public final class CloudAccountViewModel {
             try await disconnectUseCase.execute()
             self.assistantsDisconnected = true
         }
+        await loadAssistants()
     }
 
     public func deleteAccount() async {

@@ -87,3 +87,14 @@ struct CloudAccountUseCasesTests {
         #expect(await repository.calls == ["everywhere"])
     }
 }
+
+@Suite("Connected assistants")
+struct ConnectedAssistantTests {
+    @Test
+    func accessIsTheHighestScopeItHolds() {
+        #expect(ConnectedAssistant(id: "a", name: nil, scopes: ["read", "offline_access"]).access == .read)
+        #expect(ConnectedAssistant(id: "a", name: nil, scopes: ["read", "write"]).access == .readAndRecord)
+        #expect(ConnectedAssistant(id: "a", name: nil, scopes: ["read", "write", "manage"]).access == .fullControl)
+        #expect(ConnectedAssistant(id: "a", name: nil, scopes: []).access == .read)
+    }
+}
