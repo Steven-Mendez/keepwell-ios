@@ -14,11 +14,11 @@ public enum PlanPreview {
     ) -> PlanViewModel {
         PlanViewModel(
             getOverview: DefaultGetPlanOverviewUseCase(
-                recurring: DefaultGetRecurringOverviewUseCase(
+                recurring: RecurringPlanSource(DefaultGetRecurringOverviewUseCase(
                     rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
-                ),
-                goals: DefaultGetSavingsGoalsUseCase(goals: store, settings: store, now: { now }),
-                debts: DefaultGetDebtsUseCase(loans: store, debts: store, settings: store, now: { now }),
+                )),
+                goals: GoalsPlanSource(DefaultGetSavingsGoalsUseCase(goals: store, settings: store, now: { now })),
+                debts: DebtsPlanSource(DefaultGetDebtsUseCase(loans: store, debts: store, settings: store, now: { now })),
                 now: { now },
             ),
             now: { now },

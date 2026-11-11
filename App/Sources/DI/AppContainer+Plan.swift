@@ -10,9 +10,9 @@ extension AppContainer {
     func makePlanViewModel() -> PlanViewModel {
         PlanViewModel(
             getOverview: DefaultGetPlanOverviewUseCase(
-                recurring: makeGetRecurringOverview(),
-                goals: DefaultGetSavingsGoalsUseCase(goals: store, settings: store),
-                debts: DefaultGetDebtsUseCase(loans: store, debts: store, settings: store),
+                recurring: RecurringPlanSource(makeGetRecurringOverview()),
+                goals: GoalsPlanSource(DefaultGetSavingsGoalsUseCase(goals: store, settings: store)),
+                debts: DebtsPlanSource(DefaultGetDebtsUseCase(loans: store, debts: store, settings: store)),
             ),
         )
     }

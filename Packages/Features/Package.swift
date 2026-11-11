@@ -392,18 +392,16 @@ let package = Package(
 
         .target(
             name: "PlanDomain",
-            dependencies: [
-                "RecurringDomain",
-                "GoalsDomain",
-                "DebtsDomain",
-                .product(name: "Domain", package: "Domain"),
-            ],
+            dependencies: [.product(name: "Domain", package: "Domain")],
             path: "Sources/Plan/Domain",
         ),
         .target(
             name: "PlanPresentation",
             dependencies: [
                 "PlanDomain",
+                "RecurringDomain",
+                "GoalsDomain",
+                "DebtsDomain",
                 "SharedPresentation",
                 .product(name: "Core", package: "Core"),
                 .product(name: "DesignSystem", package: "DesignSystem"),
@@ -418,9 +416,6 @@ let package = Package(
             name: "PlanDomainTests",
             dependencies: [
                 "PlanDomain",
-                "RecurringDomain",
-                "GoalsDomain",
-                "DebtsDomain",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],

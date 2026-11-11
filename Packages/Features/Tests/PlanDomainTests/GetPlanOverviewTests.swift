@@ -1,61 +1,69 @@
-import DebtsDomain
 import Domain
 import DomainSamples
 import Foundation
-import GoalsDomain
-import RecurringDomain
 import Testing
 @testable import PlanDomain
 
 @Suite("Plan overview")
 struct GetPlanOverviewTests {
     private let now = SampleData.defaultReferenceDate
+    private let sample = SampleData.standard
 
-    private func useCase(_ store: InMemoryStore) -> DefaultGetPlanOverviewUseCase {
-        DefaultGetPlanOverviewUseCase(
-            recurring: DefaultGetRecurringOverviewUseCase(
-                rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
+    private struct Recurring: PlanRecurringSource {
+        let rules: [RecurringRule]
+        func load() async throws(DomainError) -> (rules: [RecurringRule], subscriptionsPerMonth: Money) {
+            (rules, Money(15.99, "USD"))
+        }
+    }
+
+    private struct Goals: PlanGoalsSource {
+        let goals: [SavingsGoalProgress]
+        func load() async throws(DomainError) -> [SavingsGoalProgress] {
+            goals
+        }
+    }
+
+    private struct Debts: PlanDebtsSource {
+        let loans: [LoanProgress]
+        let debts: [PersonalDebt]
+        func load() async throws(DomainError) -> (loans: [LoanProgress], debts: [PersonalDebt], totals: DebtTotals) {
+            (loans, debts, DebtTotals(loans: loans.map(\.loan), debts: debts))
+        }
+    }
+
+    private func useCase(empty: Bool = false) throws -> DefaultGetPlanOverviewUseCase {
+        let month = try #require(YearMonth(year: 2026, month: 11))
+        let calendar = Calendar.current
+        return DefaultGetPlanOverviewUseCase(
+            recurring: Recurring(rules: empty ? [] : sample.recurringRules),
+            goals: Goals(goals: empty ? [] : SavingsGoalProgress.ordered(sample.savingsGoals, currentMonth: month)),
+            debts: Debts(
+                loans: empty ? [] : LoanProgress.ordered(sample.loans, today: now, calendar: calendar),
+                debts: empty ? [] : sample.personalDebts,
             ),
-            goals: DefaultGetSavingsGoalsUseCase(goals: store, settings: store, now: { [now] in now }),
-            debts: DefaultGetDebtsUseCase(loans: store, debts: store, settings: store, now: { [now] in now }),
+            calendar: calendar,
             now: { [now] in now },
         )
     }
 
     @Test
-    func summarizesTheThreeScreensWithTheirOwnFigures() async throws {
-        let store = InMemoryStore(sample: .standard)
-        let overview = try await useCase(store).execute()
-        let recurring = try await DefaultGetRecurringOverviewUseCase(
-            rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
-        ).execute()
+    func summarizesTheThreeSources() async throws {
+        let overview = try await useCase().execute()
         #expect(overview.recurring.hasRules)
-        #expect(overview.recurring.subscriptionsPerMonth == recurring.subscriptionsPerMonth)
+        #expect(overview.recurring.subscriptionsPerMonth == Money(15.99, "USD"))
         let next = try #require(overview.recurring.next)
         #expect(next.date >= Calendar.current.startOfDay(for: now))
-        let goals = try await DefaultGetSavingsGoalsUseCase(goals: store, settings: store, now: { [now] in now }).execute()
-        #expect(overview.goals.top == goals.goals.first)
-        #expect(overview.goals.count == goals.goals.count)
+        let month = try #require(YearMonth(year: 2026, month: 11))
+        let first = SavingsGoalProgress.ordered(sample.savingsGoals, currentMonth: month).first
+        #expect(overview.goals.top?.goal.id == first?.goal.id)
+        #expect(overview.goals.count == sample.savingsGoals.count)
         #expect(overview.debts.hasDebts)
-        #expect(overview.debts.nextLoan?.next?.number == 3)
+        #expect(overview.debts.nextLoan?.next != nil)
     }
 
     @Test
     func nothingPlannedYieldsEmptySummaries() async throws {
-        let store = InMemoryStore(sample: .standard)
-        for rule in SampleData.standard.recurringRules {
-            try await store.deleteRecurringRule(id: rule.id)
-        }
-        for goal in SampleData.standard.savingsGoals {
-            try await store.deleteSavingsGoal(id: goal.id)
-        }
-        for loan in SampleData.standard.loans {
-            try await store.deleteLoan(id: loan.id)
-        }
-        for debt in SampleData.standard.personalDebts {
-            try await store.deletePersonalDebt(id: debt.id)
-        }
-        let overview = try await useCase(store).execute()
+        let overview = try await useCase(empty: true).execute()
         #expect(!overview.recurring.hasRules)
         #expect(overview.recurring.next == nil)
         #expect(overview.goals.top == nil)

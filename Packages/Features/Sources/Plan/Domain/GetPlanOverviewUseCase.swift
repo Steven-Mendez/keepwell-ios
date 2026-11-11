@@ -1,33 +1,41 @@
-// The hub only composes its sibling features' use cases, so unlike other Domain code it imports them.
-// swiftlint:disable domain_imports_foundation_only
-import DebtsDomain
 import Domain
 import Foundation
-import GoalsDomain
-import RecurringDomain
 
-// swiftlint:enable domain_imports_foundation_only
+/// What the hub needs from Recurring, Goals and Debts. Each feature's own use case answers these
+/// through an adapter, so the hub never depends on a sibling feature's Domain.
+public protocol PlanRecurringSource: Sendable {
+    func load() async throws(DomainError) -> (rules: [RecurringRule], subscriptionsPerMonth: Money)
+}
+
+public protocol PlanGoalsSource: Sendable {
+    /// In list order.
+    func load() async throws(DomainError) -> [SavingsGoalProgress]
+}
+
+public protocol PlanDebtsSource: Sendable {
+    func load() async throws(DomainError) -> (loans: [LoanProgress], debts: [PersonalDebt], totals: DebtTotals)
+}
 
 public protocol GetPlanOverviewUseCase: Sendable {
     func execute() async throws(DomainError) -> PlanOverview
 }
 
-/// Composes the three planning screens' own use cases, so the hub always shows the same figures
-/// as the screens it leads to.
+/// Composes the three planning screens' figures, so the hub always shows the same ones as the
+/// screens it leads to.
 public struct DefaultGetPlanOverviewUseCase: GetPlanOverviewUseCase {
     /// How far ahead the next recurring movement is looked for.
     static let lookaheadDays = 366
 
-    private let recurring: any GetRecurringOverviewUseCase
-    private let goals: any GetSavingsGoalsUseCase
-    private let debts: any GetDebtsUseCase
+    private let recurring: any PlanRecurringSource
+    private let goals: any PlanGoalsSource
+    private let debts: any PlanDebtsSource
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
     public init(
-        recurring: any GetRecurringOverviewUseCase,
-        goals: any GetSavingsGoalsUseCase,
-        debts: any GetDebtsUseCase,
+        recurring: any PlanRecurringSource,
+        goals: any PlanGoalsSource,
+        debts: any PlanDebtsSource,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -39,23 +47,18 @@ public struct DefaultGetPlanOverviewUseCase: GetPlanOverviewUseCase {
     }
 
     public func execute() async throws(DomainError) -> PlanOverview {
-        let recurringOverview = try await recurring.execute()
-        let goalsOverview = try await goals.execute()
-        let debtsOverview = try await debts.execute()
-        let next = RecurringSchedule.upcoming(
-            recurringOverview.rules, from: now(), days: Self.lookaheadDays, calendar: calendar,
-        ).min { $0.date < $1.date }
+        let recurring = try await recurring.load()
+        let goals = try await goals.load()
+        let debts = try await debts.load()
+        let next = RecurringSchedule.upcoming(recurring.rules, from: now(), days: Self.lookaheadDays, calendar: calendar)
+            .min { $0.date < $1.date }
         return PlanOverview(
-            recurring: .init(
-                subscriptionsPerMonth: recurringOverview.subscriptionsPerMonth,
-                next: next,
-                hasRules: !recurringOverview.rules.isEmpty,
-            ),
-            goals: .init(top: goalsOverview.goals.first, count: goalsOverview.goals.count),
+            recurring: .init(subscriptionsPerMonth: recurring.subscriptionsPerMonth, next: next, hasRules: !recurring.rules.isEmpty),
+            goals: .init(top: goals.first, count: goals.count),
             debts: .init(
-                totals: debtsOverview.totals,
-                nextLoan: debtsOverview.loans.first { $0.next != nil },
-                hasDebts: !debtsOverview.loans.isEmpty || !debtsOverview.debts.isEmpty,
+                totals: debts.totals,
+                nextLoan: debts.loans.first { $0.next != nil },
+                hasDebts: !debts.loans.isEmpty || !debts.debts.isEmpty,
             ),
         )
     }
