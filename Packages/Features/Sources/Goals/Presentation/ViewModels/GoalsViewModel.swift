@@ -109,6 +109,11 @@ public final class GoalsViewModel {
         min(max(NSDecimalNumber(decimal: progress.fraction).doubleValue, 0), 1)
     }
 
+    /// "38%": how far along the goal is, capped at 100 like the bar.
+    public func percent(_ progress: SavingsGoalProgress) -> String {
+        barFraction(progress).formatted(.percent.precision(.fractionLength(0)))
+    }
+
     /// "C$4,500.00 of C$15,000.00".
     public func amounts(_ progress: SavingsGoalProgress, hidden: Bool) -> String {
         let saved = money(progress.goal.saved, progress, hidden: hidden)

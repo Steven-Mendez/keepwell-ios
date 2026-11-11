@@ -93,7 +93,7 @@ public final class GoalEditorViewModel: Identifiable {
 
     public var canSave: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !targetText.trimmingCharacters(in: .whitespaces).isEmpty
+            && (AmountInput.decimal(from: targetText) ?? 0) > 0
             && !isSaving
     }
 

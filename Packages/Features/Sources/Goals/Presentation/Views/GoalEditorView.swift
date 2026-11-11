@@ -112,6 +112,10 @@ struct GoalEditorView: View {
             CategoryColorPicker(selection: $viewModel.color)
             KWSectionHeader(String(localized: "Icon", bundle: #bundle))
             CategorySymbolPicker(selection: $viewModel.icon)
+            Text("What you've set aside is only tracked here; your accounts don't change.", bundle: #bundle)
+                .font(KWTextStyle.caption.font.weight(.regular))
+                .foregroundStyle(KWColor.Text.muted)
+                .fixedSize(horizontal: false, vertical: true)
             if viewModel.canDelete {
                 Button { isConfirmingDelete = true } label: {
                     Text("Delete goal", bundle: #bundle)
