@@ -232,6 +232,7 @@ struct RootView: View {
             settings: { router.push(.settings) },
             accounts: { tab = .accounts },
             newMovement: { presentNewMovement(MovementType($0)) },
+            logExpense: { presentNewMovement(.expense, category: $0) },
             payCard: {
                 // With a single card there's nothing to choose; otherwise the flow asks which one.
                 let cards = screens.home.overview?.accounts.filter { $0.kind == .credit } ?? []

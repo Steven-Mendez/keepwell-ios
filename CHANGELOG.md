@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Transactions shows a totals strip above the list, as Keepwell for the web does: Movements,
+  Money in, Money out and Net for whatever the filter, account and search leave visible, in your
+  main currency. Drafts and transfers count as movements but not in the money.
+- Home "Log quickly": your three most-used expense categories as one-tap shortcuts that open a new
+  expense with that category already chosen.
 - Summary reads longer periods, as Keepwell for the web does: pick Month, This year, Last 12
   months or a Custom From/To range. A period shows what you saved against the same months a year
   earlier, the average spending, month-by-month bars, savings building up over time, your top
@@ -77,6 +82,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Swift 6 concurrency warning in Summary's custom period picker.
 - Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
   whose category, account or currency is gone is skipped instead of recording a movement nobody can
   use, and a rule moves past occurrences already recorded so none is owed twice.

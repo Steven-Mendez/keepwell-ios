@@ -41,7 +41,7 @@ struct CustomRangePicker: View {
         }
     }
 
-    private func picker(_ title: String, selection: YearMonth, onChange: @escaping (YearMonth) -> Void) -> some View {
+    private func picker(_ title: String, selection: YearMonth, onChange: @escaping @MainActor (YearMonth) -> Void) -> some View {
         Menu {
             Picker(title, selection: Binding(get: { selection }, set: onChange)) {
                 ForEach(viewModel.customMonthOptions, id: \.self) { month in

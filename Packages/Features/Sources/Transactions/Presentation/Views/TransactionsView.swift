@@ -96,6 +96,9 @@ public struct TransactionsView: View {
         searchField
         chips
         monthTotals
+        if let cells = viewModel.movementTotals {
+            MovementTotalsStrip(cells: cells)
+        }
         if let error = viewModel.actionError {
             Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
         }

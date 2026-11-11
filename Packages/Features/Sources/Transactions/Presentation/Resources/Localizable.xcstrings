@@ -171,6 +171,46 @@
         }
       }
     },
+    "Money in" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entradas"
+          }
+        }
+      }
+    },
+    "Money out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salidas"
+          }
+        }
+      }
+    },
+    "Movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movimientos"
+          }
+        }
+      }
+    },
+    "Net" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neto"
+          }
+        }
+      }
+    },
     "New transaction" : {
       "localizations" : {
         "es" : {

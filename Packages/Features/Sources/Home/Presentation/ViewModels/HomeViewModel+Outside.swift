@@ -77,6 +77,11 @@ extension HomeViewModel {
         )
     }
 
+    /// The frequent expense categories "Log quickly" offers, most used first.
+    func quickLogCategories(_ overview: HomeOverview) -> [TransactionCategory] {
+        overview.frequentExpenseCategoryIDs.compactMap { id in overview.categories.first { $0.id == id } }
+    }
+
     /// Planned movements on their day, card payments and loan installments ahead of time, statement
     /// cutoffs on their day, plastics in their expiry month, and budgets near or over their line and
     /// subscriptions that went up in price right away. Only what's still ahead is returned.

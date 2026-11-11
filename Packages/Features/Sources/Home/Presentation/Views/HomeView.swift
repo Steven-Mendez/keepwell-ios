@@ -14,6 +14,8 @@ public struct HomeView: View {
         public var settings: () -> Void
         public var accounts: () -> Void
         public var newMovement: (TransactionKind) -> Void
+        /// A new expense with this category already chosen.
+        public var logExpense: (String) -> Void
         public var payCard: () -> Void
         public var allPlanned: () -> Void
         public var allTransactions: () -> Void
@@ -29,6 +31,7 @@ public struct HomeView: View {
             settings: @escaping () -> Void,
             accounts: @escaping () -> Void,
             newMovement: @escaping (TransactionKind) -> Void,
+            logExpense: @escaping (String) -> Void = { _ in },
             payCard: @escaping () -> Void,
             allPlanned: @escaping () -> Void,
             allTransactions: @escaping () -> Void,
@@ -42,6 +45,7 @@ public struct HomeView: View {
             self.settings = settings
             self.accounts = accounts
             self.newMovement = newMovement
+            self.logExpense = logExpense
             self.payCard = payCard
             self.allPlanned = allPlanned
             self.allTransactions = allTransactions
@@ -88,6 +92,7 @@ public struct HomeView: View {
     @ViewBuilder
     private func content(_ overview: HomeOverview) -> some View {
         if overview.hasTransactions {
+            HomeQuickLogCard(viewModel: viewModel, overview: overview, onLog: actions.logExpense)
             if !overview.recent.isEmpty {
                 HomeRecentCard(
                     viewModel: viewModel,
