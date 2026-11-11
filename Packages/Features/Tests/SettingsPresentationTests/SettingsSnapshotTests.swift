@@ -14,9 +14,11 @@ struct SettingsSnapshotTests {
         let passcodes = InMemoryPasscodeStore(name: "Steven")
         let viewModel = SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
-                settings: store, categories: store, cards: store, passcodes: passcodes, profile: passcodes,
+                settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
+                passcodes: passcodes, profile: passcodes,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
+            changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
             importTransactions: DefaultImportTransactionsUseCase(
                 transactions: store, accounts: store, cards: store, categories: store, settings: store, rules: store,

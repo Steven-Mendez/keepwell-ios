@@ -851,6 +851,16 @@
         }
       }
     },
+    "None" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna"
+          }
+        }
+      }
+    },
     "On" : {
       "localizations" : {
         "es" : {
@@ -1011,6 +1021,16 @@
         }
       }
     },
+    "Search currency" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar moneda"
+          }
+        }
+      }
+    },
     "Second currency" : {
       "localizations" : {
         "es" : {
@@ -1111,6 +1131,16 @@
         }
       }
     },
+    "That currency is in use, so it can't change." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esa moneda está en uso, así que no se puede cambiar."
+          }
+        }
+      }
+    },
     "The rate has to be a number greater than zero." : {
       "localizations" : {
         "es" : {
@@ -1167,6 +1197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualízala cuando quieras reemplazando el valor. Cada movimiento guarda la tasa con la que se anotó, así tu historial no cambia."
+          }
+        }
+      }
+    },
+    "Used by your accounts, so it can't change here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La usan tus cuentas, así que no se puede cambiar aquí."
           }
         }
       }

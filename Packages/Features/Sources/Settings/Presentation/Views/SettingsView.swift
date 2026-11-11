@@ -131,7 +131,7 @@ public struct SettingsView: View {
     @ViewBuilder
     private func sections(_ overview: SettingsOverview) -> some View {
         ProfileSection(viewModel: viewModel)
-        MoneySection(viewModel: viewModel, settings: overview.settings)
+        MoneySection(viewModel: viewModel, overview: overview)
         organization(overview)
         DataSection(viewModel: viewModel, syncRow: account?.syncRow)
         SecuritySection(viewModel: viewModel, overview: overview, onSetUpPasscode: onSetUpPasscode)
@@ -168,7 +168,7 @@ public struct SettingsView: View {
                     )
                 }
                 Button(action: onOpenRecurring) { recurringRow }
-                Button(action: onOpenRules) { rulesRow }
+                Button(action: onOpenRules) { rulesRow(count: overview.categorizationRuleCount) }
             }
             .buttonStyle(.plain)
         }
@@ -184,12 +184,13 @@ public struct SettingsView: View {
         )
     }
 
-    private var rulesRow: some View {
+    private func rulesRow(count: Int) -> some View {
         KWSettingsRow(
             String(localized: "Rules", bundle: #bundle),
             description: String(localized: "Categorize movements by their description", bundle: #bundle),
             icon: .list,
             tint: KWSettingsTint.security,
+            value: "\(count)",
             accessory: .chevron,
         )
     }

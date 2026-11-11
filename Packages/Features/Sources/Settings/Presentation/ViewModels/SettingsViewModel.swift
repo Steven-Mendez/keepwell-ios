@@ -34,6 +34,7 @@ public final class SettingsViewModel {
 
     private let getOverview: any GetSettingsOverviewUseCase
     private let updateSettings: any UpdateSettingsUseCase
+    private let changeCurrencies: any ChangeCurrenciesUseCase
     private let exportTransactions: any ExportTransactionsUseCase
     private let importTransactions: any ImportTransactionsUseCase
     private let eraseAllData: any EraseAllDataUseCase
@@ -48,6 +49,7 @@ public final class SettingsViewModel {
     public init(
         getOverview: any GetSettingsOverviewUseCase,
         updateSettings: any UpdateSettingsUseCase,
+        changeCurrencies: any ChangeCurrenciesUseCase,
         exportTransactions: any ExportTransactionsUseCase,
         importTransactions: any ImportTransactionsUseCase,
         eraseAllData: any EraseAllDataUseCase,
@@ -61,6 +63,7 @@ public final class SettingsViewModel {
         self.setPreferredName = setPreferredName
         self.getOverview = getOverview
         self.updateSettings = updateSettings
+        self.changeCurrencies = changeCurrencies
         self.exportTransactions = exportTransactions
         self.importTransactions = importTransactions
         self.eraseAllData = eraseAllData
@@ -104,6 +107,18 @@ public final class SettingsViewModel {
         }
         guard rate != current else { return }
         await update { settings throws(DomainError) in try settings.setRate(rate) }
+    }
+
+    /// Picks the main or the second currency. The screen only offers it while nothing is kept in
+    /// the one being replaced, and the use case checks it again.
+    public func changeCurrency(_ change: CurrencyChange) async {
+        do {
+            try await changeCurrencies.execute(change)
+            errorMessage = nil
+            await load()
+        } catch {
+            errorMessage = String(localized: "That currency is in use, so it can't change.", bundle: #bundle)
+        }
     }
 
     /// Makes the second currency the main one, turning the rate around.
