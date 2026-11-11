@@ -14,7 +14,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   screen, "," opens Settings, "/" and Command-K open search, and "?" lists them all. The keys
   stay out of the way while you type or a sheet is open. Settings > Profile & preferences >
   Keyboard shortcuts shows the same list.
-- Search on Transactions offers "Actions" (new expense, income, transfer) and "Go to" (every
+- Search on Transactions offers "Actions" (new expense, income, transfer, add account or card,
+  add recurring, Categories, Rules, Keyboard shortcuts) and "Go to" (every
   screen) while it is empty or what you type matches them.
 - Summary shows the Net worth history at the bottom of This year, Last 12 months and Custom, as
   the web does.

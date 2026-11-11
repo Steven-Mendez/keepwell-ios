@@ -62,6 +62,20 @@ extension RootView {
             go(to: destination)
         case .showShortcuts:
             showsShortcuts = true
+        case .addAccount:
+            navigator.path = NavigationPath()
+            presentAddCard()
+        case .addRecurring:
+            // Recurring first, so back from the editor lands on the list, as the web's editor opens over it.
+            navigator.path = NavigationPath()
+            navigator.push(.recurring)
+            navigator.push(.recurringRule(id: nil))
+        case .categories:
+            navigator.path = NavigationPath()
+            navigator.push(.categories(showsIncome: false))
+        case .rules:
+            navigator.path = NavigationPath()
+            navigator.push(.categorizationRules)
         }
     }
 

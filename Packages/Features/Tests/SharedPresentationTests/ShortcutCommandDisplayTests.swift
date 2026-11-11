@@ -5,7 +5,7 @@ import Testing
 struct ShortcutCommandDisplayTests {
     @Test
     func emptyQueryOffersEverything() {
-        #expect(ShortcutCommandDisplay.suggestions(for: "", in: ShortcutCommand.actions).count == 3)
+        #expect(ShortcutCommandDisplay.suggestions(for: "", in: ShortcutCommand.actions).count == 8)
         #expect(ShortcutCommandDisplay.suggestions(for: "  ", in: ShortcutCommand.destinations).count == 8)
     }
 
@@ -14,6 +14,8 @@ struct ShortcutCommandDisplayTests {
         let found = ShortcutCommandDisplay.suggestions(for: "GOAL", in: ShortcutCommand.destinations)
         #expect(found == [.goTo(.goals)])
         #expect(ShortcutCommandDisplay.suggestions(for: "new", in: ShortcutCommand.actions).count == 3)
+        #expect(ShortcutCommandDisplay.suggestions(for: "keyboard", in: ShortcutCommand.actions) == [.showShortcuts])
+        #expect(ShortcutCommandDisplay.suggestions(for: "rules", in: ShortcutCommand.actions) == [.rules])
     }
 
     @Test

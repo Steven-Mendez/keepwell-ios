@@ -53,10 +53,16 @@ public enum ShortcutCommand: Hashable, Sendable {
     case newMovement(ShortcutMovement)
     case goTo(ShortcutDestination)
     case showShortcuts
+    /// Palette-only actions with no key of their own.
+    case addAccount
+    case addRecurring
+    case categories
+    case rules
 
-    /// The palette's "Actions".
+    /// The palette's "Actions", in the web's order.
     public static let actions: [Self] = [
         .newMovement(.expense), .newMovement(.income), .newMovement(.transfer),
+        .addAccount, .addRecurring, .categories, .rules, .showShortcuts,
     ]
 
     /// The palette's "Go to", in the web's order.

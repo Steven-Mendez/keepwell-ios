@@ -13,8 +13,18 @@ public enum ShortcutCommandDisplay {
         case .newMovement(.income): String(localized: "New income", bundle: #bundle)
         case .newMovement(.transfer): String(localized: "New transfer", bundle: #bundle)
         case let .goTo(destination): title(of: destination)
+        // The palette's entry reads "Keyboard shortcuts"; the "?" row of the list reads "Show shortcuts".
         case .showShortcuts: String(localized: "Show shortcuts", bundle: #bundle)
+        case .addAccount: String(localized: "Add account or card", bundle: #bundle)
+        case .addRecurring: String(localized: "Add recurring", bundle: #bundle)
+        case .categories: String(localized: "Categories", bundle: #bundle)
+        case .rules: String(localized: "Rules", bundle: #bundle)
         }
+    }
+
+    /// The title of a palette suggestion: as `title(of:)`, but the keyboard entry is named as in the web's palette.
+    public static func paletteTitle(of command: ShortcutCommand) -> String {
+        command == .showShortcuts ? String(localized: "Keyboard shortcuts", bundle: #bundle) : title(of: command)
     }
 
     public static func title(of destination: ShortcutDestination) -> String {
@@ -39,6 +49,10 @@ public enum ShortcutCommandDisplay {
         case .newMovement(.any): "plus"
         case let .goTo(destination): symbol(of: destination)
         case .showShortcuts: "keyboard"
+        case .addAccount: "creditcard"
+        case .addRecurring: "repeat"
+        case .categories: "tag"
+        case .rules: "wand.and.stars"
         }
     }
 
@@ -96,7 +110,7 @@ public enum ShortcutCommandDisplay {
         for query: String,
         in commands: [ShortcutCommand],
     ) -> [ShortcutCommand] {
-        commands.filter { matches(title(of: $0), query: query) }
+        commands.filter { matches(paletteTitle(of: $0), query: query) }
     }
 }
 
@@ -176,7 +190,7 @@ public struct CommandSuggestions: View {
                 .foregroundStyle(KWColor.Text.secondary)
                 .frame(width: 24)
                 .accessibilityHidden(true)
-            Text(ShortcutCommandDisplay.title(of: command))
+            Text(ShortcutCommandDisplay.paletteTitle(of: command))
                 .font(KWTextStyle.body.font)
                 .foregroundStyle(KWColor.Text.primary)
             Spacer(minLength: KWSpacing.xs)
@@ -192,6 +206,7 @@ public struct CommandSuggestions: View {
         case .newMovement(.expense): ["E"]
         case .newMovement(.income): ["I"]
         case .newMovement(.transfer): ["T"]
+        case .showShortcuts: ["?"]
         default: []
         }
     }

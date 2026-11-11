@@ -1286,6 +1286,46 @@
           }
         }
       }
+    },
+    "Add account or card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar cuenta o tarjeta"
+          }
+        }
+      }
+    },
+    "Add recurring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar recurrente"
+          }
+        }
+      }
+    },
+    "Categories" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías"
+          }
+        }
+      }
+    },
+    "Rules" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
