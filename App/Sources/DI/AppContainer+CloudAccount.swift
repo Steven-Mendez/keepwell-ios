@@ -47,6 +47,10 @@ extension AppContainer {
             delete: DefaultDeleteCloudAccountUseCase(repository: repository),
             sync: coordinator,
             disconnectAssistants: DefaultDisconnectAssistantsUseCase(repository: repository),
+            listAssistants: DefaultListConnectedAssistantsUseCase(repository: repository),
+            disconnectAssistant: DefaultDisconnectAssistantUseCase(repository: repository),
+            // The API sits behind the web's host, which also serves its docs.
+            connectGuideURL: AppEnvironment.current.apiBaseURL?.appending(path: "docs/mcp"),
             passkeys: HTTPPasskeySignIn(client: client),
             support: makeSupportActions(repository: repository),
         )

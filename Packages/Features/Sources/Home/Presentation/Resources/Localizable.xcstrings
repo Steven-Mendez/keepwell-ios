@@ -661,6 +661,16 @@
         }
       }
     },
+    "Proposed by Claude" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propuesto por Claude"
+          }
+        }
+      }
+    },
     "Recent" : {
       "localizations" : {
         "es" : {
@@ -797,6 +807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos confirmarlo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't save the change. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el cambio. Inténtalo de nuevo."
           }
         }
       }

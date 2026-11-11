@@ -44,9 +44,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   to keep" asks again. An upload cut short (the app closed, no connection) finishes on its own
   without asking again. Your passcode, name and lock settings stay either way. If only one side has
   data, it syncs as before without asking.
+- Recurring: the "Next dates" in the editor also show for a new rule and follow the start,
+  frequency, interval and end as you change them; a paused rule shows them dimmed under "Paused".
+  The Subscription switch follows the category (on for Subscriptions, off when you move away) until
+  you flip it yourself. The movements a rule recorded, newest first, open their detail when tapped.
+- Home shows a "Proposed by Claude" card for recurring rules an assistant created, with Confirm
+  (starts the rule) and Discard (deletes it), as the web does. Recurring still marks them too.
+- Settings can change the main currency while there are no accounts or movements, and the second
+  currency (pick another, or "None") while no balance or movement uses it; otherwise the row says
+  "Used by your accounts, so it can't change here." The Rules row shows how many rules you have.
+- Settings → Connected assistants lists each assistant with what it can do (Can read, Can read and
+  record, Full control) and a Disconnect, a "How to connect Claude" link and a confirmation before
+  "Disconnect assistants" cuts them all.
 
 ### Fixed
 
+- Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
+  whose category, account or currency is gone is skipped instead of recording a movement nobody can
+  use, and a rule moves past occurrences already recorded so none is owed twice.
+- "Apply to past movements" for a categorization rule saves every movement in one go, so a failure
+  changes none.
+- A goal's Save is disabled for a target of zero.
 - "Continue with Apple" works again in TestFlight builds: release builds always carry the Sign in
   with Apple and passkey entitlements, whatever a local development config says.
 - Sync no longer clears this iPhone before it has the whole account in hand: using your account's

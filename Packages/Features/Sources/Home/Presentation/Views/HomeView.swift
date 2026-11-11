@@ -125,6 +125,9 @@ public struct HomeView: View {
         if !upcoming.isEmpty {
             HomeUpcomingCard(viewModel: viewModel, occurrences: upcoming, hidesBalances: hidesBalances, onSeeAll: actions.allRecurring)
         }
+        if !overview.proposedRules.isEmpty {
+            HomeProposedRulesCard(viewModel: viewModel, rules: overview.proposedRules, hidesBalances: hidesBalances)
+        }
         if !overview.planned.isEmpty {
             plannedCard(overview)
         }

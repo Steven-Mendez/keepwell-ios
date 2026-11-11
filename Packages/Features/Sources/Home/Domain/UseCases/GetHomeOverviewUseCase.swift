@@ -100,6 +100,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
             cardSubscriptions: cardSubscriptions(records, rules: rules, calendar: calendar),
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
+            proposedRules: rules.filter { $0.source == .mcp && $0.isPaused },
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             goals: SavingsGoalProgress.ordered(goals, currentMonth: month.month),
             forecast: forecast(records, rules: rules, settings: currencies, calendar: calendar, now: now),

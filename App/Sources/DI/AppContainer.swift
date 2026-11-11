@@ -125,6 +125,8 @@ final class AppContainer {
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: makeGetPreferredName(),
             discard: DefaultDeleteTransactionUseCase(transactions: store),
+            resumeRule: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
+            deleteRule: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
         )
     }
 
@@ -158,10 +160,11 @@ final class AppContainer {
     func makeSettingsViewModel() -> SettingsViewModel {
         SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
-                settings: store, categories: store, cards: store,
+                settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
                 passcodes: passcodes, profile: preferences,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
+            changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
             importTransactions: makeImportTransactions(),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
@@ -278,7 +281,14 @@ final class AppContainer {
     /// Records the recurring movements whose day has come. Runs at launch, on returning to the
     /// app and after a rule is saved; it skips what another device already recorded.
     func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
-        DefaultMaterializeRecurringUseCase(rules: store, transactions: store, settings: store)
+        DefaultMaterializeRecurringUseCase(
+            rules: store,
+            transactions: store,
+            settings: store,
+            accounts: store,
+            cards: store,
+            categories: store,
+        )
     }
 
     func materializeRecurring() async {
