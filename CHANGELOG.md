@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Debts › People: a personal debt can have a due date ("Set a due date" in its editor). The list
+  puts dated debts first, soonest first, and says "Due Nov 28", "Due today" or "Overdue · 3 days"
+  under the amount and in its detail. Keepwell reminds "Ana: due in 3 days" as many days before as a
+  card payment, either way the money goes, and never once it is overdue. Syncs with the web app.
+
 - Settings › Money: "Time zone", the home zone Keepwell's server uses for "today" and month ends
   (reminders, assistants and recurring movements it records). It starts as the iPhone's zone, the
   first time onboarding or a sync finds none, syncs to the web app and only changes from here.

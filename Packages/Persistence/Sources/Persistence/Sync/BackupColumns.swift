@@ -34,7 +34,7 @@ enum BackupColumns {
             + "frequency:s first_due_date:s created_at:s updated_at:s deleted_at:s?",
         "loanPayment": "id:s loan_id:s number:n paid_at:s transaction_id:s? created_at:s updated_at:s deleted_at:s?",
         "personalDebt": "id:s person:s direction:s amount:s currency:s date:s note:s? settled_at:s? transaction_id:s? "
-            + "created_at:s updated_at:s deleted_at:s?",
+            + "due_date:s?~ created_at:s updated_at:s deleted_at:s?",
         "personalDebtRepayment": "id:s debt_id:s amount:s date:s created_at:s updated_at:s deleted_at:s?",
         "categorizationRule": "id:s match:s category_id:s kind:s tags:a sort_index:n created_at:s updated_at:s deleted_at:s?",
         "settings": "id:s principal:s second:s? rate:s payment_reminder_days_before:n has_completed_onboarding:b "

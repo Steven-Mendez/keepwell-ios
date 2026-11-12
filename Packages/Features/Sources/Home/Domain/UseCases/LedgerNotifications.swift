@@ -31,6 +31,7 @@ public enum LedgerNotifications {
         let found = drafts(in: overview, now: now, calendar: calendar)
             + cards(in: overview, now: now, calendar: calendar)
             + installments(in: overview, now: now, calendar: calendar)
+            + debts(in: overview, now: now, calendar: calendar)
             + renewals(in: overview, now: now, calendar: calendar)
             + expiries(in: overview, now: now, calendar: calendar)
             + budgets(in: overview, now: now, month: YearMonth(containing: now, calendar: calendar), calendar: calendar)
@@ -101,6 +102,31 @@ public enum LedgerNotifications {
                 id: "installment:\(lower(progress.loan.id)):\(next.number)",
                 subject: .installment(loanID: progress.loan.id, number: next.number, daysLeft: daysLeft),
                 date: calendar.date(byAdding: .day, value: -window, to: calendar.startOfDay(for: next.dueDate)) ?? today,
+                target: .debts,
+            )
+        }
+    }
+
+    /// Personal debts with a due date, open and with something left, from the reminder window
+    /// through the due day, in either direction. Like an installment, an overdue one is Debts' to
+    /// show: its id's day would get its state pruned and the reminder back.
+    private static func debts(in overview: HomeOverview, now: Date, calendar: Calendar) -> [LedgerNotification] {
+        let window = overview.paymentReminderDaysBefore
+        return overview.personalDebts.compactMap { debt in
+            guard let status = debt.dueStatus(today: now, calendar: calendar), let dueDate = debt.dueDate else { return nil }
+            let daysLeft: Int
+            switch status {
+            case let .upcoming(days): daysLeft = days
+            case .today: daysLeft = 0
+            case .overdue: return nil
+            }
+            guard daysLeft <= window else { return nil }
+            let due = calendar.startOfDay(for: dueDate)
+            // A target every published app already decodes, so an older one still opens a pushed one.
+            return LedgerNotification(
+                id: "debt:\(lower(debt.id)):\(dayKey(due, calendar: calendar))",
+                subject: .debt(debt, due: due, daysLeft: daysLeft),
+                date: calendar.date(byAdding: .day, value: -window, to: due) ?? due,
                 target: .debts,
             )
         }

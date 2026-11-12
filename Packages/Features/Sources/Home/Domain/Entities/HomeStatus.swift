@@ -38,7 +38,7 @@ public struct HomeStatus: Hashable, Sendable {
                 }
             case .renewal, .bill:
                 dueTomorrow += 1
-            case .cutoff, .expiry, .budget, .price, .proposal:
+            case .cutoff, .debt, .expiry, .budget, .price, .proposal:
                 break
             }
         }

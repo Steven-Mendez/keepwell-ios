@@ -291,6 +291,10 @@ extension SwiftDataStore {
             debt.note = wire.optionalString("note")
             debt.settledAt = wire.optionalDate("settled_at")
             debt.transactionID = wire.optionalUUID("transaction_id")
+            // A row without the key comes from an app older than the column: the date stays as it was.
+            if wire.row.keys.contains("due_date") {
+                debt.dueDate = wire.optionalDate("due_date")
+            }
             try wire.audit(debt)
         case "personalDebtRepayment":
             let debtID = try wire.uuid("debt_id")

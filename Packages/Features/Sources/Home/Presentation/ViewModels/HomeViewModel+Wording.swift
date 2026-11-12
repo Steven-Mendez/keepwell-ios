@@ -31,6 +31,21 @@ extension HomeViewModel {
         )
     }
 
+    /// "Ana: due in 3 days" or "Ana: due today", and what is left in the debt's direction.
+    func debtWording(_ debt: PersonalDebt, days: Int) -> Wording {
+        let left = formatter.string(debt.remainingMoney)
+        let body = switch debt.direction {
+        case .theyOweMe: String(localized: "They owe you \(left).", bundle: #bundle)
+        case .iOwe: String(localized: "You owe \(left).", bundle: #bundle)
+        }
+        return Wording(
+            title: days == 0
+                ? String(localized: "\(debt.person): due today", bundle: #bundle)
+                : String(localized: "\(debt.person): due in \(days) days", bundle: #bundle),
+            body: body,
+        )
+    }
+
     func cutoffWording(_ account: Account, in overview: HomeOverview) -> Wording {
         Wording(
             title: String(localized: "\(cardName(of: account, in: overview)): statement closes today", bundle: #bundle),

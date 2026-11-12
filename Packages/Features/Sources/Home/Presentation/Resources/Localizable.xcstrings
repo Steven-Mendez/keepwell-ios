@@ -121,6 +121,46 @@
         }
       }
     },
+    "%@: due in %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: due in %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: due in %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: vence en %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: vence en %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%@: installment in %lld days" : {
       "localizations" : {
         "en" : {
@@ -1091,6 +1131,16 @@
         }
       }
     },
+    "They owe you %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te debe %@."
+          }
+        }
+      }
+    },
     "Today" : {
       "localizations" : {
         "es" : {
@@ -1283,6 +1333,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "You owe %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le debes %@."
           }
         }
       }

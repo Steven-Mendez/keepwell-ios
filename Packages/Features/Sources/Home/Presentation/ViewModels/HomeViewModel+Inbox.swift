@@ -170,6 +170,11 @@ extension HomeViewModel {
             return NotificationContent(
                 icon: .cash, category: nil, tone: .pending, title: wording.title, body: wording.body, bodyHasAmounts: true,
             )
+        case let .debt(debt, _, daysLeft):
+            let wording = debtWording(debt, days: daysLeft)
+            return NotificationContent(
+                icon: .cash, category: nil, tone: .pending, title: wording.title, body: wording.body, bodyHasAmounts: true,
+            )
         case let .renewal(occurrence):
             let wording = renewalWording(occurrence, display: display)
             return NotificationContent(

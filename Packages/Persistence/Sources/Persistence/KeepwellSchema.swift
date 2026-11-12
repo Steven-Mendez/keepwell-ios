@@ -369,7 +369,7 @@ public enum KeepwellSchemaV9: VersionedSchema {
             Persistence.RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
-            PersonalDebtRecord.self,
+            KeepwellSchemaV12.PersonalDebtRecord.self,
             CategorizationRuleRecord.self,
         ]
     }
@@ -388,7 +388,7 @@ public enum KeepwellSchemaV10: VersionedSchema {
             Persistence.RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
-            PersonalDebtRecord.self,
+            KeepwellSchemaV12.PersonalDebtRecord.self,
             CategorizationRuleRecord.self,
             OutboxRecord.self,
         ]
@@ -416,6 +416,7 @@ public enum KeepwellSchemaV12: VersionedSchema {
             Persistence.RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
+            // V12's own frozen record (`KeepwellSchemaV12+Records.swift`), not today's.
             PersonalDebtRecord.self,
             CategorizationRuleRecord.self,
             OutboxRecord.self,
@@ -425,7 +426,7 @@ public enum KeepwellSchemaV12: VersionedSchema {
 }
 
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV12
+public typealias KeepwellCurrentSchema = KeepwellSchemaV13
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -442,6 +443,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV10.self,
             KeepwellSchemaV11.self,
             KeepwellSchemaV12.self,
+            KeepwellSchemaV13.self,
         ]
     }
 
@@ -455,7 +457,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// movements and recurring rules start without tags. V10 starts with an empty outbox and every
     /// movement and rule made in the app (`sourceRaw` nil reads as `app`). V11 adds notification
     /// states, none yet. Settings from V11 start without a home time zone; the app sets it from the
-    /// device after its next sync.
+    /// device after its next sync. Personal debts from V12 start without a due date.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -469,6 +471,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV9.self, toVersion: KeepwellSchemaV10.self),
             .lightweight(fromVersion: KeepwellSchemaV10.self, toVersion: KeepwellSchemaV11.self),
             .lightweight(fromVersion: KeepwellSchemaV11.self, toVersion: KeepwellSchemaV12.self),
+            .lightweight(fromVersion: KeepwellSchemaV12.self, toVersion: KeepwellSchemaV13.self),
         ]
     }
 }
