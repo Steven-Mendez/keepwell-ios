@@ -3,7 +3,7 @@ import Foundation
 
 /// "Export CSV": every movement as one row. Columns and values are a data format, not UI text,
 /// so they stay in English with ISO dates and dot decimals whatever the device language is;
-/// that keeps the file readable by any spreadsheet and by a later import.
+/// that keeps the file readable by any spreadsheet.
 public protocol ExportTransactionsUseCase: Sendable {
     func execute() async throws(DomainError) -> String
 }

@@ -26,7 +26,7 @@ struct AccountsSnapshotTests {
 
     @Test
     func listsCashBankAndCredit() {
-        assertScreenSnapshot(of: AccountsView(viewModel: viewModelWithAccounts(), onBack: {}, onImportCSV: {}))
+        assertScreenSnapshot(of: AccountsView(viewModel: viewModelWithAccounts(), onBack: {}))
     }
 
     @Test

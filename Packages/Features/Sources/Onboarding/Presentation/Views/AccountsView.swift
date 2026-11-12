@@ -7,16 +7,12 @@ import SwiftUI
 public struct AccountsView: View {
     private let viewModel: OnboardingViewModel
     private let onBack: () -> Void
-    private let onImportCSV: () -> Void
     @State private var editing: OnboardingAccountDraft?
     private let formatter = CurrencyFormatter()
 
-    /// `onImportCSV` only adds movements to the accounts made here; an account's own data comes
-    /// down a step before, when the person signs in.
-    public init(viewModel: OnboardingViewModel, onBack: @escaping () -> Void, onImportCSV: @escaping () -> Void) {
+    public init(viewModel: OnboardingViewModel, onBack: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onBack = onBack
-        self.onImportCSV = onImportCSV
     }
 
     public var body: some View {
@@ -41,8 +37,6 @@ public struct AccountsView: View {
                 Spacer(minLength: 0)
                 Button { viewModel.continueFromAccounts() } label: { Text("Continue", bundle: #bundle) }
                     .buttonStyle(.kw())
-                Button(action: onImportCSV) { Text("Import movements only (.csv)", bundle: #bundle) }
-                    .buttonStyle(KWButtonStyle(.plain, size: .text, height: 40))
             }
         }
         .sheet(item: $editing) { draft in
