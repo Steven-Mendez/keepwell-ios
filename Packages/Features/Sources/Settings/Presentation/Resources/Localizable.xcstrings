@@ -111,6 +111,16 @@
         }
       }
     },
+    "A backup can only be restored when there's no data yet. Delete all your data first." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una copia solo se puede restaurar cuando aún no hay datos. Primero elimina todos tus datos."
+          }
+        }
+      }
+    },
     "A copy of every movement" : {
       "localizations" : {
         "es" : {
@@ -177,6 +187,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pedirlo al volver después de"
+          }
+        }
+      }
+    },
+    "Backup restored" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia restaurada"
           }
         }
       }
@@ -431,6 +451,16 @@
         }
       }
     },
+    "Everything, in a file you can restore" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo, en un archivo que puedes restaurar"
+          }
+        }
+      }
+    },
     "Expense categories" : {
       "localizations" : {
         "es" : {
@@ -457,6 +487,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exportar CSV"
+          }
+        }
+      }
+    },
+    "Export backup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar copia de seguridad"
           }
         }
       }
@@ -801,6 +841,16 @@
         }
       }
     },
+    "Only when there's no data yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo si aún no hay datos"
+          }
+        }
+      }
+    },
     "Organization" : {
       "localizations" : {
         "es" : {
@@ -887,6 +937,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restaurar"
+          }
+        }
+      }
+    },
+    "Restore backup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar copia de seguridad"
           }
         }
       }
@@ -1051,6 +1111,26 @@
         }
       }
     },
+    "This backup is from a newer version of Keepwell. Update the app and try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta copia es de una versión más nueva de Keepwell. Actualiza la app e inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "This file isn't a Keepwell backup, or it's damaged. Nothing was restored." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es una copia de Keepwell o está dañado. No se restauró nada."
+          }
+        }
+      }
+    },
     "Turn off passcode" : {
       "localizations" : {
         "es" : {
@@ -1177,6 +1257,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos revisar tus movimientos. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't restore the backup. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos restaurar la copia. Inténtalo de nuevo."
           }
         }
       }
