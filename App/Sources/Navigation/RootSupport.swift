@@ -19,7 +19,6 @@ import SettingsPresentation
 import SummaryPresentation
 import SwiftUI
 import TransactionsPresentation
-import UniformTypeIdentifiers
 
 /// When the app asks to unlock again, from the person's settings.
 struct LockState {
@@ -91,7 +90,6 @@ final class MainScreens {
 struct OnboardingRoute: View {
     let container: AppContainer
     let viewModel: OnboardingViewModel
-    let onImportCSV: () -> Void
     let onFinish: (OnboardingFlowView.Exit) -> Void
     @State private var passcodeSetup: PresentedFlow<PasscodeSetupViewModel>?
 
@@ -99,7 +97,6 @@ struct OnboardingRoute: View {
         OnboardingFlowView(
             viewModel: viewModel,
             accountChoice: accountChoice,
-            onImportCSV: onImportCSV,
             onSetUpPasscode: { passcodeSetup = PresentedFlow(viewModel: container.makePasscodeSetupViewModel()) },
             onFinish: onFinish,
         )
@@ -397,6 +394,19 @@ struct GoalsRoute: View {
 
     var body: some View {
         GoalsView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+/// What needs attention now. It shares home's view model, so confirming or discarding a proposal
+/// here updates the bell and the proposals on home without a second load.
+struct NotificationsRoute: View {
+    let viewModel: HomeViewModel
+    let onBack: () -> Void
+    let onOpen: (InboxItem.Destination) -> Void
+
+    var body: some View {
+        NotificationsView(viewModel: viewModel, onBack: onBack, onOpen: onOpen)
             .navigationBarBackButtonHidden()
     }
 }

@@ -25,8 +25,6 @@ public final class SettingsViewModel {
     public var nameText = ""
     public private(set) var errorMessage: String?
     public var exportedFile: ExportedFile?
-    /// The outcome of the last CSV import, shown under the data card.
-    public private(set) var importMessage: String?
     public private(set) var isWorking = false
 
     static let relockOptions: [TimeInterval] = [0, 60, 300, 900]
@@ -36,7 +34,6 @@ public final class SettingsViewModel {
     private let updateSettings: any UpdateSettingsUseCase
     private let changeCurrencies: any ChangeCurrenciesUseCase
     private let exportTransactions: any ExportTransactionsUseCase
-    private let importTransactions: any ImportTransactionsUseCase
     private let eraseAllData: any EraseAllDataUseCase
     private let removePasscode: any RemovePasscodeUseCase
     private let setPreferredName: any SetPreferredNameUseCase
@@ -51,7 +48,6 @@ public final class SettingsViewModel {
         updateSettings: any UpdateSettingsUseCase,
         changeCurrencies: any ChangeCurrenciesUseCase,
         exportTransactions: any ExportTransactionsUseCase,
-        importTransactions: any ImportTransactionsUseCase,
         eraseAllData: any EraseAllDataUseCase,
         removePasscode: any RemovePasscodeUseCase,
         setPreferredName: any SetPreferredNameUseCase,
@@ -65,7 +61,6 @@ public final class SettingsViewModel {
         self.updateSettings = updateSettings
         self.changeCurrencies = changeCurrencies
         self.exportTransactions = exportTransactions
-        self.importTransactions = importTransactions
         self.eraseAllData = eraseAllData
         self.now = now
     }
@@ -188,41 +183,6 @@ public final class SettingsViewModel {
         } catch {
             errorMessage = String(localized: "We couldn't create the file. Try again.", bundle: #bundle)
         }
-    }
-
-    /// Reads a CSV the person picked. Files from the picker sit outside the sandbox, so access is
-    /// requested for the read and released right after.
-    public func importFile(at url: URL) async {
-        isWorking = true
-        defer { isWorking = false }
-        let didAccess = url.startAccessingSecurityScopedResource()
-        defer {
-            if didAccess {
-                url.stopAccessingSecurityScopedResource()
-            }
-        }
-        guard let data = try? Data(contentsOf: url), let text = String(data: data, encoding: .utf8) else {
-            importMessage = nil
-            errorMessage = String(localized: "We couldn't read that file. Export it again as CSV (UTF-8).", bundle: #bundle)
-            return
-        }
-        do {
-            let summary = try await importTransactions.execute(csv: text)
-            errorMessage = nil
-            importMessage = Self.importMessage(summary)
-            await load()
-        } catch {
-            importMessage = nil
-            errorMessage = String(localized: "We couldn't import the file. Try again.", bundle: #bundle)
-        }
-    }
-
-    public static func importMessage(_ summary: ImportSummary) -> String {
-        let imported = summary.imported
-        let skipped = summary.skipped
-        let done = String(localized: "\(imported) transactions imported", bundle: #bundle)
-        guard skipped > 0 else { return done }
-        return done + " · " + String(localized: "\(skipped) rows skipped", bundle: #bundle)
     }
 
     /// Returns whether everything was deleted, so the app can go back to the start.

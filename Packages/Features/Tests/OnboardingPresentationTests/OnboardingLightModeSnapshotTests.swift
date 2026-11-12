@@ -38,7 +38,7 @@ struct OnboardingLightModeSnapshotTests {
         let viewModel = OnboardingFactory.usdAndNIO()
         viewModel.save(viewModel.newAccount(.bank))
         viewModel.save(viewModel.newAccount(.credit))
-        assertScreenSnapshot(of: AccountsView(viewModel: viewModel, onBack: {}, onImportCSV: {}), named: "light", colorScheme: .light)
+        assertScreenSnapshot(of: AccountsView(viewModel: viewModel, onBack: {}), named: "light", colorScheme: .light)
     }
 
     @Test

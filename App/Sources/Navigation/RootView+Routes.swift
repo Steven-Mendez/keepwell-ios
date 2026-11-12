@@ -2,6 +2,7 @@ import AccountsPresentation
 import Core
 import Domain
 import Foundation
+import HomePresentation
 import PlanPresentation
 import SettingsPresentation
 import SwiftUI
@@ -45,6 +46,8 @@ extension RootView {
             GoalsRoute(container: container, onBack: navigator.pop)
         case .debts:
             DebtsRoute(container: container, onBack: navigator.pop)
+        case .notifications:
+            notificationsRoute
         }
     }
 
@@ -122,6 +125,32 @@ extension RootView {
 }
 
 extension RootView {
+    @ViewBuilder
+    var notificationsRoute: some View {
+        if let home = screens?.home {
+            NotificationsRoute(viewModel: home, onBack: navigator.pop, onOpen: openNotification)
+        }
+    }
+
+    private func openNotification(_ destination: InboxItem.Destination) {
+        switch destination {
+        case let .creditCard(accountID):
+            navigator.push(.creditCard(accountID: accountID))
+        case let .account(id):
+            if let account = screens?.home.overview?.accounts.first(where: { $0.id == id }) {
+                openAccount(account)
+            }
+        case .debts:
+            navigator.push(.debts)
+        case .recurring:
+            navigator.push(.recurring)
+        case .summary:
+            // A tab isn't pushed, so leave the stack to show it.
+            navigator.path = NavigationPath()
+            tab = .summary
+        }
+    }
+
     /// A tag tapped in a movement's detail: Transactions, narrowed to it, as the web does.
     func showTag(_ tag: String) {
         navigator.path = NavigationPath()

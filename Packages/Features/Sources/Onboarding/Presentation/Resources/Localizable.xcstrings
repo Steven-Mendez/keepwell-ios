@@ -371,16 +371,6 @@
         }
       }
     },
-    "Import movements only (.csv)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importar solo movimientos (.csv)"
-          }
-        }
-      }
-    },
     "In the app switcher" : {
       "localizations" : {
         "es" : {

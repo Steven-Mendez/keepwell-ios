@@ -167,7 +167,6 @@ final class AppContainer {
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
             changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store),
             exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
-            importTransactions: makeImportTransactions(),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),

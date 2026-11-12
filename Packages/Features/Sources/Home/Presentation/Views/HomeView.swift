@@ -14,12 +14,12 @@ public struct HomeView: View {
         public var settings: () -> Void
         public var accounts: () -> Void
         public var newMovement: (TransactionKind) -> Void
-        /// A new expense with this category already chosen.
-        public var logExpense: (String) -> Void
         public var payCard: () -> Void
         public var allPlanned: () -> Void
         public var allTransactions: () -> Void
         public var allRecurring: () -> Void
+        /// The bell: opens the notifications list.
+        public var notifications: () -> Void
         public var goals: () -> Void
         public var debts: () -> Void
         /// A recent movement's detail.
@@ -31,11 +31,11 @@ public struct HomeView: View {
             settings: @escaping () -> Void,
             accounts: @escaping () -> Void,
             newMovement: @escaping (TransactionKind) -> Void,
-            logExpense: @escaping (String) -> Void = { _ in },
             payCard: @escaping () -> Void,
             allPlanned: @escaping () -> Void,
             allTransactions: @escaping () -> Void,
             allRecurring: @escaping () -> Void = {},
+            notifications: @escaping () -> Void = {},
             goals: @escaping () -> Void = {},
             debts: @escaping () -> Void = {},
             openTransaction: @escaping (UUID) -> Void = { _ in },
@@ -45,11 +45,11 @@ public struct HomeView: View {
             self.settings = settings
             self.accounts = accounts
             self.newMovement = newMovement
-            self.logExpense = logExpense
             self.payCard = payCard
             self.allPlanned = allPlanned
             self.allTransactions = allTransactions
             self.allRecurring = allRecurring
+            self.notifications = notifications
             self.goals = goals
             self.debts = debts
             self.openTransaction = openTransaction
@@ -92,7 +92,6 @@ public struct HomeView: View {
     @ViewBuilder
     private func content(_ overview: HomeOverview) -> some View {
         if overview.hasTransactions {
-            HomeQuickLogCard(viewModel: viewModel, overview: overview, onLog: actions.logExpense)
             if !overview.recent.isEmpty {
                 HomeRecentCard(
                     viewModel: viewModel,
@@ -105,14 +104,6 @@ public struct HomeView: View {
             monthCard(overview)
             if let forecast = overview.forecast {
                 HomeForecastCard(viewModel: viewModel, forecast: forecast, hidesBalances: hidesBalances)
-            }
-            let alerts = viewModel.budgetAlerts
-            if !alerts.isEmpty {
-                HomeBudgetAlertsCard(alerts: alerts, hidesBalances: hidesBalances)
-            }
-            let increases = viewModel.priceIncreaseAlerts
-            if !increases.isEmpty {
-                HomePriceIncreasesCard(alerts: increases, hidesBalances: hidesBalances)
             }
         } else {
             KWEmptyState(
@@ -129,9 +120,6 @@ public struct HomeView: View {
         let upcoming = viewModel.upcomingPreview(overview)
         if !upcoming.isEmpty {
             HomeUpcomingCard(viewModel: viewModel, occurrences: upcoming, hidesBalances: hidesBalances, onSeeAll: actions.allRecurring)
-        }
-        if !overview.proposedRules.isEmpty {
-            HomeProposedRulesCard(viewModel: viewModel, rules: overview.proposedRules, hidesBalances: hidesBalances)
         }
         if !overview.planned.isEmpty {
             plannedCard(overview)

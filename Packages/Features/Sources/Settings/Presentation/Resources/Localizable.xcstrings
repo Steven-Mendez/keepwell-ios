@@ -111,86 +111,6 @@
         }
       }
     },
-    "%lld rows skipped" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld row skipped"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld rows skipped"
-                }
-              }
-            }
-          }
-        },
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld fila omitida"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld filas omitidas"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%lld transactions imported" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld transaction imported"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld transactions imported"
-                }
-              }
-            }
-          }
-        },
-        "es" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld movimiento importado"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld movimientos importados"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "A copy of every movement" : {
       "localizations" : {
         "es" : {
@@ -217,16 +137,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Agrega una cuenta de banco o una tarjeta desde Cuentas para verla aquí."
-          }
-        }
-      }
-    },
-    "Add movements from a spreadsheet" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agrega movimientos desde una hoja de cálculo"
           }
         }
       }
@@ -597,16 +507,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De inmediato"
-          }
-        }
-      }
-    },
-    "Import CSV" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importar CSV"
           }
         }
       }
@@ -1241,16 +1141,6 @@
         }
       }
     },
-    "We couldn't import the file. Try again." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudimos importar el archivo. Inténtalo de nuevo."
-          }
-        }
-      }
-    },
     "We couldn't load your categories." : {
       "localizations" : {
         "es" : {
@@ -1287,16 +1177,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos revisar tus movimientos. Inténtalo de nuevo."
-          }
-        }
-      }
-    },
-    "We couldn't read that file. Export it again as CSV (UTF-8)." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudimos leer ese archivo. Expórtalo de nuevo como CSV (UTF-8)."
           }
         }
       }

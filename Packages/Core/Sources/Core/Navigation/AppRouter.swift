@@ -29,6 +29,8 @@ public enum AppRoute: Hashable, Sendable {
     case goals
     /// Loans and personal debts, reached from home.
     case debts
+    /// What needs attention now, reached from the bell on home.
+    case notifications
 }
 
 /// Single owner of the navigation stack. Feature views don't see it: they expose navigation as

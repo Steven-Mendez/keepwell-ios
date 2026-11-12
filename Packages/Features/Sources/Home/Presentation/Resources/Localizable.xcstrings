@@ -151,6 +151,16 @@
         }
       }
     },
+    "%@: due today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: vence hoy"
+          }
+        }
+      }
+    },
     "%@: payment in %lld days" : {
       "localizations" : {
         "en" : {
@@ -601,6 +611,36 @@
         }
       }
     },
+    "Nothing needs your attention right now." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada requiere tu atención por ahora."
+          }
+        }
+      }
+    },
+    "Notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones"
+          }
+        }
+      }
+    },
+    "Notifications, %lld pending" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones, %lld pendientes"
+          }
+        }
+      }
+    },
     "Now %@, before %@." : {
       "localizations" : {
         "es" : {
@@ -811,6 +851,16 @@
         }
       }
     },
+    "We couldn't load your notifications." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus notificaciones."
+          }
+        }
+      }
+    },
     "We couldn't save the change. Try again." : {
       "localizations" : {
         "es" : {
@@ -903,6 +953,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "You're all caught up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estás al día"
           }
         }
       }

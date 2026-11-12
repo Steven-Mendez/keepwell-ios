@@ -12,13 +12,11 @@ import HomePresentation
 import LockPresentation
 import OnboardingPresentation
 import SettingsDomain
-import SettingsPresentation
 import SharedPresentation
 import SummaryPresentation
 import SwiftData
 import SwiftUI
 import TransactionsPresentation
-import UniformTypeIdentifiers
 
 /// Decides between onboarding and the main app, maps `AppRoute` to screens and owns the app lock.
 /// Feature views only receive closures, so they never depend on the router or on each other.
@@ -38,10 +36,6 @@ struct RootView: View {
     var navigator: AppRouter { router }
     /// Chosen in the menu sheet; the flow opens once the sheet has finished closing.
     @State private var chosenMovement: MovementType?
-    /// A CSV picked during onboarding; it's imported once onboarding has saved the accounts.
-    @State private var pendingImport: String?
-    @State private var isPickingImport = false
-    @State private var banner: String?
     @State private var coverWindow = CoverWindow()
     // Read by the keyboard handling in `RootView+Keyboard`, which lives in its own file.
     // swiftlint:disable private_swiftui_state
@@ -68,13 +62,6 @@ struct RootView: View {
     var body: some View {
         phaseContent
             .onChange(of: cover, initial: true) { _, cover in showCover(cover) }
-            .overlay(alignment: .top) { bannerView }
-            .fileImporter(
-                isPresented: $isPickingImport,
-                allowedContentTypes: [.commaSeparatedText, .plainText],
-                onCompletion: readPickedCSV,
-            )
-            .animation(.snappy, value: banner)
             .task {
                 notifications.handler = handleNotification
                 await load()
@@ -116,36 +103,11 @@ struct RootView: View {
             OnboardingRoute(
                 container: container,
                 viewModel: viewModel,
-                onImportCSV: { isPickingImport = true },
                 onFinish: finishOnboarding,
             )
         case .main:
             main
         }
-    }
-
-    @ViewBuilder
-    private var bannerView: some View {
-        if let banner {
-            Text(banner)
-                .font(KWTextStyle.label.font)
-                .foregroundStyle(KWColor.Text.onPositive)
-                .padding(.horizontal, KWSpacing.md)
-                .padding(.vertical, 10)
-                .background(KWColor.State.positive, in: Capsule())
-                .padding(.top, KWSpacing.xs)
-                .transition(.move(edge: .top).combined(with: .opacity))
-                .task {
-                    try? await Task.sleep(for: .seconds(3))
-                    self.banner = nil
-                }
-        }
-    }
-
-    /// Keeps the picked CSV's text for after onboarding saves the accounts it refers to.
-    private func readPickedCSV(_ result: Result<URL, any Error>) {
-        guard case let .success(url) = result else { return }
-        pendingImport = PickedFile.data(at: url).flatMap { String(data: $0, encoding: .utf8) }
     }
 
     // MARK: - Main
@@ -238,7 +200,6 @@ struct RootView: View {
             settings: { router.push(.settings) },
             accounts: { tab = .accounts },
             newMovement: { presentNewMovement(MovementType($0)) },
-            logExpense: { presentNewMovement(.expense, category: $0) },
             payCard: {
                 // With a single card there's nothing to choose; otherwise the flow asks which one.
                 let cards = screens.home.overview?.accounts.filter { $0.kind == .credit } ?? []
@@ -256,6 +217,7 @@ struct RootView: View {
                 tab = .transactions
             },
             allRecurring: { router.push(.recurring) },
+            notifications: { router.push(.notifications) },
             goals: { router.push(.goals) },
             debts: { router.push(.debts) },
             openTransaction: { router.push(.transaction(id: $0)) },
@@ -295,19 +257,9 @@ extension RootView {
         // What setup saved goes up to the account now.
         container.cloudAccount?.sync?.releaseAfterSetup()
         Task { await refreshLockSettings() }
-        if let csv = pendingImport {
-            pendingImport = nil
-            Task { await importAfterOnboarding(csv) }
-        }
         if exit == .logFirstExpense {
             presentNewMovement()
         }
-    }
-
-    private func importAfterOnboarding(_ csv: String) async {
-        guard let summary = try? await container.makeImportTransactions().execute(csv: csv) else { return }
-        banner = SettingsViewModel.importMessage(summary)
-        await screens?.reload()
     }
 
     /// After "Delete all my data" there's nothing left to show, so the app starts over.
