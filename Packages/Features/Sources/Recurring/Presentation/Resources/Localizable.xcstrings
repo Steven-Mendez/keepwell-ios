@@ -601,6 +601,16 @@
         }
       }
     },
+    "See all" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver todos"
+          }
+        }
+      }
+    },
     "Show amounts" : {
       "localizations" : {
         "es" : {

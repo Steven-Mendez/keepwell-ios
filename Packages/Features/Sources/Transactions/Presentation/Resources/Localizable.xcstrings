@@ -31,6 +31,26 @@
         }
       }
     },
+    "Amount" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monto"
+          }
+        }
+      }
+    },
+    "Apply" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar"
+          }
+        }
+      }
+    },
     "Available balance" : {
       "localizations" : {
         "es" : {
@@ -91,6 +111,16 @@
         }
       }
     },
+    "Converted to %@ at each movement's rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convertido a %@ con la tasa de cada movimiento"
+          }
+        }
+      }
+    },
     "Credit card" : {
       "localizations" : {
         "es" : {
@@ -131,12 +161,32 @@
         }
       }
     },
+    "Deleted rule" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regla borrada"
+          }
+        }
+      }
+    },
     "Expenses" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gastos"
+          }
+        }
+      }
+    },
+    "Filters" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtros"
           }
         }
       }
@@ -167,6 +217,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anota tu primer gasto, ingreso o transferencia y aparecerá aquí."
+          }
+        }
+      }
+    },
+    "Maximum" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máximo"
+          }
+        }
+      }
+    },
+    "Minimum" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mínimo"
+          }
+        }
+      }
+    },
+    "Minimum is above maximum" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El mínimo es mayor que el máximo"
           }
         }
       }
@@ -251,6 +331,26 @@
         }
       }
     },
+    "Origin" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Origen"
+          }
+        }
+      }
+    },
+    "Remove filter %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar el filtro %@"
+          }
+        }
+      }
+    },
     "Search" : {
       "localizations" : {
         "es" : {
@@ -287,6 +387,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dividir"
+          }
+        }
+      }
+    },
+    "Subscriptions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suscripciones"
+          }
+        }
+      }
+    },
+    "Subscriptions only" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo suscripciones"
           }
         }
       }

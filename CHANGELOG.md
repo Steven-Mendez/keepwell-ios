@@ -13,6 +13,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   Siri's "Log an expense" without a category and recurring movements recorded in "Other" take the
   first matching rule (then "Other"). A category you choose is kept, and edits never apply rules.
 
+- Transactions: a "Filters" chip after the kind chips opens a sheet with an amount range (minimum
+  and maximum, in the principal currency at each movement's own rate) and "Subscriptions only".
+  Active filters show as chips after the account chip; a tap reopens the sheet, the ✕ clears it.
+  A recurring rule's "Recorded" section gains "See all", which opens every movement it recorded.
+
 - Settings › Money: "Time zone", the home zone Keepwell's server uses for "today" and month ends
   (reminders, assistants and recurring movements it records). It starts as the iPhone's zone, the
   first time onboarding or a sync finds none, syncs to the web app and only changes from here.

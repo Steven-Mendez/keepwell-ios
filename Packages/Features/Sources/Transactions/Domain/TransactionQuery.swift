@@ -1,17 +1,29 @@
 import Domain
 import Foundation
 
-/// Everything that narrows the movement list at once: the kind chip, the account, and the search
-/// text.
+/// Everything that narrows the movement list at once: the kind chip, the account, the search
+/// text, the amount range and the origin.
 public struct TransactionQuery: Hashable, Sendable {
     public var kind: TransactionFilter
     public var scope: TransactionScope
     public var text: String
+    /// Read in the context's principal currency; empty, amounts don't narrow.
+    public var amount: AmountRange
+    /// Read against the context's recurring rules.
+    public var origin: TransactionOrigin
 
-    public init(kind: TransactionFilter = .all, scope: TransactionScope = .all, text: String = "") {
+    public init(
+        kind: TransactionFilter = .all,
+        scope: TransactionScope = .all,
+        text: String = "",
+        amount: AmountRange = AmountRange(),
+        origin: TransactionOrigin = .any,
+    ) {
         self.kind = kind
         self.scope = scope
         self.text = text
+        self.amount = amount
+        self.origin = origin
     }
 
     /// The text as searches compare it: trimmed, without case or accents, so "cafe" finds "Café".
@@ -47,13 +59,25 @@ public struct TagTotals: Hashable, Sendable {
 }
 
 /// Narrows movements by a query. What a movement is searched by (its category's translated name,
-/// the card's title) is presentation, so the caller hands it over as `searchableText`.
+/// the card's title) is presentation, so the caller hands it over as `searchableText`. The amount
+/// and origin filters apply only with a `context`.
 public protocol FilterTransactionsUseCase: Sendable {
     func execute(
         _ transactions: [Transaction],
         matching query: TransactionQuery,
+        context: TransactionQueryContext?,
         searchableText: (Transaction) -> String,
     ) -> [Transaction]
+}
+
+extension FilterTransactionsUseCase {
+    public func execute(
+        _ transactions: [Transaction],
+        matching query: TransactionQuery,
+        searchableText: (Transaction) -> String,
+    ) -> [Transaction] {
+        execute(transactions, matching: query, context: nil, searchableText: searchableText)
+    }
 }
 
 public struct DefaultFilterTransactionsUseCase: FilterTransactionsUseCase {
@@ -62,6 +86,7 @@ public struct DefaultFilterTransactionsUseCase: FilterTransactionsUseCase {
     public func execute(
         _ transactions: [Transaction],
         matching query: TransactionQuery,
+        context: TransactionQueryContext?,
         searchableText: (Transaction) -> String,
     ) -> [Transaction] {
         let needle = query.needle
@@ -73,7 +98,14 @@ public struct DefaultFilterTransactionsUseCase: FilterTransactionsUseCase {
                 needle.isEmpty || TransactionQuery.normalized(searchableText(transaction)).contains(needle)
             }
             return query.kind.matches(transaction) && query.scope.includes(transaction) && matchesText
+                && matchesExtras(transaction, query: query, context: context)
         }
+    }
+
+    private func matchesExtras(_ transaction: Transaction, query: TransactionQuery, context: TransactionQueryContext?) -> Bool {
+        guard let context else { return true }
+        return (query.amount.isEmpty || query.amount.contains(transaction, principal: context.principal))
+            && query.origin.matches(transaction, rules: context.rules)
     }
 }
 
