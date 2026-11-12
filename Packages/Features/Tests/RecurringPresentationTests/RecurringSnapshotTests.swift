@@ -11,7 +11,10 @@ struct RecurringSnapshotTests {
     func recurringList() async {
         let viewModel = RecurringPreview.listViewModel()
         await viewModel.load()
-        assertScreenSnapshot(of: RecurringView(viewModel: viewModel, onBack: {}, onAdd: {}, onOpen: { _ in }), height: 900)
+        assertScreenSnapshot(
+            of: RecurringView(viewModel: viewModel, onBack: {}, onAdd: {}, onAddSubscription: {}, onOpen: { _ in }),
+            height: 900,
+        )
     }
 
     @Test
@@ -22,7 +25,7 @@ struct RecurringSnapshotTests {
         }
         let viewModel = RecurringPreview.listViewModel(store: store)
         await viewModel.load()
-        assertScreenSnapshot(of: RecurringView(viewModel: viewModel, onBack: {}, onAdd: {}, onOpen: { _ in }))
+        assertScreenSnapshot(of: RecurringView(viewModel: viewModel, onBack: {}, onAdd: {}, onAddSubscription: {}, onOpen: { _ in }))
     }
 
     @Test
@@ -42,6 +45,18 @@ struct RecurringSnapshotTests {
         assertScreenSnapshot(
             of: RecurringRuleEditorView(viewModel: viewModel, onBack: {}, onDone: {}, onOpenTransaction: { _ in }),
             height: 1200,
+        )
+    }
+
+    @Test
+    func newSubscription() async {
+        let viewModel = RecurringPreview.editorViewModel(ruleID: nil, isNewSubscription: true)
+        await viewModel.load()
+        viewModel.name = "Music"
+        viewModel.amountText = "9.99"
+        viewModel.subscriptionPeriod = .quarterly
+        assertScreenSnapshot(
+            of: RecurringRuleEditorView(viewModel: viewModel, onBack: {}, onDone: {}, onOpenTransaction: { _ in }),
         )
     }
 }

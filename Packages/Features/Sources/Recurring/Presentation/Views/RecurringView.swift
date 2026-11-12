@@ -5,11 +5,12 @@ import SharedPresentation
 import SwiftUI
 
 /// "Recurring": what subscriptions cost per month and per year, then every rule by group with when
-/// it falls next. Tapping a rule opens it; "+" adds one.
+/// it falls next. Tapping a rule opens it; "+" adds a subscription (the short form) or any rule.
 public struct RecurringView: View {
     private let viewModel: RecurringViewModel
     private let onBack: () -> Void
     private let onAdd: () -> Void
+    private let onAddSubscription: () -> Void
     private let onOpen: (UUID) -> Void
     /// The same eye as home: hiding amounts is about who's looking at the phone, on every screen.
     @AppStorage("home.hidesBalances") private var hidesBalances = false
@@ -18,11 +19,13 @@ public struct RecurringView: View {
         viewModel: RecurringViewModel,
         onBack: @escaping () -> Void,
         onAdd: @escaping () -> Void,
+        onAddSubscription: @escaping () -> Void,
         onOpen: @escaping (UUID) -> Void,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onAdd = onAdd
+        self.onAddSubscription = onAddSubscription
         self.onOpen = onOpen
     }
 
@@ -75,7 +78,17 @@ public struct RecurringView: View {
                     ? String(localized: "Show amounts", bundle: #bundle)
                     : String(localized: "Hide amounts", bundle: #bundle),
             ) { hidesBalances.toggle() }
-            KWCircleButton(.plus, style: .white, accessibilityLabel: String(localized: "Add recurring", bundle: #bundle), action: onAdd)
+            Menu {
+                Button(action: onAddSubscription) { Text("New subscription", bundle: #bundle) }
+                Button(action: onAdd) { Text("New recurring", bundle: #bundle) }
+            } label: {
+                KWIconView(.plus, size: 20, lineWidth: 2.2)
+                    .foregroundStyle(KWColor.Semantic.primaryForeground)
+                    .frame(width: 40, height: 40)
+                    .background(KWColor.Semantic.primary, in: Circle())
+                    .contentShape(Circle())
+            }
+            .accessibilityLabel(Text("Add recurring", bundle: #bundle))
         }
     }
 

@@ -20,6 +20,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home shows a line under the greeting with what needs attention ("2 payments to confirm · 1 due
   tomorrow"), or "All caught up" when nothing is pending. Plan's cards say how many subscriptions,
   debts and people each total adds up ("Per month · 7 subscriptions", "2 people owe you").
+- "New subscription" in Recurring's "+" menu: the rule editor opens short, with name, amount,
+  period (monthly, quarterly, half-yearly or yearly) and billing day, and shows the next charge
+  before saving. It saves an expense in Subscriptions marked as a subscription; "More options"
+  shows every other field.
 - Notifications inbox redesign: grouped by day (Today, Yesterday, date) with the newest first,
   an unread dot and bolder title, and a bell that counts unread only. Tap a row to read it and open
   it; swipe right to mark read or unread, swipe left to delete with an Undo toast; the "..." menu

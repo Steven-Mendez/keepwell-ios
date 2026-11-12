@@ -32,13 +32,21 @@ extension RootView {
             RecurringRoute(
                 container: container,
                 onBack: navigator.pop,
-                onAdd: { navigator.push(.recurringRule(id: nil)) },
+                onAdd: { navigator.push($0 ? .newSubscription : .recurringRule(id: nil)) },
                 onOpen: { navigator.push(.recurringRule(id: $0)) },
             )
         case let .recurringRule(id):
             RecurringRuleRoute(
                 container: container,
                 ruleID: id,
+                onBack: navigator.pop,
+                onOpenTransaction: { navigator.push(.transaction(id: $0)) },
+            )
+        case .newSubscription:
+            RecurringRuleRoute(
+                container: container,
+                ruleID: nil,
+                isNewSubscription: true,
                 onBack: navigator.pop,
                 onOpenTransaction: { navigator.push(.transaction(id: $0)) },
             )
