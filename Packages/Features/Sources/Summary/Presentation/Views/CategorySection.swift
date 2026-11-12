@@ -6,6 +6,7 @@ import SwiftUI
 /// Where the month's money went (or came from) as a ring, with the list underneath as its legend.
 struct CategorySection: View {
     @Bindable var viewModel: SummaryViewModel
+    let onEditBudgets: () -> Void
     @ScaledMetric(relativeTo: .body) private var ringSize: CGFloat = 220
 
     var body: some View {
@@ -54,12 +55,30 @@ struct CategorySection: View {
     @ViewBuilder
     private var budgets: some View {
         let rows = viewModel.mode == .expenses ? viewModel.budgetRows : []
-        if !rows.isEmpty {
-            KWSectionHeader(String(localized: "Budgets", bundle: #bundle), style: .large)
-                .padding(.top, KWSpacing.xs)
-            KWGroupedCard(verticalPadding: 6) {
-                ForEach(rows) { row in
-                    budgetRow(row)
+        let notes = viewModel.mode == .expenses ? viewModel.otherCurrencyBudgetNotes : []
+        if !rows.isEmpty || !notes.isEmpty {
+            KWSectionHeader(String(localized: "Budgets", bundle: #bundle), style: .large) {
+                if !notes.isEmpty {
+                    Button(action: onEditBudgets) {
+                        Text("Edit budgets", bundle: #bundle)
+                            .font(KWTextStyle.label.font)
+                            .foregroundStyle(KWColor.Brand.link)
+                            .frame(minHeight: KWLayout.minTouch)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.top, KWSpacing.xs)
+            ForEach(notes, id: \.self) { note in
+                Text(note)
+                    .font(KWTextStyle.caption.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.muted)
+            }
+            if !rows.isEmpty {
+                KWGroupedCard(verticalPadding: 6) {
+                    ForEach(rows) { row in
+                        budgetRow(row)
+                    }
                 }
             }
         }

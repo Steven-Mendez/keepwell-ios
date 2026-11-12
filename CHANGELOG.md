@@ -78,6 +78,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Connected assistants lists each assistant with what it can do (Can read, Can read and
   record, Full control) and a Disconnect, a "How to connect Claude" link and a confirmation before
   "Disconnect assistants" cuts them all.
+- Summary → Budgets no longer hides budgets set in another currency (after changing the main
+  currency): it says "2 budgets are in NIO and aren't compared", without converting them, with an
+  "Edit budgets" link to the expense categories.
 
 ### Changed
 

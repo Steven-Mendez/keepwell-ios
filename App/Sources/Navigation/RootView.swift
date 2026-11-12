@@ -194,7 +194,11 @@ struct RootView: View {
                 onOpenCash: { router.push(.cash(accountID: $0)) },
             )
         case .summary:
-            SummaryView(viewModel: screens.summary) { presentMovementMenu() }
+            SummaryView(
+                viewModel: screens.summary,
+                onEditBudgets: { router.push(.categories(showsIncome: false)) },
+                onNewMovement: { presentMovementMenu() },
+            )
         case .plan:
             planTab(screens)
         }
