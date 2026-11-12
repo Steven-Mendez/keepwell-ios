@@ -140,9 +140,11 @@ public enum RecurringSchedule {
 
     /// Records every due occurrence of the active rules as a movement, at most `catchUpLimit` per
     /// rule (the latest ones). An occurrence is skipped when a movement of the same rule already
-    /// sits on that day, so two devices, or a restore, never record it twice. Each rule then moves
-    /// to its first occurrence after the last one due. An occurrence in "Other" takes the first
-    /// categorization rule in `categorizationRules` that matches, like any new movement.
+    /// sits on that day, so two devices, or a restore, never record it twice, and when a movement
+    /// typed by hand already pays it (`manualPayment(for:on:in:taken:calendar:)`; rules claim
+    /// payments in id order). Each rule then moves to its first occurrence after the last one due.
+    /// An occurrence in "Other" takes the first categorization rule in `categorizationRules` that
+    /// matches, like any new movement.
     public static func materialize(
         _ rules: [RecurringRule],
         transactions: [Transaction],
@@ -157,14 +159,19 @@ public enum RecurringSchedule {
             recordedDays[ruleID, default: []].insert(calendar.startOfDay(for: transaction.date))
         }
         let knownIDs = Set(transactions.map(\.id))
+        var paid: Set<UUID> = []
         var created: [Transaction] = []
         var advanced: [RecurringRule] = []
-        for rule in rules {
+        for rule in rules.sorted(by: { $0.id.uuidString < $1.id.uuidString }) {
             let dates = due(rule, today: today, calendar: calendar).suffix(catchUpLimit)
             guard !dates.isEmpty else { continue }
             for date in dates where !(recordedDays[rule.id]?.contains(calendar.startOfDay(for: date)) ?? false) {
                 let id = occurrenceID(of: rule, on: date, calendar: calendar)
                 guard !knownIDs.contains(id) else { continue }
+                if let payment = manualPayment(for: rule, on: date, in: transactions, taken: paid, calendar: calendar) {
+                    paid.insert(payment.id)
+                    continue
+                }
                 let occurrence = movement(from: rule, on: date, exchangeRate: exchangeRate, id: id)
                 created.append(CategorizationRules.autoCategorized(occurrence, rules: categorizationRules))
                 recordedDays[rule.id, default: []].insert(calendar.startOfDay(for: date))

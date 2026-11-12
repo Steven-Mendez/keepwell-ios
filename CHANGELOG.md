@@ -158,6 +158,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- A payment you record by hand for a recurring rule (the rent paid two days early) now counts as
+  that occurrence: the rule no longer records a second movement or leaves a draft for it. It must be
+  of the same kind, account, currency and card, within 7.5 % of the amount and up to two days
+  before the due day.
 - Sync: an edit or delete made on a device whose clock runs behind is no longer dropped by the
   server as older than the row it changes; it is stamped just after that row.
 - Export CSV: a description, note, tag or account or category name that starts with `=`, `+`, `-`,
