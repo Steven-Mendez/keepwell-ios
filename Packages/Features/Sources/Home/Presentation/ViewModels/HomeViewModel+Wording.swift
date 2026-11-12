@@ -23,11 +23,11 @@ extension HomeViewModel {
         )
     }
 
-    func installmentWording(_ loan: Loan, next: LoanInstallment, days: Int) -> Wording {
+    func installmentWording(_ loan: Loan, number: Int, days: Int) -> Wording {
         let amount = formatter.string(from: loan.installmentAmount, currencyCode: loan.borrowed.currency)
         return Wording(
             title: String(localized: "\(loan.name): installment in \(days) days", bundle: #bundle),
-            body: String(localized: "Installment \(next.number) of \(loan.installmentCount) · \(amount)", bundle: #bundle),
+            body: String(localized: "Installment \(number) of \(loan.installmentCount) · \(amount)", bundle: #bundle),
         )
     }
 

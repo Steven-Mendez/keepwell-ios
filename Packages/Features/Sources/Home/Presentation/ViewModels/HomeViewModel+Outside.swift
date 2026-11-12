@@ -5,46 +5,32 @@ import HomeDomain
 import SharedPresentation
 
 /// A local notification the app should have scheduled, worded and timed here so the app layer
-/// only hands it to the system.
+/// only hands it to the system. Its `id` is the notification's shared id, so the inbox, the
+/// server's pushes and these all name the same thing.
 public struct Reminder: Hashable, Sendable {
-    public enum Kind: Hashable, Sendable {
-        /// A planned movement on its day; the notification offers to confirm it.
-        case planned(UUID)
-        /// A credit card's payment coming up.
-        case payment(UUID)
-        /// A loan's next installment coming up, by loan.
-        case loanInstallment(UUID)
-        /// A credit card's statement closing.
-        case cutoff(UUID)
-        /// A plastic expiring this month.
-        case cardExpiry(UUID)
-        /// A subscription renewing tomorrow, by its recurring rule.
-        case subscription(UUID)
-        /// A category close to or over its monthly budget, by category id. Sent once: unlike the
-        /// others it reports something that already happened, so rescheduling must not repeat it.
-        case budget(String)
-        /// A subscription charged more than the time before, by the charge. Sent once, like budgets.
-        case priceIncrease(UUID)
-    }
-
-    /// Stable per occurrence, so rescheduling replaces instead of duplicating.
     public let id: String
-    public let kind: Kind
+    public let kind: LedgerNotification.Kind
+    /// The draft a "planned" reminder offers to confirm.
+    public let transactionID: UUID?
+    /// Where tapping it leads, as `NotificationTarget` JSON (the same shape a push carries).
+    public let target: [String: String]
+    /// Reports something that already happened: told once, right away.
+    public let isOneShot: Bool
     public let title: String
     public let body: String
     public let date: Date
 
     /// The same reminder at another time (postponing, or debug runs that show it right away).
     public func at(_ newDate: Date) -> Self {
-        Self(id: id, kind: kind, title: title, body: body, date: newDate)
+        Self(
+            id: id, kind: kind, transactionID: transactionID, target: target, isOneShot: isOneShot,
+            title: title, body: body, date: newDate,
+        )
     }
 }
 
 /// What home shares outside the app: the widgets' snapshot and the reminders.
 extension HomeViewModel {
-    /// The hour reminders arrive on their day.
-    static let reminderHour = 9
-
     public var widgetSnapshot: WidgetSnapshot? {
         guard let overview else { return nil }
         let month = overview.month
@@ -77,167 +63,36 @@ extension HomeViewModel {
         )
     }
 
-    /// Planned movements on their day, card payments and loan installments ahead of time, statement
-    /// cutoffs on their day, plastics in their expiry month, and budgets near or over their line and
-    /// subscriptions that went up in price right away. Only what's still ahead is returned.
+    /// What to schedule as local notifications: each notification once, on the first morning it
+    /// applies that is still ahead (see `LedgerNotifications.schedule`), minus what was read or
+    /// deleted anywhere.
     public func reminders(now: Date = .now, calendar: Calendar = .current) -> [Reminder] {
         guard let overview, let display else { return [] }
-        return plannedReminders(overview, display: display, now: now, calendar: calendar)
-            + paymentReminders(overview, now: now, calendar: calendar)
-            + installmentReminders(overview, now: now, calendar: calendar)
-            + cutoffReminders(overview, now: now, calendar: calendar)
-            + expiryReminders(overview, now: now, calendar: calendar)
-            + renewalReminders(overview, display: display, now: now, calendar: calendar)
-            + budgetReminders(overview, now: now, calendar: calendar)
-            + priceIncreaseReminders(now: now)
-    }
-
-    /// The morning before each subscription renews, so there's time to cancel it.
-    private func renewalReminders(_ overview: HomeOverview, display: TransactionDisplay, now: Date, calendar: Calendar) -> [Reminder] {
-        overview.upcoming.compactMap { occurrence in
-            let rule = occurrence.rule
-            guard rule.isSubscription,
-                  let dayBefore = calendar.date(byAdding: .day, value: -1, to: occurrence.date),
-                  let date = morning(of: dayBefore, calendar: calendar),
-                  date > now
-            else { return nil }
-            let wording = renewalWording(occurrence, display: display)
-            return Reminder(
-                id: "renewal-\(rule.id)-\(Int(occurrence.date.timeIntervalSince1970))",
-                kind: .subscription(rule.id),
-                title: wording.title,
-                body: wording.body,
-                date: date,
-            )
-        }
-    }
-
-    private func plannedReminders(_ overview: HomeOverview, display: TransactionDisplay, now: Date, calendar: Calendar) -> [Reminder] {
-        overview.planned.compactMap { transaction in
-            guard let date = morning(of: transaction.date, calendar: calendar), date > now else { return nil }
-            let amount = formatter.string(from: transaction.amount, currencyCode: transaction.currency)
-            let method = display.methodName(of: transaction)
-            return Reminder(
-                id: "planned-\(transaction.id)",
-                kind: .planned(transaction.id),
-                title: String(localized: "Draft for today", bundle: #bundle),
-                body: String(localized: "\(transaction.description) · \(amount) from \(method). Has it been paid?", bundle: #bundle),
-                date: date,
-            )
-        }
-    }
-
-    private func paymentReminders(_ overview: HomeOverview, now: Date, calendar: Calendar) -> [Reminder] {
-        let days = overview.paymentReminderDaysBefore
-        return overview.accounts.compactMap { account in
-            guard account.kind == .credit,
-                  let dueDay = account.creditTerms?.dueDay,
-                  let reminder = nextPaymentReminder(dueDay: dueDay, daysBefore: days, now: now, calendar: calendar)
-            else { return nil }
-            let wording = paymentWording(account, dueDay: dueDay, days: days, in: overview)
-            return Reminder(
-                id: "payment-\(account.id)-\(Int(reminder.due.timeIntervalSince1970))",
-                kind: .payment(account.id),
-                title: wording.title,
-                body: wording.body,
-                date: reminder.date,
-            )
-        }
-    }
-
-    /// Each loan's next installment, as many days ahead as card payments. Only the next one: the
-    /// following installment is scheduled once this one is paid and home reloads.
-    private func installmentReminders(_ overview: HomeOverview, now: Date, calendar: Calendar) -> [Reminder] {
-        let days = overview.paymentReminderDaysBefore
-        return overview.loans.compactMap { progress in
-            guard let next = progress.next,
-                  let remindDay = calendar.date(byAdding: .day, value: -days, to: next.dueDate),
-                  let date = morning(of: remindDay, calendar: calendar),
-                  date > now
-            else { return nil }
-            let loan = progress.loan
-            let wording = installmentWording(loan, next: next, days: days)
-            return Reminder(
-                id: "installment-\(loan.id)-\(next.number)",
-                kind: .loanInstallment(loan.id),
-                title: wording.title,
-                body: wording.body,
-                date: date,
-            )
-        }
-    }
-
-    /// On the cutoff morning: what's bought after today goes to next month's statement.
-    private func cutoffReminders(_ overview: HomeOverview, now: Date, calendar: Calendar) -> [Reminder] {
-        overview.accounts.compactMap { account in
-            guard account.kind == .credit,
-                  let cutoffDay = account.creditTerms?.cutoffDay,
-                  let date = nextMorning(onDay: cutoffDay, after: now, calendar: calendar)
-            else { return nil }
-            let wording = cutoffWording(account, in: overview)
-            return Reminder(
-                id: "cutoff-\(account.id)-\(Int(date.timeIntervalSince1970))",
-                kind: .cutoff(account.id),
-                title: wording.title,
-                body: wording.body,
-                date: date,
-            )
-        }
-    }
-
-    /// On the first of the expiry month, listing what's charged to the card so it can be updated.
-    private func expiryReminders(_ overview: HomeOverview, now: Date, calendar: Calendar) -> [Reminder] {
-        overview.cards.compactMap { card in
-            guard let expiry = card.expiry,
-                  let day = expiry.reminderDay(calendar: calendar),
-                  let date = morning(of: day, calendar: calendar),
-                  date > now
-            else { return nil }
-            let wording = expiryWording(card, in: overview)
-            return Reminder(
-                id: "expiry-\(card.id)-\(expiry.year)-\(expiry.month)",
-                kind: .cardExpiry(card.id),
-                title: wording.title,
-                body: wording.body,
-                date: date,
-            )
-        }
-    }
-
-    /// The reminder hour on the next `day` of a month that is still ahead of `now`.
-    private func nextMorning(onDay day: Int, after now: Date, calendar: Calendar) -> Date? {
-        var from = now
-        for _ in 0 ..< 2 {
-            guard let occurrence = BillingCycle.nextOccurrence(ofDay: day, onOrAfter: from, calendar: calendar),
-                  let date = morning(of: occurrence, calendar: calendar)
-            else { return nil }
-            if date > now {
-                return date
+        return LedgerNotifications.schedule(from: now, in: overview, calendar: calendar).compactMap { scheduled in
+            let state = notificationStates[scheduled.notification.id]
+            if state?.isRead == true || state?.isDismissed == true {
+                return nil
             }
-            guard let next = calendar.date(byAdding: .day, value: 1, to: occurrence) else { return nil }
-            from = next
+            return reminder(for: scheduled, overview: overview, display: display)
         }
-        return nil
     }
 
-    private func nextPaymentReminder(dueDay: Int, daysBefore: Int, now: Date, calendar: Calendar) -> (due: Date, date: Date)? {
-        var from = now
-        // Two tries: this month's due date may already be too close to remind ahead of it.
-        for _ in 0 ..< 2 {
-            guard let due = BillingCycle.nextOccurrence(ofDay: dueDay, onOrAfter: from, calendar: calendar),
-                  let remindDay = calendar.date(byAdding: .day, value: -daysBefore, to: due),
-                  let date = morning(of: remindDay, calendar: calendar)
-            else { return nil }
-            if date > now {
-                return (due, date)
-            }
-            guard let next = calendar.date(byAdding: .day, value: 1, to: due) else { return nil }
-            from = next
+    private func reminder(for scheduled: ScheduledNotification, overview: HomeOverview, display: TransactionDisplay) -> Reminder? {
+        let notification = scheduled.notification
+        guard let content = content(of: notification, overview: overview, display: display) else { return nil }
+        var transactionID: UUID?
+        if case let .planned(transaction) = notification.subject {
+            transactionID = transaction.id
         }
-        return nil
-    }
-
-    private func morning(of day: Date, calendar: Calendar) -> Date? {
-        calendar.date(bySettingHour: Self.reminderHour, minute: 0, second: 0, of: day)
+        return Reminder(
+            id: notification.id,
+            kind: notification.kind,
+            transactionID: transactionID,
+            target: notification.target.json,
+            isOneShot: notification.isOneShot,
+            title: content.title,
+            body: content.body,
+            date: scheduled.fireDate,
+        )
     }
 }

@@ -97,7 +97,11 @@ extension SwiftDataStore {
 
     private func auditedRecord(entity: String, id: String, in context: ModelContext) throws -> (any AuditedRecord)? {
         guard let uuid = UUID(uuidString: id) else {
-            return entity == "category" ? try fetch(CategoryRecord.self, #Predicate { $0.id == id }, in: context) : nil
+            return switch entity {
+            case "category": try fetch(CategoryRecord.self, #Predicate { $0.id == id }, in: context)
+            case "notificationState": try fetch(NotificationStateRecord.self, #Predicate { $0.id == id }, in: context)
+            default: nil
+            }
         }
         return switch entity {
         case "account": try fetch(AccountRecord.self, #Predicate { $0.id == uuid }, in: context)
@@ -312,6 +316,17 @@ extension SwiftDataStore {
             rule.tagsText = TagsText.encode(wire.strings("tags"))
             rule.sortIndex = try wire.int("sort_index")
             try wire.audit(rule)
+        case "notificationState":
+            let id = try wire.string("id")
+            let record = try fetch(NotificationStateRecord.self, #Predicate { $0.id == id }, in: context)
+            // A tombstone is final: the id is long past and won't be computed again.
+            if record?.deletedAt != nil {
+                return false
+            }
+            let state = record ?? NotificationStateRecord(id: id).inserted(into: context)
+            state.readAt = wire.optionalDate("read_at")
+            state.dismissedAt = wire.optionalDate("dismissed_at")
+            try wire.audit(state)
         case "settings":
             let settings = try context.fetch(FetchDescriptor<SettingsRecord>()).first ?? SettingsRecord().inserted(into: context)
             // Only the synced columns; unlock, relock, hiding amounts and the iCloud switch stay this iPhone's.

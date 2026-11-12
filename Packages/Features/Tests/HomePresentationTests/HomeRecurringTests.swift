@@ -42,19 +42,14 @@ struct HomeRecurringTests {
         let viewModel = await loadedViewModel()
         // Just before the sample's day starts, so the morning reminder for tomorrow's renewal is ahead.
         let earlier = Calendar.current.startOfDay(for: now).addingTimeInterval(-60)
-        let renewals = viewModel.reminders(now: earlier).filter { $0.kind == .subscription(SampleData.IDs.streamingRule) }
-        let reminder = try #require(renewals.first)
+        let rule = SampleData.IDs.streamingRule.uuidString.lowercased()
+        let renewals = viewModel.reminders(now: earlier).filter { $0.kind == .renewal }
+        let reminder = try #require(renewals.first { $0.id.hasPrefix("renewal:\(rule):") })
         #expect(reminder.title == "Streaming renews tomorrow")
         #expect(reminder.body.hasPrefix("$15.99 on "))
-        #expect(Calendar.current.component(.hour, from: reminder.date) == HomeViewModel.reminderHour)
+        #expect(Calendar.current.component(.hour, from: reminder.date) == LedgerNotifications.reminderHour)
         #expect(Calendar.current.isDate(reminder.date, inSameDayAs: now))
-        #expect(viewModel.reminders(now: earlier).allSatisfy { reminder in
-            if case let .subscription(id) = reminder.kind {
-                id == SampleData.IDs.streamingRule
-            } else {
-                true
-            }
-        })
+        #expect(reminder.target == ["screen": "recurring"])
     }
 
     private func proposalViewModel(_ store: InMemoryStore) -> HomeViewModel {

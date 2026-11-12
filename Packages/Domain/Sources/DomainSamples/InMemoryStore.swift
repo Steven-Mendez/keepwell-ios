@@ -4,7 +4,7 @@ import Foundation
 /// Repository implementations kept in memory, for previews, snapshot tests and use case tests.
 public actor InMemoryStore: AccountRepository, CardRepository, TransactionRepository, CategoryRepository,
     SettingsRepository, DataEraser, RecurringRuleRepository, SavingsGoalRepository,
-    LoanRepository, PersonalDebtRepository, CategorizationRuleRepository
+    LoanRepository, PersonalDebtRepository, CategorizationRuleRepository, NotificationStateRepository
 {
     private var accounts: [Account]
     private var cards: [Card]
@@ -16,6 +16,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
     private var loans: [Loan]
     private var personalDebts: [PersonalDebt]
     private var categorizationRules: [CategorizationRule]
+    private var notificationStates: [String: NotificationState] = [:]
 
     public init(
         accounts: [Account] = [],
@@ -227,6 +228,21 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         loans = []
         personalDebts = []
         categorizationRules = []
+        notificationStates = [:]
+    }
+
+    public func fetchNotificationStates() -> [NotificationState] {
+        notificationStates.values.sorted { $0.id < $1.id }
+    }
+
+    public func apply(_ change: NotificationState.Change, to ids: [String]) {
+        for id in Set(ids) {
+            notificationStates[id] = (notificationStates[id] ?? NotificationState(id: id)).applying(change, at: .now)
+        }
+    }
+
+    public func pruneNotificationStates(now: Date) {
+        notificationStates = notificationStates.filter { !NotificationState.isStale(id: $0.key, now: now) }
     }
 
     private func upsert<T: Identifiable>(_ item: T, into list: inout [T]) {

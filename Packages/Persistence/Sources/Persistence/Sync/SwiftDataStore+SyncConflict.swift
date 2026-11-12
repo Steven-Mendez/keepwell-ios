@@ -40,6 +40,7 @@ extension SwiftDataStore: SyncConflictStore {
                 try deleteAll(LoanRecord.self, in: context)
                 try deleteAll(PersonalDebtRecord.self, in: context)
                 try deleteAll(CategorizationRuleRecord.self, in: context)
+                try deleteAll(NotificationStateRecord.self, in: context)
                 try deleteAll(CardRecord.self, in: context)
                 try deleteAll(AccountRecord.self, in: context)
                 try deleteAll(CategoryRecord.self, in: context)
@@ -80,6 +81,9 @@ extension SwiftDataStore: SyncConflictStore {
             try queueLoansAndDebts(into: &upload, from: context)
             for record in try context.fetch(FetchDescriptor<CategorizationRuleRecord>()) {
                 try upload.queue("categorizationRule", record.wireRow())
+            }
+            for record in try context.fetch(FetchDescriptor<NotificationStateRecord>()) {
+                try upload.queue("notificationState", record.wireRow())
             }
             let settings = try context.fetch(FetchDescriptor<SettingsRecord>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]))
             if let record = settings.first {

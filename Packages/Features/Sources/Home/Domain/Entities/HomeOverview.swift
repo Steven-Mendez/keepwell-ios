@@ -44,6 +44,9 @@ public struct HomeOverview: Hashable, Sendable {
     public let proposedRules: [RecurringRule]
     /// This month's budgeted categories, closest to their limit first.
     public let budgets: [CategoryBudgetStatus]
+    /// The day of the latest expense up to now in each category this month, which dates a budget's
+    /// notification. Absent for categories with none.
+    public let latestExpenseDays: [String: Date]
     /// Savings goals in list order (the first is the one home previews).
     public let goals: [SavingsGoalProgress]
     /// Roughly what the bank and cash accounts will hold at the end of this month. `nil` without
@@ -80,6 +83,7 @@ public struct HomeOverview: Hashable, Sendable {
         upcoming: [RecurringOccurrence] = [],
         proposedRules: [RecurringRule] = [],
         budgets: [CategoryBudgetStatus] = [],
+        latestExpenseDays: [String: Date] = [:],
         goals: [SavingsGoalProgress] = [],
         forecast: BalanceForecast? = nil,
         priceIncreases: [PriceIncrease] = [],
@@ -108,6 +112,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.upcoming = upcoming
         self.proposedRules = proposedRules
         self.budgets = budgets
+        self.latestExpenseDays = latestExpenseDays
         self.goals = goals
         self.forecast = forecast
         self.priceIncreases = priceIncreases

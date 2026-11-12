@@ -30,18 +30,4 @@ extension HomeViewModel {
             )
         }
     }
-
-    /// One notification per charge that went up, sent right away and only once: like budget alerts
-    /// it reports something that already happened.
-    func priceIncreaseReminders(now: Date) -> [Reminder] {
-        priceIncreaseAlerts.map { alert in
-            Reminder(
-                id: "price-\(alert.increase.transactionID)",
-                kind: .priceIncrease(alert.increase.transactionID),
-                title: alert.title,
-                body: alert.body,
-                date: now.addingTimeInterval(Self.budgetAlertDelay),
-            )
-        }
-    }
 }
