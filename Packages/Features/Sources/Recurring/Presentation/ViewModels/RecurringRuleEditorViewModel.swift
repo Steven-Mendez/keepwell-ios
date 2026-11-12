@@ -217,6 +217,7 @@ public final class RecurringRuleEditorViewModel {
         case .invalidInterval: String(localized: "It can repeat every 1 to 99.", bundle: #bundle)
         case .invalidEndDate: String(localized: "It can't end before it starts.", bundle: #bundle)
         case .invalidTransferDestination: String(localized: "Choose a different destination account.", bundle: #bundle)
+        case .accountClosed: AccountClosingText.accountClosedError
         default: String(localized: "We couldn't save it. Try again.", bundle: #bundle)
         }
     }

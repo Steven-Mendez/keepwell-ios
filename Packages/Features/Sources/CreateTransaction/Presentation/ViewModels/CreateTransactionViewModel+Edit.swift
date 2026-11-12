@@ -43,7 +43,7 @@ extension CreateTransactionViewModel {
         }
         let transaction = stored.transaction
         original = transaction
-        context = stored.context
+        context = stored.context.forPickers(keeping: [stored.transaction.accountID, stored.transaction.destinationAccountID])
         type = MovementType(of: transaction, accounts: stored.context.accounts)
         movementID = transaction.id
         amountText = "\(transaction.amount)"

@@ -9,6 +9,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Accounts: "Close account", before "Delete account" on a bank account, cash or credit card. A
+  closed account leaves the wallet, Home, payment methods and pickers, but its movements stay in
+  summaries and net worth, and it can be reopened. With money left, its balance moves first to
+  another open account in that currency (a card is paid off, one transfer per currency); its
+  recurring movements are paused and their drafts deleted. "Delete account" offers "Close instead"
+  when the account has movements. Closed accounts fold under "Closed (n)" at the foot of Accounts
+  and come last, marked, in the movements filter. Syncs with the web app; the JSON backup is now
+  version 2 and version 1 files still restore.
+
 - Debts › People: a personal debt can have a due date ("Set a due date" in its editor). The list
   puts dated debts first, soonest first, and says "Due Nov 28", "Due today" or "Overdue · 3 days"
   under the amount and in its detail. Keepwell reminds "Ana: due in 3 days" as many days before as a

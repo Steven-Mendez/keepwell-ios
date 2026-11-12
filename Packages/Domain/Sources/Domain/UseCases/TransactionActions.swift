@@ -10,11 +10,18 @@ public protocol ConfirmPlannedTransactionUseCase: Sendable {
 
 public struct DefaultConfirmPlannedTransactionUseCase: ConfirmPlannedTransactionUseCase {
     private let transactions: any TransactionRepository
+    private let accounts: (any AccountRepository)?
     private let now: @Sendable () -> Date
 
     /// `now` dates a planned movement that was due in the future to the day it actually happened.
-    public init(transactions: any TransactionRepository, now: @escaping @Sendable () -> Date = { .now }) {
+    /// With `accounts`, a draft of a closed account stays a draft (`accountClosed`).
+    public init(
+        transactions: any TransactionRepository,
+        accounts: (any AccountRepository)? = nil,
+        now: @escaping @Sendable () -> Date = { .now },
+    ) {
         self.transactions = transactions
+        self.accounts = accounts
         self.now = now
     }
 
@@ -24,7 +31,11 @@ public struct DefaultConfirmPlannedTransactionUseCase: ConfirmPlannedTransaction
         }
         guard !planned.isConfirmed else { return }
         let today = now()
-        try await transactions.save(planned.date > today ? planned.confirmed().with(date: today) : planned.confirmed())
+        let confirmed = planned.date > today ? planned.confirmed().with(date: today) : planned.confirmed()
+        if let accounts {
+            try await Transaction.checkClosedAccounts(confirmed, existing: planned, accounts: accounts.fetchAccounts())
+        }
+        try await transactions.save(confirmed)
     }
 }
 
@@ -36,9 +47,12 @@ public protocol UnconfirmTransactionUseCase: Sendable {
 
 public struct DefaultUnconfirmTransactionUseCase: UnconfirmTransactionUseCase {
     private let transactions: any TransactionRepository
+    private let accounts: (any AccountRepository)?
 
-    public init(transactions: any TransactionRepository) {
+    /// With `accounts`, a movement of a closed account stays confirmed (`accountClosed`).
+    public init(transactions: any TransactionRepository, accounts: (any AccountRepository)? = nil) {
         self.transactions = transactions
+        self.accounts = accounts
     }
 
     public func execute(id: UUID, plannedDate: Date) async throws(DomainError) {
@@ -46,7 +60,11 @@ public struct DefaultUnconfirmTransactionUseCase: UnconfirmTransactionUseCase {
             throw .notFound(id)
         }
         guard confirmed.isConfirmed else { return }
-        try await transactions.save(confirmed.with(status: .planned).with(date: plannedDate))
+        let planned = confirmed.with(status: .planned).with(date: plannedDate)
+        if let accounts {
+            try await Transaction.checkClosedAccounts(planned, existing: confirmed, accounts: accounts.fetchAccounts())
+        }
+        try await transactions.save(planned)
     }
 }
 

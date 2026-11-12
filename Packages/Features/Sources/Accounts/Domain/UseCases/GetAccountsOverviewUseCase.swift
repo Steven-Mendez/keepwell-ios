@@ -51,10 +51,15 @@ public struct DefaultGetAccountsOverviewUseCase: GetAccountsOverviewUseCase {
         var deposits: [AccountsOverview.Deposit] = []
         var cash: [AccountsOverview.Cash] = []
         var allBalances: [Money] = []
+        var closed: [Account] = []
 
         for account in accounts {
             let balances = Balances.balance(of: account, transactions: transactions, calendar: calendar)
             allBalances += balances
+            guard account.isOpen else {
+                closed.append(account)
+                continue
+            }
             let accountCards = cards.filter { $0.accountID == account.id }
             switch account.kind {
             case .credit:
@@ -78,7 +83,14 @@ public struct DefaultGetAccountsOverviewUseCase: GetAccountsOverviewUseCase {
             }
         }
         let netWorth = try NetWorth.total(of: allBalances, settings: currencies)
-        return AccountsOverview(settings: currencies, netWorth: netWorth, creditCards: creditCards, deposits: deposits, cash: cash)
+        return AccountsOverview(
+            settings: currencies,
+            netWorth: netWorth,
+            creditCards: creditCards,
+            deposits: deposits,
+            cash: cash,
+            closed: closed.sorted { ($0.closedAt ?? .distantPast) > ($1.closedAt ?? .distantPast) },
+        )
     }
 }
 

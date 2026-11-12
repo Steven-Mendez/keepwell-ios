@@ -92,11 +92,11 @@ public struct TransactionScopeOption: Identifiable, Hashable, Sendable {
 
 extension TransactionList {
     /// Accounts in the order the Accounts tab shows them: credit cards, bank accounts, cash. One
-    /// row each.
+    /// row each. Closed accounts come last, so their history can still be looked up.
     public var scopeOptions: [TransactionScopeOption] {
         let order: [AccountKind] = [.credit, .deposit, .cash]
-        return order.flatMap { kind in
-            accounts.filter { $0.kind == kind }.map { account in
+        return [true, false].flatMap { open in order.flatMap { kind in
+            accounts.filter { $0.kind == kind && $0.isOpen == open }.map { account in
                 let face: CardKind? = switch kind {
                 case .deposit: .debit
                 case .credit: .creditHolder
@@ -104,7 +104,7 @@ extension TransactionList {
                 }
                 return TransactionScopeOption(account: account, card: cards.first { $0.accountID == account.id && $0.kind == face })
             }
-        }
+        } }
     }
 
     public func account(in scope: TransactionScope) -> Account? {

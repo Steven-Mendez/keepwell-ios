@@ -9,7 +9,8 @@ public enum KeepwellSchemaV13: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(13, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            // V13's own frozen record (`KeepwellSchemaV13+Records.swift`), not today's.
+            AccountRecord.self,
             Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,

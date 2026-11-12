@@ -140,6 +140,10 @@ extension SwiftDataStore {
             account.limitCurrency = wire.optionalString("limit_currency")
             account.cutoffDay = wire.optionalInt("cutoff_day")
             account.dueDay = wire.optionalInt("due_day")
+            // A row without the key comes from an app older than the column: the account stays as it was.
+            if wire.row.keys.contains("closed_at") {
+                account.closedAt = wire.optionalDate("closed_at")
+            }
             try wire.audit(account)
         case "card":
             let id = try wire.uuid("id")

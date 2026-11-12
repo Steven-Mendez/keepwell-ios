@@ -315,7 +315,7 @@ extension RootView {
     private func handleNotification(_ action: NotificationResponder.Action) async {
         switch action {
         case let .confirm(id, notificationID):
-            try? await DefaultConfirmPlannedTransactionUseCase(transactions: container.store).execute(id: id)
+            try? await DefaultConfirmPlannedTransactionUseCase(transactions: container.store, accounts: container.store).execute(id: id)
             await markRead(notificationID)
             await screens?.reload()
         case let .postpone(content, identifier):

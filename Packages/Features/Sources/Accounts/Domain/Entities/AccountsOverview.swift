@@ -40,12 +40,22 @@ public struct AccountsOverview: Hashable, Sendable {
     public let creditCards: [CreditCard]
     public let deposits: [Deposit]
     public let cash: [Cash]
+    /// Closed accounts, most recently closed first: out of the lists above, still in `netWorth`.
+    public let closed: [Account]
 
-    public init(settings: CurrencySettings, netWorth: Money, creditCards: [CreditCard], deposits: [Deposit], cash: [Cash]) {
+    public init(
+        settings: CurrencySettings,
+        netWorth: Money,
+        creditCards: [CreditCard],
+        deposits: [Deposit],
+        cash: [Cash],
+        closed: [Account] = [],
+    ) {
         self.settings = settings
         self.netWorth = netWorth
         self.creditCards = creditCards
         self.deposits = deposits
         self.cash = cash
+        self.closed = closed
     }
 }

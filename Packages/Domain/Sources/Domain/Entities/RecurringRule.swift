@@ -126,6 +126,12 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             source = card.accountID
         }
         guard accounts.contains(where: { $0.id == source }) else { throw .notFound(source) }
+        // A rule records new movements, which a closed account doesn't take.
+        for id in [source, kind == .transfer ? destinationAccountID : nil].compactMap(\.self)
+            where accounts.contains(where: { $0.id == id && !$0.isOpen })
+        {
+            throw .accountClosed(id)
+        }
         if kind == .transfer {
             try Transaction.checkDestination(destinationAccountID, from: source, accounts: accounts)
         } else {

@@ -240,7 +240,7 @@ public enum KeepwellSchemaV5: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(5, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
             TransactionRecord.self,
             KeepwellSchemaV6.CategoryRecord.self,
@@ -291,7 +291,7 @@ public enum KeepwellSchemaV6: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(6, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
             KeepwellSchemaV8.TransactionRecord.self,
             CategoryRecord.self,
@@ -329,7 +329,7 @@ public enum KeepwellSchemaV7: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(7, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
             KeepwellSchemaV8.TransactionRecord.self,
             Persistence.CategoryRecord.self,
@@ -344,7 +344,7 @@ public enum KeepwellSchemaV8: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(8, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
             TransactionRecord.self,
             Persistence.CategoryRecord.self,
@@ -361,7 +361,7 @@ public enum KeepwellSchemaV9: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(9, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
@@ -380,7 +380,7 @@ public enum KeepwellSchemaV10: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(10, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
@@ -408,7 +408,7 @@ public enum KeepwellSchemaV12: VersionedSchema {
     public static var versionIdentifier: Schema.Version { Schema.Version(12, 0, 0) }
     public static var models: [any PersistentModel.Type] {
         [
-            Persistence.AccountRecord.self,
+            KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
@@ -426,7 +426,7 @@ public enum KeepwellSchemaV12: VersionedSchema {
 }
 
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV13
+public typealias KeepwellCurrentSchema = KeepwellSchemaV14
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -444,6 +444,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV11.self,
             KeepwellSchemaV12.self,
             KeepwellSchemaV13.self,
+            KeepwellSchemaV14.self,
         ]
     }
 
@@ -457,7 +458,8 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// movements and recurring rules start without tags. V10 starts with an empty outbox and every
     /// movement and rule made in the app (`sourceRaw` nil reads as `app`). V11 adds notification
     /// states, none yet. Settings from V11 start without a home time zone; the app sets it from the
-    /// device after its next sync. Personal debts from V12 start without a due date.
+    /// device after its next sync. Personal debts from V12 start without a due date, and accounts
+    /// from V13 start open (`closedAt` nil).
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -472,6 +474,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV10.self, toVersion: KeepwellSchemaV11.self),
             .lightweight(fromVersion: KeepwellSchemaV11.self, toVersion: KeepwellSchemaV12.self),
             .lightweight(fromVersion: KeepwellSchemaV12.self, toVersion: KeepwellSchemaV13.self),
+            .lightweight(fromVersion: KeepwellSchemaV13.self, toVersion: KeepwellSchemaV14.self),
         ]
     }
 }

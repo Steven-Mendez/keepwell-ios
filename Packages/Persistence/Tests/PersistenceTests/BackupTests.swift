@@ -167,13 +167,32 @@ struct BackupTests {
         let store = try await emptyLedger()
         await #expect(throws: BackupRestoreError.notBackup) { try await store.importBackup(Data("{ not json".utf8), at: now) }
         await #expect(throws: BackupRestoreError.notBackup) { try await store.importBackup(Data(#"{"accounts":[]}"#.utf8), at: now) }
-        let newer = Data(#"{"format":"keepwell-backup","version":2,"exported_at":"2026-11-12T00:00:00.000Z","entities":{}}"#.utf8)
-        await #expect(throws: BackupRestoreError.newerVersion(2)) { try await store.importBackup(newer, at: now) }
+        let newer = Data(#"{"format":"keepwell-backup","version":3,"exported_at":"2026-11-12T00:00:00.000Z","entities":{}}"#.utf8)
+        await #expect(throws: BackupRestoreError.newerVersion(3)) { try await store.importBackup(newer, at: now) }
         let unknown = Data(#"{"format":"keepwell-backup","version":1,"exported_at":"2026-11-12T00:00:00.000Z","entities":{"budget":[]}}"#
             .utf8)
         await #expect(throws: BackupRestoreError.invalid("entities: unknown entity budget")) {
             try await store.importBackup(unknown, at: now)
         }
+    }
+
+    /// Version 2 carries `closed_at`, so a closed account comes back closed.
+    @Test
+    func keepsAClosedAccountClosed() async throws {
+        let source = try await device()
+        let closing = now.addingTimeInterval(-86400)
+        let account = try #require(sample.accounts.first)
+        try await source.save(account.with(closedAt: closing))
+        let backup = try await source.exportBackup(at: now)
+        let file = try #require(JSONSerialization.jsonObject(with: backup) as? [String: Any])
+        #expect(file["version"] as? Int == 2)
+
+        let restored = try await emptyLedger()
+        try await restored.importBackup(backup, at: now)
+
+        let accounts = try await restored.fetchAccounts()
+        #expect(accounts.first { $0.id == account.id }?.closedAt == closing)
+        #expect(accounts.count { !$0.isOpen } == 1)
     }
 
     /// A file keepwell-web exported (`backup-web-v1.json`) restores here with every row.

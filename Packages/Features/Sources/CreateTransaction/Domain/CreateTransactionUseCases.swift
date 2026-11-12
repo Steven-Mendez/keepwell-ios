@@ -187,7 +187,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
 
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
         let note = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
-        return Transaction(
+        let transaction = Transaction(
             id: draft.id,
             date: draft.date,
             status: draft.isDraft ? .planned : .confirmed,
@@ -207,6 +207,8 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             recurringID: existing?.recurringID ?? (draft.repeatFrequency == nil ? nil : draft.recurringRuleID),
             tags: draft.tags,
         )
+        try Transaction.checkClosedAccounts(transaction, existing: existing, accounts: context.accounts)
+        return transaction
     }
 
     /// The rule "Repeat" saves: the movement as its first occurrence, the next one still ahead,

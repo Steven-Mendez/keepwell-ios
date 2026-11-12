@@ -14,6 +14,7 @@ public struct AccountsView: View {
     private let onOpenBankAccount: (UUID) -> Void
     private let onOpenCash: (UUID) -> Void
     private let formatter = CurrencyFormatter()
+    @State private var isShowingClosed = false
 
     public init(
         viewModel: AccountsViewModel,
@@ -37,6 +38,7 @@ public struct AccountsView: View {
                     filters
                     WalletStack(cards: viewModel.cards, formatter: formatter, ownerName: viewModel.ownerName, onOpen: open)
                         .padding(.top, 6)
+                    closedAccounts
                 }
             }
             .padding(.horizontal, KWLayout.gutter)
@@ -69,6 +71,49 @@ public struct AccountsView: View {
             }
             .scrollIndicators(.hidden)
             .padding(.horizontal, -KWLayout.gutter)
+        }
+    }
+
+    /// "Closed (n)", folded at the foot: name and closing day, opening the account's screen.
+    @ViewBuilder
+    private var closedAccounts: some View {
+        if let closed = viewModel.overview?.closed, !closed.isEmpty {
+            DisclosureGroup(isExpanded: $isShowingClosed) {
+                KWGroupedCard(verticalPadding: KWSpacing.xxs) {
+                    ForEach(closed) { account in
+                        Button {
+                            open(account)
+                        } label: {
+                            VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+                                Text(CardDisplay.name(of: account)).font(KWTextStyle.body.font)
+                                if let closedAt = account.closedAt {
+                                    Text(AccountClosingText.closedOn(closedAt))
+                                        .font(KWTextStyle.caption.font)
+                                        .foregroundStyle(KWColor.Text.muted)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, KWSpacing.sm)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            } label: {
+                Text(AccountClosingText.closedSection(closed.count))
+                    .font(KWTextStyle.label.font)
+                    .foregroundStyle(KWColor.Text.muted)
+            }
+            .tint(KWColor.Text.muted)
+            .padding(.top, KWSpacing.md)
+        }
+    }
+
+    private func open(_ account: Account) {
+        switch account.kind {
+        case .credit: onOpenCreditCard(account.id)
+        case .deposit: onOpenBankAccount(account.id)
+        case .cash: onOpenCash(account.id)
         }
     }
 
