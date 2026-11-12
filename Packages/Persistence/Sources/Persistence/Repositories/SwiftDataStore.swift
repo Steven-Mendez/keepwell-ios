@@ -296,7 +296,7 @@ extension SwiftDataStore: CategoryRepository {
             let listed = records.filter { rank[$0.id] != nil }.sorted { rank[$0.id] ?? 0 < rank[$1.id] ?? 0 }
             for (index, record) in (listed + records.filter { rank[$0.id] == nil }).enumerated() where record.sortIndex != index {
                 record.sortIndex = index
-                record.updatedAt = .now
+                record.stampChanged()
             }
             try context.saveWithOutbox()
         }
@@ -319,7 +319,7 @@ extension SwiftDataStore: CategoryRepository {
             let created = records.filter { TransactionCategory.shipped(id: $0.id) == nil }
             for (offset, record) in created.enumerated() where record.sortIndex != TransactionCategory.defaults.count + offset {
                 record.sortIndex = TransactionCategory.defaults.count + offset
-                record.updatedAt = .now
+                record.stampChanged()
             }
             try context.saveWithOutbox()
         }
