@@ -34,7 +34,15 @@ struct HomeUpcomingCard: View {
                     title: occurrence.rule.name,
                     subtitle: viewModel.upcomingSubtitle(occurrence),
                     amount: viewModel.upcomingAmount(occurrence, hidden: hidesBalances),
-                )
+                ) {
+                    // A known brand shows its logo; a transfer is never a merchant.
+                    BrandOrFallbackIcon(
+                        text: occurrence.rule.kind == .transfer ? "" : occurrence.rule.name,
+                        tint: CategoryDisplay.color(for: viewModel.upcomingCategory(occurrence)),
+                    ) {
+                        KWTransactionIcon(.planned)
+                    }
+                }
             }
         }
         .padding(KWSpacing.md)

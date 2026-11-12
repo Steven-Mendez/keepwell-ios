@@ -50,6 +50,8 @@ final class AppContainer {
     private(set) lazy var apiClient: APIClient? = makeAPIClient()
     /// The sync engine behind `cloudAccount`, kept so erasing this iPhone can forget its cursor.
     private(set) lazy var syncEngine: SyncEngine? = makeSyncEngine()
+    /// Brandfetch's logos for the rows of known brands; `nil` shows monograms only.
+    let brandLogos: (any BrandLogoProviding)? = makeBrandLogos()
     /// This iPhone's registration for the server's pushes; `nil` in builds without an API.
     private(set) lazy var push: PushRegistration? = makePushRegistration()
     /// Set by the root view: what to do when the server starts or stops sending notifications.

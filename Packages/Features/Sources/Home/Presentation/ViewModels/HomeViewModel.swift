@@ -249,6 +249,11 @@ public final class HomeViewModel {
         return [day, method].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
+    /// The rule's category, whose color tints a brand's monogram.
+    func upcomingCategory(_ occurrence: RecurringOccurrence) -> TransactionCategory? {
+        occurrence.rule.categoryID.flatMap { id in overview?.categories.first { $0.id == id } }
+    }
+
     func upcomingAmount(_ occurrence: RecurringOccurrence, hidden: Bool) -> String {
         let movement = RecurringSchedule.movement(
             from: occurrence.rule,

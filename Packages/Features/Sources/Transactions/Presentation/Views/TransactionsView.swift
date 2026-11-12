@@ -267,7 +267,15 @@ extension TransactionsView {
                 subtitle: viewModel.subtitle(of: transaction, display: display),
                 amount: display.amount(of: transaction),
                 secondaryAmount: display.secondaryAmount(of: transaction),
-            )
+            ) {
+                // A known brand shows its logo; a transfer is never a merchant.
+                BrandOrFallbackIcon(
+                    text: transaction.kind == .transfer ? "" : transaction.description,
+                    tint: CategoryDisplay.color(for: display.category(of: transaction)),
+                ) {
+                    KWTransactionIcon(display.style(of: transaction))
+                }
+            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
