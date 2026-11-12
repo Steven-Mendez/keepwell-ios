@@ -39,10 +39,10 @@ struct HomeHeroTests {
     func theStatusLineFollowsTheDraftsHomeLists() async throws {
         // The sample's "today" is Oct 22 and its drafts are later: nothing is late yet.
         let viewModel = await loadedViewModel()
-        #expect(viewModel.statusLine(at: now) != nil)
+        #expect(viewModel.statusLine() != nil)
         let overview = try #require(viewModel.overview)
         let late = overview.planned.count { Calendar.current.startOfDay(for: $0.date) <= Calendar.current.startOfDay(for: now) }
-        let status = HomeStatus(on: now, in: overview, calendar: .current)
+        let status = HomeStatus(overview)
         #expect(status.toConfirm == late)
     }
 
@@ -80,7 +80,6 @@ struct HomeHeroTests {
         #expect(hidden.cents.isEmpty)
         #expect(viewModel.visible("$1.00", hidden: true) == HomeViewModel.maskedAmount)
         #expect(viewModel.visible("$1.00", hidden: false) == "$1.00")
-        #expect(!viewModel.plannedCaption(overview, hidden: true).contains("$"))
     }
 
     @Test

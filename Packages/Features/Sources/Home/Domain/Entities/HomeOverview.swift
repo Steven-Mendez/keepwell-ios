@@ -40,6 +40,9 @@ public struct HomeOverview: Hashable, Sendable {
     public let cardSubscriptions: [UUID: [String]]
     /// Recurring occurrences from today through the next 30 days, soonest first.
     public let upcoming: [RecurringOccurrence]
+    /// What's pending through the next week, overdue first: drafts, recurring occurrences, card
+    /// payments and loan installments. Home's "Upcoming" card and its status line read it.
+    public let upcomingPayments: [UpcomingPayment]
     /// Recurring rules an assistant created, paused until the person confirms or discards them.
     public let proposedRules: [RecurringRule]
     /// This month's budgeted categories, closest to their limit first.
@@ -81,6 +84,7 @@ public struct HomeOverview: Hashable, Sendable {
         paymentReminderDaysBefore: Int,
         cardSubscriptions: [UUID: [String]] = [:],
         upcoming: [RecurringOccurrence] = [],
+        upcomingPayments: [UpcomingPayment] = [],
         proposedRules: [RecurringRule] = [],
         budgets: [CategoryBudgetStatus] = [],
         latestExpenseDays: [String: Date] = [:],
@@ -110,6 +114,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.paymentReminderDaysBefore = paymentReminderDaysBefore
         self.cardSubscriptions = cardSubscriptions
         self.upcoming = upcoming
+        self.upcomingPayments = upcomingPayments
         self.proposedRules = proposedRules
         self.budgets = budgets
         self.latestExpenseDays = latestExpenseDays

@@ -48,8 +48,8 @@ extension HomeViewModel {
     }
 
     /// "2 payments to confirm · 1 due tomorrow", or "All caught up"; `nil` before the ledger loads.
-    func statusLine(at date: Date) -> String? {
-        overview.map { Self.statusLine(HomeStatus(on: date, in: $0, calendar: calendar)) }
+    func statusLine() -> String? {
+        overview.map { Self.statusLine(HomeStatus($0)) }
     }
 
     static func statusLine(_ status: HomeStatus) -> String {

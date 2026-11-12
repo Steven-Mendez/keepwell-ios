@@ -2,7 +2,8 @@ import Foundation
 import Testing
 @testable import Domain
 
-/// Same cases as the web's "A rule's pending draft" (`tests/domain/recurring.test.ts`).
+/// Same cases as the web's "A rule's pending draft" (`tests/domain/recurring.test.ts`), derived
+/// from the same list home reads: the drafts through today, indexed by their rule.
 @Suite("A rule's pending draft")
 struct RecurringPendingDraftTests {
     private let calendar = Fixtures.calendar
@@ -35,7 +36,13 @@ struct RecurringPendingDraftTests {
     }
 
     private func pending(_ transactions: [Transaction], today: Date? = nil) -> PendingRuleDraft? {
-        RecurringSchedule.pendingDraft(of: rule, in: transactions, today: today ?? self.today, calendar: calendar)
+        let payments = UpcomingPayments.compute(
+            UpcomingPayments.Ledger(transactions: transactions),
+            on: today ?? self.today,
+            days: 0,
+            calendar: calendar,
+        )
+        return UpcomingPayments.pendingRuleDrafts(payments)[rule.id]
     }
 
     @Test

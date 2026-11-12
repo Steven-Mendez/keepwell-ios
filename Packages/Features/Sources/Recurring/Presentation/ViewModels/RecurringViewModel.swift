@@ -48,7 +48,13 @@ public final class RecurringViewModel {
         public var id: Group { group }
     }
 
-    public private(set) var state = State.loading
+    public private(set) var state = State.loading {
+        didSet { pendingDrafts = Self.pendingDrafts(in: overview, now: now(), calendar: calendar) }
+    }
+
+    /// The draft each rule left waiting from today or before, by rule: derived once per load from
+    /// the same list home reads (`UpcomingPayments`), not per row.
+    private var pendingDrafts: [UUID: PendingRuleDraft] = [:]
     /// Drafts being confirmed from their rule's row, so the button can't fire twice.
     public private(set) var confirming: Set<UUID> = []
     public private(set) var actionError: String?
@@ -162,8 +168,14 @@ public final class RecurringViewModel {
 
     /// The draft the rule left waiting from today or before, if any.
     public func pendingDraft(of rule: RecurringRule) -> PendingRuleDraft? {
-        guard let overview else { return nil }
-        return RecurringSchedule.pendingDraft(of: rule, in: overview.recorded, today: now(), calendar: calendar)
+        pendingDrafts[rule.id]
+    }
+
+    private static func pendingDrafts(in overview: RecurringOverview?, now: Date, calendar: Calendar) -> [UUID: PendingRuleDraft] {
+        guard let overview else { return [:] }
+        let ledger = UpcomingPayments.Ledger(transactions: overview.recorded, settings: overview.settings)
+        let payments = UpcomingPayments.compute(ledger, on: now, days: 0, calendar: calendar)
+        return UpcomingPayments.pendingRuleDrafts(payments)
     }
 
     /// "To confirm · Nov 12" for today's draft, "Overdue · 3 days" for an older one.
