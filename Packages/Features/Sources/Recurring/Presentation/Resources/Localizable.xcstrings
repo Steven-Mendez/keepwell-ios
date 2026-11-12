@@ -81,6 +81,26 @@
         }
       }
     },
+    "Confirm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar"
+          }
+        }
+      }
+    },
+    "Confirm %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar %@"
+          }
+        }
+      }
+    },
     "Currency" : {
       "localizations" : {
         "es" : {
@@ -331,6 +351,46 @@
         }
       }
     },
+    "Overdue · %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Pause" : {
       "localizations" : {
         "es" : {
@@ -501,6 +561,16 @@
         }
       }
     },
+    "To confirm · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por confirmar · %@"
+          }
+        }
+      }
+    },
     "Transfer" : {
       "localizations" : {
         "es" : {
@@ -517,6 +587,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transferencias"
+          }
+        }
+      }
+    },
+    "We couldn't confirm it. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos confirmarlo. Inténtalo de nuevo."
           }
         }
       }

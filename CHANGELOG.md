@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Recurring rows show a draft waiting to be confirmed: "To confirm · Nov 12", or "Overdue · 3 days"
+  in the warning color, in place of the next date, with a Confirm button (or swipe left) that
+  confirms it as on Home, without a dialog and with Undo.
 - Undo after deleting a movement or confirming a draft: a toast offers "Undo" for a few seconds.
   A deleted movement leaves every screen at once but is only deleted (and synced) when the toast
   runs out, or when you leave the app; undoing a confirm makes it a draft again on its planned date.

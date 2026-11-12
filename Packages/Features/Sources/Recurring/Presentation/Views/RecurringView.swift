@@ -37,6 +37,11 @@ public struct RecurringView: View {
                     emptyState
                 } else if viewModel.overview != nil {
                     totals
+                    if let error = viewModel.actionError {
+                        Text(error)
+                            .font(KWTextStyle.caption.font)
+                            .foregroundStyle(KWColor.State.negative)
+                    }
                     ForEach(viewModel.sections) { section in
                         VStack(alignment: .leading, spacing: KWSpacing.xs) {
                             KWSectionHeader(section.group.title)
@@ -108,31 +113,70 @@ public struct RecurringView: View {
         .padding(.top, 96)
     }
 
+    /// While a draft the rule made waits from today or before, its state takes the date's place,
+    /// with "Confirm" beside it; swiping the row left confirms too.
     private func row(_ rule: RecurringRule) -> some View {
-        Button { onOpen(rule.id) } label: {
-            HStack(spacing: KWSpacing.sm) {
-                icon(rule)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(rule.name).font(.kw(15, weight: 600))
-                    Text(viewModel.subtitle(of: rule))
-                        .font(KWTextStyle.caption.font)
-                        .foregroundStyle(KWColor.Text.muted)
+        let pending = viewModel.pendingDraft(of: rule)
+        return HStack(spacing: KWSpacing.sm) {
+            Button { onOpen(rule.id) } label: { rowLabel(rule, pending: pending) }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+            if let pending {
+                Button {
+                    Task { await viewModel.confirm(pending) }
+                } label: {
+                    Text("Confirm", bundle: #bundle)
                 }
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .buttonStyle(.kw(.primary, size: .mini))
+                .disabled(viewModel.confirming.contains(pending.transaction.id))
+                .accessibilityLabel(Text("Confirm \(pending.transaction.description)", bundle: #bundle))
+            }
+        }
+        .kwSwipeAction(
+            .check,
+            tint: KWColor.State.positive,
+            label: Text("Confirm", bundle: #bundle),
+            isEnabled: pending != nil,
+        ) {
+            if let pending {
+                Task { await viewModel.confirm(pending) }
+            }
+        }
+    }
+
+    private func rowLabel(_ rule: RecurringRule, pending: PendingRuleDraft?) -> some View {
+        HStack(spacing: KWSpacing.sm) {
+            icon(rule)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(rule.name).font(.kw(15, weight: 600))
+                Text(viewModel.subtitle(of: rule))
+                    .font(KWTextStyle.caption.font)
+                    .foregroundStyle(KWColor.Text.muted)
+            }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .trailing, spacing: 2) {
                 Text(viewModel.amount(of: rule, hidden: hidesBalances))
                     .font(.kw(15, weight: 700))
                     .foregroundStyle(amountColor(rule))
                     .monospacedDigit()
-                    .lineLimit(1)
-                    .fixedSize()
+                if let pending {
+                    pendingState(pending)
+                }
             }
-            .padding(.vertical, KWSpacing.sm)
-            .contentShape(Rectangle())
-            .opacity(rule.isPaused ? 0.5 : 1)
+            .lineLimit(1)
+            .fixedSize()
         }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
+        .padding(.vertical, KWSpacing.sm)
+        .contentShape(Rectangle())
+        .opacity(rule.isPaused && pending == nil ? 0.5 : 1)
+    }
+
+    /// Overdue reads in the warning color, and says so in words too.
+    private func pendingState(_ pending: PendingRuleDraft) -> some View {
+        Text(viewModel.pendingLabel(pending))
+            .font(KWTextStyle.caption.font.weight(pending.daysOverdue > 0 ? .semibold : .regular))
+            .foregroundStyle(pending.daysOverdue > 0 ? KWColor.State.pending : KWColor.Text.primary)
     }
 
     @ViewBuilder
