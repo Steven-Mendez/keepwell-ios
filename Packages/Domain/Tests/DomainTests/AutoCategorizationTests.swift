@@ -65,7 +65,9 @@ struct AutoCategorizationTests {
             calendar: calendar,
             categorizationRules: [netflix],
         )
-        #expect(result.transactions.map(\.categoryID) == ["subscriptions", "groceries"])
-        #expect(result.transactions.map(\.tags) == [["tv"], []])
+        // Materialize walks rules by id, random here, so read the result by name.
+        let byName = result.transactions.sorted { $0.description < $1.description }
+        #expect(byName.map(\.categoryID) == ["subscriptions", "groceries"])
+        #expect(byName.map(\.tags) == [["tv"], []])
     }
 }
