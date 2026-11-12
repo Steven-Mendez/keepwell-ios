@@ -165,6 +165,9 @@ public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
     public let settledAt: Date?
     /// The expense it was split from, when it came from "Split".
     public let transactionID: UUID?
+    /// When it should be paid back, the start of that day; `nil` for a debt without one. Never
+    /// before `date` (`SavePersonalDebtUseCase`).
+    public let dueDate: Date?
 
     public init(
         id: UUID = UUID(),
@@ -176,6 +179,7 @@ public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
         repayments: [DebtRepayment] = [],
         settledAt: Date? = nil,
         transactionID: UUID? = nil,
+        dueDate: Date? = nil,
     ) {
         self.id = id
         self.person = person
@@ -186,6 +190,7 @@ public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
         self.repayments = repayments
         self.settledAt = settledAt
         self.transactionID = transactionID
+        self.dueDate = dueDate
     }
 
     public var repaid: Decimal {
@@ -234,7 +239,7 @@ public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
     public func with(repayments: [DebtRepayment], settledAt: Date?) -> Self {
         Self(
             id: id, person: person, direction: direction, amount: amount, date: date, note: note,
-            repayments: repayments, settledAt: settledAt, transactionID: transactionID,
+            repayments: repayments, settledAt: settledAt, transactionID: transactionID, dueDate: dueDate,
         )
     }
 }

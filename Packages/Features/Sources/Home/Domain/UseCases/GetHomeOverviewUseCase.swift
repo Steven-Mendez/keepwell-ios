@@ -117,6 +117,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             priceIncreases: PriceIncrease.detect(in: transactions, now: now, calendar: calendar),
             loans: LoanProgress.ordered(debts.loans, today: now, calendar: calendar),
             debtTotals: DebtTotals(loans: debts.loans, debts: debts.personal),
+            personalDebts: debts.personal,
             accounts: accounts,
             cards: cards,
             categories: records.categories,

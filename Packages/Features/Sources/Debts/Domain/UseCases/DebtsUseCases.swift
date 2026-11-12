@@ -155,11 +155,18 @@ public protocol SavePersonalDebtUseCase: Sendable {
 public struct DefaultSavePersonalDebtUseCase: SavePersonalDebtUseCase {
     private let debts: any PersonalDebtRepository
     private let settings: any SettingsRepository
+    private let calendar: Calendar
     private let makeID: @Sendable () -> UUID
 
-    public init(debts: any PersonalDebtRepository, settings: any SettingsRepository, makeID: @escaping @Sendable () -> UUID = { UUID() }) {
+    public init(
+        debts: any PersonalDebtRepository,
+        settings: any SettingsRepository,
+        calendar: Calendar = .current,
+        makeID: @escaping @Sendable () -> UUID = { UUID() },
+    ) {
         self.debts = debts
         self.settings = settings
+        self.calendar = calendar
         self.makeID = makeID
     }
 
@@ -167,6 +174,10 @@ public struct DefaultSavePersonalDebtUseCase: SavePersonalDebtUseCase {
         let person = DebtNames.cleaned(draft.person, limit: PersonalDebt.maxNameLength)
         guard !person.isEmpty else { throw .missingName }
         let note = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        let dueDate = draft.dueDate.map { calendar.startOfDay(for: $0) }
+        if let dueDate, dueDate < calendar.startOfDay(for: draft.date) {
+            throw .invalidDueDate
+        }
         let existing: PersonalDebt?
         if let id = draft.id {
             guard let found = try await debts.fetchPersonalDebts().first(where: { $0.id == id }) else { throw .notFound(id) }
@@ -186,6 +197,7 @@ public struct DefaultSavePersonalDebtUseCase: SavePersonalDebtUseCase {
             repayments: existing?.repayments ?? [],
             settledAt: existing?.settledAt,
             transactionID: existing?.transactionID,
+            dueDate: dueDate,
         )
         try debt.checkAmounts()
         try await debts.save(debt)

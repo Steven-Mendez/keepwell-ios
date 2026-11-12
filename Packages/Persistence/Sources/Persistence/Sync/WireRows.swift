@@ -167,6 +167,8 @@ extension PersonalDebtRecord: SyncableRecord {
         Wire.audit(self).merging([
             "id": Wire.id(id), "person": person, "direction": directionRaw, "amount": amount, "currency": currency,
             "date": Wire.date(date), "note": Wire.value(note), "settled_at": Wire.date(settledAt), "transaction_id": Wire.id(transactionID),
+            // Always sent, null for none: removing the date has to clear it on the other devices.
+            "due_date": Wire.date(dueDate),
         ]) { $1 }
     }
 

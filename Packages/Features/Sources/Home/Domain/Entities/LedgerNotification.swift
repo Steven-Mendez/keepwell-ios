@@ -11,6 +11,7 @@ public struct LedgerNotification: Hashable, Sendable, Identifiable {
         case payment
         case cutoff
         case installment
+        case debt
         case renewal
         case bill
         case expiry
@@ -25,6 +26,8 @@ public struct LedgerNotification: Hashable, Sendable, Identifiable {
         case payment(accountID: UUID, dueDay: Int, due: Date, daysLeft: Int)
         case cutoff(accountID: UUID)
         case installment(loanID: UUID, number: Int, daysLeft: Int)
+        /// A personal debt with something left, due in `daysLeft` days (0 is today).
+        case debt(PersonalDebt, due: Date, daysLeft: Int)
         case renewal(RecurringOccurrence)
         /// A recurring expense recorded as a draft, due tomorrow.
         case bill(RecurringOccurrence)
@@ -112,6 +115,7 @@ public struct LedgerNotification: Hashable, Sendable, Identifiable {
         case .payment: .payment
         case .cutoff: .cutoff
         case .installment: .installment
+        case .debt: .debt
         case .renewal: .renewal
         case .bill: .bill
         case .expiry: .expiry

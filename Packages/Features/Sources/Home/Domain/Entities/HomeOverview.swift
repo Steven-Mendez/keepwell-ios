@@ -61,6 +61,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let loans: [LoanProgress]
     /// "You owe" and "Owed to you" per currency, loans and personal debts together.
     public let debtTotals: DebtTotals
+    /// Every personal debt, for the reminders of the ones with a due date.
+    public let personalDebts: [PersonalDebt]
     /// For row subtitles.
     public let accounts: [Account]
     public let cards: [Card]
@@ -93,6 +95,7 @@ public struct HomeOverview: Hashable, Sendable {
         priceIncreases: [PriceIncrease] = [],
         loans: [LoanProgress] = [],
         debtTotals: DebtTotals = DebtTotals(loans: [], debts: []),
+        personalDebts: [PersonalDebt] = [],
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
@@ -123,6 +126,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.priceIncreases = priceIncreases
         self.loans = loans
         self.debtTotals = debtTotals
+        self.personalDebts = personalDebts
         self.accounts = accounts
         self.cards = cards
         self.categories = categories
