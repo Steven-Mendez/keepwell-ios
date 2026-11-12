@@ -23,6 +23,7 @@ import RecurringDomain
 import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
+import SharedPresentation
 import SummaryDomain
 import SummaryPresentation
 import SwiftData
@@ -54,8 +55,19 @@ final class AppContainer {
     /// Set by the root view: what to do when the server starts or stops sending notifications.
     var pushChanged: (() -> Void)?
 
+    /// The movements as screens and use cases see them: a deletion with "Undo" pending is hidden
+    /// here and written to `store` only when the undo window runs out.
+    let movements: DeferredTransactionDeletions
+    /// "Undo" after deleting or confirming a movement, shown over every screen.
+    let movementUndo: MovementUndo
+
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
+        movements = DeferredTransactionDeletions(base: store, store: preferences)
+        movementUndo = MovementUndo(
+            undoDelete: DefaultUndoDeleteTransactionUseCase(deletions: movements),
+            unconfirm: DefaultUnconfirmTransactionUseCase(transactions: movements),
+        )
     }
 
     #if DEBUG
@@ -102,7 +114,7 @@ final class AppContainer {
 
     func makeAccountsViewModel() -> AccountsViewModel {
         AccountsViewModel(
-            getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
+            getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: movements, settings: store),
             getPreferredName: makeGetPreferredName(),
         )
     }
@@ -123,17 +135,18 @@ final class AppContainer {
     func makeHomeViewModel() -> HomeViewModel {
         HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
-                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+                accounts: store, cards: store, transactions: movements, categories: store, settings: store,
                 recurringRules: store, savingsGoals: store, loans: store, personalDebts: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements),
             getPreferredName: makeGetPreferredName(),
-            discard: DefaultDeleteTransactionUseCase(transactions: store),
+            discard: DeferredDeleteTransactionUseCase(deletions: movements),
             resumeRule: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
-            deleteRule: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
+            deleteRule: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: movements),
             listNotificationStates: DefaultListNotificationStatesUseCase(repository: store),
             changeNotifications: makeChangeNotifications(),
             pruneNotificationStates: DefaultPruneNotificationStatesUseCase(repository: store),
+            undo: movementUndo,
         )
     }
 
@@ -150,21 +163,22 @@ final class AppContainer {
     func makeTransactionsViewModel() -> TransactionsViewModel {
         TransactionsViewModel(
             getList: DefaultGetTransactionListUseCase(
-                transactions: store,
+                transactions: movements,
                 accounts: store,
                 cards: store,
                 categories: store,
                 settings: store,
                 recurringRules: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
-            deleteTransaction: DefaultDeleteTransactionUseCase(transactions: store),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements),
+            deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
+            undo: movementUndo,
         )
     }
 
     func makeSummaryViewModel() -> SummaryViewModel {
-        let report = DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store, accounts: store)
-        let range = DefaultGetRangeSummaryUseCase(transactions: store, settings: store)
+        let report = DefaultGetSummaryReportUseCase(transactions: movements, categories: store, settings: store, accounts: store)
+        let range = DefaultGetRangeSummaryUseCase(transactions: movements, settings: store)
         return SummaryViewModel(getReport: report, getRange: range)
     }
 
@@ -173,12 +187,12 @@ final class AppContainer {
     func makeSettingsViewModel() -> SettingsViewModel {
         SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
-                settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
+                settings: store, categories: store, cards: store, accounts: store, transactions: movements, rules: store,
                 passcodes: passcodes, profile: preferences,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
-            changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store),
-            exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
+            changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: movements),
+            exportTransactions: DefaultExportTransactionsUseCase(transactions: movements, accounts: store, cards: store, categories: store),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
@@ -209,7 +223,7 @@ final class AppContainer {
             kind: kind,
             getCategories: DefaultGetCategoriesUseCase(categories: store),
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: movements),
             reorder: DefaultReorderCategoriesUseCase(categories: store),
             restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
             getPrincipalCurrency: DefaultGetPrincipalCurrencyUseCase(settings: store),
@@ -269,7 +283,7 @@ final class AppContainer {
     func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
         DefaultMaterializeRecurringUseCase(
             rules: store,
-            transactions: store,
+            transactions: movements,
             settings: store,
             accounts: store,
             cards: store,
@@ -287,7 +301,7 @@ final class AppContainer {
 
     func makeGetRecurringOverview() -> any GetRecurringOverviewUseCase {
         DefaultGetRecurringOverviewUseCase(
-            rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
+            rules: store, accounts: store, cards: store, categories: store, transactions: movements, settings: store,
         )
     }
 
@@ -304,7 +318,7 @@ final class AppContainer {
                 materialize: makeMaterializeRecurring(),
             ),
             setPaused: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
-            delete: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
+            delete: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: movements),
         )
     }
 
@@ -315,7 +329,7 @@ final class AppContainer {
         return CreateTransactionViewModel(
             getContext: context,
             save: DefaultSaveTransactionUseCase(
-                context: context, transactions: store, recurringRules: store, materialize: makeMaterializeRecurring(),
+                context: context, transactions: movements, recurringRules: store, materialize: makeMaterializeRecurring(),
             ),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
             receiptSaver: PhotoLibraryReceiptSaver(),
@@ -329,7 +343,7 @@ final class AppContainer {
 
     private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
-            settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
+            settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
         )
     }
 }
@@ -339,7 +353,8 @@ extension AppContainer {
     /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
     func normalizeBankCards() async {
         do {
-            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store, recurringRules: store).execute()
+            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store)
+                .execute()
         } catch {
             Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
         }

@@ -36,6 +36,8 @@ public final class TransactionsViewModel {
     private let confirmPlanned: any ConfirmPlannedTransactionUseCase
     private let deleteTransaction: any DeleteTransactionUseCase
     private let filterTransactions: any FilterTransactionsUseCase
+    /// Offers "Undo" after a delete or a confirm; `nil` in previews.
+    private let undo: MovementUndo?
     private let calendar: Calendar
     private let now: () -> Date
     let formatter = CurrencyFormatter()
@@ -45,9 +47,11 @@ public final class TransactionsViewModel {
         confirmPlanned: any ConfirmPlannedTransactionUseCase,
         deleteTransaction: any DeleteTransactionUseCase,
         filterTransactions: any FilterTransactionsUseCase = DefaultFilterTransactionsUseCase(),
+        undo: MovementUndo? = nil,
         calendar: Calendar = .current,
         now: @escaping () -> Date = { .now },
     ) {
+        self.undo = undo
         self.getList = getList
         self.confirmPlanned = confirmPlanned
         self.deleteTransaction = deleteTransaction
@@ -73,11 +77,19 @@ public final class TransactionsViewModel {
     }
 
     public func confirm(_ id: UUID) async {
+        let planned = list?.transactions.first { $0.id == id }
         await perform { () async throws(DomainError) in try await confirmPlanned.execute(id: id) }
+        if actionError == nil, let planned {
+            undo?.offerConfirmed(planned)
+        }
     }
 
     public func delete(_ id: UUID) async {
+        let deleted = list?.transactions.first { $0.id == id }
         await perform { () async throws(DomainError) in try await deleteTransaction.execute(id: id) }
+        if actionError == nil, let deleted {
+            undo?.offerDeleted(deleted)
+        }
     }
 
     private func perform(_ action: () async throws(DomainError) -> Void) async {

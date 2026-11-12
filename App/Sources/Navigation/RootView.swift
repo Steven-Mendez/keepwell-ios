@@ -63,6 +63,9 @@ struct RootView: View {
         phaseContent
             .onChange(of: cover, initial: true) { _, cover in showCover(cover) }
             .task {
+                container.movementUndo.onUndone = { await screens?.reload() }
+                // Deletions a closed app left waiting are written now.
+                await container.movements.resume()
                 notifications.handler = handleNotification
                 installPush()
                 await load()
@@ -130,6 +133,13 @@ struct RootView: View {
             .navigationDestination(for: AppRoute.self, destination: destination)
         }
         .rootKeyboard(self)
+        .overlay(alignment: .bottom) { movementUndoToast(onTabs: router.path.isEmpty) }
+        // A movement deleted on one screen leaves every tab at once, though nothing is saved yet.
+        .onChange(of: container.movementUndo.offer?.id) { _, offer in
+            if offer != nil {
+                reloadScreens()
+            }
+        }
         .onChange(of: router.path.count) { oldCount, newCount in
             // Pushed screens edit cards and settings that the tabs summarize.
             if newCount < oldCount {
@@ -358,6 +368,8 @@ extension RootView {
         switch newPhase {
         case .background:
             lock.backgroundedAt = .now
+            // The app may never come back: a deletion still waiting for "Undo" is written now.
+            await container.movements.flush()
             // Leaving the app is when the person looks at the home screen, so the widgets must
             // hold the latest state by then, including a month that turned while the app was open.
             if let home = screens?.home {

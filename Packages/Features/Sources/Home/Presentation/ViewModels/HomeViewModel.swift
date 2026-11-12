@@ -43,6 +43,8 @@ public final class HomeViewModel {
     private let listStates: (any ListNotificationStatesUseCase)?
     private let pruneStates: (any PruneNotificationStatesUseCase)?
     let changeNotifications: (any ChangeNotificationsUseCase)?
+    /// Offers "Undo" after confirming or discarding a draft; `nil` in previews.
+    private let undo: MovementUndo?
     let calendar: Calendar
     let formatter = CurrencyFormatter()
 
@@ -56,8 +58,10 @@ public final class HomeViewModel {
         listNotificationStates: (any ListNotificationStatesUseCase)? = nil,
         changeNotifications: (any ChangeNotificationsUseCase)? = nil,
         pruneNotificationStates: (any PruneNotificationStatesUseCase)? = nil,
+        undo: MovementUndo? = nil,
         calendar: Calendar = .current,
     ) {
+        self.undo = undo
         listStates = listNotificationStates
         self.changeNotifications = changeNotifications
         pruneStates = pruneNotificationStates
@@ -108,9 +112,13 @@ public final class HomeViewModel {
         guard !confirming.contains(id) else { return }
         confirming.insert(id)
         defer { confirming.remove(id) }
+        let planned = overview?.planned.first { $0.id == id }
         do {
             try await confirmPlanned.execute(id: id)
             actionError = nil
+            if let planned {
+                undo?.offerConfirmed(planned)
+            }
             await load()
         } catch {
             actionError = String(localized: "We couldn't confirm it. Try again.", bundle: #bundle)
@@ -123,6 +131,7 @@ public final class HomeViewModel {
         do {
             try await discard.execute(id: transaction.id)
             actionError = nil
+            undo?.offerDeleted(transaction)
             await load()
         } catch {
             actionError = String(localized: "We couldn't confirm it. Try again.", bundle: #bundle)
