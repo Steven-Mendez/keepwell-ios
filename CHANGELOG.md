@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Recurring: under the subscriptions total, "Not including 2 subscriptions in EUR" names the
+  subscriptions left out because their currency can't be converted, instead of silently skipping them.
 - Notifications inbox redesign: grouped by day (Today, Yesterday, date) with the newest first,
   an unread dot and bolder title, and a bell that counts unread only. Tap a row to read it and open
   it; swipe right to mark read or unread, swipe left to delete with an Undo toast; the "..." menu

@@ -110,6 +110,15 @@ public final class RecurringViewModel {
         return String(localized: "≈ \(yearly) per year", bundle: #bundle)
     }
 
+    /// "Not including 2 subscriptions in EUR", one line per currency the total can't convert. Counts,
+    /// not amounts, so they show even with amounts hidden.
+    public var excludedSubscriptions: [String] {
+        guard let overview else { return [] }
+        return overview.excludedSubscriptions.map { excluded in
+            String(localized: "Not including \(excluded.count) subscriptions in \(excluded.currency)", bundle: #bundle)
+        }
+    }
+
     // MARK: Rows
 
     public func category(of rule: RecurringRule) -> TransactionCategory? {
