@@ -204,11 +204,13 @@ public struct RecurringView: View {
             KWTransactionIcon(.transfer)
         } else {
             let category = viewModel.category(of: rule)
-            CategorySymbol(category, size: 18)
-                .foregroundStyle(CategoryDisplay.color(for: category))
-                .frame(width: 40, height: 40)
-                .background(CategoryDisplay.color(for: category).opacity(0.16), in: Circle())
-                .accessibilityHidden(true)
+            BrandOrFallbackIcon(text: rule.name, tint: CategoryDisplay.color(for: category)) {
+                CategorySymbol(category, size: 18)
+                    .foregroundStyle(CategoryDisplay.color(for: category))
+                    .frame(width: 40, height: 40)
+                    .background(CategoryDisplay.color(for: category).opacity(0.16), in: Circle())
+                    .accessibilityHidden(true)
+            }
         }
     }
 

@@ -11,6 +11,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - A reminder the day before a recurring expense that is recorded as a draft (rent, school fees):
   "Rent is due tomorrow", in the inbox and as a notification, as subscriptions already had.
+- Brand logos: a recurring rule, an upcoming payment on Home or a movement whose name matches a
+  known brand (Netflix, Spotify, Uber Eats, Claro, Tigo and about 80 more) shows the brand's logo
+  from Brandfetch instead of the category's icon, over a monogram that stays when there's no logo
+  or no network. Only the brand's domain is sent, never what you typed; `BRAND_LOGOS_ENABLED = NO`
+  turns it off.
 - Recurring: under the subscriptions total, "Not including 2 subscriptions in EUR" names the
   subscriptions left out because their currency can't be converted, instead of silently skipping them.
 - Recurring rows show a draft waiting to be confirmed: "To confirm · Nov 12", or "Overdue · 3 days"

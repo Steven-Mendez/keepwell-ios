@@ -80,6 +80,8 @@ let package = Package(
                 .product(name: "Core", package: "Core"),
                 .product(name: "DesignSystem", package: "DesignSystem"),
             ],
+            // brand-cases.json is a verbatim copy of keepwell-web's, which compares the two.
+            resources: [.copy("Fixtures")],
         ),
 
         // MARK: Onboarding

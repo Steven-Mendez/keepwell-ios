@@ -1,5 +1,6 @@
 import Foundation
 import OSLog
+import SharedPresentation
 
 /// Runtime environment read from Info.plist (values injected by the .xcconfig files) and launch
 /// arguments.
@@ -9,6 +10,9 @@ struct AppEnvironment {
     let apiBaseURL: URL?
     /// Keepwell on the web, whose privacy policy Settings links to; `nil` without an API.
     let privacyPolicyURL: URL?
+    /// Brand logos from Brandfetch: the build's switch (`BRAND_LOGOS_ENABLED`) and the public
+    /// client id (`BRANDFETCH_CLIENT_ID`). Off, or without an id, nothing is requested.
+    let brandLogos: BrandLogoConfiguration
     /// "1.0.1 (12)", for the foot of Settings.
     let version: String?
     let isUITesting: Bool
@@ -35,6 +39,10 @@ struct AppEnvironment {
             apiBaseURL: api,
             // The API and the web share a host (the web serves the API's routes).
             privacyPolicyURL: api?.appending(path: "privacy"),
+            brandLogos: BrandLogoConfiguration(
+                isEnabled: (info["KeepwellBrandLogosEnabled"] as? String) == "YES",
+                clientID: info["KeepwellBrandfetchClientID"] as? String,
+            ),
             version: marketing.map { version in build.map { "\(version) (\($0))" } ?? version },
             isUITesting: arguments.contains("-ui-testing"),
             usesSampleData: arguments.contains("-sample-data"),
