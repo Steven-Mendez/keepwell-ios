@@ -27,6 +27,10 @@ public final class TransactionsViewModel {
     /// The account or card the list is narrowed to; `.all` shows every movement.
     public var scope = TransactionScope.all
     public var query = ""
+    /// Bounds on the amount in the principal currency; empty shows every amount.
+    public var amount = AmountRange()
+    /// Where the movements came from: any, subscriptions, or one recurring rule ("See all" on it).
+    public var origin = TransactionOrigin.any
     /// Set by whoever opens the list to search ("Search transactions" on home); the view focuses
     /// the field and clears it.
     public var wantsSearchFocus = false
@@ -113,7 +117,7 @@ public final class TransactionsViewModel {
     }
 
     private var transactionQuery: TransactionQuery {
-        TransactionQuery(kind: filter, scope: scope, text: query)
+        TransactionQuery(kind: filter, scope: scope, text: query, amount: amount, origin: origin)
     }
 
     /// What the chips, the account filter and the search leave visible, newest first.
@@ -124,7 +128,7 @@ public final class TransactionsViewModel {
             query.kind = .all
         }
         // Tags are searchable as text too: "boda" finds "#boda" among everything else it matches.
-        return filterTransactions.execute(list.transactions, matching: query) { transaction in
+        return filterTransactions.execute(list.transactions, matching: query, context: queryContext) { transaction in
             ([display.searchableText(of: transaction)] + transaction.tags.map(TagDisplay.label)).joined(separator: " ")
         }
     }
@@ -144,6 +148,8 @@ public final class TransactionsViewModel {
     public func showOnly(tag: String) {
         filter = .all
         scope = .all
+        amount = AmountRange()
+        origin = .any
         show(tag: tag)
     }
 
@@ -282,7 +288,8 @@ public final class TransactionsViewModel {
 
     /// Shown when an account has nothing yet, so it doesn't read as a search that failed.
     var isScopeEmpty: Bool {
-        scope != .all && query.trimmingCharacters(in: .whitespaces).isEmpty && filter == .all && visibleTransactions().isEmpty
+        scope != .all && query.trimmingCharacters(in: .whitespaces).isEmpty && filter == .all
+            && amount.isEmpty && origin == .any && visibleTransactions().isEmpty
     }
 
     func filterTitle(_ filter: TransactionFilter) -> String {
