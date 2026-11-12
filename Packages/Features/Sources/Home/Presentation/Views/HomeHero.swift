@@ -87,6 +87,7 @@ struct HomeHero: View {
                 }
             }
             Spacer(minLength: KWSpacing.xs)
+            bell
             KWCircleButton(
                 .search,
                 style: .translucent,
@@ -105,6 +106,31 @@ struct HomeHero: View {
                 accessibilityLabel: String(localized: "Settings", bundle: #bundle),
                 action: actions.settings,
             )
+        }
+    }
+
+    /// The bell counts what's waiting in Notifications; the count is part of its spoken label too.
+    private var bell: some View {
+        let count = viewModel.inboxCount(now: fixedDate ?? .now)
+        return KWCircleButton(
+            .bell,
+            style: .translucent,
+            accessibilityLabel: count > 0
+                ? String(localized: "Notifications, \(count) pending", bundle: #bundle)
+                : String(localized: "Notifications", bundle: #bundle),
+            action: actions.notifications,
+        )
+        .overlay(alignment: .topTrailing) {
+            if count > 0 {
+                Text(count > 9 ? "9+" : "\(count)")
+                    .font(.kw(11, weight: 800))
+                    .foregroundStyle(KWColor.Text.onPositive)
+                    .padding(.horizontal, 5)
+                    .frame(minWidth: 18, minHeight: 18)
+                    .background(KWColor.State.negative, in: Capsule())
+                    .offset(x: 4, y: -4)
+                    .accessibilityHidden(true)
+            }
         }
     }
 

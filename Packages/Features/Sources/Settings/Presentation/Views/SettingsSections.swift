@@ -3,7 +3,6 @@ import Domain
 import SettingsDomain
 import SwiftUI
 import UIKit
-import UniformTypeIdentifiers
 
 /// A muted section title over its card, and an optional footnote under it.
 struct SettingsSection<Content: View>: View {
@@ -263,12 +262,11 @@ struct SecuritySection: View {
     }
 }
 
-/// Sync with the Keepwell account when there is one, then the CSV export and import: the way to
-/// keep a copy or move movements by hand.
+/// Sync with the Keepwell account when there is one, then the CSV export: the way to
+/// keep a copy of the movements.
 struct DataSection: View {
     let viewModel: SettingsViewModel
     let syncRow: AnyView?
-    @State private var isImporting = false
 
     var body: some View {
         SettingsSection(title: String(localized: "Data & sync", bundle: #bundle)) {
@@ -276,16 +274,6 @@ struct DataSection: View {
                 if let syncRow {
                     syncRow
                 }
-                Button { isImporting = true } label: {
-                    KWSettingsRow(
-                        String(localized: "Import CSV", bundle: #bundle),
-                        description: String(localized: "Add movements from a spreadsheet", bundle: #bundle),
-                        icon: .download,
-                        tint: KWSettingsTint.data,
-                        accessory: .chevron,
-                    )
-                }
-                .disabled(viewModel.isWorking)
                 Button {
                     Task { await viewModel.export() }
                 } label: {
@@ -300,16 +288,6 @@ struct DataSection: View {
                 .disabled(viewModel.isWorking)
             }
             .buttonStyle(.plain)
-            if let message = viewModel.importMessage {
-                Text(message)
-                    .font(KWTextStyle.caption.font.weight(.regular))
-                    .foregroundStyle(KWColor.State.positive)
-            }
-        }
-        .fileImporter(isPresented: $isImporting, allowedContentTypes: [.commaSeparatedText, .plainText]) { result in
-            if case let .success(url) = result {
-                Task { await viewModel.importFile(at: url) }
-            }
         }
     }
 }

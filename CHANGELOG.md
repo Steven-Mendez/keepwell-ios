@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Notifications: a bell on the Home header, with a count, opens what needs your attention right
+  now: card payments inside your reminder window, statements closing today, loan installments,
+  subscriptions renewing tomorrow, cards expiring this month, budgets at 80% or over, and
+  subscriptions that went up in price. Rules proposed by Claude wait there too, with Confirm and
+  Discard. Each line disappears when it stops applying, and tapping one opens the related screen.
 - A fifth tab, Plan, after Summary: one card each for Recurring (subscriptions per month and the
   next movement), Savings goals (the first goal with its progress) and Debts (what you owe and
   are owed, and the next installment), each opening its screen. Keyboard: 5 and G then P.
@@ -66,6 +71,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Home is lighter: "Log quickly", the budget and price-increase alerts and Proposed by Claude
+  moved out (the alerts and proposals to Notifications; the widget keeps "Log quickly").
+- A card payment reminder on its due day reads "due today" instead of "payment in 0 days".
 - Recurring moved out of Settings: it lives under the Plan tab. Settings rows for your name and
   payment reminders now carry a one-line description, as on the web.
 - Goals, loans, lenders and personal debts accept names up to 60 characters.
@@ -96,6 +104,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   icon, and signing out, deleting the account and deleting all your data sit together at the
   bottom in red. The version is at the foot of the list. Rows adapt to the largest text sizes and
   to small iPhones.
+
+### Removed
+
+- Import CSV, in Settings > Data & sync and on the last onboarding step. Export CSV stays as it
+  was.
 
 ### Fixed
 

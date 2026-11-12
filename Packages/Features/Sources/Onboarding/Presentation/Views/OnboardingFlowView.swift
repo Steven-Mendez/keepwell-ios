@@ -11,7 +11,6 @@ public struct OnboardingFlowView: View {
 
     @Bindable private var viewModel: OnboardingViewModel
     private let accountChoice: AnyView?
-    private let onImportCSV: () -> Void
     private let onSetUpPasscode: () -> Void
     private let onFinish: (Exit) -> Void
 
@@ -22,13 +21,11 @@ public struct OnboardingFlowView: View {
     public init(
         viewModel: OnboardingViewModel,
         accountChoice: AnyView? = nil,
-        onImportCSV: @escaping () -> Void,
         onSetUpPasscode: @escaping () -> Void,
         onFinish: @escaping (Exit) -> Void,
     ) {
         self.viewModel = viewModel
         self.accountChoice = accountChoice
-        self.onImportCSV = onImportCSV
         self.onSetUpPasscode = onSetUpPasscode
         self.onFinish = onFinish
     }
@@ -52,7 +49,7 @@ public struct OnboardingFlowView: View {
         case .currencies:
             CurrenciesView(viewModel: viewModel, onBack: back)
         case .accounts:
-            AccountsView(viewModel: viewModel, onBack: back, onImportCSV: onImportCSV)
+            AccountsView(viewModel: viewModel, onBack: back)
         case .protect:
             ProtectView(viewModel: viewModel, onBack: back, onSetUpPasscode: onSetUpPasscode)
         case .privacy:
