@@ -87,6 +87,12 @@ public struct RecurringView: View {
                 .font(KWTextStyle.caption.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.secondary)
                 .monospacedDigit()
+            ForEach(viewModel.excludedSubscriptions, id: \.self) { line in
+                Text(line)
+                    .font(KWTextStyle.caption.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.secondary)
+                    .monospacedDigit()
+            }
         }
         .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)

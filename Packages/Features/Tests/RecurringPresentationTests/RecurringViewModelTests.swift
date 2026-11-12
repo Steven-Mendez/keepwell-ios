@@ -137,6 +137,23 @@ struct RecurringViewModelTests {
     }
 
     @Test
+    func subscriptionsTheTotalCannotConvertAreNamedUnderIt() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let streaming = try #require(SampleData.standard.recurringRules.first { $0.id == IDs.streamingRule })
+        #expect(RecurringPreview.listViewModel().excludedSubscriptions.isEmpty)
+        for amount in [Decimal(5), 7] {
+            await store.save(RecurringRule(
+                name: "Euro", kind: .expense, categoryID: streaming.categoryID, amount: amount, currency: "EUR",
+                accountID: streaming.accountID, frequency: .monthly, startDate: SampleData.defaultReferenceDate, isSubscription: true,
+            ))
+        }
+        let viewModel = RecurringPreview.listViewModel(store: store)
+        await viewModel.load()
+        #expect(viewModel.monthlyTotal(hidden: false) == "$15.99")
+        #expect(viewModel.excludedSubscriptions == ["Not including 2 subscriptions in EUR"])
+    }
+
+    @Test
     func switchingToATransferDropsTheCategoryAndAsksForADestination() async {
         let viewModel = RecurringPreview.editorViewModel(ruleID: nil)
         await viewModel.load()

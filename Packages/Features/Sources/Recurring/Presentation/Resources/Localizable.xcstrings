@@ -301,6 +301,46 @@
         }
       }
     },
+    "Not including %lld subscriptions in %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Not including %lld subscription in %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Not including %lld subscriptions in %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sin incluir %lld suscripción en %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sin incluir %lld suscripciones en %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Nothing recurring yet" : {
       "localizations" : {
         "es" : {
