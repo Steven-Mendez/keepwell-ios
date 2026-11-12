@@ -122,6 +122,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Sync no longer gets stuck on a change from the account that this version can't read (one made
+  by a newer version, say): that change is skipped and noted, everything else keeps syncing, and
+  it is downloaded again after you update the app.
 - Swift 6 concurrency warning in Summary's custom period picker.
 - Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
   whose category, account or currency is gone is skipped instead of recording a movement nobody can
