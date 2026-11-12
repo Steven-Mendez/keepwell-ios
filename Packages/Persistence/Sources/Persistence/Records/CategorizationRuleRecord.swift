@@ -36,3 +36,12 @@ public final class CategorizationRuleRecord: AuditedRecord {
         return CategorizationRule(id: id, match: match, categoryID: categoryID, kind: kind, tags: TagsText.decode(tagsText))
     }
 }
+
+extension CategorizationRuleRecord {
+    /// The person's order. Two offline devices can give rules the same `sortIndex`, so the id breaks
+    /// the tie: the same order the web and the API use, hence the same winning rule everywhere.
+    /// Uppercase hex sorts like the lowercase id on the wire.
+    static func inPlace(_ lhs: CategorizationRuleRecord, _ rhs: CategorizationRuleRecord) -> Bool {
+        (lhs.sortIndex, lhs.id.uuidString) < (rhs.sortIndex, rhs.id.uuidString)
+    }
+}

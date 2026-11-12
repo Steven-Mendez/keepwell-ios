@@ -122,6 +122,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Categorization rules that two devices placed at the same position offline now apply in the same
+  order on every device, the web and Claude, so the same rule wins everywhere.
 - Swift 6 concurrency warning in Summary's custom period picker.
 - Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
   whose category, account or currency is gone is skipped instead of recording a movement nobody can
