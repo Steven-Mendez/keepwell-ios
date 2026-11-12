@@ -17,7 +17,7 @@ public actor SyncEngine {
     /// Settings come first: a download cut short still has the account's currencies.
     static let entities = [
         "settings", "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
-        "personalDebt", "personalDebtRepayment", "categorizationRule",
+        "personalDebt", "personalDebtRepayment", "categorizationRule", "notificationState",
     ]
 
     private static let legacyChoiceKey = "sync.choosing"

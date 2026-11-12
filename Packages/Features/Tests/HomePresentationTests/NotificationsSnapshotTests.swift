@@ -23,6 +23,8 @@ struct NotificationsSnapshotTests {
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore()),
+            listNotificationStates: DefaultListNotificationStatesUseCase(repository: store),
+            changeNotifications: DefaultChangeNotificationsUseCase(repository: store),
         )
         await viewModel.load()
         return viewModel
@@ -61,13 +63,25 @@ struct NotificationsSnapshotTests {
         await assertScreenSnapshot(of: screen(viewModel(emptyStore())), colorScheme: .light)
     }
 
+    /// The proposal on top, then the days, with the oldest row already read and the undo toast up.
+    private func populatedViewModel() async -> HomeViewModel {
+        let viewModel = await viewModel(populatedStore())
+        if let read = viewModel.inbox(now: now, calendar: viewModel.calendar).last(where: { $0.kind != .proposal }) {
+            await viewModel.toggleRead(read)
+        }
+        if let deleted = viewModel.inbox(now: now, calendar: viewModel.calendar).first(where: { $0.kind == .budget }) {
+            await viewModel.delete(deleted)
+        }
+        return viewModel
+    }
+
     @Test
     func withDataDark() async {
-        await assertScreenSnapshot(of: screen(viewModel(populatedStore())), colorScheme: .dark)
+        await assertScreenSnapshot(of: screen(populatedViewModel()), colorScheme: .dark)
     }
 
     @Test
     func withDataLight() async {
-        await assertScreenSnapshot(of: screen(viewModel(populatedStore())), colorScheme: .light)
+        await assertScreenSnapshot(of: screen(populatedViewModel()), colorScheme: .light)
     }
 }

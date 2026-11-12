@@ -47,6 +47,9 @@ public final class CloudAccountViewModel {
     private let signIn: any SignInWithAppleUseCase
     private let signOutUseCase: any SignOutUseCase
     private let deleteUseCase: any DeleteCloudAccountUseCase
+    /// Takes this iPhone off the server's push list while the session still works; `nil` in
+    /// previews and builds without push.
+    private let unregisterPushDevice: (any UnregisterPushDeviceUseCase)?
     private let disconnectUseCase: (any DisconnectAssistantsUseCase)?
     private let listAssistantsUseCase: (any ListConnectedAssistantsUseCase)?
     private let disconnectOneUseCase: (any DisconnectAssistantUseCase)?
@@ -81,7 +84,9 @@ public final class CloudAccountViewModel {
         connectGuideURL: URL? = nil,
         passkeys: (any PasskeySignIn)? = nil,
         support: SupportActions? = nil,
+        unregisterPushDevice: (any UnregisterPushDeviceUseCase)? = nil,
     ) {
+        self.unregisterPushDevice = unregisterPushDevice
         self.support = support
         self.passkeys = passkeys
         disconnectUseCase = disconnectAssistants
@@ -149,6 +154,8 @@ public final class CloudAccountViewModel {
 
     public func signOut(everywhere: Bool) async {
         await run { () async throws(CloudAccountError) in
+            // Best effort and first: once signed out there is no session to ask with.
+            try? await self.unregisterPushDevice?.execute()
             try await self.signOutUseCase.execute(everywhere: everywhere)
             self.state = .signedOut
         }
@@ -257,6 +264,7 @@ public final class CloudAccountViewModel {
 
     public func deleteAccount() async {
         await run { () async throws(CloudAccountError) in
+            try? await self.unregisterPushDevice?.execute()
             try await self.deleteUseCase.execute()
             self.state = .signedOut
         }

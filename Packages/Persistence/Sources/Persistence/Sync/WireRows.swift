@@ -191,6 +191,17 @@ extension CategorizationRuleRecord: SyncableRecord {
     }
 }
 
+extension NotificationStateRecord: SyncableRecord {
+    static var syncEntity: String { "notificationState" }
+    var syncID: String { id }
+
+    func wireRow() throws -> WireRow {
+        Wire.audit(self).merging([
+            "id": id, "read_at": Wire.date(readAt), "dismissed_at": Wire.date(dismissedAt),
+        ]) { $1 }
+    }
+}
+
 extension SettingsRecord {
     /// Only what is the same on every device; unlock, relock, hiding amounts and the iCloud switch stay here.
     func wireRow() -> WireRow {

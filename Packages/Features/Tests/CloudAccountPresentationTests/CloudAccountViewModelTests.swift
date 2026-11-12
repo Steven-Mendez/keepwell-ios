@@ -36,6 +36,40 @@ private final class SignOuts: SignOutUseCase, @unchecked Sendable {
     }
 }
 
+/// Records the order of the calls that end a session, to check push is dropped while it still works.
+private final class CallLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var entries: [String] = []
+    var value: [String] {
+        lock.withLock { entries }
+    }
+
+    func add(_ entry: String) {
+        lock.withLock { entries.append(entry) }
+    }
+}
+
+private struct LoggedUnregister: UnregisterPushDeviceUseCase {
+    let log: CallLog
+    func execute() async throws(CloudAccountError) {
+        log.add("unregister")
+    }
+}
+
+private struct LoggedSignOut: SignOutUseCase {
+    let log: CallLog
+    func execute(everywhere _: Bool) async throws(CloudAccountError) {
+        log.add("sign out")
+    }
+}
+
+private struct LoggedDelete: DeleteCloudAccountUseCase {
+    let log: CallLog
+    func execute() async throws(CloudAccountError) {
+        log.add("delete")
+    }
+}
+
 private struct StubDelete: DeleteCloudAccountUseCase {
     var error: CloudAccountError?
     func execute() async throws(CloudAccountError) {
@@ -208,5 +242,18 @@ struct CloudAccountViewModelTests {
         // Signing out goes back to local use: sync stops and nothing else changes.
         await model.signOut(everywhere: false)
         #expect(model.state == .signedOut)
+    }
+
+    @Test
+    func signingOutAndDeletingTheAccountDropThePushDeviceFirst() async {
+        let log = CallLog()
+        let model = CloudAccountViewModel(
+            load: StubLoad(result: .success(ana)), signIn: RecordingSignIn(result: .success(ana)),
+            signOut: LoggedSignOut(log: log), delete: LoggedDelete(log: log), unregisterPushDevice: LoggedUnregister(log: log),
+        )
+        await model.refresh()
+        await model.signOut(everywhere: false)
+        await model.deleteAccount()
+        #expect(log.value == ["unregister", "sign out", "unregister", "delete"])
     }
 }

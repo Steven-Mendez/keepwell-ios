@@ -102,6 +102,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
             proposedRules: rules.filter { $0.source == .mcp && $0.isPaused },
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
+            latestExpenseDays: latestExpenseDays(transactions, month: month.month, calendar: calendar, now: now),
             goals: SavingsGoalProgress.ordered(goals, currentMonth: month.month),
             forecast: forecast(records, rules: rules, settings: currencies, calendar: calendar, now: now),
             priceIncreases: PriceIncrease.detect(in: transactions, now: now, calendar: calendar),
@@ -111,6 +112,24 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             cards: cards,
             categories: records.categories,
         )
+    }
+
+    /// When each category was last spent in this month, up to now.
+    private static func latestExpenseDays(
+        _ transactions: [Transaction],
+        month: YearMonth,
+        calendar: Calendar,
+        now: Date,
+    ) -> [String: Date] {
+        var latest: [String: Date] = [:]
+        for transaction in transactions where transaction.kind == .expense && transaction.date <= now {
+            guard let category = transaction.categoryID,
+                  YearMonth(containing: transaction.date, calendar: calendar) == month else { continue }
+            if latest[category].map({ $0 < transaction.date }) ?? true {
+                latest[category] = transaction.date
+            }
+        }
+        return latest
     }
 
     /// Every balance (for net worth), the bank and cash ones shown on home, and what the cards owe in

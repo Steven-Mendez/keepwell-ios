@@ -18,13 +18,26 @@ extension AppContainer {
         return APIClient(baseURL: url, store: KeychainSessionStore(service: keychainService))
     }
 
+    /// One id per installation: sync's `client_id`, which is also the key of its push registration.
+    private var installationID: String {
+        SyncClientID.load(from: KeychainSessionStore(service: keychainService, account: "sync-client-id"))
+    }
+
     func makeSyncEngine() -> SyncEngine? {
         guard let client = apiClient else { return nil }
-        return SyncEngine(
-            client: client,
-            store: store,
-            clientID: SyncClientID.load(from: KeychainSessionStore(service: keychainService, account: "sync-client-id")),
-        )
+        return SyncEngine(client: client, store: store, clientID: installationID)
+    }
+
+    private func makePushDeviceRepository() -> HTTPPushDeviceRepository? {
+        apiClient.map { HTTPPushDeviceRepository(client: $0, clientID: installationID) }
+    }
+
+    func makePushRegistration() -> PushRegistration? {
+        guard let repository = makePushDeviceRepository() else { return nil }
+        let registration = PushRegistration(register: DefaultRegisterPushDeviceUseCase(repository: repository))
+        // Starting or stopping the server's pushes changes whether local ones are scheduled.
+        registration.onChange = { [weak self] in self?.pushChanged?() }
+        return registration
     }
 
     func makeCloudAccountViewModel() -> CloudAccountViewModel? {
@@ -53,6 +66,7 @@ extension AppContainer {
             connectGuideURL: AppEnvironment.current.apiBaseURL?.appending(path: "docs/mcp"),
             passkeys: HTTPPasskeySignIn(client: client),
             support: makeSupportActions(repository: repository),
+            unregisterPushDevice: makePushDeviceRepository().map { DefaultUnregisterPushDeviceUseCase(repository: $0) },
         )
     }
 

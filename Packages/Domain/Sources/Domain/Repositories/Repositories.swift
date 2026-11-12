@@ -92,6 +92,16 @@ public protocol CategorizationRuleRepository: Sendable {
     func reorderCategorizationRules(ids: [UUID]) async throws(DomainError)
 }
 
+public protocol NotificationStateRepository: Sendable {
+    /// Live states only: a pruned (tombstoned) one is gone for good.
+    func fetchNotificationStates() async throws(DomainError) -> [NotificationState]
+    /// Creates the state of an id never touched before. A change that leaves an existing state as
+    /// it is writes nothing, so it never reaches the outbox.
+    func apply(_ change: NotificationState.Change, to ids: [String]) async throws(DomainError)
+    /// Tombstones the states whose id carries a day more than `NotificationState.retentionDays` old.
+    func pruneNotificationStates(now: Date) async throws(DomainError)
+}
+
 public protocol CategoryRepository: Sendable {
     /// In the person's order. Includes every `TransactionCategory.defaults` entry, adding the ones
     /// a newer version ships, except the defaults the person deleted.
