@@ -282,19 +282,6 @@ final class AppContainer {
 
     // MARK: - Recurring
 
-    /// Records the recurring movements whose day has come. Runs at launch, on returning to the
-    /// app and after a rule is saved; it skips what another device already recorded.
-    func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
-        DefaultMaterializeRecurringUseCase(
-            rules: store,
-            transactions: movements,
-            settings: store,
-            accounts: store,
-            cards: store,
-            categories: store,
-        )
-    }
-
     func materializeRecurring() async {
         do {
             try await makeMaterializeRecurring().execute()
@@ -358,6 +345,21 @@ final class AppContainer {
 }
 
 extension AppContainer {
+    /// Records the recurring movements whose day has come. Runs at launch, on returning to the
+    /// app and after a rule is saved; it skips what another device already recorded. An occurrence
+    /// in "Other" takes the first categorization rule that matches, like any new movement.
+    func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
+        DefaultMaterializeRecurringUseCase(
+            rules: store,
+            transactions: movements,
+            settings: store,
+            accounts: store,
+            cards: store,
+            categories: store,
+            categorizationRules: store,
+        )
+    }
+
     /// Gives every bank account exactly one card before any screen reads them: older versions
     /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
     func normalizeBankCards() async {

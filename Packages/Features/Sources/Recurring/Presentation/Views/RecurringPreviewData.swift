@@ -22,6 +22,7 @@ public enum RecurringPreview {
             accounts: store,
             cards: store,
             categories: store,
+            categorizationRules: store,
             now: { now },
         )
         return UseCases(

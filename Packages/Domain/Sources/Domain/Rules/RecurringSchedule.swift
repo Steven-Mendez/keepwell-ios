@@ -141,13 +141,15 @@ public enum RecurringSchedule {
     /// Records every due occurrence of the active rules as a movement, at most `catchUpLimit` per
     /// rule (the latest ones). An occurrence is skipped when a movement of the same rule already
     /// sits on that day, so two devices, or a restore, never record it twice. Each rule then moves
-    /// to its first occurrence after the last one due.
+    /// to its first occurrence after the last one due. An occurrence in "Other" takes the first
+    /// categorization rule in `categorizationRules` that matches, like any new movement.
     public static func materialize(
         _ rules: [RecurringRule],
         transactions: [Transaction],
         today: Date,
         exchangeRate: ExchangeRate,
         calendar: Calendar,
+        categorizationRules: [CategorizationRule] = [],
     ) -> Materialization {
         var recordedDays: [UUID: Set<Date>] = [:]
         for transaction in transactions {
@@ -163,7 +165,8 @@ public enum RecurringSchedule {
             for date in dates where !(recordedDays[rule.id]?.contains(calendar.startOfDay(for: date)) ?? false) {
                 let id = occurrenceID(of: rule, on: date, calendar: calendar)
                 guard !knownIDs.contains(id) else { continue }
-                created.append(movement(from: rule, on: date, exchangeRate: exchangeRate, id: id))
+                let occurrence = movement(from: rule, on: date, exchangeRate: exchangeRate, id: id)
+                created.append(CategorizationRules.autoCategorized(occurrence, rules: categorizationRules))
                 recordedDays[rule.id, default: []].insert(calendar.startOfDay(for: date))
             }
             // Past the last owed occurrence, recorded now or before, so a trailing one already on
