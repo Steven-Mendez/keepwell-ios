@@ -164,7 +164,9 @@ extension CreateTransactionViewModel {
             return MethodRow(
                 source: source,
                 title: context.account(id).map(CardDisplay.name(of:)) ?? String(localized: "Cash", bundle: #bundle),
-                subtitle: balance.map { String(localized: "\($0) available", bundle: #bundle) },
+                subtitle: context.account(id)?.isOpen == false
+                    ? AccountClosingText.closed
+                    : balance.map { String(localized: "\($0) available", bundle: #bundle) },
                 thumbnail: .cash,
             )
         case let .card(id):

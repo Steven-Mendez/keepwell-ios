@@ -16,7 +16,7 @@ enum BackupColumns {
 
     static let spec: [String: String] = [
         "account": "id:s name:s bank:s? kind:s opening_balances:a opening_date:s debt_mode:s? limit_amount:s? "
-            + "limit_currency:s? cutoff_day:n? due_day:n? created_at:s updated_at:s deleted_at:s?",
+            + "limit_currency:s? cutoff_day:n? due_day:n? closed_at:s?~ created_at:s updated_at:s deleted_at:s?",
         "card": "id:s account_id:s kind:s network:s? last_four:s? color:s? product_name:s? expiry_month:n? "
             + "expiry_year:n? created_at:s updated_at:s deleted_at:s?",
         "category": "id:s name:s kind:s icon:s? color:s? is_renamed:b sort_index:n budget_amount:s? budget_currency:s? "

@@ -13,6 +13,7 @@ public struct CreditCardView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var sheet: Sheet?
     @State private var isConfirmingDeletion = false
+    @State private var isClosing = false
 
     enum Sheet: String, Identifiable {
         case terms
@@ -41,13 +42,14 @@ public struct CreditCardView: View {
             VStack(alignment: .leading, spacing: KWSpacing.md) {
                 if let detail = viewModel.detail {
                     KWNavigationHeader(title(detail), buttonStyle: .translucent, onBack: onBack)
+                    closedBanner(detail.account)
                     CardHero(art: art(detail), name: detail.account.name)
                     debt(detail)
                     actions
                     terms(detail)
                     manage(detail)
                     cycle(detail)
-                    deleteButton
+                    lifecycle(detail.account)
                 } else {
                     KWNavigationHeader("", buttonStyle: .translucent, onBack: onBack)
                     if viewModel.state == .failed {
@@ -76,6 +78,13 @@ public struct CreditCardView: View {
         .foregroundStyle(KWColor.Text.primary)
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
+        .accountClosingSheet(
+            viewModel.closing,
+            accountName: viewModel.detail.map { CardDisplay.name(of: $0.account) } ?? "",
+            isPresented: $isClosing,
+        ) {
+            Task { await viewModel.load() }
+        }
         .confirmationDialog(
             viewModel.detail.map(viewModel.deleteTitle) ?? "",
             isPresented: $isConfirmingDeletion,
@@ -90,10 +99,9 @@ public struct CreditCardView: View {
             } label: {
                 Text("Delete account", bundle: #bundle)
             }
+            closeInsteadButton
         } message: {
-            if let detail = viewModel.detail {
-                Text(viewModel.deleteMessage(detail))
-            }
+            deleteMessage
         }
         .sheet(item: $sheet, onDismiss: viewModel.clearError) { sheet in
             sheetContent(sheet)
@@ -221,7 +229,10 @@ extension CreditCardView {
     /// Two actions, kept close together under the card rather than pushed to the screen's edges.
     private var actions: some View {
         HStack(spacing: KWSpacing.xs) {
-            KWActionButton(String(localized: "Pay", bundle: #bundle), icon: .arrowUp, style: .prominent, action: onPay)
+            // A closed card takes no payments until it is reopened.
+            if viewModel.detail?.account.isOpen != false {
+                KWActionButton(String(localized: "Pay", bundle: #bundle), icon: .arrowUp, style: .prominent, action: onPay)
+            }
             KWActionButton(String(localized: "Edit name", bundle: #bundle), icon: .pencil) { sheet = .name }
         }
         .frame(maxWidth: KWComponentMetrics.actionPairWidth)
@@ -266,13 +277,41 @@ extension CreditCardView {
         }
     }
 
-    /// Apart from the edits, as on a bank account, so it isn't tapped on the way to "Card color".
-    private var deleteButton: some View {
-        KWGroupedCard(verticalPadding: KWSpacing.xxs) {
-            CardManageRow(String(localized: "Delete account", bundle: #bundle), icon: .trash, isDestructive: true) {
-                isConfirmingDeletion = true
+    @ViewBuilder
+    private var closeInsteadButton: some View {
+        if let detail = viewModel.detail, viewModel.offersCloseInstead(detail) {
+            Button(AccountClosingText.closeInstead) { isClosing = true }
+        }
+    }
+
+    @ViewBuilder
+    private var deleteMessage: some View {
+        if let detail = viewModel.detail {
+            if viewModel.offersCloseInstead(detail) {
+                Text(verbatim: "\(viewModel.deleteMessage(detail)) \(AccountClosingText.closeInsteadHint)")
+            } else {
+                Text(viewModel.deleteMessage(detail))
             }
         }
+    }
+
+    @ViewBuilder
+    private func closedBanner(_ account: Account) -> some View {
+        if let closing = viewModel.closing, let closedAt = account.closedAt {
+            ClosedAccountBanner(model: closing, closedAt: closedAt) {
+                Task { await viewModel.load() }
+            }
+        }
+    }
+
+    /// Apart from the edits, so neither is tapped on the way to another row.
+    private func lifecycle(_ account: Account) -> some View {
+        AccountLifecycleRows(
+            canClose: viewModel.closing != nil && account.isOpen,
+            deleteTitle: String(localized: "Delete account", bundle: #bundle),
+            onClose: { isClosing = true },
+            onDelete: { isConfirmingDeletion = true },
+        )
     }
 
     private func terms(_ detail: CreditCardDetail) -> some View {

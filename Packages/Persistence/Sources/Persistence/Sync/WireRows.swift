@@ -58,6 +58,8 @@ extension AccountRecord: SyncableRecord {
             "id": Wire.id(id), "name": name, "bank": Wire.value(bank), "kind": kindRaw, "opening_balances": balances,
             "opening_date": Wire.date(openingDate), "debt_mode": Wire.value(debtModeRaw), "limit_amount": Wire.value(limitAmount),
             "limit_currency": Wire.value(limitCurrency), "cutoff_day": Wire.value(cutoffDay), "due_day": Wire.value(dueDay),
+            // Always sent, null while open: reopening has to clear it on the other devices.
+            "closed_at": Wire.date(closedAt),
         ]) { $1 }
     }
 }

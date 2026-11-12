@@ -61,7 +61,8 @@ public enum LedgerNotifications {
         let today = calendar.startOfDay(for: now)
         let window = overview.paymentReminderDaysBefore
         var found: [LedgerNotification] = []
-        for account in overview.accounts where account.kind == .credit {
+        // A closed card has no statement to pay or close.
+        for account in overview.accounts where account.kind == .credit && account.isOpen {
             if let dueDay = account.creditTerms?.dueDay,
                let due = BillingCycle.nextOccurrence(ofDay: dueDay, onOrAfter: now, calendar: calendar),
                let daysLeft = days(from: today, to: due, calendar: calendar),
@@ -155,8 +156,10 @@ public enum LedgerNotifications {
     /// Plastics expiring this month.
     private static func expiries(in overview: HomeOverview, now: Date, calendar: Calendar) -> [LedgerNotification] {
         let month = YearMonth(containing: now, calendar: calendar)
+        let open = Set(overview.accounts.open.map(\.id))
         return overview.cards.compactMap { card in
-            guard let expiry = card.expiry, expiry.year == month.year, expiry.month == month.month else { return nil }
+            guard let expiry = card.expiry, expiry.year == month.year, expiry.month == month.month,
+                  open.contains(card.accountID) else { return nil }
             return LedgerNotification(
                 id: "expiry:\(lower(card.id)):\(monthKey(month))",
                 subject: .expiry(cardID: card.id),

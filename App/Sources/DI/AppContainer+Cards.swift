@@ -4,6 +4,7 @@ import CreditCardDomain
 import CreditCardPresentation
 import Domain
 import Foundation
+import SharedPresentation
 
 /// The screens of one account: credit card, bank account with its debit card, and cash.
 extension AppContainer {
@@ -26,6 +27,7 @@ extension AppContainer {
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store),
             getPreferredName: makeGetPreferredName(),
+            closing: makeAccountClosing(accountID: accountID),
         )
     }
 
@@ -43,6 +45,7 @@ extension AppContainer {
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store),
             getPreferredName: makeGetPreferredName(),
+            closing: makeAccountClosing(accountID: accountID),
         )
     }
 
@@ -60,6 +63,17 @@ extension AppContainer {
             ),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
             deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store),
+            closing: makeAccountClosing(accountID: accountID),
         )
+    }
+
+    // MARK: - Closing
+
+    /// "Close account" and "Reopen" on any of the three screens.
+    func makeAccountClosing(accountID: UUID) -> AccountClosingModel {
+        let closing = DefaultAccountClosingUseCase(
+            accounts: store, cards: store, transactions: movements, recurringRules: store, settings: store,
+        )
+        return AccountClosingModel(accountID: accountID, getPlan: closing, close: closing, reopen: closing)
     }
 }

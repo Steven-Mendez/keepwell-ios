@@ -89,8 +89,9 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             netWorth: netWorth,
             netWorthInSecond: NetWorth.inSecondCurrency(netWorth, settings: currencies),
             netWorthExcluded: NetWorth.excludedCurrencies(of: allBalances, settings: currencies),
-            accountCount: accounts.count { $0.kind != .credit },
-            cardCount: cards.count { $0.kind != .transfer },
+            // Lists and counts show open accounts; the totals above still add up every one.
+            accountCount: accounts.count { $0.kind != .credit && $0.isOpen },
+            cardCount: cards.count { card in card.kind != .transfer && accounts.open.contains { $0.id == card.accountID } },
             month: month,
             hasTransactions: !transactions.isEmpty,
             recent: Array(recent),
@@ -175,7 +176,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             allBalances += accountBalances
             if account.kind == .credit {
                 cardDebt += try NetWorth.total(of: accountBalances, settings: currencies).amount
-            } else if let balance = accountBalances.first {
+            } else if account.isOpen, let balance = accountBalances.first {
                 balances.append(HomeOverview.Balance(account: account, balance: balance))
             }
         }

@@ -38,7 +38,7 @@ extension RecurringRuleEditorViewModel {
     /// without any (cash). Transfers move between accounts, so they list the accounts that can send.
     public var methodOptions: [MethodOption] {
         guard let overview else { return [] }
-        return overview.accounts.flatMap { account -> [MethodOption] in
+        return pickable(overview.accounts).flatMap { account -> [MethodOption] in
             let cards = overview.cards.filter { $0.accountID == account.id }
             if kind == .transfer {
                 guard account.kind != .credit else { return [] }
@@ -78,7 +78,12 @@ extension RecurringRuleEditorViewModel {
 
     /// Any other account; paying into a credit card is a transfer too.
     public var destinationOptions: [Account] {
-        overview?.accounts.filter { $0.id != sourceAccountID } ?? []
+        pickable(overview?.accounts ?? []).filter { $0.id != sourceAccountID }
+    }
+
+    /// Open accounts, plus the ones the rule being edited already uses, even closed.
+    private func pickable(_ accounts: [Account]) -> [Account] {
+        accounts.filter { $0.isOpen || $0.id == rule?.accountID || $0.id == rule?.destinationAccountID }
     }
 
     public var destinationTitle: String? {

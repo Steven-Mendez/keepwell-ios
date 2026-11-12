@@ -50,6 +50,9 @@ public struct Account: Identifiable, Hashable, Sendable, Codable {
     /// Movements dated before this day are already part of `openingBalances`.
     public let openingDate: Date
     public let creditTerms: CreditTerms?
+    /// When it was closed (`CloseAccountUseCase`); nil while open. A closed account keeps its
+    /// movements and still counts in totals, but leaves lists and pickers until it is reopened.
+    public let closedAt: Date?
 
     public init(
         id: UUID = UUID(),
@@ -59,6 +62,7 @@ public struct Account: Identifiable, Hashable, Sendable, Codable {
         openingBalances: [Money],
         openingDate: Date,
         creditTerms: CreditTerms? = nil,
+        closedAt: Date? = nil,
     ) {
         self.id = id
         self.name = name
@@ -67,10 +71,32 @@ public struct Account: Identifiable, Hashable, Sendable, Codable {
         self.openingBalances = openingBalances
         self.openingDate = openingDate
         self.creditTerms = creditTerms
+        self.closedAt = closedAt
+    }
+
+    /// Open until `CloseAccountUseCase` stamps `closedAt`; `ReopenAccountUseCase` clears it.
+    public var isOpen: Bool {
+        closedAt == nil
+    }
+
+    /// The same account closed at `closedAt`, or open again with nil.
+    public func with(closedAt: Date?) -> Self {
+        Self(
+            id: id, name: name, bank: bank, kind: kind, openingBalances: openingBalances,
+            openingDate: openingDate, creditTerms: creditTerms, closedAt: closedAt,
+        )
     }
 
     /// The currencies this account keeps a balance in, principal first for dual cards.
     public var currencies: [String] {
         openingBalances.map(\.currency)
+    }
+}
+
+extension [Account] {
+    /// The accounts lists and pickers offer. Totals (net worth, summaries) still read every
+    /// account: a closed one keeps the history it had.
+    public var open: [Account] {
+        filter(\.isOpen)
     }
 }

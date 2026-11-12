@@ -197,7 +197,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             : nil
         let categoryID = draft.kind == .transfer ? nil : rule?.categoryID ?? chosen
         let category = context.categories.first { $0.id == categoryID }
-        return Transaction(
+        let transaction = Transaction(
             id: draft.id,
             date: draft.date,
             status: draft.isDraft ? .planned : .confirmed,
@@ -217,6 +217,8 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             recurringID: existing?.recurringID ?? (draft.repeatFrequency == nil ? nil : draft.recurringRuleID),
             tags: rule.map { Tags.merging(draft.tags, with: $0.tags) } ?? draft.tags,
         )
+        try Transaction.checkClosedAccounts(transaction, existing: existing, accounts: context.accounts)
+        return transaction
     }
 
     /// The rule "Repeat" saves: the movement as its first occurrence, the next one still ahead,

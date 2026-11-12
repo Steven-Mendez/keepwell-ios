@@ -14,7 +14,7 @@ extension AppContainer {
             getList: DefaultGetTransactionListUseCase(
                 transactions: movements, accounts: store, cards: store, categories: store, settings: store, recurringRules: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
             undo: movementUndo,
         )

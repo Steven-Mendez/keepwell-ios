@@ -68,7 +68,7 @@ final class AppContainer {
         movements = DeferredTransactionDeletions(base: store, store: preferences)
         movementUndo = MovementUndo(
             undoDelete: DefaultUndoDeleteTransactionUseCase(deletions: movements),
-            unconfirm: DefaultUnconfirmTransactionUseCase(transactions: movements),
+            unconfirm: DefaultUnconfirmTransactionUseCase(transactions: movements, accounts: store),
         )
     }
 
@@ -140,7 +140,7 @@ final class AppContainer {
                 accounts: store, cards: store, transactions: movements, categories: store, settings: store,
                 recurringRules: store, savingsGoals: store, loans: store, personalDebts: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             getPreferredName: makeGetPreferredName(),
             discard: DeferredDeleteTransactionUseCase(deletions: movements),
             resumeRule: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
@@ -172,7 +172,7 @@ final class AppContainer {
                 settings: store,
                 recurringRules: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
             undo: movementUndo,
         )
@@ -299,7 +299,7 @@ final class AppContainer {
     func makeRecurringViewModel() -> RecurringViewModel {
         RecurringViewModel(
             getOverview: makeGetRecurringOverview(),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             undo: movementUndo,
         )
     }

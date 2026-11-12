@@ -3,12 +3,15 @@ import Foundation
 import SwiftData
 
 // The full backup, the same file keepwell-web writes and reads (`lib/backup/format.ts`):
-// `{ "format": "keepwell-backup", "version": 1, "exported_at": …, "entities": { "<entity>": [row…] } }`,
+// `{ "format": "keepwell-backup", "version": 2, "exported_at": …, "entities": { "<entity>": [row…] } }`,
 // every row in the sync wire format. A version this app doesn't know is refused, not half read.
+// Version 2 adds `account.closed_at`: a column that changes what the person sees raises the version,
+// so an app that predates it refuses the file instead of reopening closed accounts without a word.
+// Version 1 files still restore (their accounts are open).
 
 enum BackupFile {
     static let format = "keepwell-backup"
-    static let version = 1
+    static let version = 2
     static let entities = [
         "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
         "personalDebt", "personalDebtRepayment", "categorizationRule", "settings", "notificationState",
