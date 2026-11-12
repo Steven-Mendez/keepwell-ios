@@ -178,15 +178,25 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             throw .notFound(UUID(uuid: UUID_NULL))
         }
 
-        var category: TransactionCategory?
+        // A new expense or income without a category goes through the rules, then to "Other".
+        let chosen = draft.kind == .transfer || draft.categoryID != nil || existing != nil
+            ? draft.categoryID : TransactionCategory.otherID(for: draft.kind)
         if draft.kind == .transfer {
             try Transaction.checkDestination(draft.destinationAccountID, from: accountID, accounts: context.accounts)
         } else {
-            category = try Transaction.checkCategory(draft.categoryID, kind: draft.kind, categories: context.categories)
+            try Transaction.checkCategory(chosen, kind: draft.kind, categories: context.categories)
         }
 
         let description = draft.description.trimmingCharacters(in: .whitespacesAndNewlines)
         let note = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Only a new movement takes a rule, read from the text as typed (before the safety net).
+        let rule = existing == nil
+            ? CategorizationRules.categorizing(
+                kind: draft.kind, categoryID: chosen, description: description, note: note, in: context.rules,
+            )
+            : nil
+        let categoryID = draft.kind == .transfer ? nil : rule?.categoryID ?? chosen
+        let category = context.categories.first { $0.id == categoryID }
         return Transaction(
             id: draft.id,
             date: draft.date,
@@ -194,7 +204,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             // Safety net only: the view model fills a localized description before saving.
             description: description.isEmpty ? (category?.name ?? "Transfer") : description,
             kind: draft.kind,
-            categoryID: draft.kind == .transfer ? nil : draft.categoryID,
+            categoryID: categoryID,
             amount: draft.amount,
             currency: draft.currency,
             accountID: accountID,
@@ -205,7 +215,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             isShared: existing?.isShared ?? false,
             note: note.isEmpty ? nil : note,
             recurringID: existing?.recurringID ?? (draft.repeatFrequency == nil ? nil : draft.recurringRuleID),
-            tags: draft.tags,
+            tags: rule.map { Tags.merging(draft.tags, with: $0.tags) } ?? draft.tags,
         )
     }
 

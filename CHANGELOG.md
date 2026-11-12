@@ -9,6 +9,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Categorization rules now apply to every new movement, not only the ones typed in the editor:
+  Siri's "Log an expense" without a category and recurring movements recorded in "Other" take the
+  first matching rule (then "Other"). A category you choose is kept, and edits never apply rules.
+
 - Settings › Money: "Time zone", the home zone Keepwell's server uses for "today" and month ends
   (reminders, assistants and recurring movements it records). It starts as the iPhone's zone, the
   first time onboarding or a sync finds none, syncs to the web app and only changes from here.
