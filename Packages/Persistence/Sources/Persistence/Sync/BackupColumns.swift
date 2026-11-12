@@ -1,3 +1,4 @@
+import Domain
 import Foundation
 
 // The columns of every wire row (`wire-columns.json` in the shared fixtures, from keepwell-web's
@@ -37,7 +38,7 @@ enum BackupColumns {
         "personalDebtRepayment": "id:s debt_id:s amount:s date:s created_at:s updated_at:s deleted_at:s?",
         "categorizationRule": "id:s match:s category_id:s kind:s tags:a sort_index:n created_at:s updated_at:s deleted_at:s?",
         "settings": "id:s principal:s second:s? rate:s payment_reminder_days_before:n has_completed_onboarding:b "
-            + "created_at:s updated_at:s deleted_at:s?",
+            + "time_zone:s?~ created_at:s updated_at:s deleted_at:s?",
         "notificationState": "id:s read_at:s? dismissed_at:s? created_at:s updated_at:s deleted_at:s?",
     ]
 
@@ -100,6 +101,9 @@ enum BackupColumns {
         }
         if idColumns.contains(name) {
             return isUUID(value)
+        }
+        if name == "time_zone" {
+            return (value as? String).map(HomeTimeZone.isWellFormed) ?? false
         }
         if name == "opening_balances" {
             return (value as? [[String: Any]])?.allSatisfy { ($0["amount"] as? String).map(isDecimal) ?? false } ?? false

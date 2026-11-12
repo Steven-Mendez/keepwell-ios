@@ -16,7 +16,7 @@ public enum KeepwellSchemaV1: VersionedSchema {
             KeepwellSchemaV3.CardRecord.self,
             KeepwellSchemaV4.TransactionRecord.self,
             CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
         ]
     }
 
@@ -46,7 +46,7 @@ public enum KeepwellSchemaV2: VersionedSchema {
             KeepwellSchemaV3.CardRecord.self,
             KeepwellSchemaV4.TransactionRecord.self,
             CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
         ]
     }
 
@@ -82,7 +82,7 @@ public enum KeepwellSchemaV3: VersionedSchema {
             CardRecord.self,
             KeepwellSchemaV4.TransactionRecord.self,
             KeepwellSchemaV4.CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
         ]
     }
 
@@ -124,7 +124,7 @@ public enum KeepwellSchemaV4: VersionedSchema {
             CardRecord.self,
             TransactionRecord.self,
             CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
         ]
     }
 
@@ -244,7 +244,7 @@ public enum KeepwellSchemaV5: VersionedSchema {
             Persistence.CardRecord.self,
             TransactionRecord.self,
             KeepwellSchemaV6.CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
         ]
     }
 
@@ -295,7 +295,7 @@ public enum KeepwellSchemaV6: VersionedSchema {
             Persistence.CardRecord.self,
             KeepwellSchemaV8.TransactionRecord.self,
             CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
             KeepwellSchemaV8.RecurringRuleRecord.self,
         ]
     }
@@ -333,7 +333,7 @@ public enum KeepwellSchemaV7: VersionedSchema {
             Persistence.CardRecord.self,
             KeepwellSchemaV8.TransactionRecord.self,
             Persistence.CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
             KeepwellSchemaV8.RecurringRuleRecord.self,
         ]
     }
@@ -348,7 +348,7 @@ public enum KeepwellSchemaV8: VersionedSchema {
             Persistence.CardRecord.self,
             TransactionRecord.self,
             Persistence.CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
             RecurringRuleRecord.self,
             SavingsGoalRecord.self,
         ]
@@ -365,7 +365,7 @@ public enum KeepwellSchemaV9: VersionedSchema {
             Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
             Persistence.RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
@@ -384,7 +384,7 @@ public enum KeepwellSchemaV10: VersionedSchema {
             Persistence.CardRecord.self,
             Persistence.TransactionRecord.self,
             Persistence.CategoryRecord.self,
-            SettingsRecord.self,
+            KeepwellSchemaV11.SettingsRecord.self,
             Persistence.RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
@@ -403,8 +403,29 @@ public enum KeepwellSchemaV11: VersionedSchema {
     }
 }
 
+/// The settings row carries the person's home time zone (`timeZone`), synced as `time_zone`.
+public enum KeepwellSchemaV12: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(12, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        [
+            Persistence.AccountRecord.self,
+            Persistence.CardRecord.self,
+            Persistence.TransactionRecord.self,
+            Persistence.CategoryRecord.self,
+            Persistence.SettingsRecord.self,
+            Persistence.RecurringRuleRecord.self,
+            SavingsGoalRecord.self,
+            LoanRecord.self,
+            PersonalDebtRecord.self,
+            CategorizationRuleRecord.self,
+            OutboxRecord.self,
+            NotificationStateRecord.self,
+        ]
+    }
+}
+
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV11
+public typealias KeepwellCurrentSchema = KeepwellSchemaV12
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -420,6 +441,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV9.self,
             KeepwellSchemaV10.self,
             KeepwellSchemaV11.self,
+            KeepwellSchemaV12.self,
         ]
     }
 
@@ -432,7 +454,8 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// and V8 had no loans, personal debts or categorization rules, so V9 starts with none; its
     /// movements and recurring rules start without tags. V10 starts with an empty outbox and every
     /// movement and rule made in the app (`sourceRaw` nil reads as `app`). V11 adds notification
-    /// states, none yet.
+    /// states, none yet. Settings from V11 start without a home time zone; the app sets it from the
+    /// device after its next sync.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -445,6 +468,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV8.self, toVersion: KeepwellSchemaV9.self),
             .lightweight(fromVersion: KeepwellSchemaV9.self, toVersion: KeepwellSchemaV10.self),
             .lightweight(fromVersion: KeepwellSchemaV10.self, toVersion: KeepwellSchemaV11.self),
+            .lightweight(fromVersion: KeepwellSchemaV11.self, toVersion: KeepwellSchemaV12.self),
         ]
     }
 }

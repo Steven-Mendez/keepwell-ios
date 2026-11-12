@@ -31,6 +31,7 @@ extension AppContainer {
             store: store,
             clientID: installationID,
             repairCategories: DefaultReassignDeletedCategoriesUseCase(transactions: store, recurringRules: store),
+            fillTimeZone: DefaultFillHomeTimeZoneUseCase(settings: store),
         )
     }
 

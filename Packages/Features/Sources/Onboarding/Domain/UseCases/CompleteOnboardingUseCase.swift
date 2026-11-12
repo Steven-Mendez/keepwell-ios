@@ -13,6 +13,8 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
     private let profile: any ProfileRepository
     private let passcodes: any PasscodeRepository
     private let now: @Sendable () -> Date
+    /// The device's zone, which becomes the home zone (`Settings.timeZone`) until changed in Settings.
+    private let deviceTimeZone: @Sendable () -> String
 
     public init(
         settings: any SettingsRepository,
@@ -21,6 +23,7 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
         profile: any ProfileRepository,
         passcodes: any PasscodeRepository,
         now: @escaping @Sendable () -> Date = { .now },
+        deviceTimeZone: @escaping @Sendable () -> String = { TimeZone.current.identifier },
     ) {
         self.settings = settings
         self.accounts = accounts
@@ -28,6 +31,7 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
         self.profile = profile
         self.passcodes = passcodes
         self.now = now
+        self.deviceTimeZone = deviceTimeZone
     }
 
     public func execute(_ draft: OnboardingDraft) async throws(DomainError) -> Settings {
@@ -46,6 +50,7 @@ public struct DefaultCompleteOnboardingUseCase: CompleteOnboardingUseCase {
             // CloudKit is retired (increment 15); the field stays in the shared backup format.
             isICloudBackupEnabled: false,
             hasCompletedOnboarding: true,
+            timeZone: HomeTimeZone.isWellFormed(deviceTimeZone()) ? deviceTimeZone() : nil,
         )
         try await settings.save(result)
         await profile.setPreferredName(PreferredName.normalized(draft.preferredName))

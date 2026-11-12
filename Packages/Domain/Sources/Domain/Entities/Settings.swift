@@ -57,6 +57,11 @@ public struct Settings: Hashable, Sendable, Codable {
     public var isICloudBackupEnabled: Bool
     public var paymentReminderDaysBefore: Int
     public var hasCompletedOnboarding: Bool
+    /// The person's home time zone (IANA identifier): the one Keepwell's server reads "today", month
+    /// ends and recurring occurrences in. Set once from the device when missing and changed by hand
+    /// in Settings, never on its own, so two devices in different zones don't keep flipping it. The
+    /// app's own screens still use the device's calendar. Synced as `time_zone`.
+    public var timeZone: String?
 
     public init(
         currencies: CurrencySettings,
@@ -66,6 +71,7 @@ public struct Settings: Hashable, Sendable, Codable {
         isICloudBackupEnabled: Bool = true,
         paymentReminderDaysBefore: Int = 3,
         hasCompletedOnboarding: Bool = false,
+        timeZone: String? = nil,
     ) {
         self.currencies = currencies
         self.unlockMethod = unlockMethod
@@ -74,5 +80,34 @@ public struct Settings: Hashable, Sendable, Codable {
         self.isICloudBackupEnabled = isICloudBackupEnabled
         self.paymentReminderDaysBefore = paymentReminderDaysBefore
         self.hasCompletedOnboarding = hasCompletedOnboarding
+        self.timeZone = timeZone
+    }
+
+    /// These settings with `zone` as the home time zone when they have none yet, after onboarding;
+    /// `nil` when nothing should change. A zone set on another device always wins over this one.
+    public func fillingMissingTimeZone(_ zone: String) -> Self? {
+        guard hasCompletedOnboarding, timeZone == nil, HomeTimeZone.isWellFormed(zone) else { return nil }
+        var filled = self
+        filled.timeZone = zone
+        return filled
+    }
+}
+
+/// The rules every platform shares for the home zone (keepwell-web `TimeZoneId`).
+public enum HomeTimeZone {
+    /// An IANA name's shape ("America/Managua", "Etc/GMT+6", "UTC"). Only the shape: the zone
+    /// databases of iOS, browsers and the server differ by version, and a name one of them doesn't
+    /// know must not get the settings row rejected.
+    public static func isWellFormed(_ identifier: String) -> Bool {
+        identifier.count <= 64 && identifier.wholeMatch(of: /[A-Za-z][A-Za-z0-9_+\-]*(\/[A-Za-z0-9_+\-]+)*/) != nil
+    }
+
+    /// The calendar a home zone reads days in: the Gregorian calendar in that zone, or `nil` when
+    /// this iPhone doesn't know the zone.
+    public static func calendar(_ identifier: String) -> Calendar? {
+        guard let zone = TimeZone(identifier: identifier) else { return nil }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = zone
+        return calendar
     }
 }

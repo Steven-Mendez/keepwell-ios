@@ -9,6 +9,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Settings › Money: "Time zone", the home zone Keepwell's server uses for "today" and month ends
+  (reminders, assistants and recurring movements it records). It starts as the iPhone's zone, the
+  first time onboarding or a sync finds none, syncs to the web app and only changes from here.
+
 - A reminder the day before a recurring expense that is recorded as a draft (rent, school fees):
   "Rent is due tomorrow", in the inbox and as a notification, as subscriptions already had.
 - Brand logos: a recurring rule, an upcoming payment on Home or a movement whose name matches a

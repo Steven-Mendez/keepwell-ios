@@ -921,6 +921,16 @@
         }
       }
     },
+    "Reminders and your assistant use it for today and for month ends." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los recordatorios y tu asistente la usan para saber qué día es hoy y cuándo cierra el mes."
+          }
+        }
+      }
+    },
     "Reorder" : {
       "localizations" : {
         "es" : {
@@ -997,6 +1007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Buscar moneda"
+          }
+        }
+      }
+    },
+    "Search time zone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar zona horaria"
           }
         }
       }
@@ -1127,6 +1147,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este archivo no es una copia de Keepwell o está dañado. No se restauró nada."
+          }
+        }
+      }
+    },
+    "Time zone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zona horaria"
           }
         }
       }

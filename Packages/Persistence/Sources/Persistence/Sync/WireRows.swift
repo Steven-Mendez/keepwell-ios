@@ -204,11 +204,17 @@ extension NotificationStateRecord: SyncableRecord {
 
 extension SettingsRecord {
     /// Only what is the same on every device; unlock, relock, hiding amounts and the iCloud switch stay here.
+    /// `time_zone` is left out while there is none, never sent as null: the server keeps the zone a
+    /// row lacks, so a save here can't clear one another device set.
     func wireRow() -> WireRow {
-        [
+        var row: WireRow = [
             "id": "settings", "principal": principal, "second": Wire.value(second == principal ? nil : second), "rate": rate,
             "payment_reminder_days_before": paymentReminderDaysBefore, "has_completed_onboarding": hasCompletedOnboarding,
             "created_at": Wire.date(updatedAt), "updated_at": Wire.date(updatedAt), "deleted_at": NSNull(),
         ]
+        if let timeZone {
+            row["time_zone"] = timeZone
+        }
+        return row
     }
 }
