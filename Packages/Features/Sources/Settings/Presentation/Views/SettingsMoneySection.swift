@@ -3,7 +3,7 @@ import Domain
 import SettingsDomain
 import SwiftUI
 
-/// Currencies, the rate between them, and when to be reminded of a card's payment.
+/// Currencies, the rate between them, when to be reminded of a card's payment, and the home zone.
 struct MoneySection: View {
     @Bindable var viewModel: SettingsViewModel
     let overview: SettingsOverview
@@ -44,6 +44,7 @@ struct MoneySection: View {
                     options: SettingsViewModel.reminderOptions,
                     title: viewModel.reminderTitle,
                 ) { days in Task { await viewModel.setReminderDays(days) } }
+                TimeZoneRow(viewModel: viewModel, settings: settings)
             }
         }
         .onChange(of: isEditingRate) { _, editing in

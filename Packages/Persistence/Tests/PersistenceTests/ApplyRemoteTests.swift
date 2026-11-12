@@ -119,3 +119,46 @@ struct ApplyRemoteTests {
         #expect(await editing.pendingCount() == 1)
     }
 }
+
+/// The home time zone travels as an optional column (T21): left out while there is none, and a row
+/// without it, from an app older than the column, leaves this iPhone's zone as it was.
+@Suite("Settings time zone on the wire")
+struct SettingsTimeZoneWireTests {
+    private func store() throws -> SwiftDataStore {
+        try SwiftDataStore(modelContainer: ModelContainerFactory.make(store: .inMemory))
+    }
+
+    private func row(_ event: OutboxEvent) throws -> [String: Any] {
+        try #require(JSONSerialization.jsonObject(with: event.payload) as? [String: Any])
+    }
+
+    @Test
+    func isLeftOutUntilSetAndThenTravels() async throws {
+        let phone = try store()
+        try await phone.save(Settings(currencies: .initial, hasCompletedOnboarding: true))
+        #expect(try row(#require(try await phone.pendingEvents().last))["time_zone"] == nil)
+        try await phone.save(Settings(currencies: .initial, hasCompletedOnboarding: true, timeZone: "Asia/Tokyo"))
+        #expect(try row(#require(try await phone.pendingEvents().last))["time_zone"] as? String == "Asia/Tokyo")
+    }
+
+    @Test
+    func aRowWithoutTheColumnKeepsTheZoneAndNullClearsIt() async throws {
+        let phone = try store()
+        try await phone.save(Settings(currencies: .initial, hasCompletedOnboarding: true, timeZone: "Europe/Madrid"))
+        let old: [String: Any] = [
+            "id": "settings", "principal": "USD", "second": NSNull(), "rate": "1", "payment_reminder_days_before": 5,
+            "has_completed_onboarding": true, "created_at": "2030-01-01T00:00:00.000Z", "updated_at": "2030-01-01T00:00:00.000Z",
+            "deleted_at": NSNull(),
+        ]
+        _ = try await phone.applyRemote(entity: "settings", row: JSONSerialization.data(withJSONObject: old))
+        var settings = try #require(try await phone.load())
+        #expect(settings.paymentReminderDaysBefore == 5)
+        #expect(settings.timeZone == "Europe/Madrid")
+        var cleared = old
+        cleared["time_zone"] = NSNull()
+        cleared["updated_at"] = "2030-01-02T00:00:00.000Z"
+        _ = try await phone.applyRemote(entity: "settings", row: JSONSerialization.data(withJSONObject: cleared))
+        settings = try #require(try await phone.load())
+        #expect(settings.timeZone == nil)
+    }
+}

@@ -162,6 +162,11 @@ public final class SettingsViewModel {
         await update { $0.paymentReminderDaysBefore = days }
     }
 
+    public func setTimeZone(_ identifier: String) async {
+        guard HomeTimeZone.isWellFormed(identifier) else { return }
+        await update { $0.timeZone = identifier }
+    }
+
     private func update(_ change: @escaping @Sendable (inout Settings) throws(DomainError) -> Void) async {
         do {
             _ = try await updateSettings.execute(change)

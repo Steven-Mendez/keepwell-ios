@@ -335,6 +335,10 @@ extension SwiftDataStore {
             settings.rate = try wire.string("rate")
             settings.paymentReminderDaysBefore = try wire.int("payment_reminder_days_before")
             settings.hasCompletedOnboarding = wire.bool("has_completed_onboarding")
+            // A row without the key comes from an app older than the column: it says nothing about it.
+            if wire.row.keys.contains("time_zone") {
+                settings.timeZone = wire.optionalString("time_zone")
+            }
             settings.updatedAt = try wire.date("updated_at")
         default:
             return false

@@ -32,10 +32,12 @@ public actor SyncEngine {
     private let clientID: String
     private let appBuild: String
     private let repairCategories: (any ReassignDeletedCategoriesUseCase)?
+    let fillTimeZone: (any FillHomeTimeZoneUseCase)?
 
     /// `defaultsSuite` keeps the cursor apart (tests); `nil` is the app's standard defaults.
     /// `appBuild` tells an updated app, which may read rows this one skipped.
-    /// `repairCategories` runs after every pull (keepwell-web does the same).
+    /// `repairCategories` runs after every pull (keepwell-web does the same), and `fillTimeZone`
+    /// after a round, once the account's settings are here.
     public init(
         client: APIClient,
         store: any SyncConflictStore,
@@ -43,6 +45,7 @@ public actor SyncEngine {
         clientID: String,
         appBuild: String = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "",
         repairCategories: (any ReassignDeletedCategoriesUseCase)? = nil,
+        fillTimeZone: (any FillHomeTimeZoneUseCase)? = nil,
     ) {
         self.client = client
         self.store = store
@@ -50,6 +53,7 @@ public actor SyncEngine {
         self.clientID = clientID
         self.appBuild = appBuild
         self.repairCategories = repairCategories
+        self.fillTimeZone = fillTimeZone
     }
 
     private var cursor: Int? {
@@ -127,6 +131,9 @@ public actor SyncEngine {
         try await push()
         try await retrySkipped()
         try await pull()
+        if try await fillHomeTimeZone() {
+            try await push()
+        }
         defaults.set(Date.now, forKey: "sync.lastAt")
         return .synced
     }
@@ -492,15 +499,6 @@ extension SyncEngine {
             defaults.set(build, forKey: Self.retryBuildKey)
             throw error
         }
-    }
-
-    /// The case, without values that could be the person's data (an amount in a message, say).
-    /// A missing or malformed wire field is named, as it says what changed.
-    private static func reason(for error: DomainError) -> String {
-        if case let .corruptedData(message) = error {
-            return message.hasPrefix("wire ") ? "corruptedData: \(message)" : "corruptedData"
-        }
-        return Mirror(reflecting: error).children.first?.label ?? String(describing: error)
     }
 }
 
