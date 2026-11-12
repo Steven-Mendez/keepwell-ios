@@ -242,6 +242,8 @@ struct RootView: View {
             goals: { router.push(.goals) },
             debts: { router.push(.debts) },
             openTransaction: { router.push(.transaction(id: $0)) },
+            openRecurringRule: { router.push(.recurringRule(id: $0)) },
+            openCreditCard: { router.push(.creditCard(accountID: $0)) },
         )
     }
 }

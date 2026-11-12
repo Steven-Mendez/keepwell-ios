@@ -70,7 +70,7 @@ struct HomeHero: View {
             Text(viewModel.dateLine(date))
                 .font(KWTextStyle.caption.font)
                 .foregroundStyle(KWColor.Text.onBrand)
-            if let status = viewModel.statusLine(at: date) {
+            if let status = viewModel.statusLine() {
                 Text(status)
                     .font(KWTextStyle.caption.font.weight(.regular))
                     .foregroundStyle(KWColor.Text.onBrand)

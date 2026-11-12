@@ -10,6 +10,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     static let recentCount = 3
     /// How far ahead recurring occurrences are listed (home shows a week; reminders use the rest).
     static let upcomingDays = 30
+    /// How far ahead home's "Upcoming" card looks.
+    static let upcomingPaymentDays = 7
 
     private let accounts: any AccountRepository
     private let cards: any CardRepository
@@ -100,6 +102,13 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
             cardSubscriptions: cardSubscriptions(records, rules: rules, calendar: calendar),
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
+            upcomingPayments: upcomingPayments(
+                records,
+                rules: rules,
+                loans: debts.loans,
+                settings: currencies,
+                at: (now, calendar),
+            ),
             proposedRules: rules.filter { $0.source == .mcp && $0.isPaused },
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             latestExpenseDays: latestExpenseDays(transactions, month: month.month, calendar: calendar, now: now),
@@ -112,6 +121,24 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             cards: cards,
             categories: records.categories,
         )
+    }
+
+    /// What home's "Upcoming" card and its status line read.
+    private static func upcomingPayments(
+        _ records: LedgerRecords,
+        rules: [RecurringRule],
+        loans: [Loan],
+        settings: CurrencySettings,
+        at moment: (now: Date, calendar: Calendar),
+    ) -> [UpcomingPayment] {
+        let ledger = UpcomingPayments.Ledger(
+            transactions: records.transactions,
+            rules: rules,
+            accounts: records.accounts,
+            loans: loans,
+            settings: settings,
+        )
+        return UpcomingPayments.compute(ledger, on: moment.now, days: upcomingPaymentDays, calendar: moment.calendar)
     }
 
     /// When each category was last spent in this month, up to now.

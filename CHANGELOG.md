@@ -113,6 +113,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 
+- Home's "Upcoming" lists everything pending: drafts to confirm (with "Confirm", replacing the
+  separate drafts card), recurring movements, credit card payments with something to pay and loan
+  installments. Anything overdue comes first, all of it, marked "Overdue · 3 days" in the warning
+  color; then the next three this week. The line under the greeting counts from the same list, so
+  the two never disagree, and the web app and assistants list the same things.
 - Home is lighter: "Log quickly", the budget and price-increase alerts and Proposed by Claude
   moved out (the alerts and proposals to Notifications; the widget keeps "Log quickly").
 - A card payment reminder on its due day reads "due today" instead of "payment in 0 days".

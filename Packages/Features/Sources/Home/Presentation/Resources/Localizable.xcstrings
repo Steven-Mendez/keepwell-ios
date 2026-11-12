@@ -521,6 +521,16 @@
         }
       }
     },
+    "Card payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pago de tarjeta"
+          }
+        }
+      }
+    },
     "Card payments" : {
       "localizations" : {
         "es" : {
@@ -751,6 +761,16 @@
         }
       }
     },
+    "Installment %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuota %1$lld de %2$lld"
+          }
+        }
+      }
+    },
     "Installment %lld of %lld · %@" : {
       "localizations" : {
         "es" : {
@@ -937,6 +957,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ahora %@, antes %@."
+          }
+        }
+      }
+    },
+    "Overdue · %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld días"
+                }
+              }
+            }
           }
         }
       }
