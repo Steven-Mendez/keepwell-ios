@@ -72,7 +72,7 @@ public struct PlanView: View {
                         .font(.kw(26, weight: 800, relativeTo: .title2))
                         .tracking(-0.5)
                         .monospacedDigit()
-                    Text("Subscriptions per month", bundle: #bundle)
+                    Text(viewModel.subscriptionsCaption(recurring))
                         .font(KWTextStyle.caption.font.weight(.regular))
                         .foregroundStyle(KWColor.Text.muted)
                 }
@@ -136,12 +136,12 @@ public struct PlanView: View {
             if debts.hasDebts {
                 HStack(alignment: .top, spacing: KWSpacing.md) {
                     total(
-                        String(localized: "You owe", bundle: #bundle),
+                        viewModel.youOweTitle(debts),
                         viewModel.debtTotal(debts.totals.youOwe, hidden: hidesBalances),
                         color: debts.totals.youOwe.isEmpty ? KWColor.Text.muted : KWColor.State.negative,
                     )
                     total(
-                        String(localized: "Owed to you", bundle: #bundle),
+                        viewModel.owedToYouTitle(debts),
                         viewModel.debtTotal(debts.totals.owedToYou, hidden: hidesBalances),
                         color: debts.totals.owedToYou.isEmpty ? KWColor.Text.muted : KWColor.State.positive,
                     )

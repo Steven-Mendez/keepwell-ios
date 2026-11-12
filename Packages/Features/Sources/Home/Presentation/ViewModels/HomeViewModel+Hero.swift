@@ -47,6 +47,29 @@ extension HomeViewModel {
         }
     }
 
+    /// "2 payments to confirm · 1 due tomorrow", or "All caught up"; `nil` before the ledger loads.
+    func statusLine(at date: Date) -> String? {
+        overview.map { Self.statusLine(HomeStatus(on: date, in: $0, calendar: calendar)) }
+    }
+
+    static func statusLine(_ status: HomeStatus) -> String {
+        guard !status.isClear else { return String(localized: "All caught up", bundle: #bundle) }
+        var parts: [String] = []
+        if status.toConfirm > 0 {
+            parts.append(String(localized: "\(status.toConfirm) payments to confirm", bundle: #bundle))
+        }
+        if status.overdue > 0 {
+            parts.append(String(localized: "\(status.overdue) installments overdue", bundle: #bundle))
+        }
+        if status.dueToday > 0 {
+            parts.append(String(localized: "\(status.dueToday) due today", bundle: #bundle))
+        }
+        if status.dueTomorrow > 0 {
+            parts.append(String(localized: "\(status.dueTomorrow) due tomorrow", bundle: #bundle))
+        }
+        return parts.joined(separator: " · ")
+    }
+
     /// "Tuesday, November 3", in the person's locale.
     func dateLine(_ date: Date) -> String {
         date.formatted(.dateTime.weekday(.wide).month(.wide).day())
