@@ -61,6 +61,9 @@ extension HomeViewModel {
         if status.overdue > 0 {
             parts.append(String(localized: "\(status.overdue) installments overdue", bundle: #bundle))
         }
+        if status.overdueDebts > 0 {
+            parts.append(String(localized: "\(status.overdueDebts) debts overdue", bundle: #bundle))
+        }
         if status.dueToday > 0 {
             parts.append(String(localized: "\(status.dueToday) due today", bundle: #bundle))
         }

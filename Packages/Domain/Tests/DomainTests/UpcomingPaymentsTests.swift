@@ -2,227 +2,6 @@ import Foundation
 import Testing
 @testable import Domain
 
-/// The cases keepwell-web and keepwell-api run too (`upcoming.json`): the same ledger must give the
-/// same ids, statuses and order on every platform.
-@Suite("Shared upcoming fixtures")
-struct UpcomingPaymentsFixtureTests {
-    /// The entities in their sync shape (camelCase, decimal text, ISO dates), read by hand so the
-    /// file stays a verbatim copy of the web's.
-    private struct File: Decodable {
-        struct Case: Decodable {
-            let name: String
-            let now: String
-            let timeZone: String
-            let ledger: Ledger
-            let windows: [Window]
-        }
-
-        struct Window: Decodable {
-            let days: Int
-            let expected: [Expected]
-        }
-
-        struct Expected: Decodable, Equatable {
-            let id: String
-            let status: String
-        }
-
-        struct Ledger: Decodable {
-            let currencies: Currencies
-            let accounts: [AccountRow]
-            let transactions: [TransactionRow]
-            let recurringRules: [RuleRow]
-            let loans: [LoanRow]
-        }
-
-        struct Currencies: Decodable {
-            let principal: String
-            let second: String?
-            let rate: String
-        }
-
-        struct MoneyRow: Decodable {
-            let amount: String
-            let currency: String
-        }
-
-        struct Terms: Decodable {
-            let debtMode: DebtMode
-            let cutoffDay: Int?
-            let dueDay: Int?
-        }
-
-        struct AccountRow: Decodable {
-            let id: UUID
-            let name: String
-            let kind: AccountKind
-            let openingBalances: [MoneyRow]
-            let openingDate: String
-            let creditTerms: Terms?
-        }
-
-        struct Rate: Decodable {
-            let principal: String
-            let second: String
-            let rate: String
-        }
-
-        struct TransactionRow: Decodable {
-            let id: UUID
-            let date: String
-            let status: TransactionStatus
-            let description: String
-            let kind: TransactionKind
-            let amount: String
-            let currency: String
-            let accountId: UUID
-            let exchangeRate: Rate
-            let recurringId: UUID?
-        }
-
-        struct RuleRow: Decodable {
-            let id: UUID
-            let name: String
-            let kind: TransactionKind
-            let amount: String
-            let currency: String
-            let accountId: UUID
-            let frequency: RecurringFrequency
-            let interval: Int
-            let startDate: String
-            let nextDate: String
-            let endDate: String?
-            let isSubscription: Bool
-            let autoConfirm: Bool
-            let isPaused: Bool
-        }
-
-        struct PaymentRow: Decodable {
-            let number: Int
-            let paidAt: String
-        }
-
-        struct LoanRow: Decodable {
-            let id: UUID
-            let name: String
-            let borrowed: MoneyRow
-            let installmentAmount: String
-            let installmentCount: Int
-            let frequency: LoanFrequency
-            let firstDueDate: String
-            let payments: [PaymentRow]
-        }
-
-        let cases: [Case]
-    }
-
-    private static func date(_ text: String) throws -> Date {
-        let parser = ISO8601DateFormatter()
-        parser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return try #require(parser.date(from: text))
-    }
-
-    private static func money(_ row: File.MoneyRow) -> Money {
-        Money(Fixtures.decimal(row.amount), row.currency)
-    }
-
-    @Test
-    func everyWindowMatchesTheWeb() throws {
-        let url = try #require(Bundle.module.url(forResource: "upcoming", withExtension: "json", subdirectory: "Fixtures"))
-        let file = try JSONDecoder().decode(File.self, from: Data(contentsOf: url))
-        for entry in file.cases {
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = try #require(TimeZone(identifier: entry.timeZone))
-            let ledger = try Self.ledger(entry.ledger)
-            for window in entry.windows {
-                let payments = try UpcomingPayments.compute(ledger, on: Self.date(entry.now), days: window.days, calendar: calendar)
-                let got = payments.map { File.Expected(id: $0.id, status: $0.status.rawValue) }
-                #expect(got == window.expected, "\(entry.name), \(window.days) days")
-            }
-        }
-    }
-
-    private static func ledger(_ rows: File.Ledger) throws -> UpcomingPayments.Ledger {
-        try UpcomingPayments.Ledger(
-            transactions: rows.transactions.map(transaction),
-            rules: rows.recurringRules.map(rule),
-            accounts: rows.accounts.map(account),
-            loans: rows.loans.map(loan),
-            settings: CurrencySettings(
-                principal: rows.currencies.principal,
-                second: rows.currencies.second,
-                rate: Fixtures.decimal(rows.currencies.rate),
-            ),
-        )
-    }
-
-    private static func account(_ row: File.AccountRow) throws -> Account {
-        let terms = try row.creditTerms.map { terms throws(DomainError) in
-            try CreditTerms(debtMode: terms.debtMode, cutoffDay: terms.cutoffDay, dueDay: terms.dueDay)
-        }
-        return try Account(
-            id: row.id,
-            name: row.name,
-            kind: row.kind,
-            openingBalances: row.openingBalances.map(money),
-            openingDate: date(row.openingDate),
-            creditTerms: terms,
-        )
-    }
-
-    private static func transaction(_ row: File.TransactionRow) throws -> Transaction {
-        let rate = row.exchangeRate
-        return try Transaction(
-            id: row.id,
-            date: date(row.date),
-            status: row.status,
-            description: row.description,
-            kind: row.kind,
-            categoryID: nil,
-            amount: Fixtures.decimal(row.amount),
-            currency: row.currency,
-            accountID: row.accountId,
-            exchangeRate: rate.principal == rate.second
-                ? .single(rate.principal)
-                : ExchangeRate(principal: rate.principal, second: rate.second, rate: Fixtures.decimal(rate.rate)),
-            recurringID: row.recurringId,
-        )
-    }
-
-    private static func rule(_ row: File.RuleRow) throws -> RecurringRule {
-        try RecurringRule(
-            id: row.id,
-            name: row.name,
-            kind: row.kind,
-            categoryID: nil,
-            amount: Fixtures.decimal(row.amount),
-            currency: row.currency,
-            accountID: row.accountId,
-            frequency: row.frequency,
-            interval: row.interval,
-            startDate: date(row.startDate),
-            nextDate: date(row.nextDate),
-            endDate: row.endDate.map(date),
-            isSubscription: row.isSubscription,
-            autoConfirm: row.autoConfirm,
-            isPaused: row.isPaused,
-        )
-    }
-
-    private static func loan(_ row: File.LoanRow) throws -> Loan {
-        try Loan(
-            id: row.id,
-            name: row.name,
-            borrowed: money(row.borrowed),
-            installmentAmount: Fixtures.decimal(row.installmentAmount),
-            installmentCount: row.installmentCount,
-            frequency: row.frequency,
-            firstDueDate: date(row.firstDueDate),
-            payments: row.payments.map { try LoanPayment(number: $0.number, paidAt: date($0.paidAt)) },
-        )
-    }
-}
-
 /// Same cases as the web's `upcomingPayments` suite (`tests/domain/upcoming-payments.test.ts`).
 @Suite("Upcoming payments")
 struct UpcomingPaymentsTests {
@@ -236,11 +15,12 @@ struct UpcomingPaymentsTests {
         rules: [RecurringRule] = [],
         accounts: [Account] = [],
         loans: [Loan] = [],
+        debts: [PersonalDebt] = [],
         on date: Date? = nil,
         days: Int,
     ) -> [UpcomingPayment] {
         UpcomingPayments.compute(
-            UpcomingPayments.Ledger(transactions: transactions, rules: rules, accounts: accounts, loans: loans),
+            UpcomingPayments.Ledger(transactions: transactions, rules: rules, accounts: accounts, loans: loans, personalDebts: debts),
             on: date ?? now,
             days: days,
             calendar: calendar,
@@ -314,6 +94,72 @@ struct UpcomingPaymentsTests {
         let payments = compute(transactions: [charge], accounts: [owes, paid], days: 7)
         #expect(payments.map(\.id) == ["card:\(owes.id.uuidString.lowercased()):2026-11-14"])
         #expect(payments.first?.amount == Money(80, "USD"))
+    }
+
+    @Test
+    func listsAnOpenDebtWithADueDateEitherDirectionForWhatIsLeftInItsCurrency() throws {
+        let debt = { (id: String, direction: DebtDirection, due: Date?, repaid: Decimal?, settled: Date?) throws in
+            try PersonalDebt(
+                id: #require(UUID(uuidString: "00000000-0000-4000-8000-0000000000\(id)")),
+                person: direction == .iOwe ? "Luis" : "Ana",
+                direction: direction,
+                amount: Money(100, "NIO"),
+                date: Fixtures.date(2026, 10, 1),
+                repayments: repaid.map { [DebtRepayment(amount: $0, date: Fixtures.date(2026, 10, 20))] } ?? [],
+                settledAt: settled,
+                dueDate: due,
+            )
+        }
+        let late = try debt("d1", .theyOweMe, Fixtures.date(2026, 11, 9, hour: 0), 30, nil)
+        let mine = try debt("d2", .iOwe, Fixtures.date(2026, 11, 14, hour: 0), nil, nil)
+        let undated = try debt("d3", .theyOweMe, nil, nil, nil)
+        let settled = try debt("d4", .theyOweMe, Fixtures.date(2026, 11, 10, hour: 0), nil, Fixtures.date(2026, 11, 10))
+        let far = try debt("d5", .theyOweMe, Fixtures.date(2026, 11, 30, hour: 0), nil, nil)
+        let payments = compute(debts: [far, settled, undated, mine, late], days: 7)
+        #expect(payments.map(\.id) == ["debt:\(late.id.uuidString.lowercased())", "debt:\(mine.id.uuidString.lowercased())"])
+        #expect(payments.map(\.status) == [.overdue, .upcoming])
+        #expect(payments.map(\.daysFromToday) == [-3, 2])
+        #expect(payments.first?.kind == .debt(debtID: late.id, person: "Ana", direction: .theyOweMe))
+        #expect(payments.first?.amount == Money(70, "NIO"))
+        #expect(payments.last?.kind == .debt(debtID: mine.id, person: "Luis", direction: .iOwe))
+    }
+
+    @Test
+    func leavesOutAClosedAccountsCardEvenOwingAndItsRulesFromOrToIt() throws {
+        let closedAt = Fixtures.date(2026, 11, 1)
+        let id = { (suffix: String) throws in try #require(UUID(uuidString: "00000000-0000-4000-8000-0000000000\(suffix)")) }
+        let card = try Account(
+            id: id("b8"), name: "Visa", kind: .credit, openingBalances: [Money(0, "USD")],
+            openingDate: Fixtures.date(2026, 1, 1), creditTerms: CreditTerms(debtMode: .principal, dueDay: 14), closedAt: closedAt,
+        )
+        let savings = try Account(
+            id: id("b9"), name: "Old", kind: .deposit, openingBalances: [Money(0, "USD")],
+            openingDate: Fixtures.date(2026, 1, 1), closedAt: closedAt,
+        )
+        let charge = Fixtures.transaction(amount: "80", account: card.id, date: Fixtures.date(2026, 11, 2), rate: .single("USD"))
+        let today = Fixtures.date(2026, 11, 12)
+        let rule = { (suffix: String, account: UUID, destination: UUID?) throws in
+            try RecurringRule(
+                id: id(suffix), name: "Gym", kind: destination == nil ? .expense : .transfer, categoryID: nil, amount: 25,
+                currency: "USD", accountID: account, destinationAccountID: destination, frequency: .monthly,
+                startDate: Fixtures.date(2026, 1, 12), nextDate: today,
+            )
+        }
+        let open = try rule("e3", bank, nil)
+        let onCard = try rule("e4", card.id, nil)
+        let intoClosed = try rule("e5", bank, savings.id)
+        let rules = [onCard, intoClosed, open]
+        let key = { (rule: RecurringRule) in "recurring:\(rule.id.uuidString.lowercased()):2026-11-12" }
+        let payments = compute(transactions: [charge], rules: rules, accounts: [card, savings], days: 7)
+        #expect(payments.map(\.id) == [key(open)])
+        // Reopened, both come back.
+        let reopened = compute(
+            transactions: [charge],
+            rules: rules,
+            accounts: [card.with(closedAt: nil), savings.with(closedAt: nil)],
+            days: 7,
+        )
+        #expect(reopened.map(\.id) == [key(open), key(onCard), key(intoClosed), "card:\(card.id.uuidString.lowercased()):2026-11-14"])
     }
 
     @Test

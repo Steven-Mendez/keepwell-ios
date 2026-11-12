@@ -17,7 +17,7 @@ struct HomeStatusTests {
     private func overview(now: Date, store: InMemoryStore = InMemoryStore(sample: .standard)) async throws -> HomeOverview {
         try await DefaultGetHomeOverviewUseCase(
             accounts: store, cards: store, transactions: store, categories: store, settings: store,
-            recurringRules: store, loans: store, calendar: calendar, now: { now },
+            recurringRules: store, loans: store, personalDebts: store, calendar: calendar, now: { now },
         ).execute()
     }
 
@@ -77,45 +77,100 @@ struct HomeStatusTests {
                 payments: loan.payments + late,
             ))
         }
+        // One debt each way, due on the 12th and the 13th: before, reminded like an installment;
+        // after, overdue, which neither the reminders nor today and tomorrow count.
+        for (person, direction, day) in [("Ana", DebtDirection.theyOweMe, 12), ("Luis", .iOwe, 13)] {
+            await store.save(PersonalDebt(
+                person: person, direction: direction, amount: Money(20, "USD"), date: date(10, 1),
+                dueDate: calendar.startOfDay(for: date(11, day)),
+            ))
+        }
         for day in 1 ... 30 {
             let now = date(11, day)
             let overview = try await overview(now: now, store: store)
             let reminders = LedgerNotifications.applying(on: now, in: overview, calendar: calendar)
-            var expected = HomeStatus()
-            for notification in reminders {
-                switch notification.subject {
-                case let .payment(accountID, _, _, daysLeft):
-                    // A card with nothing to pay still gets its reminder but isn't pending.
-                    let owes = overview.upcomingPayments.contains {
-                        if case let .card(id, _) = $0.kind {
-                            id == accountID
-                        } else {
-                            false
-                        }
-                    }
-                    if owes, daysLeft == 0 {
-                        expected.dueToday += 1
-                    }
-                    if owes, daysLeft == 1 {
-                        expected.dueTomorrow += 1
-                    }
-                case let .installment(_, _, daysLeft):
-                    if daysLeft == 0 {
-                        expected.dueToday += 1
-                    }
-                    if daysLeft == 1 {
-                        expected.dueTomorrow += 1
-                    }
-                case .renewal, .bill:
-                    expected.dueTomorrow += 1
-                default:
-                    break
-                }
-            }
+            let expected = Self.dueSoon(reminders, listing: overview.upcomingPayments)
             let status = HomeStatus(overview)
             #expect(status.dueToday == expected.dueToday, "Nov \(day)")
             #expect(status.dueTomorrow == expected.dueTomorrow, "Nov \(day)")
+            #expect(status.overdueDebts == (day > 12 ? 1 : 0) + (day > 13 ? 1 : 0), "Nov \(day)")
         }
+    }
+
+    /// Today and tomorrow as the reminders count them. A card with nothing to pay still gets its
+    /// reminder but isn't pending, so it counts only when `payments` lists it.
+    private static func dueSoon(_ reminders: [LedgerNotification], listing payments: [UpcomingPayment]) -> HomeStatus {
+        var expected = HomeStatus()
+        for notification in reminders {
+            switch notification.subject {
+            case let .payment(accountID, _, _, daysLeft):
+                let owes = payments.contains {
+                    if case let .card(id, _) = $0.kind {
+                        id == accountID
+                    } else {
+                        false
+                    }
+                }
+                if owes, daysLeft == 0 {
+                    expected.dueToday += 1
+                }
+                if owes, daysLeft == 1 {
+                    expected.dueTomorrow += 1
+                }
+            case let .installment(_, _, daysLeft), let .debt(_, _, daysLeft):
+                if daysLeft == 0 {
+                    expected.dueToday += 1
+                }
+                if daysLeft == 1 {
+                    expected.dueTomorrow += 1
+                }
+            case .renewal, .bill:
+                expected.dueTomorrow += 1
+            default:
+                break
+            }
+        }
+        return expected
+    }
+
+    @Test
+    func countsPersonalDebtsAsUpcomingListsThemNeverAllCaughtUpWhileOneIsLate() async throws {
+        let now = calendar.date(from: DateComponents(year: 2026, month: 11, day: 12, hour: 15)) ?? .now
+        let debt = { (direction: DebtDirection, due: Int?, settled: Bool) in
+            PersonalDebt(
+                person: "Ana", direction: direction, amount: Money(50, "USD"), date: date(10, 1),
+                settledAt: settled ? date(11, 2) : nil,
+                dueDate: due.map { calendar.startOfDay(for: date(11, $0)) },
+            )
+        }
+        let owedLate = debt(.theyOweMe, 5, false)
+        let oweLate = debt(.iOwe, 10, false)
+        let today = debt(.iOwe, 12, false)
+        let tomorrow = debt(.theyOweMe, 13, false)
+        let settled = debt(.theyOweMe, 1, true)
+        let undated = debt(.iOwe, nil, false)
+
+        // One late debt, whichever way it goes, is enough to drop "All caught up".
+        for late in [owedLate, oweLate] {
+            let overview = try await overview(now: now, store: InMemoryStore(personalDebts: [late, settled, undated]))
+            #expect(overview.upcomingPayments.map(\.status) == [.overdue])
+            #expect(overview.upcomingPayments.map(\.id) == ["debt:\(late.id.uuidString.lowercased())"])
+            #expect(HomeStatus(overview) == HomeStatus(overdueDebts: 1))
+        }
+        #expect(try await HomeStatus(overview(now: now, store: InMemoryStore(personalDebts: [settled, undated]))).isClear)
+
+        let store = InMemoryStore(personalDebts: [owedLate, oweLate, today, tomorrow, settled, undated])
+        let overview = try await overview(now: now, store: store)
+        let status = HomeStatus(overview)
+        #expect(status == HomeStatus(overdueDebts: 2, dueToday: 1, dueTomorrow: 1))
+        let listedLate = overview.upcomingPayments.count {
+            if case .debt = $0.kind {
+                $0.status == .overdue
+            } else {
+                false
+            }
+        }
+        #expect(status.overdueDebts == listedLate)
     }
 
     @Test
@@ -125,7 +180,7 @@ struct HomeStatusTests {
     }
 
     @Test
-    func countsCardsInstallmentsRenewalsAndBillsByTheDayTheyAreDue() {
+    func countsCardsInstallmentsDebtsRenewalsAndBillsByTheDayTheyAreDue() {
         let day = date(10, 26)
         let account = UUID()
         let rule = { (subscription: Bool, kind: TransactionKind, auto: Bool) in
@@ -154,7 +209,11 @@ struct HomeStatusTests {
             payment("j", .recurring(rule(false, .expense, true)), 1),
             payment("k", .recurring(rule(false, .income, false)), 1),
             payment("l", .recurring(rule(true, .expense, false)), 2),
+            payment("m", .debt(debtID: UUID(), person: "Ana", direction: .theyOweMe), -3),
+            payment("n", .debt(debtID: UUID(), person: "Luis", direction: .iOwe), 0),
+            payment("o", .debt(debtID: UUID(), person: "Ana", direction: .iOwe), 1),
+            payment("p", .debt(debtID: UUID(), person: "Ana", direction: .theyOweMe), 2),
         ])
-        #expect(status == HomeStatus(toConfirm: 2, overdue: 1, dueToday: 1, dueTomorrow: 3))
+        #expect(status == HomeStatus(toConfirm: 2, overdue: 1, overdueDebts: 1, dueToday: 2, dueTomorrow: 4))
     }
 }

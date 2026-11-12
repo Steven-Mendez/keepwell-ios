@@ -106,7 +106,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             upcomingPayments: upcomingPayments(
                 records,
                 rules: rules,
-                loans: debts.loans,
+                debts: debts,
                 settings: currencies,
                 at: (now, calendar),
             ),
@@ -129,7 +129,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     private static func upcomingPayments(
         _ records: LedgerRecords,
         rules: [RecurringRule],
-        loans: [Loan],
+        debts: DebtRecords,
         settings: CurrencySettings,
         at moment: (now: Date, calendar: Calendar),
     ) -> [UpcomingPayment] {
@@ -137,7 +137,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             transactions: records.transactions,
             rules: rules,
             accounts: records.accounts,
-            loans: loans,
+            loans: debts.loans,
+            personalDebts: debts.personal,
             settings: settings,
         )
         return UpcomingPayments.compute(ledger, on: moment.now, days: upcomingPaymentDays, calendar: moment.calendar)

@@ -9,19 +9,22 @@ public struct HomeStatus: Hashable, Sendable {
     public var toConfirm = 0
     /// Loan installments past their day.
     public var overdue = 0
-    /// Card payments and installments due today.
+    /// Personal debts past their due date, either direction: the late ones "Upcoming" lists.
+    public var overdueDebts = 0
+    /// Card payments, installments and personal debts due today.
     public var dueToday = 0
-    /// Card payments and installments due tomorrow, subscriptions renewing tomorrow and bills due
-    /// tomorrow (recurring expenses recorded as drafts), as the reminders count them.
+    /// Card payments, installments and personal debts due tomorrow, subscriptions renewing tomorrow
+    /// and bills due tomorrow (recurring expenses recorded as drafts), as the reminders count them.
     public var dueTomorrow = 0
 
     public var isClear: Bool {
-        toConfirm == 0 && overdue == 0 && dueToday == 0 && dueTomorrow == 0
+        toConfirm == 0 && overdue == 0 && overdueDebts == 0 && dueToday == 0 && dueTomorrow == 0
     }
 
-    public init(toConfirm: Int = 0, overdue: Int = 0, dueToday: Int = 0, dueTomorrow: Int = 0) {
+    public init(toConfirm: Int = 0, overdue: Int = 0, overdueDebts: Int = 0, dueToday: Int = 0, dueTomorrow: Int = 0) {
         self.toConfirm = toConfirm
         self.overdue = overdue
+        self.overdueDebts = overdueDebts
         self.dueToday = dueToday
         self.dueTomorrow = dueTomorrow
     }
@@ -46,8 +49,15 @@ public struct HomeStatus: Hashable, Sendable {
                 if payment.daysFromToday == 1, rule.isSubscription || (rule.kind == .expense && !rule.autoConfirm) {
                     dueTomorrow += 1
                 }
+            case .debt where payment.status == .overdue:
+                // Either direction: the debt reminder covers both, and "Upcoming" lists both.
+                overdueDebts += 1
             case .debt:
-                break
+                if payment.daysFromToday == 0 {
+                    dueToday += 1
+                } else if payment.daysFromToday == 1 {
+                    dueTomorrow += 1
+                }
             }
         }
     }

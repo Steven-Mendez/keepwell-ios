@@ -1,7 +1,7 @@
 import Foundation
 
 /// One thing pending in the next days: a draft to confirm, an occurrence a rule hasn't recorded
-/// yet, a card payment or a loan installment. Home, its status line, the Recurring rows and the
+/// yet, a card payment, a loan installment or a personal debt's due date. Home, its status line, the Recurring rows and the
 /// web and MCP read the same list, so none of them contradicts another. Port of the web's
 /// `upcomingPayments` (`domain/upcoming-payments.ts`); the shared cases are in `upcoming.json`.
 public struct UpcomingPayment: Hashable, Sendable, Identifiable {
@@ -21,8 +21,7 @@ public struct UpcomingPayment: Hashable, Sendable, Identifiable {
         case card(accountID: UUID, dueDay: Int)
         /// An unpaid loan installment, in the loan's currency. Id `installment:<loanId>:<number>`.
         case installment(loanID: UUID, number: Int, count: Int)
-        /// A personal debt with a due date, what's left of it. Id `debt:<debtId>`. Produced once
-        /// personal debts have a due date (T24); every reader already handles it.
+        /// An open personal debt with a due date, what's left of it in its currency. Id `debt:<debtId>`.
         case debt(debtID: UUID, person: String, direction: DebtDirection)
 
         /// Within one day: what needs the person first (drafts, installments, cards), then the rest.
@@ -75,6 +74,7 @@ public enum UpcomingPayments {
         public var rules: [RecurringRule]
         public var accounts: [Account]
         public var loans: [Loan]
+        public var personalDebts: [PersonalDebt]
         public var settings: CurrencySettings
 
         public init(
@@ -82,12 +82,14 @@ public enum UpcomingPayments {
             rules: [RecurringRule] = [],
             accounts: [Account] = [],
             loans: [Loan] = [],
+            personalDebts: [PersonalDebt] = [],
             settings: CurrencySettings = .initial,
         ) {
             self.transactions = transactions
             self.rules = rules
             self.accounts = accounts
             self.loans = loans
+            self.personalDebts = personalDebts
             self.settings = settings
         }
     }
@@ -121,10 +123,14 @@ public enum UpcomingPayments {
     ///
     /// - drafts dated up to the last day, however old: overdue before today;
     /// - occurrences rules haven't recorded yet (`RecurringSchedule.upcoming`), never overdue; paused
-    ///   and ended rules have none. Income and transfers too: the reader filters by kind;
-    /// - card payments due by the last day, only when `CardStatement.amountDue` asks for something,
-    ///   never overdue (without a payment linked to the statement a late one can't be told apart);
-    /// - unpaid loan installments due by the last day, the past ones too.
+    ///   and ended rules have none, nor does a rule whose source or destination account is closed.
+    ///   Income and transfers too: the reader filters by kind;
+    /// - card payments due by the last day, only when `CardStatement.amountDue` asks for something
+    ///   and the card's account is open, never overdue (without a payment linked to the statement a
+    ///   late one can't be told apart);
+    /// - unpaid loan installments due by the last day, the past ones too;
+    /// - personal debts, either direction, with a due date by the last day that `dueStatus` still
+    ///   counts (not settled, something left to pay), the past ones too, for what's left.
     ///
     /// Amounts stay in their own currency; a card's is in the principal currency.
     public static func compute(_ ledger: Ledger, on now: Date, days: Int, calendar: Calendar) -> [UpcomingPayment] {
@@ -132,6 +138,7 @@ public enum UpcomingPayments {
         guard let last = calendar.date(byAdding: .day, value: days, to: today) else { return [] }
         let window = Window(now: now, days: days, today: today, last: last, calendar: calendar)
         let found = drafts(ledger, window) + recurring(ledger, window) + cards(ledger, window) + installments(ledger, window)
+            + debts(ledger, window)
         return found.sorted(by: UpcomingPayment.precedes)
     }
 
@@ -147,7 +154,13 @@ public enum UpcomingPayments {
     }
 
     private static func recurring(_ ledger: Ledger, _ window: Window) -> [UpcomingPayment] {
-        RecurringSchedule.upcoming(ledger.rules, from: window.now, days: window.days, calendar: window.calendar).map { occurrence in
+        // A closed account expects nothing: closing pauses its rules, but an app that predates
+        // closing (or a resumed rule) may still have one running.
+        let closed = Set(ledger.accounts.filter { !$0.isOpen }.map(\.id))
+        let live = ledger.rules.filter { rule in
+            !closed.contains(rule.accountID) && !(rule.destinationAccountID.map(closed.contains) ?? false)
+        }
+        return RecurringSchedule.upcoming(live, from: window.now, days: window.days, calendar: window.calendar).map { occurrence in
             let rule = occurrence.rule
             return window.payment(
                 "recurring:\(rule.id.lowercased):\(window.key(occurrence.date))",
@@ -159,7 +172,7 @@ public enum UpcomingPayments {
     }
 
     private static func cards(_ ledger: Ledger, _ window: Window) -> [UpcomingPayment] {
-        ledger.accounts.filter { $0.kind == .credit }.compactMap { account in
+        ledger.accounts.filter { $0.kind == .credit && $0.isOpen }.compactMap { account in
             guard let dueDay = account.creditTerms?.dueDay,
                   let due = BillingCycle.nextOccurrence(ofDay: dueDay, onOrAfter: window.now, calendar: window.calendar),
                   window.contains(due)
@@ -194,6 +207,21 @@ public enum UpcomingPayments {
                         amount: Money(loan.installmentAmount, loan.borrowed.currency),
                     )
                 }
+        }
+    }
+
+    private static func debts(_ ledger: Ledger, _ window: Window) -> [UpcomingPayment] {
+        ledger.personalDebts.compactMap { debt in
+            guard let dueDate = debt.dueDate,
+                  debt.dueStatus(today: window.now, calendar: window.calendar) != nil,
+                  window.contains(dueDate)
+            else { return nil }
+            return window.payment(
+                "debt:\(debt.id.lowercased)",
+                .debt(debtID: debt.id, person: debt.person, direction: debt.direction),
+                on: dueDate,
+                amount: debt.remainingMoney,
+            )
         }
     }
 

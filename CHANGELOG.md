@@ -32,6 +32,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   under the amount and in its detail. Keepwell reminds "Ana: due in 3 days" as many days before as a
   card payment, either way the money goes, and never once it is overdue. Syncs with the web app.
 
+- Home › Upcoming lists personal debts with a due date, either way the money goes, for what's left
+  in the debt's currency, overdue ones first. The line under the greeting counts them ("1 debt
+  overdue", and in "due today" and "due tomorrow"), so it never says "All caught up" while one is
+  late. Closed accounts' card payments and recurring movements (from or to them) leave Upcoming.
+
 - Settings › Money: "Time zone", the home zone Keepwell's server uses for "today" and month ends
   (reminders, assistants and recurring movements it records). It starts as the iPhone's zone, the
   first time onboarding or a sync finds none, syncs to the web app and only changes from here.
