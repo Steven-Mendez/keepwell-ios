@@ -96,6 +96,17 @@ struct OutboxTests {
     }
 
     @Test
+    func aNotificationStateIsQueuedAsTheSharedWireRow() async throws {
+        let store = try store()
+        try await store.apply(.dismiss, to: ["payment:00000000-0000-0000-0000-00000000a005:2026-11-15"])
+        let columns = try columns()
+        #expect(columns["notificationState"] != nil)
+        for event in try await store.pendingEvents(limit: 10) {
+            try expectWireShape(event, columns)
+        }
+    }
+
+    @Test
     func payingAnInstallmentQueuesThatPaymentOnlyAndUndoingItQueuesItsDeletion() async throws {
         let store = try store()
         let loan = try #require(SampleData.standard.loans.first)

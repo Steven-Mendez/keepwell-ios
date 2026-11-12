@@ -132,8 +132,10 @@ extension RootView {
         }
     }
 
-    private func openNotification(_ destination: InboxItem.Destination) {
+    func openNotification(_ destination: InboxItem.Destination) {
         switch destination {
+        case let .transaction(id):
+            navigator.push(.transaction(id: id))
         case let .creditCard(accountID):
             navigator.push(.creditCard(accountID: accountID))
         case let .account(id):

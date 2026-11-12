@@ -39,7 +39,9 @@ struct HomeDebtsTests {
     func theNextInstallmentIsRemindedAsManyDaysAheadAsCardPayments() async throws {
         let viewModel = await loadedViewModel()
         let overview = try #require(viewModel.overview)
-        let reminder = try #require(viewModel.reminders(now: now).first { $0.kind == .loanInstallment(SampleData.IDs.motorbikeLoan) })
+        let reminder = try #require(viewModel.reminders(now: now).first {
+            $0.id == "installment:\(SampleData.IDs.motorbikeLoan.uuidString.lowercased()):3"
+        })
         let due = try #require(overview.loans.first?.next?.dueDate)
         let days = Calendar.current.dateComponents(
             [.day],
@@ -47,7 +49,7 @@ struct HomeDebtsTests {
             to: Calendar.current.startOfDay(for: due),
         ).day
         #expect(days == overview.paymentReminderDaysBefore)
-        #expect(Calendar.current.component(.hour, from: reminder.date) == HomeViewModel.reminderHour)
+        #expect(Calendar.current.component(.hour, from: reminder.date) == LedgerNotifications.reminderHour)
         #expect(reminder.body == "Installment 3 of 12 · C$5,500.00")
     }
 
