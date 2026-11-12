@@ -9,6 +9,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Notifications inbox redesign: grouped by day (Today, Yesterday, date) with the newest first,
+  an unread dot and bolder title, and a bell that counts unread only. Tap a row to read it and open
+  it; swipe right to mark read or unread, swipe left to delete with an Undo toast; the "..." menu
+  has "Mark all as read" and "Delete read". Read and deleted state syncs with the web and your
+  other devices.
+- Push notifications from Keepwell's server while signed in with sync: they arrive even if you
+  haven't opened the app, are cleared here when read or deleted elsewhere, and replace the local
+  reminders (which keep working without an account). The app icon badge shows unread notifications.
+- Local reminders are now rescheduled whenever the app opens or sync brings changes, not only when
+  Home loads, and are sent once per occurrence.
 - Notifications: a bell on the Home header, with a count, opens what needs your attention right
   now: card payments inside your reminder window, statements closing today, loan installments,
   subscriptions renewing tomorrow, cards expiring this month, budgets at 80% or over, and

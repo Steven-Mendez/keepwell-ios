@@ -55,8 +55,9 @@ struct HomeForecastTests {
         let alert = try #require(viewModel.priceIncreaseAlerts.first)
         #expect(alert.title == "Video club went up in price")
         #expect(alert.body == "Now $12.00, before $9.00.")
-        let reminders = viewModel.reminders(now: now).filter { $0.kind == .priceIncrease(newest.id) }
-        #expect(reminders.map(\.id) == ["price-\(newest.id)"])
-        #expect(reminders.allSatisfy { $0.date > now })
+        let reminders = viewModel.reminders(now: now).filter { $0.kind == .price }
+        #expect(reminders.map(\.id) == ["price:\(newest.id.uuidString.lowercased())"])
+        // It reports something that already happened: told once, right away.
+        #expect(reminders.allSatisfy { $0.isOneShot && $0.date >= now })
     }
 }

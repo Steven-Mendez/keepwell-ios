@@ -291,6 +291,46 @@
         }
       }
     },
+    "%lld notifications deleted" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld notification deleted"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld notifications deleted"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld notificación eliminada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld notificaciones eliminadas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Available today" : {
       "localizations" : {
         "es" : {
@@ -337,6 +377,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deudas"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        }
+      }
+    },
+    "Delete read" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar leídas"
           }
         }
       }
@@ -551,6 +611,46 @@
         }
       }
     },
+    "Mark all as read" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar todas como leídas"
+          }
+        }
+      }
+    },
+    "Mark as read" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar como leída"
+          }
+        }
+      }
+    },
+    "Mark as unread" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar como no leída"
+          }
+        }
+      }
+    },
+    "More" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más"
+          }
+        }
+      }
+    },
     "Move" : {
       "localizations" : {
         "es" : {
@@ -617,6 +717,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nada requiere tu atención por ahora."
+          }
+        }
+      }
+    },
+    "Notification deleted" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificación eliminada"
           }
         }
       }
@@ -801,6 +911,36 @@
         }
       }
     },
+    "Today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer"
+          }
+        }
+      }
+    },
+    "Unread" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No leída"
+          }
+        }
+      }
+    },
     "Upcoming" : {
       "localizations" : {
         "es" : {
@@ -877,6 +1017,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lo que tendrían tus cuentas y tu efectivo, contando lo previsto y tu gasto habitual."
+          }
+        }
+      }
+    },
+    "Yesterday" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayer"
           }
         }
       }

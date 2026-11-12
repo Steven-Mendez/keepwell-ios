@@ -395,8 +395,16 @@ public enum KeepwellSchemaV10: VersionedSchema {
     }
 }
 
+/// What the person did with each notification (`NotificationStateRecord`).
+public enum KeepwellSchemaV11: VersionedSchema {
+    public static var versionIdentifier: Schema.Version { Schema.Version(11, 0, 0) }
+    public static var models: [any PersistentModel.Type] {
+        KeepwellSchemaV10.models + [NotificationStateRecord.self]
+    }
+}
+
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV10
+public typealias KeepwellCurrentSchema = KeepwellSchemaV11
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -411,6 +419,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV8.self,
             KeepwellSchemaV9.self,
             KeepwellSchemaV10.self,
+            KeepwellSchemaV11.self,
         ]
     }
 
@@ -422,7 +431,8 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// without a budget. V7 had no savings goals, so V8 starts with none,
     /// and V8 had no loans, personal debts or categorization rules, so V9 starts with none; its
     /// movements and recurring rules start without tags. V10 starts with an empty outbox and every
-    /// movement and rule made in the app (`sourceRaw` nil reads as `app`).
+    /// movement and rule made in the app (`sourceRaw` nil reads as `app`). V11 adds notification
+    /// states, none yet.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -434,6 +444,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV7.self, toVersion: KeepwellSchemaV8.self),
             .lightweight(fromVersion: KeepwellSchemaV8.self, toVersion: KeepwellSchemaV9.self),
             .lightweight(fromVersion: KeepwellSchemaV9.self, toVersion: KeepwellSchemaV10.self),
+            .lightweight(fromVersion: KeepwellSchemaV10.self, toVersion: KeepwellSchemaV11.self),
         ]
     }
 }

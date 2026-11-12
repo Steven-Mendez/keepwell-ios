@@ -34,22 +34,19 @@ struct HomeOutsideTests {
     @Test
     func remindersAreOnlyInTheFutureAndUnique() async {
         let reminders = await loadedViewModel().reminders(now: now)
-        #expect(reminders.allSatisfy { $0.date > now })
+        #expect(reminders.filter { !$0.isOneShot }.allSatisfy { $0.date > now })
         #expect(Set(reminders.map(\.id)).count == reminders.count)
     }
 
     @Test
     func plannedRemindersArriveInTheMorningOfTheirDay() async {
         let viewModel = await loadedViewModel()
-        let planned = viewModel.reminders(now: now).filter {
-            if case .planned = $0.kind {
-                true
-            } else {
-                false
-            }
-        }
+        let planned = viewModel.reminders(now: now).filter { $0.kind == .planned }
+        #expect(!planned.isEmpty)
         for reminder in planned {
-            #expect(Calendar.current.component(.hour, from: reminder.date) == HomeViewModel.reminderHour)
+            #expect(reminder.id.hasPrefix("planned:"))
+            #expect(reminder.transactionID != nil)
+            #expect(Calendar.current.component(.hour, from: reminder.date) == LedgerNotifications.reminderHour)
         }
     }
 
@@ -57,7 +54,8 @@ struct HomeOutsideTests {
     func aCardWithAPaymentDayGetsAReminderBeforeIt() async throws {
         // The sample's single-currency card is due on the 15th.
         let viewModel = await loadedViewModel()
-        let payment = try #require(viewModel.reminders(now: now).first { $0.kind == .payment(SampleData.IDs.visa) })
+        let payment = try #require(viewModel.reminders(now: now)
+            .first { $0.id == "payment:\(SampleData.IDs.visa.uuidString.lowercased()):2026-11-15" })
         let days = viewModel.overview?.paymentReminderDaysBefore ?? 0
         let due = try #require(Calendar.current.date(byAdding: .day, value: days, to: payment.date))
         #expect(Calendar.current.component(.day, from: due) == 15)
@@ -66,9 +64,10 @@ struct HomeOutsideTests {
     @Test
     func aCardWithACutoffDayGetsAReminderThatMorning() async throws {
         // The sample's single-currency card closes on the 28th.
-        let reminder = try #require(await loadedViewModel().reminders(now: now).first { $0.kind == .cutoff(SampleData.IDs.visa) })
+        let reminder = try #require(await loadedViewModel().reminders(now: now).first { $0.kind == .cutoff })
+        #expect(reminder.id == "cutoff:\(SampleData.IDs.visa.uuidString.lowercased()):2026-10-28")
         #expect(Calendar.current.component(.day, from: reminder.date) == 28)
-        #expect(Calendar.current.component(.hour, from: reminder.date) == HomeViewModel.reminderHour)
+        #expect(Calendar.current.component(.hour, from: reminder.date) == LedgerNotifications.reminderHour)
         #expect(reminder.title.contains("Visa ··9012"))
     }
 
@@ -94,12 +93,12 @@ struct HomeOutsideTests {
         }
 
         let reminder = try #require(await loadedViewModel(store).reminders(now: now).first {
-            $0.kind == .cardExpiry(SampleData.IDs.visaHolder)
+            $0.kind == .expiry
         })
         let day = Calendar.current.dateComponents([.month, .day, .hour], from: reminder.date)
         #expect(day.month == parts.month)
         #expect(day.day == 1)
-        #expect(day.hour == HomeViewModel.reminderHour)
+        #expect(day.hour == LedgerNotifications.reminderHour)
         #expect(reminder.title == "Premia ··9012 expires this month")
         #expect(reminder.body.contains("apple music"))
     }
@@ -110,7 +109,7 @@ struct HomeOutsideTests {
         let holder = try #require(await store.fetchCards().first { $0.id == SampleData.IDs.visaHolder })
         try await store.save(holder.with(productName: nil, expiry: CardExpiry(month: 1, year: 2020)))
         let reminders = await loadedViewModel(store).reminders(now: now)
-        #expect(!reminders.contains { $0.kind == .cardExpiry(SampleData.IDs.visaHolder) })
+        #expect(!reminders.contains { $0.kind == .expiry })
     }
 
     private func budgeting(_ store: InMemoryStore, _ id: String, _ amount: Decimal) async throws {
@@ -139,28 +138,23 @@ struct HomeOutsideTests {
         #expect(alerts.first?.title.hasSuffix("went over its budget") == true)
         #expect(alerts.first?.body.hasSuffix("this month.") == true)
 
-        let reminders = viewModel.reminders(now: now).filter { $0.kind == .budget(spent.categoryID) }
-        #expect(reminders.count == 1)
-        #expect(reminders.first?.id.hasSuffix("-100") == true)
-        #expect(reminders.allSatisfy { $0.date > now })
+        let budgetMonth = try #require(viewModel.overview?.month.month)
+        let monthKey = String(format: "%04d-%02d", budgetMonth.year, budgetMonth.month)
+        let reminders = viewModel.reminders(now: now).filter { $0.kind == .budget }
+        #expect(reminders.map(\.id) == ["budget:\(spent.categoryID):\(monthKey):over"])
+        #expect(reminders.allSatisfy { $0.isOneShot && $0.target == ["screen": "summary"] })
 
         try await budgeting(store, spent.categoryID, spent.amount / #require(Decimal(string: "0.85")))
         let near = await loadedViewModel(store)
         #expect(near.budgetAlerts.first?.level == .nearLimit)
         #expect(near.budgetAlerts.first?.title.hasSuffix("is close to its budget") == true)
-        #expect(near.reminders(now: now).first { $0.kind == .budget(spent.categoryID) }?.id.hasSuffix("-80") == true)
+        #expect(near.reminders(now: now).first { $0.kind == .budget }?.id == "budget:\(spent.categoryID):\(monthKey):near")
     }
 
     @Test
     func noBudgetsMeansNoAlerts() async {
         let viewModel = await loadedViewModel()
         #expect(viewModel.budgetAlerts.isEmpty)
-        #expect(!viewModel.reminders(now: now).contains {
-            if case .budget = $0.kind {
-                true
-            } else {
-                false
-            }
-        })
+        #expect(!viewModel.reminders(now: now).contains { $0.kind == .budget })
     }
 }

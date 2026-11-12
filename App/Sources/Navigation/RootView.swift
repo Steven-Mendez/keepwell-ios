@@ -28,7 +28,7 @@ struct RootView: View {
     }
 
     let container: AppContainer
-    private let notifications: NotificationResponder
+    let notifications: NotificationResponder
     @Environment(\.scenePhase) private var scenePhase
     @State private var phase = Phase.loading
     @State private var router = AppRouter()
@@ -64,6 +64,7 @@ struct RootView: View {
             .onChange(of: cover, initial: true) { _, cover in showCover(cover) }
             .task {
                 notifications.handler = handleNotification
+                installPush()
                 await load()
                 // Signs the account back in from the Keychain and starts sync when it has cloud_sync.
                 await container.cloudAccount?.refresh()
@@ -73,6 +74,12 @@ struct RootView: View {
                 guard overview != nil, let home = screens?.home else { return }
                 Task { await container.publish(from: home) }
             }
+            // Read or deleted on another device (or here): the system's copy and the badge follow.
+            .onChange(of: screens?.home.statesRevision) { _, revision in
+                guard revision != nil, let home = screens?.home else { return }
+                Task { await container.publish(from: home) }
+            }
+            .onChange(of: pushStatus, initial: true) { _, status in followPush(status) }
             .onChange(of: scenePhase) { _, newPhase in
                 Task { await sceneChanged(to: newPhase) }
                 if newPhase == .active {
@@ -293,11 +300,17 @@ extension RootView {
 
     private func handleNotification(_ action: NotificationResponder.Action) async {
         switch action {
-        case let .confirm(id):
+        case let .confirm(id, notificationID):
             try? await DefaultConfirmPlannedTransactionUseCase(transactions: container.store).execute(id: id)
+            await markRead(notificationID)
             await screens?.reload()
         case let .postpone(content, identifier):
             await container.reminders.postpone(content, identifier: identifier)
+        case let .open(notificationID, target):
+            await markRead(notificationID)
+            if let target {
+                openNotification(InboxItem.Destination(target))
+            }
         }
     }
 
@@ -345,10 +358,19 @@ extension RootView {
             // hold the latest state by then, including a month that turned while the app was open.
             if let home = screens?.home {
                 await home.load()
-                container.publishWidgets(from: home)
+                await container.publish(from: home)
             }
         case .active:
             openQuickLogRequest()
+            // Back in the app: re-register the push token (it may have changed, and so may the time
+            // zone) and look at the schedule again, not only when home happens to load.
+            if pushStatus == .allowed {
+                container.push?.activate()
+            }
+            if let home = screens?.home {
+                await home.load()
+                await container.publish(from: home)
+            }
             // A day may have turned while the app was away; what came due is recorded now.
             await container.materializeRecurring()
             await refreshLockSettings()

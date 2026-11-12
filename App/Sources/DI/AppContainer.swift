@@ -49,6 +49,10 @@ final class AppContainer {
     private(set) lazy var apiClient: APIClient? = makeAPIClient()
     /// The sync engine behind `cloudAccount`, kept so erasing this iPhone can forget its cursor.
     private(set) lazy var syncEngine: SyncEngine? = makeSyncEngine()
+    /// This iPhone's registration for the server's pushes; `nil` in builds without an API.
+    private(set) lazy var push: PushRegistration? = makePushRegistration()
+    /// Set by the root view: what to do when the server starts or stops sending notifications.
+    var pushChanged: (() -> Void)?
 
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
@@ -127,7 +131,15 @@ final class AppContainer {
             discard: DefaultDeleteTransactionUseCase(transactions: store),
             resumeRule: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
             deleteRule: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
+            listNotificationStates: DefaultListNotificationStatesUseCase(repository: store),
+            changeNotifications: makeChangeNotifications(),
+            pruneNotificationStates: DefaultPruneNotificationStatesUseCase(repository: store),
         )
+    }
+
+    /// Reading and deleting notifications: shared by the inbox and by taps on delivered ones.
+    func makeChangeNotifications() -> any ChangeNotificationsUseCase {
+        DefaultChangeNotificationsUseCase(repository: store)
     }
 
     /// The one name store behind the lock, home and the cards.
@@ -208,9 +220,18 @@ final class AppContainer {
     let reminders = ReminderScheduler()
     let widgetSnapshots = WidgetSnapshotStore()
 
-    /// Hands home's latest state to what lives outside the app: widgets and reminders.
+    /// Hands home's latest state to what lives outside the app: widgets, the badge, the delivered
+    /// notifications, and the local reminders while the server isn't the one sending them.
     func publish(from home: HomeViewModel) async {
         publishWidgets(from: home)
+        // Read or deleted anywhere (another iPhone, the web): off the Notification Center now.
+        await reminders.remove(ids: home.settledNotificationIDs)
+        await reminders.setBadge(home.inboxCount())
+        if push?.isRegistered == true {
+            // The server sends from here on; a local copy would arrive twice.
+            await reminders.removeAllPending()
+            return
+        }
         var upcoming = home.reminders()
         #if DEBUG
         if AppEnvironment.current.remindsSoon {
@@ -238,6 +259,7 @@ final class AppContainer {
         widgetSnapshots.clear()
         WidgetCenter.shared.reloadAllTimelines()
         await reminders.removeAll()
+        push?.deactivate()
     }
 
     // MARK: - Recurring

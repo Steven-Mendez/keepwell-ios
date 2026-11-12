@@ -18,9 +18,19 @@ public final class HomeViewModel {
     public private(set) var state = State.loading
     /// Planned movements being confirmed, so their button can't be tapped twice.
     public private(set) var confirming: Set<UUID> = []
-    public private(set) var actionError: String?
+    public internal(set) var actionError: String?
     /// The name given in onboarding or Settings, read on every load so a change there shows here.
     public private(set) var preferredName: String?
+
+    /// What the person did with each notification, by id. Read on every load, so a change that
+    /// arrived from another device shows here.
+    public private(set) var notificationStates: [String: NotificationState] = [:]
+    /// Bumps whenever `notificationStates` changes, for what lives outside the app (delivered
+    /// notifications, the badge) to follow.
+    public private(set) var statesRevision = 0
+    /// The delete that "Undo" would take back; the notifications view shows it as a toast.
+    public internal(set) var undoOffer: UndoOffer?
+    private var prunedStates = false
 
     private let getOverview: any GetHomeOverviewUseCase
     private let confirmPlanned: any ConfirmPlannedTransactionUseCase
@@ -30,6 +40,9 @@ public final class HomeViewModel {
     /// Confirming (resuming) or discarding (deleting) a rule an assistant proposed; `nil` in previews.
     private let resumeRule: (any SetRecurringRulePausedUseCase)?
     private let deleteRule: (any DeleteRecurringRuleUseCase)?
+    private let listStates: (any ListNotificationStatesUseCase)?
+    private let pruneStates: (any PruneNotificationStatesUseCase)?
+    let changeNotifications: (any ChangeNotificationsUseCase)?
     let calendar: Calendar
     let formatter = CurrencyFormatter()
 
@@ -40,8 +53,14 @@ public final class HomeViewModel {
         discard: (any DeleteTransactionUseCase)? = nil,
         resumeRule: (any SetRecurringRulePausedUseCase)? = nil,
         deleteRule: (any DeleteRecurringRuleUseCase)? = nil,
+        listNotificationStates: (any ListNotificationStatesUseCase)? = nil,
+        changeNotifications: (any ChangeNotificationsUseCase)? = nil,
+        pruneNotificationStates: (any PruneNotificationStatesUseCase)? = nil,
         calendar: Calendar = .current,
     ) {
+        listStates = listNotificationStates
+        self.changeNotifications = changeNotifications
+        pruneStates = pruneNotificationStates
         self.getOverview = getOverview
         self.confirmPlanned = confirmPlanned
         self.discard = discard
@@ -65,6 +84,23 @@ public final class HomeViewModel {
             state = try await .loaded(getOverview.execute())
         } catch {
             state = .failed
+        }
+        await loadStates()
+    }
+
+    /// Reads what was done with notifications; the first time also drops the states of notifications
+    /// whose day is long past.
+    func loadStates() async {
+        guard let listStates else { return }
+        if !prunedStates {
+            prunedStates = true
+            try? await pruneStates?.execute(now: .now)
+        }
+        let states = await (try? listStates.execute()) ?? []
+        let byID = Dictionary(states.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        if byID != notificationStates {
+            notificationStates = byID
+            statesRevision += 1
         }
     }
 
