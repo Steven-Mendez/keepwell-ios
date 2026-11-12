@@ -40,4 +40,10 @@ extension SwiftDataStore: SyncStore {
         let predicate = #Predicate<OutboxRecord> { $0.entityName == entity && $0.entityID == entityID }
         return ((try? modelContext.fetchCount(FetchDescriptor(predicate: predicate))) ?? 0) > 0
     }
+
+    public func deletedCategoryIDs() throws(DomainError) -> Set<String> {
+        try perform { context in
+            try Set(context.fetch(FetchDescriptor<CategoryRecord>()).filter(\.isTombstone).map(\.id))
+        }
+    }
 }

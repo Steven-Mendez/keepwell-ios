@@ -12,6 +12,8 @@ actor FakeSyncStore: SyncConflictStore {
     private(set) var uploadedOver: [RemoteRow]?
     /// The replace can't store a row: nothing is replaced, as the real store does.
     var failsToReplace = false
+    /// Category tombstones, as `deletedCategoryIDs()` reports them.
+    var deletedCategories: Set<String> = []
 
     init(events: [OutboxEvent] = [], counts: [String: Int] = [:]) {
         self.events = events
@@ -41,6 +43,14 @@ actor FakeSyncStore: SyncConflictStore {
 
     func adoptUpdatedAt(entity: String, entityID _: String, updatedAt: Date) throws(DomainError) {
         adopted.append((entity, updatedAt))
+    }
+
+    func deletedCategoryIDs() throws(DomainError) -> Set<String> {
+        deletedCategories
+    }
+
+    func setDeletedCategories(_ ids: Set<String>) {
+        deletedCategories = ids
     }
 
     func localRowCounts() throws(DomainError) -> [String: Int] {

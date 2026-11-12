@@ -26,13 +26,22 @@ public actor SyncEngine {
     private let store: any SyncConflictStore
     private let defaults: UserDefaults
     private let clientID: String
+    private let repairCategories: (any ReassignDeletedCategoriesUseCase)?
 
     /// `defaultsSuite` keeps the cursor apart (tests); `nil` is the app's standard defaults.
-    public init(client: APIClient, store: any SyncConflictStore, defaultsSuite: String? = nil, clientID: String) {
+    /// `repairCategories` runs after every pull (keepwell-web does the same).
+    public init(
+        client: APIClient,
+        store: any SyncConflictStore,
+        defaultsSuite: String? = nil,
+        clientID: String,
+        repairCategories: (any ReassignDeletedCategoriesUseCase)? = nil,
+    ) {
         self.client = client
         self.store = store
         defaults = defaultsSuite.flatMap(UserDefaults.init(suiteName:)) ?? .standard
         self.clientID = clientID
+        self.repairCategories = repairCategories
     }
 
     private var cursor: Int? {
@@ -232,8 +241,20 @@ public actor SyncEngine {
             // Saved only after the page is applied: a crash midway pulls it again.
             cursor = page.next_cursor
             if !page.has_more {
-                return
+                break
             }
+        }
+        try await repairDeletedCategories()
+    }
+
+    /// A movement edited here before the pull brought its category's deletion keeps the deleted id
+    /// (its later edit won). It moves to "Other" now, through the outbox, so the account gets it too.
+    private func repairDeletedCategories() async throws(CloudAccountError) {
+        guard let repairCategories else { return }
+        do {
+            try await repairCategories.execute(deletedCategoryIDs: store.deletedCategoryIDs())
+        } catch {
+            throw .server(code: "local_write_failed", requestID: nil)
         }
     }
 

@@ -8,7 +8,7 @@ import Testing
 struct SyncEngineTests {
     let base = URL(string: "https://api.example.com") ?? URL(fileURLWithPath: "/")
 
-    func engine(_ store: FakeSyncStore, suite: String) -> SyncEngine {
+    func engine(_ store: FakeSyncStore, suite: String, repair: (any ReassignDeletedCategoriesUseCase)? = nil) -> SyncEngine {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubProtocol.self]
         StubProtocol.requests = []
@@ -17,7 +17,7 @@ struct SyncEngineTests {
             store: InMemorySessionStore(cookie: "better-auth.session_token=x"),
             configuration: configuration,
         )
-        return SyncEngine(client: client, store: store, defaultsSuite: suite, clientID: "client-1")
+        return SyncEngine(client: client, store: store, defaultsSuite: suite, clientID: "client-1", repairCategories: repair)
     }
 
     func suite() -> String {
@@ -151,5 +151,29 @@ struct SyncEngineTests {
             try await engine(store, suite: suite()).syncOnce()
         }
         #expect(await store.pendingCount() == 1)
+    }
+
+    @Test
+    func afterThePullTheRepairGetsTheCategoryTombstones() async throws {
+        let store = FakeSyncStore()
+        await store.setDeletedCategories(["custom-boat"])
+        let suite = suite()
+        UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
+        StubProtocol.handler = { _ in
+            (200, [:], Self.json(["changes": [], "next_cursor": 0, "has_more": false]))
+        }
+        let repair = SpyRepair()
+        try await engine(store, suite: suite, repair: repair).syncOnce()
+        #expect(await repair.calls == [["custom-boat"]])
+    }
+}
+
+/// Records what the engine hands the repair after a pull.
+actor SpyRepair: ReassignDeletedCategoriesUseCase {
+    private(set) var calls: [Set<String>] = []
+
+    func execute(deletedCategoryIDs: Set<String>) throws(DomainError) -> Int {
+        calls.append(deletedCategoryIDs)
+        return 0
     }
 }
