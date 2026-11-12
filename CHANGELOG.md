@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- A reminder the day before a recurring expense that is recorded as a draft (rent, school fees):
+  "Rent is due tomorrow", in the inbox and as a notification, as subscriptions already had.
 - Recurring: under the subscriptions total, "Not including 2 subscriptions in EUR" names the
   subscriptions left out because their currency can't be converted, instead of silently skipping them.
 - Recurring rows show a draft waiting to be confirmed: "To confirm · Nov 12", or "Overdue · 3 days"

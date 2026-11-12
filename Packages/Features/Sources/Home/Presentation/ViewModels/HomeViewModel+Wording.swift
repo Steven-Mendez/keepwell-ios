@@ -51,16 +51,29 @@ extension HomeViewModel {
 
     func renewalWording(_ occurrence: RecurringOccurrence, display: TransactionDisplay) -> Wording {
         let rule = occurrence.rule
+        return Wording(
+            title: String(localized: "\(rule.name) renews tomorrow", bundle: #bundle),
+            body: occurrenceBody(occurrence, display: display),
+        )
+    }
+
+    func billWording(_ occurrence: RecurringOccurrence, display: TransactionDisplay) -> Wording {
+        Wording(
+            title: String(localized: "\(occurrence.rule.name) is due tomorrow", bundle: #bundle),
+            body: occurrenceBody(occurrence, display: display),
+        )
+    }
+
+    /// "US$15.00 on Visa ··1234": what a renewal or a bill charges, and where.
+    private func occurrenceBody(_ occurrence: RecurringOccurrence, display: TransactionDisplay) -> String {
+        let rule = occurrence.rule
         let amount = formatter.string(from: rule.amount, currencyCode: rule.currency)
         let method = display.methodName(of: RecurringSchedule.movement(
             from: rule,
             on: occurrence.date,
             exchangeRate: .single(rule.currency),
         ))
-        return Wording(
-            title: String(localized: "\(rule.name) renews tomorrow", bundle: #bundle),
-            body: String(localized: "\(amount) on \(method)", bundle: #bundle),
-        )
+        return String(localized: "\(amount) on \(method)", bundle: #bundle)
     }
 
     func cardName(of account: Account, in overview: HomeOverview) -> String {
