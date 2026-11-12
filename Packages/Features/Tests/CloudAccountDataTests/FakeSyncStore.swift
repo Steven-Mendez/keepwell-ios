@@ -12,6 +12,10 @@ actor FakeSyncStore: SyncConflictStore {
     private(set) var uploadedOver: [RemoteRow]?
     /// The replace can't store a row: nothing is replaced, as the real store does.
     var failsToReplace = false
+    /// Ids of rows this version can't read, as a row written by a newer version.
+    var unreadable: [String: DomainError] = [:]
+    /// The store can't write at all (a full disk).
+    var failsToStore = false
 
     init(events: [OutboxEvent] = [], counts: [String: Int] = [:]) {
         self.events = events
@@ -35,6 +39,13 @@ actor FakeSyncStore: SyncConflictStore {
     }
 
     func applyRemote(entity: String, row: Data) throws(DomainError) -> Bool {
+        let object = (try? JSONSerialization.jsonObject(with: row) as? [String: Any]) ?? [:]
+        if failsToStore {
+            throw .persistence("disk full")
+        }
+        if let id = object["id"] as? String, let error = unreadable[id] {
+            throw error
+        }
         applied.append((entity, (try? JSONSerialization.jsonObject(with: row) as? [String: Any]) ?? [:]))
         return true
     }
@@ -70,6 +81,14 @@ actor FakeSyncStore: SyncConflictStore {
                 payload: (try? JSONSerialization.data(withJSONObject: row)) ?? Data(), createdAt: now,
             )
         }
+    }
+
+    func setUnreadable(_ ids: Set<String>, as error: DomainError = .corruptedData("wire amount")) {
+        unreadable = Dictionary(uniqueKeysWithValues: ids.map { ($0, error) })
+    }
+
+    func setFailsToStore(_ value: Bool) {
+        failsToStore = value
     }
 
     func setFailsToReplace(_ value: Bool) {

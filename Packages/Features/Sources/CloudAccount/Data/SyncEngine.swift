@@ -1,6 +1,7 @@
 import CloudAccountDomain
 import Domain
 import Foundation
+import os
 
 /// iOS twin of keepwell-web's sync engine (ADR 0005 in keepwell-api): push the outbox, settle each
 /// answer, then pull until caught up. The first sync with an account loads a snapshot first, and
@@ -13,6 +14,9 @@ import Foundation
 ///   keeps its tombstone, so the row stays deleted.
 /// - Switching accounts on one device treats unsent changes as this device's data: with an account
 ///   that has data the person is asked which to keep; with an empty one this device's rows upload.
+/// - A row the store can't read (one written by a newer version, say) is skipped and recorded, so
+///   one row never holds back the rest of the account. Its entity is downloaded again after the
+///   app is updated.
 public actor SyncEngine {
     /// Settings come first: a download cut short still has the account's currencies.
     static let entities = [
@@ -26,13 +30,22 @@ public actor SyncEngine {
     private let store: any SyncConflictStore
     private let defaults: UserDefaults
     private let clientID: String
+    private let appBuild: String
 
     /// `defaultsSuite` keeps the cursor apart (tests); `nil` is the app's standard defaults.
-    public init(client: APIClient, store: any SyncConflictStore, defaultsSuite: String? = nil, clientID: String) {
+    /// `appBuild` tells an updated app, which may read rows this one skipped.
+    public init(
+        client: APIClient,
+        store: any SyncConflictStore,
+        defaultsSuite: String? = nil,
+        clientID: String,
+        appBuild: String = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "",
+    ) {
         self.client = client
         self.store = store
         defaults = defaultsSuite.flatMap(UserDefaults.init(suiteName:)) ?? .standard
         self.clientID = clientID
+        self.appBuild = appBuild
     }
 
     private var cursor: Int? {
@@ -52,11 +65,19 @@ public actor SyncEngine {
         (defaults.data(forKey: "sync.rejected")).flatMap { try? JSONDecoder().decode([RejectedChange].self, from: $0) } ?? []
     }
 
+    /// Rows from the server that this version couldn't store, newest first (at most 50).
+    public var skipped: [SkippedRow] {
+        (defaults.data(forKey: Self.skippedKey)).flatMap { try? JSONDecoder().decode([SkippedRow].self, from: $0) } ?? []
+    }
+
     /// Forgets the cursor, so the next round starts from a snapshot (sign-out, another account).
     public func reset() {
         defaults.removeObject(forKey: "sync.cursor")
         defaults.removeObject(forKey: "sync.lastAt")
         defaults.removeObject(forKey: "sync.rejected")
+        defaults.removeObject(forKey: Self.skippedKey)
+        defaults.removeObject(forKey: Self.retryEntitiesKey)
+        defaults.removeObject(forKey: Self.retryBuildKey)
         defaults.removeObject(forKey: Self.legacyChoiceKey)
         defaults.removeObject(forKey: "sync.account")
     }
@@ -100,6 +121,7 @@ public actor SyncEngine {
             cursor = snapshot.cursor
         }
         try await push()
+        try await retrySkipped()
         try await pull()
         defaults.set(Date.now, forKey: "sync.lastAt")
         return .synced
@@ -229,7 +251,8 @@ public actor SyncEngine {
             for change in page.changes {
                 try await adopt(entity: change.entity, row: change.row)
             }
-            // Saved only after the page is applied: a crash midway pulls it again.
+            // Saved only after the page is applied: a crash midway pulls it again. A skipped row
+            // doesn't hold it back: it is recorded and retried after an update.
             cursor = page.next_cursor
             if !page.has_more {
                 return
@@ -242,15 +265,24 @@ public actor SyncEngine {
         try await adopt(entity: entity, data: row.data)
     }
 
-    private func adopt(entity: String, data: Data) async throws(CloudAccountError) {
-        guard let id = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["id"] as? String else { return }
+    /// `true` when the row couldn't be stored and was skipped.
+    @discardableResult
+    private func adopt(entity: String, data: Data) async throws(CloudAccountError) -> Bool {
+        guard let id = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["id"] as? String else { return false }
         if await store.hasPendingEvent(entity: entity, entityID: id) {
-            return
+            return false
         }
         do {
             try await store.applyRemote(entity: entity, row: data)
+            return false
         } catch {
-            throw .server(code: "apply_failed", requestID: nil)
+            // The store itself couldn't write: nothing says this row is the problem, so the page
+            // is pulled again rather than the row lost until an update.
+            if case .persistence = error {
+                throw .server(code: "apply_failed", requestID: nil)
+            }
+            recordSkipped(entity: entity, id: id, error: error)
+            return true
         }
     }
 
@@ -400,65 +432,69 @@ extension SyncEngine {
     }
 }
 
-/// JSON passed through untouched (rows go to SwiftData as the server sent them).
-public struct RawJSON: Codable, Sendable {
-    public let data: Data
+// MARK: - Skipped rows
 
-    public init(data: Data) {
-        self.data = data
+extension SyncEngine {
+    fileprivate static let skippedKey = "sync.skipped"
+    /// Entities with a skipped row still to retry, and the build that skipped the oldest of them.
+    fileprivate static let retryEntitiesKey = "sync.skippedEntities"
+    fileprivate static let retryBuildKey = "sync.skippedBuild"
+    fileprivate static let logger = Logger(subsystem: "CloudAccount", category: "Sync")
+
+    private var retryEntities: Set<String> {
+        Set(defaults.stringArray(forKey: Self.retryEntitiesKey) ?? [])
     }
 
-    var object: [String: Any]? { try? JSONSerialization.jsonObject(with: data) as? [String: Any] }
-
-    public init(from decoder: any Decoder) throws {
-        let value = try decoder.singleValueContainer().decode(AnyCodable.self)
-        data = try JSONSerialization.data(withJSONObject: value.value, options: [.fragmentsAllowed])
+    /// Logged and kept by entity and id only: the row's values never leave it.
+    private func recordSkipped(entity: String, id: String, error: DomainError) {
+        let reason = Self.reason(for: error)
+        Self.logger.error("Skipped \(entity, privacy: .public) \(id, privacy: .public): \(reason, privacy: .public)")
+        let entry = SkippedRow(entity: entity, entityID: id, reason: reason, at: .now)
+        let others = skipped.filter { $0.entity != entity || $0.entityID != id }
+        defaults.set(try? JSONEncoder().encode(Array(([entry] + others).prefix(50))), forKey: Self.skippedKey)
+        var entities = retryEntities
+        if entities.isEmpty {
+            defaults.set(appBuild, forKey: Self.retryBuildKey)
+        }
+        entities.insert(entity)
+        defaults.set(entities.sorted(), forKey: Self.retryEntitiesKey)
     }
 
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(AnyCodable(JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])))
-    }
-}
-
-/// Just enough to carry arbitrary JSON through Codable.
-struct AnyCodable: Codable, @unchecked Sendable {
-    let value: Any
-
-    init(_ value: Any) {
-        self.value = value
-    }
-
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if container.decodeNil() {
-            value = NSNull()
-        } else if let bool = try? container.decode(Bool.self) {
-            value = bool
-        } else if let int = try? container.decode(Int.self) {
-            value = int
-        } else if let double = try? container.decode(Double.self) {
-            value = double
-        } else if let string = try? container.decode(String.self) {
-            value = string
-        } else if let array = try? container.decode([Self].self) {
-            value = array.map(\.value)
-        } else {
-            value = try container.decode([String: Self].self).mapValues(\.value)
+    /// After an update, the entities that had skipped rows come down again whole: the server's rows
+    /// are the truth (rows with a pending change are left alone as ever), so this is the same as
+    /// pulling them again, and no row's data has to be kept on the side meanwhile. Nothing happens
+    /// on the build that skipped them, and a download that fails is tried on the next round.
+    private func retrySkipped() async throws(CloudAccountError) {
+        let entities = retryEntities
+        let build = defaults.string(forKey: Self.retryBuildKey)
+        guard !entities.isEmpty, build != appBuild else { return }
+        var rows: [RemoteRow] = []
+        for entity in Self.entities where entities.contains(entity) {
+            guard let fetched = try? await Self.fetchEntity(entity, client: client) else { return }
+            rows += fetched.rows
+        }
+        defaults.set(
+            try? JSONEncoder().encode(skipped.filter { !entities.contains($0.entity) }),
+            forKey: Self.skippedKey,
+        )
+        defaults.removeObject(forKey: Self.retryEntitiesKey)
+        defaults.removeObject(forKey: Self.retryBuildKey)
+        do {
+            try await adoptAll(rows)
+        } catch {
+            // Not all were tried: the next round tries them all again.
+            defaults.set(retryEntities.union(entities).sorted(), forKey: Self.retryEntitiesKey)
+            defaults.set(build, forKey: Self.retryBuildKey)
+            throw error
         }
     }
 
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch value {
-        case is NSNull: try container.encodeNil()
-        case let number as NSNumber where CFGetTypeID(number) == CFBooleanGetTypeID(): try container.encode(number.boolValue)
-        case let int as Int: try container.encode(int)
-        case let double as Double: try container.encode(double)
-        case let string as String: try container.encode(string)
-        case let array as [Any]: try container.encode(array.map(Self.init))
-        case let object as [String: Any]: try container.encode(object.mapValues(Self.init))
-        default: try container.encodeNil()
+    /// The case, without values that could be the person's data (an amount in a message, say).
+    /// A missing or malformed wire field is named, as it says what changed.
+    private static func reason(for error: DomainError) -> String {
+        if case let .corruptedData(message) = error {
+            return message.hasPrefix("wire ") ? "corruptedData: \(message)" : "corruptedData"
         }
+        return Mirror(reflecting: error).children.first?.label ?? String(describing: error)
     }
 }
