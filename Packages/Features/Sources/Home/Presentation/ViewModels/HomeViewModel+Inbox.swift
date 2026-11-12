@@ -175,6 +175,11 @@ extension HomeViewModel {
             return NotificationContent(
                 icon: .subscription, category: nil, tone: .accent, title: wording.title, body: wording.body, bodyHasAmounts: true,
             )
+        case let .bill(occurrence):
+            let wording = billWording(occurrence, display: display)
+            return NotificationContent(
+                icon: .cash, category: nil, tone: .pending, title: wording.title, body: wording.body, bodyHasAmounts: true,
+            )
         case let .expiry(cardID):
             guard let card = overview.cards.first(where: { $0.id == cardID }) else { return nil }
             let wording = expiryWording(card, in: overview)

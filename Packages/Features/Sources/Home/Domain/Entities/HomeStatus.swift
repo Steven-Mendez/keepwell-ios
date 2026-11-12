@@ -11,7 +11,7 @@ public struct HomeStatus: Hashable, Sendable {
     public var overdue = 0
     /// Card payments and installments due today.
     public var dueToday = 0
-    /// Card payments and installments due tomorrow, and subscriptions renewing tomorrow.
+    /// Card payments and installments due tomorrow, subscriptions renewing tomorrow and bills due tomorrow.
     public var dueTomorrow = 0
 
     public var isClear: Bool {
@@ -36,7 +36,7 @@ public struct HomeStatus: Hashable, Sendable {
                 } else if daysLeft == 1 {
                     dueTomorrow += 1
                 }
-            case .renewal:
+            case .renewal, .bill:
                 dueTomorrow += 1
             case .cutoff, .expiry, .budget, .price, .proposal:
                 break

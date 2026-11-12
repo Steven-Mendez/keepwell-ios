@@ -21,6 +21,16 @@
         }
       }
     },
+    "%@ is due tomorrow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ vence mañana"
+          }
+        }
+      }
+    },
     "%@ of %@" : {
       "localizations" : {
         "es" : {

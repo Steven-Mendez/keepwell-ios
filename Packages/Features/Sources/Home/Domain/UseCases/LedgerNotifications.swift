@@ -106,18 +106,23 @@ public enum LedgerNotifications {
         }
     }
 
-    /// Subscriptions renewing tomorrow.
+    /// Subscriptions renewing tomorrow, and other recurring expenses due tomorrow that are recorded
+    /// as drafts (`bill`): one recorded on its own needs nothing from the person.
     private static func renewals(in overview: HomeOverview, now: Date, calendar: Calendar) -> [LedgerNotification] {
         let today = calendar.startOfDay(for: now)
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) else { return [] }
         return overview.upcoming.compactMap { occurrence in
-            guard occurrence.rule.isSubscription, calendar.startOfDay(for: occurrence.date) == tomorrow else { return nil }
-            return LedgerNotification(
-                id: "renewal:\(lower(occurrence.rule.id)):\(dayKey(occurrence.date, calendar: calendar))",
-                subject: .renewal(occurrence),
-                date: today,
-                target: .recurring,
-            )
+            let rule = occurrence.rule
+            guard calendar.startOfDay(for: occurrence.date) == tomorrow else { return nil }
+            let day = dayKey(occurrence.date, calendar: calendar)
+            if rule.isSubscription {
+                return LedgerNotification(
+                    id: "renewal:\(lower(rule.id)):\(day)", subject: .renewal(occurrence), date: today, target: .recurring,
+                )
+            }
+            // A target every published app already decodes, so an older one still opens a pushed bill.
+            guard rule.kind == .expense, !rule.autoConfirm else { return nil }
+            return LedgerNotification(id: "bill:\(lower(rule.id)):\(day)", subject: .bill(occurrence), date: today, target: .recurring)
         }
     }
 

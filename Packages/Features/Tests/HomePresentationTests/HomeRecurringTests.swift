@@ -11,8 +11,7 @@ import Testing
 struct HomeRecurringTests {
     private let now = SampleData.defaultReferenceDate
 
-    private func loadedViewModel() async -> HomeViewModel {
-        let store = InMemoryStore(sample: .standard)
+    private func loadedViewModel(_ store: InMemoryStore = InMemoryStore(sample: .standard)) async -> HomeViewModel {
         let viewModel = HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
@@ -49,6 +48,25 @@ struct HomeRecurringTests {
         #expect(reminder.body.hasPrefix("$15.99 on "))
         #expect(Calendar.current.component(.hour, from: reminder.date) == LedgerNotifications.reminderHour)
         #expect(Calendar.current.isDate(reminder.date, inSameDayAs: now))
+        #expect(reminder.target == ["screen": "recurring"])
+    }
+
+    @Test
+    func aRecurringExpenseRecordedAsADraftIsRemindedTheMorningBeforeItIsDue() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let calendar = Calendar.current
+        let due = try #require(calendar.date(byAdding: .day, value: 1, to: now))
+        let bill = RecurringRule(
+            name: "School", kind: .expense, categoryID: "education", amount: 120, currency: "USD",
+            accountID: SampleData.IDs.savings, frequency: .monthly, startDate: due,
+        )
+        await store.save(bill)
+        let viewModel = await loadedViewModel(store)
+        let earlier = calendar.startOfDay(for: now).addingTimeInterval(-60)
+        let reminder = try #require(viewModel.reminders(now: earlier).first { $0.kind == .bill })
+        #expect(reminder.id == "bill:\(bill.id.uuidString.lowercased()):\(LedgerNotifications.dayKey(due, calendar: calendar))")
+        #expect(reminder.title == "School is due tomorrow")
+        #expect(reminder.body.hasPrefix("$120.00 on "))
         #expect(reminder.target == ["screen": "recurring"])
     }
 
