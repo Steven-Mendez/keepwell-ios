@@ -295,9 +295,10 @@ final class AppContainer {
         RecurringViewModel(getOverview: makeGetRecurringOverview())
     }
 
-    func makeRecurringRuleEditorViewModel(ruleID: UUID?) -> RecurringRuleEditorViewModel {
+    func makeRecurringRuleEditorViewModel(ruleID: UUID?, isNewSubscription: Bool = false) -> RecurringRuleEditorViewModel {
         RecurringRuleEditorViewModel(
             ruleID: ruleID,
+            isNewSubscription: isNewSubscription,
             getOverview: makeGetRecurringOverview(),
             save: DefaultSaveRecurringRuleUseCase(
                 rules: store, accounts: store, cards: store, categories: store, settings: store,

@@ -366,10 +366,11 @@ struct TransactionsRoute: View {
 struct RecurringRoute: View {
     @State private var viewModel: RecurringViewModel
     let onBack: () -> Void
-    let onAdd: () -> Void
+    /// `true` for "New subscription", the short form.
+    let onAdd: (_ isSubscription: Bool) -> Void
     let onOpen: (UUID) -> Void
 
-    init(container: AppContainer, onBack: @escaping () -> Void, onAdd: @escaping () -> Void, onOpen: @escaping (UUID) -> Void) {
+    init(container: AppContainer, onBack: @escaping () -> Void, onAdd: @escaping (Bool) -> Void, onOpen: @escaping (UUID) -> Void) {
         _viewModel = State(initialValue: container.makeRecurringViewModel())
         self.onBack = onBack
         self.onAdd = onAdd
@@ -377,7 +378,7 @@ struct RecurringRoute: View {
     }
 
     var body: some View {
-        RecurringView(viewModel: viewModel, onBack: onBack, onAdd: onAdd, onOpen: onOpen)
+        RecurringView(viewModel: viewModel, onBack: onBack, onAdd: { onAdd(false) }, onAddSubscription: { onAdd(true) }, onOpen: onOpen)
             .navigationBarBackButtonHidden()
     }
 }
@@ -438,14 +439,21 @@ extension View {
     }
 }
 
-/// A recurring rule's editor, which closes itself after saving or deleting.
+/// A recurring rule's editor, which closes itself after saving or deleting. `isNewSubscription`
+/// opens it on the short subscription form.
 struct RecurringRuleRoute: View {
     @State private var viewModel: RecurringRuleEditorViewModel
     let onBack: () -> Void
     let onOpenTransaction: (UUID) -> Void
 
-    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void, onOpenTransaction: @escaping (UUID) -> Void) {
-        _viewModel = State(initialValue: container.makeRecurringRuleEditorViewModel(ruleID: ruleID))
+    init(
+        container: AppContainer,
+        ruleID: UUID?,
+        isNewSubscription: Bool = false,
+        onBack: @escaping () -> Void,
+        onOpenTransaction: @escaping (UUID) -> Void,
+    ) {
+        _viewModel = State(initialValue: container.makeRecurringRuleEditorViewModel(ruleID: ruleID, isNewSubscription: isNewSubscription))
         self.onBack = onBack
         self.onOpenTransaction = onOpenTransaction
     }

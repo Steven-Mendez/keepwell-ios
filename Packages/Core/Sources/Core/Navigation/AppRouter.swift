@@ -25,6 +25,8 @@ public enum AppRoute: Hashable, Sendable {
     case recurring
     /// A recurring rule's editor; `nil` creates one.
     case recurringRule(id: UUID?)
+    /// A new recurring rule from the short subscription form.
+    case newSubscription
     /// Savings goals, reached from home.
     case goals
     /// Loans and personal debts, reached from home.
