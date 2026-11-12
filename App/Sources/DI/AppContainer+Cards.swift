@@ -15,7 +15,7 @@ extension AppContainer {
             getDetail: DefaultGetCreditCardDetailUseCase(
                 accounts: store,
                 cards: store,
-                transactions: store,
+                transactions: movements,
                 categories: store,
                 settings: store,
             ),
@@ -24,7 +24,7 @@ extension AppContainer {
             setCardDetails: DefaultSetCardDetailsUseCase(cards: store),
             setCardNumber: DefaultSetCardNumberUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store),
             getPreferredName: makeGetPreferredName(),
         )
     }
@@ -35,13 +35,13 @@ extension AppContainer {
         DebitCardViewModel(
             accountID: accountID,
             getDetail: DefaultGetDebitCardDetailUseCase(
-                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+                accounts: store, cards: store, transactions: movements, categories: store, settings: store,
             ),
             setColor: DefaultSetCardColorUseCase(cards: store),
             setDetails: DefaultSetCardDetailsUseCase(cards: store),
             setNumber: DefaultSetCardNumberUseCase(cards: store),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store),
             getPreferredName: makeGetPreferredName(),
         )
     }
@@ -51,9 +51,15 @@ extension AppContainer {
     func makeCashViewModel(accountID: UUID) -> CashViewModel {
         CashViewModel(
             accountID: accountID,
-            getDetail: DefaultGetCashDetailUseCase(accounts: store, cards: store, transactions: store, categories: store, settings: store),
+            getDetail: DefaultGetCashDetailUseCase(
+                accounts: store,
+                cards: store,
+                transactions: movements,
+                categories: store,
+                settings: store,
+            ),
             renameAccount: DefaultRenameAccountUseCase(accounts: store),
-            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: store, recurringRules: store),
+            deleteAccount: DefaultDeleteAccountUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store),
         )
     }
 }

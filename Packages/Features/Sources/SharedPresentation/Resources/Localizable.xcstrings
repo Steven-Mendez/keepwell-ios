@@ -131,6 +131,16 @@
         }
       }
     },
+    "Confirmed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmado"
+          }
+        }
+      }
+    },
     "Create category" : {
       "localizations" : {
         "es" : {
@@ -971,6 +981,16 @@
         }
       }
     },
+    "Transaction deleted" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movimiento eliminado"
+          }
+        }
+      }
+    },
     "Transport" : {
       "localizations" : {
         "es" : {
@@ -987,6 +1007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Viajes"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer"
           }
         }
       }

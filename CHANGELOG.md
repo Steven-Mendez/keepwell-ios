@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Undo after deleting a movement or confirming a draft: a toast offers "Undo" for a few seconds.
+  A deleted movement leaves every screen at once but is only deleted (and synced) when the toast
+  runs out, or when you leave the app; undoing a confirm makes it a draft again on its planned date.
 - Notifications inbox redesign: grouped by day (Today, Yesterday, date) with the newest first,
   an unread dot and bolder title, and a bell that counts unread only. Tap a row to read it and open
   it; swipe right to mark read or unread, swipe left to delete with an Undo toast; the "..." menu

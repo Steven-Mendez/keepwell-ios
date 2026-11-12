@@ -8,7 +8,7 @@ import Domain
 extension AppContainer {
     func makeDebtsViewModel() -> DebtsViewModel {
         let context = DefaultGetTransactionContextUseCase(
-            settings: store, categories: store, accounts: store, cards: store, transactions: store,
+            settings: store, categories: store, accounts: store, cards: store, transactions: movements,
         )
         return DebtsViewModel(useCases: DebtsUseCases(
             getDebts: DefaultGetDebtsUseCase(loans: store, debts: store, settings: store),
@@ -27,7 +27,7 @@ extension AppContainer {
     func makeSplitBillViewModel(_ transaction: Transaction) -> SplitBillViewModel {
         SplitBillViewModel(
             transaction: transaction,
-            split: DefaultSplitTransactionUseCase(transactions: store, debts: store),
+            split: DefaultSplitTransactionUseCase(transactions: movements, debts: store),
         )
     }
 }

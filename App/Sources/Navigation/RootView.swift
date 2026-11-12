@@ -63,6 +63,9 @@ struct RootView: View {
         phaseContent
             .onChange(of: cover, initial: true) { _, cover in showCover(cover) }
             .task {
+                container.movementUndo.onUndone = { await screens?.reload() }
+                // Deletions a closed app left waiting are written now.
+                await container.movements.resume()
                 notifications.handler = handleNotification
                 installPush()
                 await load()
@@ -130,6 +133,13 @@ struct RootView: View {
             .navigationDestination(for: AppRoute.self, destination: destination)
         }
         .rootKeyboard(self)
+        .overlay(alignment: .bottom) { movementUndoToast }
+        // A movement deleted on one screen leaves every tab at once, though nothing is saved yet.
+        .onChange(of: container.movementUndo.offer?.id) { _, offer in
+            if offer != nil {
+                reloadScreens()
+            }
+        }
         .onChange(of: router.path.count) { oldCount, newCount in
             // Pushed screens edit cards and settings that the tabs summarize.
             if newCount < oldCount {
@@ -354,6 +364,8 @@ extension RootView {
         switch newPhase {
         case .background:
             lock.backgroundedAt = .now
+            // The app may never come back: a deletion still waiting for "Undo" is written now.
+            await container.movements.flush()
             // Leaving the app is when the person looks at the home screen, so the widgets must
             // hold the latest state by then, including a month that turned while the app was open.
             if let home = screens?.home {
@@ -431,6 +443,27 @@ extension RootView {
 
     private func reloadScreens() {
         Task { await screens?.reload() }
+    }
+
+    // MARK: - Undo
+
+    /// "Transaction deleted · Undo" over every screen, above the tab bar on the tabs. It goes when
+    /// the deletion it offers to take back is written.
+    @ViewBuilder
+    private var movementUndoToast: some View {
+        if let offer = container.movementUndo.offer {
+            KWToast(offer.message, actionTitle: MovementUndo.actionTitle) {
+                Task { await container.movementUndo.undo(offer) }
+            }
+            .padding(.horizontal, KWLayout.gutter)
+            .padding(.bottom, router.path.isEmpty ? KWLayout.tabBar - 34 + KWSpacing.md : KWSpacing.md)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .task(id: offer.id) {
+                try? await Task.sleep(for: .seconds(MovementUndo.window))
+                guard !Task.isCancelled else { return }
+                withAnimation { container.movementUndo.dismiss(offer) }
+            }
+        }
     }
 
     func settingsClosed() {

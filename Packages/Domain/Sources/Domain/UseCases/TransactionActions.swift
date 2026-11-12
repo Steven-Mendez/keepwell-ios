@@ -28,6 +28,28 @@ public struct DefaultConfirmPlannedTransactionUseCase: ConfirmPlannedTransaction
     }
 }
 
+/// Undoes `ConfirmPlannedTransactionUseCase`: the movement is a draft again, back on the date it was
+/// planned for (confirming may have moved it to today), so it stops counting toward balances.
+public protocol UnconfirmTransactionUseCase: Sendable {
+    func execute(id: UUID, plannedDate: Date) async throws(DomainError)
+}
+
+public struct DefaultUnconfirmTransactionUseCase: UnconfirmTransactionUseCase {
+    private let transactions: any TransactionRepository
+
+    public init(transactions: any TransactionRepository) {
+        self.transactions = transactions
+    }
+
+    public func execute(id: UUID, plannedDate: Date) async throws(DomainError) {
+        guard let confirmed = try await transactions.fetchTransactions(in: nil).first(where: { $0.id == id }) else {
+            throw .notFound(id)
+        }
+        guard confirmed.isConfirmed else { return }
+        try await transactions.save(confirmed.with(status: .planned).with(date: plannedDate))
+    }
+}
+
 public protocol DeleteTransactionUseCase: Sendable {
     func execute(id: UUID) async throws(DomainError)
 }
@@ -51,6 +73,7 @@ extension Transaction {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+            source: source,
         )
     }
 }
