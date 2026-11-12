@@ -122,6 +122,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Sync: an edit or delete made on a device whose clock runs behind is no longer dropped by the
+  server as older than the row it changes; it is stamped just after that row.
 - Swift 6 concurrency warning in Summary's custom period picker.
 - Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
   whose category, account or currency is gone is skipped instead of recording a movement nobody can

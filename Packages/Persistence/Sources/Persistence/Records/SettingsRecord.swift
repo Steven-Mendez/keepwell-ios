@@ -31,7 +31,7 @@ public final class SettingsRecord {
         isICloudBackupEnabled = settings.isICloudBackupEnabled
         paymentReminderDaysBefore = settings.paymentReminderDaysBefore
         hasCompletedOnboarding = settings.hasCompletedOnboarding
-        updatedAt = .now
+        updatedAt = stampAfter(isNewlyInserted ? nil : updatedAt)
     }
 
     func toDomain() throws(DomainCorruption) -> Settings {
