@@ -196,6 +196,8 @@ final class AppContainer {
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
+            exportBackup: DefaultExportBackupUseCase(store: store),
+            restoreBackup: DefaultRestoreBackupUseCase(store: store),
             signOutBeforeErasing: { [weak self] in await self?.cloudAccount?.signOutBeforeErasing() ?? true },
         )
     }

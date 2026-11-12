@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Settings › Data & sync: "Export backup" saves everything (accounts, cards, movements, categories,
+  recurring, goals, loans, debts, rules and the synced settings) in one JSON file, the same one the
+  web app makes; "Restore backup" brings it back, all or nothing, only when there's no data yet.
 - Recurring: under the subscriptions total, "Not including 2 subscriptions in EUR" names the
   subscriptions left out because their currency can't be converted, instead of silently skipping them.
 - Recurring rows show a draft waiting to be confirmed: "To confirm · Nov 12", or "Overdue · 3 days"

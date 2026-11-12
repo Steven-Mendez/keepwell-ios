@@ -85,6 +85,10 @@ public struct SettingsView: View {
                     Text(error)
                         .font(KWTextStyle.caption.font)
                         .foregroundStyle(KWColor.State.negative)
+                } else if let notice = viewModel.noticeMessage {
+                    Text(notice)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.Text.secondary)
                 }
                 AboutFooter(about: about)
             }
