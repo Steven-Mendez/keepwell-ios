@@ -580,6 +580,7 @@ let package = Package(
             dependencies: [
                 "RecurringPresentation",
                 "RecurringDomain",
+                "SharedPresentation",
                 "FeatureTestSupport",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),

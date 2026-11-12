@@ -306,7 +306,11 @@ final class AppContainer {
     }
 
     func makeRecurringViewModel() -> RecurringViewModel {
-        RecurringViewModel(getOverview: makeGetRecurringOverview())
+        RecurringViewModel(
+            getOverview: makeGetRecurringOverview(),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements),
+            undo: movementUndo,
+        )
     }
 
     func makeRecurringRuleEditorViewModel(ruleID: UUID?) -> RecurringRuleEditorViewModel {

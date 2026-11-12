@@ -24,6 +24,8 @@ public final class MovementUndo {
     public static let window = DeferredTransactionDeletions.undoWindow
 
     public private(set) var offer: Offer?
+    /// Goes up once an undo is written, so a pushed screen outside `onUndone` can read again.
+    public private(set) var undoneCount = 0
 
     private let undoDelete: any UndoDeleteTransactionUseCase
     private let unconfirm: any UnconfirmTransactionUseCase
@@ -63,6 +65,7 @@ public final class MovementUndo {
             // Only fails when the movement is gone (deleted elsewhere): then there is nothing to take back.
             try? await unconfirm.execute(id: id, plannedDate: plannedDate)
         }
+        undoneCount += 1
         await onUndone()
     }
 

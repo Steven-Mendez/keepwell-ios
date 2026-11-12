@@ -16,6 +16,7 @@ import PlanPresentation
 import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
+import SharedPresentation
 import SummaryPresentation
 import SwiftUI
 import TransactionsPresentation
@@ -362,15 +363,18 @@ struct TransactionsRoute: View {
     }
 }
 
-/// Recurring movements and subscriptions. The screen reloads itself when it reappears after a rule closes.
+/// Recurring movements and subscriptions. The screen reloads itself when it reappears after a rule
+/// closes, and after "Undo" turns a draft it confirmed back into one.
 struct RecurringRoute: View {
     @State private var viewModel: RecurringViewModel
+    private let undo: MovementUndo
     let onBack: () -> Void
     let onAdd: () -> Void
     let onOpen: (UUID) -> Void
 
     init(container: AppContainer, onBack: @escaping () -> Void, onAdd: @escaping () -> Void, onOpen: @escaping (UUID) -> Void) {
         _viewModel = State(initialValue: container.makeRecurringViewModel())
+        undo = container.movementUndo
         self.onBack = onBack
         self.onAdd = onAdd
         self.onOpen = onOpen
@@ -379,6 +383,7 @@ struct RecurringRoute: View {
     var body: some View {
         RecurringView(viewModel: viewModel, onBack: onBack, onAdd: onAdd, onOpen: onOpen)
             .navigationBarBackButtonHidden()
+            .onChange(of: undo.undoneCount) { Task { await viewModel.load() } }
     }
 }
 
