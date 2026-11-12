@@ -76,4 +76,46 @@ struct ApplyRemoteTests {
         try await phone.adoptUpdatedAt(entity: "account", entityID: account.id.uuidString.lowercased(), updatedAt: .now)
         #expect(await phone.pendingCount() == 0)
     }
+
+    /// One iPhone deletes a category while another edits one of its movements before hearing of it:
+    /// the later edit wins on the server and brings the deleted id back. The repair after the pull
+    /// moves it to "Other", through the outbox; with nothing left to repair it writes nothing.
+    @Test
+    func aMovementEditedBeforeItsCategoryDeletionArrivedMovesToOther() async throws {
+        let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
+        let expense = try #require(SampleData.standard.transactions.first { $0.kind == .expense })
+        let movement = expense.with(categoryID: boat.id)
+        let deleting = try store()
+        let editing = try store()
+        try await deleting.save(boat)
+        try await deleting.save(movement)
+        for event in try await deleting.pendingEvents(limit: 100) {
+            try await editing.applyRemote(entity: event.entity, row: event.payload)
+        }
+        try await deleting.removeEvents(ids: deleting.pendingEvents(limit: 100).map(\.id))
+
+        try await DefaultDeleteCategoryUseCase(categories: deleting, transactions: deleting).execute(id: boat.id)
+        let edited = Transaction(
+            id: movement.id, date: movement.date, status: movement.status, description: movement.description,
+            kind: movement.kind, categoryID: boat.id, amount: movement.amount, currency: movement.currency,
+            accountID: movement.accountID, cardID: movement.cardID, exchangeRate: movement.exchangeRate, note: "Vet",
+        )
+        try await editing.save(edited)
+        try await editing.removeEvents(ids: editing.pendingEvents(limit: 100).map(\.id))
+        // The pull brings the tombstone; the movement's own deletion-time move lost to the later edit.
+        for event in try await deleting.pendingEvents(limit: 100) where event.entity == "category" {
+            try await editing.applyRemote(entity: event.entity, row: event.payload)
+        }
+        #expect(try await editing.fetchTransactions(in: nil).first { $0.id == movement.id }?.categoryID == boat.id)
+
+        let repair = DefaultReassignDeletedCategoriesUseCase(transactions: editing, recurringRules: editing)
+        #expect(try await repair.execute(deletedCategoryIDs: editing.deletedCategoryIDs()) == 1)
+        let repaired = try #require(try await editing.fetchTransactions(in: nil).first { $0.id == movement.id })
+        #expect(repaired.categoryID == TransactionCategory.otherExpenseID)
+        #expect(repaired.note == "Vet")
+        #expect(try await editing.pendingEvents().map(\.entity) == ["transaction"])
+
+        #expect(try await repair.execute(deletedCategoryIDs: editing.deletedCategoryIDs()) == 0)
+        #expect(await editing.pendingCount() == 1)
+    }
 }

@@ -31,21 +31,25 @@ public actor SyncEngine {
     private let defaults: UserDefaults
     private let clientID: String
     private let appBuild: String
+    private let repairCategories: (any ReassignDeletedCategoriesUseCase)?
 
     /// `defaultsSuite` keeps the cursor apart (tests); `nil` is the app's standard defaults.
     /// `appBuild` tells an updated app, which may read rows this one skipped.
+    /// `repairCategories` runs after every pull (keepwell-web does the same).
     public init(
         client: APIClient,
         store: any SyncConflictStore,
         defaultsSuite: String? = nil,
         clientID: String,
         appBuild: String = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "",
+        repairCategories: (any ReassignDeletedCategoriesUseCase)? = nil,
     ) {
         self.client = client
         self.store = store
         defaults = defaultsSuite.flatMap(UserDefaults.init(suiteName:)) ?? .standard
         self.clientID = clientID
         self.appBuild = appBuild
+        self.repairCategories = repairCategories
     }
 
     private var cursor: Int? {
@@ -255,9 +259,10 @@ public actor SyncEngine {
             // doesn't hold it back: it is recorded and retried after an update.
             cursor = page.next_cursor
             if !page.has_more {
-                return
+                break
             }
         }
+        try await repairDeletedCategories()
     }
 
     /// The server's row is the truth, except for a row with a pending local change.
@@ -496,5 +501,18 @@ extension SyncEngine {
             return message.hasPrefix("wire ") ? "corruptedData: \(message)" : "corruptedData"
         }
         return Mirror(reflecting: error).children.first?.label ?? String(describing: error)
+    }
+}
+
+extension SyncEngine {
+    /// A movement edited here before the pull brought its category's deletion keeps the deleted id
+    /// (its later edit won). It moves to "Other" now, through the outbox, so the account gets it too.
+    private func repairDeletedCategories() async throws(CloudAccountError) {
+        guard let repairCategories else { return }
+        do {
+            try await repairCategories.execute(deletedCategoryIDs: store.deletedCategoryIDs())
+        } catch {
+            throw .server(code: "local_write_failed", requestID: nil)
+        }
     }
 }
