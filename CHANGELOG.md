@@ -127,6 +127,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Export CSV: a description, note, tag or account or category name that starts with `=`, `+`, `-`,
   `@`, a tab or a carriage return now gets a leading `'`, so a spreadsheet shows it as text instead
   of running it as a formula. Amounts, dates and rates are unchanged.
+- Categorization rules that two devices placed at the same position offline now apply in the same
+  order on every device, the web and Claude, so the same rule wins everywhere.
 - Swift 6 concurrency warning in Summary's custom period picker.
 - Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
   whose category, account or currency is gone is skipped instead of recording a movement nobody can
