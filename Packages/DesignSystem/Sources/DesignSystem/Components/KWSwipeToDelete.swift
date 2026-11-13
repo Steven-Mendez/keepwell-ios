@@ -5,13 +5,34 @@ extension View {
     /// deletes straight away. Rows inside custom cards can't use `swipeActions`, which only works
     /// in a `List`. VoiceOver gets the same action from the rotor.
     public func kwSwipeToDelete(isEnabled: Bool = true, onDelete: @escaping () -> Void) -> some View {
-        modifier(KWSwipeToDelete(isEnabled: isEnabled, onDelete: onDelete))
+        modifier(KWSwipeAction(
+            icon: .trash,
+            tint: KWColor.State.negative,
+            label: Text("Delete", bundle: #bundle),
+            isEnabled: isEnabled,
+            onAction: onDelete,
+        ))
+    }
+
+    /// The same swipe with another action, such as confirming a draft: a long swipe acts at once.
+    /// `label` names it for VoiceOver.
+    public func kwSwipeAction(
+        _ icon: KWIcon,
+        tint: Color,
+        label: Text,
+        isEnabled: Bool = true,
+        action: @escaping () -> Void,
+    ) -> some View {
+        modifier(KWSwipeAction(icon: icon, tint: tint, label: label, isEnabled: isEnabled, onAction: action))
     }
 }
 
-struct KWSwipeToDelete: ViewModifier {
+struct KWSwipeAction: ViewModifier {
+    let icon: KWIcon
+    let tint: Color
+    let label: Text
     let isEnabled: Bool
-    let onDelete: () -> Void
+    let onAction: () -> Void
     @State private var offset: CGFloat = 0
     @State private var isOpen = false
     @State private var isPastFullSwipe = false
@@ -24,7 +45,7 @@ struct KWSwipeToDelete: ViewModifier {
         if isEnabled {
             row(content)
                 .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-                .accessibilityAction(named: Text("Delete", bundle: #bundle), onDelete)
+                .accessibilityAction(named: label, onAction)
         } else {
             content
         }
@@ -46,12 +67,12 @@ struct KWSwipeToDelete: ViewModifier {
                 }
             }
             .background(alignment: .trailing) {
-                Button(role: .destructive) { delete() } label: {
-                    KWIconView(.trash, size: 20)
+                Button { act() } label: {
+                    KWIconView(icon, size: 20)
                         .foregroundStyle(KWColor.Text.onPositive)
                         .frame(width: max(buttonWidth, -offset))
                         .frame(maxHeight: .infinity)
-                        .background(KWColor.State.negative)
+                        .background(tint)
                 }
                 .buttonStyle(.plain)
                 .accessibilityHidden(true)
@@ -75,7 +96,7 @@ struct KWSwipeToDelete: ViewModifier {
                 let start = isOpen ? -buttonWidth : 0
                 let end = start + value.predictedEndTranslation.width
                 if -offset > width * fullSwipeShare {
-                    delete()
+                    act()
                 } else if end < -buttonWidth / 2 {
                     withAnimation(.snappy) {
                         offset = -buttonWidth
@@ -95,11 +116,11 @@ struct KWSwipeToDelete: ViewModifier {
         }
     }
 
-    private func delete() {
+    private func act() {
         withAnimation(.snappy) {
             offset = 0
             isOpen = false
         }
-        onDelete()
+        onAction()
     }
 }

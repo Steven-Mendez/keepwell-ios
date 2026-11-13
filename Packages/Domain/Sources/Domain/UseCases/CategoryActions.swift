@@ -142,6 +142,45 @@ public struct DefaultDeleteCategoryUseCase: DeleteCategoryUseCase {
     }
 }
 
+/// Runs after every pull. A device that edited a movement (or recurring rule) before it heard of a
+/// category's deletion wins with its later edit and brings the deleted id back (ADR 0005 keeps the
+/// newest row whole). Whatever still points at one of `deletedCategoryIDs` (the tombstones) moves
+/// to "Other" of its kind; with nothing to repair nothing is written. Returns how many records moved.
+public protocol ReassignDeletedCategoriesUseCase: Sendable {
+    @discardableResult
+    func execute(deletedCategoryIDs: Set<String>) async throws(DomainError) -> Int
+}
+
+public struct DefaultReassignDeletedCategoriesUseCase: ReassignDeletedCategoriesUseCase {
+    private let transactions: any TransactionRepository
+    private let recurringRules: any RecurringRuleRepository
+
+    public init(transactions: any TransactionRepository, recurringRules: any RecurringRuleRepository) {
+        self.transactions = transactions
+        self.recurringRules = recurringRules
+    }
+
+    @discardableResult
+    public func execute(deletedCategoryIDs: Set<String>) async throws(DomainError) -> Int {
+        guard !deletedCategoryIDs.isEmpty else { return 0 }
+        func isOrphaned(_ categoryID: String?, _ kind: TransactionKind) -> Bool {
+            guard kind != .transfer, let categoryID else { return false }
+            let isFallback = categoryID == TransactionCategory.otherExpenseID || categoryID == TransactionCategory.otherIncomeID
+            return !isFallback && deletedCategoryIDs.contains(categoryID)
+        }
+        let movements = try await transactions.fetchTransactions(in: nil)
+            .filter { isOrphaned($0.categoryID, $0.kind) }
+            .map { $0.with(categoryID: TransactionCategory.otherID(for: $0.kind)) }
+        let rules = try await recurringRules.fetchRecurringRules()
+            .filter { isOrphaned($0.categoryID, $0.kind) }
+            .map { $0.with(categoryID: TransactionCategory.otherID(for: $0.kind)) }
+        guard !movements.isEmpty || !rules.isEmpty else { return 0 }
+        // One save: a failure moves nothing, and the next pull tries again.
+        try await recurringRules.saveMaterialized(transactions: movements, rules: rules)
+        return movements.count + rules.count
+    }
+}
+
 /// Saves the order the person dragged the categories into.
 public protocol ReorderCategoriesUseCase: Sendable {
     func execute(ids: [String]) async throws(DomainError)
@@ -182,5 +221,18 @@ extension Transaction {
     /// movements to "Other" must not lose what else the person recorded on them.
     public func with(categoryID: String?) -> Self {
         with(categoryID: categoryID, tags: tags)
+    }
+}
+
+extension RecurringRule {
+    /// The same rule filed under another category; everything else stays.
+    public func with(categoryID: String?) -> Self {
+        Self(
+            id: id, name: name, kind: kind, categoryID: categoryID, amount: amount, currency: currency,
+            accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
+            interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
+            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
+            source: source,
+        )
     }
 }

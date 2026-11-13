@@ -62,6 +62,18 @@ struct GetPlanOverviewTests {
     }
 
     @Test
+    func countsWhatEachTotalAddsUp() async throws {
+        let overview = try await useCase().execute()
+        let subscriptions = sample.recurringRules.count {
+            $0.isSubscription && $0.kind == .expense && RecurringSchedule.isActive($0, calendar: .current)
+        }
+        #expect(overview.recurring.subscriptionCount == subscriptions)
+        // The open motorbike loan and the tickets owed to Ana; Juan owes, Carlos already paid.
+        #expect(overview.debts.youOweCount == 2)
+        #expect(overview.debts.peopleOwingCount == 1)
+    }
+
+    @Test
     func nothingPlannedYieldsEmptySummaries() async throws {
         let overview = try await useCase(empty: true).execute()
         #expect(!overview.recurring.hasRules)
@@ -69,5 +81,8 @@ struct GetPlanOverviewTests {
         #expect(overview.goals.top == nil)
         #expect(!overview.debts.hasDebts)
         #expect(overview.debts.nextLoan == nil)
+        #expect(overview.recurring.subscriptionCount == 0)
+        #expect(overview.debts.youOweCount == 0)
+        #expect(overview.debts.peopleOwingCount == 0)
     }
 }

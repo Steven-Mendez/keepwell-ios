@@ -13,7 +13,7 @@ public final class SettingsViewModel {
         case failed
     }
 
-    /// A CSV written to a temporary file, ready to share.
+    /// A CSV or backup written to a temporary file, ready to share.
     public struct ExportedFile: Identifiable, Equatable {
         public let url: URL
         public var id: URL { url }
@@ -24,6 +24,8 @@ public final class SettingsViewModel {
     /// The lock screen's name as typed; saved when the field loses focus.
     public var nameText = ""
     public private(set) var errorMessage: String?
+    /// A finished action worth saying, such as a restored backup.
+    public private(set) var noticeMessage: String?
     public var exportedFile: ExportedFile?
     public private(set) var isWorking = false
 
@@ -37,6 +39,8 @@ public final class SettingsViewModel {
     private let eraseAllData: any EraseAllDataUseCase
     private let removePasscode: any RemovePasscodeUseCase
     private let setPreferredName: any SetPreferredNameUseCase
+    private let exportBackupFile: (any ExportBackupUseCase)?
+    private let restoreBackupFile: (any RestoreBackupUseCase)?
     private let now: () -> Date
     /// Signed in, erasing this iPhone first signs out, so the account's copy can't come back down.
     /// `false` means the sign-out failed and nothing may be erased.
@@ -51,12 +55,16 @@ public final class SettingsViewModel {
         eraseAllData: any EraseAllDataUseCase,
         removePasscode: any RemovePasscodeUseCase,
         setPreferredName: any SetPreferredNameUseCase,
+        exportBackup: (any ExportBackupUseCase)? = nil,
+        restoreBackup: (any RestoreBackupUseCase)? = nil,
         now: @escaping () -> Date = { .now },
         signOutBeforeErasing: (@MainActor () async -> Bool)? = nil,
     ) {
         self.signOutBeforeErasing = signOutBeforeErasing
         self.removePasscode = removePasscode
         self.setPreferredName = setPreferredName
+        exportBackupFile = exportBackup
+        restoreBackupFile = restoreBackup
         self.getOverview = getOverview
         self.updateSettings = updateSettings
         self.changeCurrencies = changeCurrencies
@@ -154,6 +162,11 @@ public final class SettingsViewModel {
         await update { $0.paymentReminderDaysBefore = days }
     }
 
+    public func setTimeZone(_ identifier: String) async {
+        guard HomeTimeZone.isWellFormed(identifier) else { return }
+        await update { $0.timeZone = identifier }
+    }
+
     private func update(_ change: @escaping @Sendable (inout Settings) throws(DomainError) -> Void) async {
         do {
             _ = try await updateSettings.execute(change)
@@ -182,6 +195,56 @@ public final class SettingsViewModel {
             errorMessage = nil
         } catch {
             errorMessage = String(localized: "We couldn't create the file. Try again.", bundle: #bundle)
+        }
+    }
+
+    public var offersBackup: Bool {
+        exportBackupFile != nil && restoreBackupFile != nil
+    }
+
+    /// The full JSON backup, written to a temporary file ready to share.
+    public func exportBackup() async {
+        guard let exportBackupFile else { return }
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            let data = try await exportBackupFile.execute(at: now())
+            let day = now().formatted(.iso8601.year().month().day())
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent("keepwell-\(day).json")
+            try data.write(to: url, options: .atomic)
+            exportedFile = ExportedFile(url: url)
+            errorMessage = nil
+        } catch {
+            errorMessage = String(localized: "We couldn't create the file. Try again.", bundle: #bundle)
+        }
+    }
+
+    /// Restores a chosen backup file; nothing is written unless it is whole and the ledger empty.
+    public func restoreBackup(_ data: Data) async {
+        guard let restoreBackupFile else { return }
+        isWorking = true
+        defer { isWorking = false }
+        noticeMessage = nil
+        do {
+            try await restoreBackupFile.execute(data, at: now())
+            errorMessage = nil
+            noticeMessage = String(localized: "Backup restored", bundle: #bundle)
+            await load()
+        } catch {
+            errorMessage = Self.restoreMessage(error)
+        }
+    }
+
+    private static func restoreMessage(_ error: BackupRestoreError) -> String {
+        switch error {
+        case .notEmpty:
+            String(localized: "A backup can only be restored when there's no data yet. Delete all your data first.", bundle: #bundle)
+        case .newerVersion:
+            String(localized: "This backup is from a newer version of Keepwell. Update the app and try again.", bundle: #bundle)
+        case .notBackup, .invalid:
+            String(localized: "This file isn't a Keepwell backup, or it's damaged. Nothing was restored.", bundle: #bundle)
+        case .failed:
+            String(localized: "We couldn't restore the backup. Try again.", bundle: #bundle)
         }
     }
 

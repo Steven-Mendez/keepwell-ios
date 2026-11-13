@@ -22,6 +22,7 @@ public enum RecurringPreview {
             accounts: store,
             cards: store,
             categories: store,
+            categorizationRules: store,
             now: { now },
         )
         return UseCases(
@@ -42,21 +43,25 @@ public enum RecurringPreview {
 
     public static func editorViewModel(
         ruleID: UUID?,
+        isNewSubscription: Bool = false,
         store: InMemoryStore = InMemoryStore(sample: .standard),
+        makeID: () -> UUID = UUID.init,
     ) -> RecurringRuleEditorViewModel {
         let cases = useCases(store: store)
         return RecurringRuleEditorViewModel(
             ruleID: ruleID,
+            isNewSubscription: isNewSubscription,
             getOverview: cases.overview,
             save: cases.save,
             setPaused: cases.setPaused,
             delete: cases.delete,
             now: { SampleData.defaultReferenceDate },
+            makeID: makeID,
         )
     }
 
     static func list() -> some View {
-        RecurringView(viewModel: listViewModel(), onBack: {}, onAdd: {}, onOpen: { _ in })
+        RecurringView(viewModel: listViewModel(), onBack: {}, onAdd: {}, onAddSubscription: {}, onOpen: { _ in })
     }
 
     static func editor() -> some View {

@@ -197,7 +197,7 @@ public final class LoanDetailViewModel: Identifiable {
     /// Every way to pay: each card or transfer channel, and accounts without any (cash).
     public var methods: [Method] {
         guard let context else { return [] }
-        return context.accounts.flatMap { account -> [Method] in
+        return context.accounts.open.flatMap { account -> [Method] in
             let cards = context.cards.filter { $0.accountID == account.id }
             guard !cards.isEmpty else { return [Method(source: .account(account.id), title: CardDisplay.name(of: account))] }
             return cards.map { Method(source: .card($0.id), title: CardDisplay.methodTitle($0, account: account)) }

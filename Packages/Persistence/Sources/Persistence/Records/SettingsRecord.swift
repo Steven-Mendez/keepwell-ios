@@ -18,6 +18,8 @@ public final class SettingsRecord {
     var additionalCapAlertThreshold = "0.8"
     var hasCompletedOnboarding = false
     var updatedAt = Date.now
+    /// The home time zone (`Settings.timeZone`), from schema V12.
+    var timeZone: String?
 
     init() {}
 
@@ -31,7 +33,8 @@ public final class SettingsRecord {
         isICloudBackupEnabled = settings.isICloudBackupEnabled
         paymentReminderDaysBefore = settings.paymentReminderDaysBefore
         hasCompletedOnboarding = settings.hasCompletedOnboarding
-        updatedAt = .now
+        timeZone = settings.timeZone
+        updatedAt = stampAfter(isNewlyInserted ? nil : updatedAt)
     }
 
     func toDomain() throws(DomainCorruption) -> Settings {
@@ -51,6 +54,7 @@ public final class SettingsRecord {
             isICloudBackupEnabled: isICloudBackupEnabled,
             paymentReminderDaysBefore: paymentReminderDaysBefore,
             hasCompletedOnboarding: hasCompletedOnboarding,
+            timeZone: timeZone,
         )
     }
 }

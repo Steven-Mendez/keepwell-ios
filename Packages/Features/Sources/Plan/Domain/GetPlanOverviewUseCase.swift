@@ -52,11 +52,25 @@ public struct DefaultGetPlanOverviewUseCase: GetPlanOverviewUseCase {
         let debts = try await debts.load()
         let next = RecurringSchedule.upcoming(recurring.rules, from: now(), days: Self.lookaheadDays, calendar: calendar)
             .min { $0.date < $1.date }
+        let subscriptions = recurring.rules.count {
+            $0.isSubscription && $0.kind == .expense && RecurringSchedule.isActive($0, calendar: calendar)
+        }
+        // Counted the way `DebtTotals` picks what it adds up.
+        let openDebts = debts.debts.filter { !$0.isSettled && $0.remaining > 0 }
+        let people = Set(openDebts.filter { $0.direction == .theyOweMe }
+            .map { $0.person.trimmingCharacters(in: .whitespaces).lowercased() })
         return PlanOverview(
-            recurring: .init(subscriptionsPerMonth: recurring.subscriptionsPerMonth, next: next, hasRules: !recurring.rules.isEmpty),
+            recurring: .init(
+                subscriptionsPerMonth: recurring.subscriptionsPerMonth,
+                subscriptionCount: subscriptions,
+                next: next,
+                hasRules: !recurring.rules.isEmpty,
+            ),
             goals: .init(top: goals.first, count: goals.count),
             debts: .init(
                 totals: debts.totals,
+                youOweCount: debts.loans.count { !$0.loan.isPaidOff } + openDebts.count { $0.direction == .iOwe },
+                peopleOwingCount: people.count,
                 nextLoan: debts.loans.first { $0.next != nil },
                 hasDebts: !debts.loans.isEmpty || !debts.debts.isEmpty,
             ),

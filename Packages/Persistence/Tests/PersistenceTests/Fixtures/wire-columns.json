@@ -58,6 +58,11 @@
         "nullable": true,
         "optional": false
       },
+      "closed_at": {
+        "type": "string",
+        "nullable": true,
+        "optional": true
+      },
       "created_at": {
         "type": "string",
         "nullable": false,
@@ -644,6 +649,11 @@
         "nullable": true,
         "optional": false
       },
+      "due_date": {
+        "type": "string",
+        "nullable": true,
+        "optional": true
+      },
       "created_at": {
         "type": "string",
         "nullable": false,
@@ -774,6 +784,11 @@
         "type": "boolean",
         "nullable": false,
         "optional": false
+      },
+      "time_zone": {
+        "type": "string",
+        "nullable": true,
+        "optional": true
       },
       "created_at": {
         "type": "string",

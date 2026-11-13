@@ -58,6 +58,11 @@
         "nullable": true,
         "optional": false
       },
+      "closed_at": {
+        "type": "string",
+        "nullable": true,
+        "optional": true
+      },
       "created_at": {
         "type": "string",
         "nullable": false,
@@ -644,6 +649,11 @@
         "nullable": true,
         "optional": false
       },
+      "due_date": {
+        "type": "string",
+        "nullable": true,
+        "optional": true
+      },
       "created_at": {
         "type": "string",
         "nullable": false,
@@ -773,6 +783,43 @@
       "has_completed_onboarding": {
         "type": "boolean",
         "nullable": false,
+        "optional": false
+      },
+      "time_zone": {
+        "type": "string",
+        "nullable": true,
+        "optional": true
+      },
+      "created_at": {
+        "type": "string",
+        "nullable": false,
+        "optional": false
+      },
+      "updated_at": {
+        "type": "string",
+        "nullable": false,
+        "optional": false
+      },
+      "deleted_at": {
+        "type": "string",
+        "nullable": true,
+        "optional": false
+      }
+    },
+    "notificationState": {
+      "id": {
+        "type": "string",
+        "nullable": false,
+        "optional": false
+      },
+      "read_at": {
+        "type": "string",
+        "nullable": true,
+        "optional": false
+      },
+      "dismissed_at": {
+        "type": "string",
+        "nullable": true,
         "optional": false
       },
       "created_at": {

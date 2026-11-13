@@ -21,6 +21,7 @@ public struct TransactionsView: View {
     @FocusState private var isSearchFocused: Bool
     @State private var pendingDeletion: Domain.Transaction?
     @State private var isPickingScope = false
+    @State private var isEditingFilters = false
 
     /// `onOpenTransaction` opens a movement's detail; `onOpenRecurringRule` opens the rule that
     /// recorded a movement, from its menu; `onSplit` splits an expense between the person and
@@ -67,6 +68,11 @@ public struct TransactionsView: View {
         .task { await viewModel.load() }
         .sheet(isPresented: $isPickingScope) {
             ScopePickerSheet(viewModel: viewModel) { isPickingScope = false }
+                .presentationDetents([.medium, .large])
+                .presentationBackground(KWColor.Surface.bg)
+        }
+        .sheet(isPresented: $isEditingFilters) {
+            FiltersSheet(viewModel: viewModel) { isEditingFilters = false }
                 .presentationDetents([.medium, .large])
                 .presentationBackground(KWColor.Surface.bg)
         }
@@ -207,6 +213,9 @@ public struct TransactionsView: View {
                     onPick: { isPickingScope = true },
                     onClear: { viewModel.scope = .all },
                 )
+                ForEach(viewModel.activeFilters) { chip in
+                    ActiveFilterChipView(chip: chip, onOpen: { isEditingFilters = true }, onClear: { viewModel.clear(chip.kind) })
+                }
                 Rectangle()
                     .fill(KWColor.Surface.border)
                     .frame(width: 1, height: 22)
@@ -216,6 +225,7 @@ public struct TransactionsView: View {
                         viewModel.filter = filter
                     }
                 }
+                FiltersChip { isEditingFilters = true }
             }
             .padding(.horizontal, KWLayout.gutter)
         }
@@ -267,7 +277,15 @@ extension TransactionsView {
                 subtitle: viewModel.subtitle(of: transaction, display: display),
                 amount: display.amount(of: transaction),
                 secondaryAmount: display.secondaryAmount(of: transaction),
-            )
+            ) {
+                // A known brand shows its logo; a transfer is never a merchant.
+                BrandOrFallbackIcon(
+                    text: transaction.kind == .transfer ? "" : transaction.description,
+                    tint: CategoryDisplay.color(for: display.category(of: transaction)),
+                ) {
+                    KWTransactionIcon(display.style(of: transaction))
+                }
+            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

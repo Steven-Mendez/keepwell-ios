@@ -41,6 +41,29 @@ struct PlanViewModelTests {
     }
 
     @Test
+    func theCardsCountWhatTheirTotalsAddUp() async throws {
+        let viewModel = await loaded()
+        let overview = try #require(viewModel.overview)
+        // The sample: Juan owes part of a dinner; the motorbike loan and Ana's tickets are owed.
+        #expect(viewModel.youOweTitle(overview.debts) == "2 debts to pay")
+        #expect(viewModel.owedToYouTitle(overview.debts) == "1 person owes you")
+        let count = overview.recurring.subscriptionCount
+        #expect(count > 0)
+        #expect(viewModel
+            .subscriptionsCaption(overview.recurring) == (count == 1 ? "Per month · 1 subscription" : "Per month · \(count) subscriptions"))
+    }
+
+    @Test
+    func withoutCountsTheCardsKeepTheirTitles() {
+        let viewModel = PlanViewModel(getOverview: PlanOverviewStub())
+        let debts = PlanOverview.Debts(totals: DebtTotals(loans: [], debts: []), nextLoan: nil, hasDebts: false)
+        let recurring = PlanOverview.Recurring(subscriptionsPerMonth: Money(0, "USD"), next: nil, hasRules: true)
+        #expect(viewModel.youOweTitle(debts) == "You owe")
+        #expect(viewModel.owedToYouTitle(debts) == "Owed to you")
+        #expect(viewModel.subscriptionsCaption(recurring) == "Subscriptions per month")
+    }
+
+    @Test
     func noDebtsReadNothing() {
         let viewModel = PlanViewModel(getOverview: PlanOverviewStub())
         #expect(viewModel.debtTotal([], hidden: false) == "Nothing")

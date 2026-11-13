@@ -5,11 +5,12 @@ import SharedPresentation
 import SwiftUI
 
 /// "Recurring": what subscriptions cost per month and per year, then every rule by group with when
-/// it falls next. Tapping a rule opens it; "+" adds one.
+/// it falls next. Tapping a rule opens it; "+" adds a subscription (the short form) or any rule.
 public struct RecurringView: View {
     private let viewModel: RecurringViewModel
     private let onBack: () -> Void
     private let onAdd: () -> Void
+    private let onAddSubscription: () -> Void
     private let onOpen: (UUID) -> Void
     /// The same eye as home: hiding amounts is about who's looking at the phone, on every screen.
     @AppStorage("home.hidesBalances") private var hidesBalances = false
@@ -18,11 +19,13 @@ public struct RecurringView: View {
         viewModel: RecurringViewModel,
         onBack: @escaping () -> Void,
         onAdd: @escaping () -> Void,
+        onAddSubscription: @escaping () -> Void,
         onOpen: @escaping (UUID) -> Void,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onAdd = onAdd
+        self.onAddSubscription = onAddSubscription
         self.onOpen = onOpen
     }
 
@@ -37,6 +40,11 @@ public struct RecurringView: View {
                     emptyState
                 } else if viewModel.overview != nil {
                     totals
+                    if let error = viewModel.actionError {
+                        Text(error)
+                            .font(KWTextStyle.caption.font)
+                            .foregroundStyle(KWColor.State.negative)
+                    }
                     ForEach(viewModel.sections) { section in
                         VStack(alignment: .leading, spacing: KWSpacing.xs) {
                             KWSectionHeader(section.group.title)
@@ -70,7 +78,17 @@ public struct RecurringView: View {
                     ? String(localized: "Show amounts", bundle: #bundle)
                     : String(localized: "Hide amounts", bundle: #bundle),
             ) { hidesBalances.toggle() }
-            KWCircleButton(.plus, style: .white, accessibilityLabel: String(localized: "Add recurring", bundle: #bundle), action: onAdd)
+            Menu {
+                Button(action: onAddSubscription) { Text("New subscription", bundle: #bundle) }
+                Button(action: onAdd) { Text("New recurring", bundle: #bundle) }
+            } label: {
+                KWIconView(.plus, size: 20, lineWidth: 2.2)
+                    .foregroundStyle(KWColor.Semantic.primaryForeground)
+                    .frame(width: 40, height: 40)
+                    .background(KWColor.Semantic.primary, in: Circle())
+                    .contentShape(Circle())
+            }
+            .accessibilityLabel(Text("Add recurring", bundle: #bundle))
         }
     }
 
@@ -87,6 +105,12 @@ public struct RecurringView: View {
                 .font(KWTextStyle.caption.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.secondary)
                 .monospacedDigit()
+            ForEach(viewModel.excludedSubscriptions, id: \.self) { line in
+                Text(line)
+                    .font(KWTextStyle.caption.font.weight(.regular))
+                    .foregroundStyle(KWColor.Text.secondary)
+                    .monospacedDigit()
+            }
         }
         .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -108,31 +132,70 @@ public struct RecurringView: View {
         .padding(.top, 96)
     }
 
+    /// While a draft the rule made waits from today or before, its state takes the date's place,
+    /// with "Confirm" beside it; swiping the row left confirms too.
     private func row(_ rule: RecurringRule) -> some View {
-        Button { onOpen(rule.id) } label: {
-            HStack(spacing: KWSpacing.sm) {
-                icon(rule)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(rule.name).font(.kw(15, weight: 600))
-                    Text(viewModel.subtitle(of: rule))
-                        .font(KWTextStyle.caption.font)
-                        .foregroundStyle(KWColor.Text.muted)
+        let pending = viewModel.pendingDraft(of: rule)
+        return HStack(spacing: KWSpacing.sm) {
+            Button { onOpen(rule.id) } label: { rowLabel(rule, pending: pending) }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+            if let pending {
+                Button {
+                    Task { await viewModel.confirm(pending) }
+                } label: {
+                    Text("Confirm", bundle: #bundle)
                 }
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .buttonStyle(.kw(.primary, size: .mini))
+                .disabled(viewModel.confirming.contains(pending.transaction.id))
+                .accessibilityLabel(Text("Confirm \(pending.transaction.description)", bundle: #bundle))
+            }
+        }
+        .kwSwipeAction(
+            .check,
+            tint: KWColor.State.positive,
+            label: Text("Confirm", bundle: #bundle),
+            isEnabled: pending != nil,
+        ) {
+            if let pending {
+                Task { await viewModel.confirm(pending) }
+            }
+        }
+    }
+
+    private func rowLabel(_ rule: RecurringRule, pending: PendingRuleDraft?) -> some View {
+        HStack(spacing: KWSpacing.sm) {
+            icon(rule)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(rule.name).font(.kw(15, weight: 600))
+                Text(viewModel.subtitle(of: rule))
+                    .font(KWTextStyle.caption.font)
+                    .foregroundStyle(KWColor.Text.muted)
+            }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .trailing, spacing: 2) {
                 Text(viewModel.amount(of: rule, hidden: hidesBalances))
                     .font(.kw(15, weight: 700))
                     .foregroundStyle(amountColor(rule))
                     .monospacedDigit()
-                    .lineLimit(1)
-                    .fixedSize()
+                if let pending {
+                    pendingState(pending)
+                }
             }
-            .padding(.vertical, KWSpacing.sm)
-            .contentShape(Rectangle())
-            .opacity(rule.isPaused ? 0.5 : 1)
+            .lineLimit(1)
+            .fixedSize()
         }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
+        .padding(.vertical, KWSpacing.sm)
+        .contentShape(Rectangle())
+        .opacity(rule.isPaused && pending == nil ? 0.5 : 1)
+    }
+
+    /// Overdue reads in the warning color, and says so in words too.
+    private func pendingState(_ pending: PendingRuleDraft) -> some View {
+        Text(viewModel.pendingLabel(pending))
+            .font(KWTextStyle.caption.font.weight(pending.daysOverdue > 0 ? .semibold : .regular))
+            .foregroundStyle(pending.daysOverdue > 0 ? KWColor.State.pending : KWColor.Text.primary)
     }
 
     @ViewBuilder
@@ -141,11 +204,13 @@ public struct RecurringView: View {
             KWTransactionIcon(.transfer)
         } else {
             let category = viewModel.category(of: rule)
-            CategorySymbol(category, size: 18)
-                .foregroundStyle(CategoryDisplay.color(for: category))
-                .frame(width: 40, height: 40)
-                .background(CategoryDisplay.color(for: category).opacity(0.16), in: Circle())
-                .accessibilityHidden(true)
+            BrandOrFallbackIcon(text: rule.name, tint: CategoryDisplay.color(for: category)) {
+                CategorySymbol(category, size: 18)
+                    .foregroundStyle(CategoryDisplay.color(for: category))
+                    .frame(width: 40, height: 40)
+                    .background(CategoryDisplay.color(for: category).opacity(0.16), in: Circle())
+                    .accessibilityHidden(true)
+            }
         }
     }
 

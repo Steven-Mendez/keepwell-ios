@@ -77,3 +77,30 @@ public struct CategoryBudgetStatus: Hashable, Sendable {
         statuses(totals: month.categories, categories: categories, currency: month.currency)
     }
 }
+
+/// How many expense budgets `CategoryBudgetStatus.statuses` left out for being in one other
+/// currency, so the person learns they exist instead of seeing them vanish. Same rule as the web's
+/// `otherCurrencyBudgets`.
+public struct OtherCurrencyBudgets: Hashable, Sendable {
+    public let currency: String
+    public let count: Int
+
+    public init(currency: String, count: Int) {
+        self.currency = currency
+        self.count = count
+    }
+
+    /// The budgets in another currency than `currency`, counted per currency, by code.
+    public static func of(categories: [TransactionCategory], currency: String) -> [Self] {
+        var counts: [String: Int] = [:]
+        for category in categories {
+            guard category.kind == .expense,
+                  let budget = category.monthlyBudget,
+                  budget.currency != currency,
+                  budget.amount > 0
+            else { continue }
+            counts[budget.currency, default: 0] += 1
+        }
+        return counts.map { Self(currency: $0.key, count: $0.value) }.sorted { $0.currency < $1.currency }
+    }
+}

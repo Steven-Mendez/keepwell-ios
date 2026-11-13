@@ -107,12 +107,42 @@ struct DebtEditorView: View {
                 Text("Date", bundle: #bundle).font(KWTextStyle.body.font).foregroundStyle(KWColor.Text.secondary)
             }
             .padding(.vertical, KWSpacing.xs)
+            dueDateRows
             KWTextFieldRow(
                 String(localized: "Note", bundle: #bundle),
                 placeholder: String(localized: "Optional", bundle: #bundle),
                 text: $viewModel.note,
             )
         }
+    }
+}
+
+extension DebtEditorView {
+    /// "Set a due date", and the day once it is on. Off saves the debt without one.
+    @ViewBuilder
+    private var dueDateRows: some View {
+        Toggle(isOn: $viewModel.hasDueDate.animation(.snappy)) {
+            Text("Set a due date", bundle: #bundle).font(KWTextStyle.body.font)
+        }
+        .toggleStyle(.kw)
+        .padding(.vertical, 14)
+        if viewModel.hasDueDate {
+            DatePicker(selection: $viewModel.dueDate, in: viewModel.date..., displayedComponents: [.date]) {
+                Text("Due date", bundle: #bundle).font(KWTextStyle.body.font).foregroundStyle(KWColor.Text.secondary)
+            }
+            .padding(.vertical, KWSpacing.xs)
+        }
+    }
+}
+
+/// "Due Nov 28, 2026", "Due today" or "Overdue · 3 days", in the negative color only when overdue.
+struct DebtDueText: View {
+    let line: DebtDueLine
+
+    var body: some View {
+        Text(line.text)
+            .font(KWTextStyle.caption.font)
+            .foregroundStyle(line.isOverdue ? KWColor.State.negative : KWColor.Text.muted)
     }
 }
 
@@ -194,6 +224,9 @@ struct DebtDetailView: View {
                 Text("Settled on \(viewModel.day(settled))", bundle: #bundle)
                     .font(KWTextStyle.caption.font)
                     .foregroundStyle(KWColor.State.positive)
+            }
+            if let due = viewModel.due {
+                DebtDueText(line: due)
             }
             Text("Only tracked here: it doesn't record a movement or change your balances.", bundle: #bundle)
                 .font(KWTextStyle.captionSm.font.weight(.regular))

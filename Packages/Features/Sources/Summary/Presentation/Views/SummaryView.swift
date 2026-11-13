@@ -9,10 +9,12 @@ import SwiftUI
 /// did it go?) and pace (am I spending faster than last month?). A month stepper drives all three.
 public struct SummaryView: View {
     @Bindable private var viewModel: SummaryViewModel
+    private let onEditBudgets: () -> Void
     private let onNewMovement: () -> Void
 
-    public init(viewModel: SummaryViewModel, onNewMovement: @escaping () -> Void) {
+    public init(viewModel: SummaryViewModel, onEditBudgets: @escaping () -> Void, onNewMovement: @escaping () -> Void) {
         self.viewModel = viewModel
+        self.onEditBudgets = onEditBudgets
         self.onNewMovement = onNewMovement
     }
 
@@ -74,7 +76,7 @@ public struct SummaryView: View {
             monthStepper
             switch viewModel.chart {
             case .cashFlow: CashFlowSection(viewModel: viewModel)
-            case .categories: CategorySection(viewModel: viewModel)
+            case .categories: CategorySection(viewModel: viewModel, onEditBudgets: onEditBudgets)
             case .pace: PaceSection(viewModel: viewModel)
             }
             // A year of month ends, whatever month the stepper picks.

@@ -32,4 +32,25 @@ extension Transaction {
         guard found.kind == kind else { throw .categoryKindMismatch(expected: kind, actual: found.kind) }
         return found
     }
+
+    /// A closed account keeps the balance it was closed with: no new movement touches it, and an
+    /// edit of one that does (or would) may change its description, category, note and tags, never
+    /// what it moves.
+    public static func checkClosedAccounts(_ movement: Self, existing: Self? = nil, accounts: [Account]) throws(DomainError) {
+        let touched = [movement.accountID, movement.destinationAccountID, existing?.accountID, existing?.destinationAccountID]
+        let closed = touched.compactMap(\.self).first { id in accounts.contains { $0.id == id && !$0.isOpen } }
+        guard let closed else { return }
+        if let existing, existing.movesTheSameMoney(as: movement) {
+            return
+        }
+        throw .accountClosed(closed)
+    }
+
+    /// Whether two versions of a movement move the same money: same accounts, amounts, day and status.
+    func movesTheSameMoney(as other: Self) -> Bool {
+        kind == other.kind && status == other.status && date == other.date && accountID == other.accountID
+            && cardID == other.cardID && destinationAccountID == other.destinationAccountID
+            && currency == other.currency && amount == other.amount
+            && actualDebitedPrincipal == other.actualDebitedPrincipal
+    }
 }

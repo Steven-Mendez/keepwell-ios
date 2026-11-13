@@ -12,6 +12,7 @@ public struct CashView: View {
     private let onSeeAllMovements: (UUID) -> Void
     @State private var isRenaming = false
     @State private var isConfirmingDeletion = false
+    @State private var isClosing = false
 
     /// `onSeeAllMovements` opens the movement list filtered to the account it receives.
     public init(
@@ -29,6 +30,7 @@ public struct CashView: View {
             VStack(alignment: .leading, spacing: KWSpacing.lg) {
                 KWNavigationHeader(String(localized: "Cash", bundle: #bundle), buttonStyle: .translucent, onBack: onBack)
                 if let detail = viewModel.detail {
+                    closedBanner(detail.account)
                     CardHero(art: art(detail), name: detail.account.name)
                     BalanceHeader(
                         String(localized: "Cash", bundle: #bundle),
@@ -39,7 +41,7 @@ public struct CashView: View {
                     actions
                     manage(detail)
                     latest(detail)
-                    deleteButton
+                    lifecycle(detail.account)
                 } else if viewModel.state == .failed {
                     Text("We couldn't load this account.", bundle: #bundle)
                         .foregroundStyle(KWColor.Text.muted)
@@ -56,6 +58,13 @@ public struct CashView: View {
         .foregroundStyle(KWColor.Text.primary)
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
+        .accountClosingSheet(
+            viewModel.closing,
+            accountName: viewModel.detail.map { CardDisplay.name(of: $0.account) } ?? "",
+            isPresented: $isClosing,
+        ) {
+            Task { await viewModel.load() }
+        }
         .sheet(isPresented: $isRenaming, onDismiss: viewModel.clearError) {
             if let detail = viewModel.detail {
                 CardNameSheet(
@@ -83,10 +92,9 @@ public struct CashView: View {
             } label: {
                 Text("Delete account", bundle: #bundle)
             }
+            closeInsteadButton
         } message: {
-            if let detail = viewModel.detail {
-                Text(viewModel.deleteMessage(detail))
-            }
+            deleteMessage
         }
     }
 
@@ -127,13 +135,41 @@ public struct CashView: View {
         }
     }
 
-    /// Apart from the edits, as on a bank account.
-    private var deleteButton: some View {
-        KWGroupedCard(verticalPadding: KWSpacing.xxs) {
-            CardManageRow(String(localized: "Delete account", bundle: #bundle), icon: .trash, isDestructive: true) {
-                isConfirmingDeletion = true
+    @ViewBuilder
+    private var closeInsteadButton: some View {
+        if let detail = viewModel.detail, viewModel.offersCloseInstead(detail) {
+            Button(AccountClosingText.closeInstead) { isClosing = true }
+        }
+    }
+
+    @ViewBuilder
+    private var deleteMessage: some View {
+        if let detail = viewModel.detail {
+            if viewModel.offersCloseInstead(detail) {
+                Text(verbatim: "\(viewModel.deleteMessage(detail)) \(AccountClosingText.closeInsteadHint)")
+            } else {
+                Text(viewModel.deleteMessage(detail))
             }
         }
+    }
+
+    @ViewBuilder
+    private func closedBanner(_ account: Account) -> some View {
+        if let closing = viewModel.closing, let closedAt = account.closedAt {
+            ClosedAccountBanner(model: closing, closedAt: closedAt) {
+                Task { await viewModel.load() }
+            }
+        }
+    }
+
+    /// Apart from the edits, so neither is tapped on the way to another row.
+    private func lifecycle(_ account: Account) -> some View {
+        AccountLifecycleRows(
+            canClose: viewModel.closing != nil && account.isOpen,
+            deleteTitle: String(localized: "Delete account", bundle: #bundle),
+            onClose: { isClosing = true },
+            onDelete: { isConfirmingDeletion = true },
+        )
     }
 
     @ViewBuilder

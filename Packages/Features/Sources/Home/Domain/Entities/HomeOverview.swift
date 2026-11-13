@@ -40,6 +40,9 @@ public struct HomeOverview: Hashable, Sendable {
     public let cardSubscriptions: [UUID: [String]]
     /// Recurring occurrences from today through the next 30 days, soonest first.
     public let upcoming: [RecurringOccurrence]
+    /// What's pending through the next week, overdue first: drafts, recurring occurrences, card
+    /// payments and loan installments. Home's "Upcoming" card and its status line read it.
+    public let upcomingPayments: [UpcomingPayment]
     /// Recurring rules an assistant created, paused until the person confirms or discards them.
     public let proposedRules: [RecurringRule]
     /// This month's budgeted categories, closest to their limit first.
@@ -58,6 +61,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let loans: [LoanProgress]
     /// "You owe" and "Owed to you" per currency, loans and personal debts together.
     public let debtTotals: DebtTotals
+    /// Every personal debt, for the reminders of the ones with a due date.
+    public let personalDebts: [PersonalDebt]
     /// For row subtitles.
     public let accounts: [Account]
     public let cards: [Card]
@@ -81,6 +86,7 @@ public struct HomeOverview: Hashable, Sendable {
         paymentReminderDaysBefore: Int,
         cardSubscriptions: [UUID: [String]] = [:],
         upcoming: [RecurringOccurrence] = [],
+        upcomingPayments: [UpcomingPayment] = [],
         proposedRules: [RecurringRule] = [],
         budgets: [CategoryBudgetStatus] = [],
         latestExpenseDays: [String: Date] = [:],
@@ -89,6 +95,7 @@ public struct HomeOverview: Hashable, Sendable {
         priceIncreases: [PriceIncrease] = [],
         loans: [LoanProgress] = [],
         debtTotals: DebtTotals = DebtTotals(loans: [], debts: []),
+        personalDebts: [PersonalDebt] = [],
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
@@ -110,6 +117,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.paymentReminderDaysBefore = paymentReminderDaysBefore
         self.cardSubscriptions = cardSubscriptions
         self.upcoming = upcoming
+        self.upcomingPayments = upcomingPayments
         self.proposedRules = proposedRules
         self.budgets = budgets
         self.latestExpenseDays = latestExpenseDays
@@ -118,6 +126,7 @@ public struct HomeOverview: Hashable, Sendable {
         self.priceIncreases = priceIncreases
         self.loans = loans
         self.debtTotals = debtTotals
+        self.personalDebts = personalDebts
         self.accounts = accounts
         self.cards = cards
         self.categories = categories

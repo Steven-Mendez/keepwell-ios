@@ -31,6 +31,11 @@ public final class RecurringRuleEditorViewModel {
     }
 
     public let ruleID: UUID?
+    /// "New subscription": a new expense in "Subscriptions", marked as one, that opens with only
+    /// name, amount, period and billing day until the person asks for the other fields.
+    public let isNewSubscription: Bool
+    /// Off only while a new subscription still shows the short form.
+    public var showsAllFields: Bool
     public private(set) var overview: RecurringOverview?
     public var name = ""
     public var kind = TransactionKind.expense {
@@ -70,9 +75,10 @@ public final class RecurringRuleEditorViewModel {
     let formatter = CurrencyFormatter()
     private let newID: UUID
 
-    /// `ruleID` nil creates a rule.
+    /// `ruleID` nil creates a rule; `isNewSubscription` creates it from the short subscription form.
     public init(
         ruleID: UUID?,
+        isNewSubscription: Bool = false,
         getOverview: any GetRecurringOverviewUseCase,
         save: any SaveRecurringRuleUseCase,
         setPaused: any SetRecurringRulePausedUseCase,
@@ -82,6 +88,8 @@ public final class RecurringRuleEditorViewModel {
         makeID: () -> UUID = UUID.init,
     ) {
         self.ruleID = ruleID
+        self.isNewSubscription = ruleID == nil && isNewSubscription
+        showsAllFields = !self.isNewSubscription
         self.getOverview = getOverview
         saveRule = save
         self.setPaused = setPaused
@@ -118,6 +126,9 @@ public final class RecurringRuleEditorViewModel {
         } else {
             currency = loaded.settings.second ?? loaded.settings.principal
             method = methodOptions.first?.method
+            if isNewSubscription {
+                presetSubscription(in: loaded)
+            }
         }
     }
 
@@ -206,6 +217,7 @@ public final class RecurringRuleEditorViewModel {
         case .invalidInterval: String(localized: "It can repeat every 1 to 99.", bundle: #bundle)
         case .invalidEndDate: String(localized: "It can't end before it starts.", bundle: #bundle)
         case .invalidTransferDestination: String(localized: "Choose a different destination account.", bundle: #bundle)
+        case .accountClosed: AccountClosingText.accountClosedError
         default: String(localized: "We couldn't save it. Try again.", bundle: #bundle)
         }
     }
@@ -219,6 +231,15 @@ public final class RecurringRuleEditorViewModel {
     }
 
     // MARK: Private
+
+    /// The same values the full form saves once the person picks "Subscriptions" and keeps the
+    /// switch on. Without that category (deleted) the short form asks for one.
+    private func presetSubscription(in overview: RecurringOverview) {
+        if overview.categories.contains(where: { $0.id == Subscriptions.categoryID && $0.kind == .expense }) {
+            categoryID = Subscriptions.categoryID
+        }
+        subscriptionChoice = true
+    }
 
     private func fill(from rule: RecurringRule) {
         name = rule.name

@@ -78,6 +78,25 @@ struct CategoryBudgetsTests {
     }
 
     @Test
+    func countsTheExpenseBudgetsInOtherCurrenciesPerCurrency() {
+        let categories = [
+            expense("groceries", budget: "200"),
+            expense("taxes", budget: "300", currency: "NIO"),
+            expense("rent", budget: "9000", currency: "NIO"),
+            expense("travel", budget: "50", currency: "EUR"),
+            expense("zero", budget: "0", currency: "NIO"),
+            expense("leisure", budget: nil),
+            TransactionCategory(id: "salary", name: "Salary", kind: .income, monthlyBudget: Money(100, "NIO")),
+        ]
+        #expect(OtherCurrencyBudgets.of(categories: categories, currency: "USD") == [
+            OtherCurrencyBudgets(currency: "EUR", count: 1),
+            OtherCurrencyBudgets(currency: "NIO", count: 2),
+        ])
+        #expect(CategoryBudgetStatus.statuses(totals: [], categories: categories, currency: "USD").map(\.categoryID) == ["groceries"])
+        #expect(OtherCurrencyBudgets.of(categories: [expense("groceries", budget: "200")], currency: "USD").isEmpty)
+    }
+
+    @Test
     func readsTheMonthsConfirmedSpending() throws {
         let calendar = Calendar(identifier: .gregorian)
         let date = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 3)))

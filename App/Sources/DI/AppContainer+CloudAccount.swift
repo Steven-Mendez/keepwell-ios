@@ -1,6 +1,7 @@
 import CloudAccountData
 import CloudAccountDomain
 import CloudAccountPresentation
+import Domain
 import Foundation
 import OnboardingDomain
 import Persistence
@@ -25,7 +26,13 @@ extension AppContainer {
 
     func makeSyncEngine() -> SyncEngine? {
         guard let client = apiClient else { return nil }
-        return SyncEngine(client: client, store: store, clientID: installationID)
+        return SyncEngine(
+            client: client,
+            store: store,
+            clientID: installationID,
+            repairCategories: DefaultReassignDeletedCategoriesUseCase(transactions: store, recurringRules: store),
+            fillTimeZone: DefaultFillHomeTimeZoneUseCase(settings: store),
+        )
     }
 
     private func makePushDeviceRepository() -> HTTPPushDeviceRepository? {

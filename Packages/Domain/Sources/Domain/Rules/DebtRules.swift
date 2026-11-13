@@ -104,12 +104,43 @@ public struct DebtTotals: Hashable, Sendable {
     }
 }
 
+/// Where an open debt with a due date stands on a day (keepwell-web `debtDueStatus`).
+public enum DebtDue: Hashable, Sendable {
+    case upcoming(daysLeft: Int)
+    case today
+    case overdue(daysLate: Int)
+}
+
+extension PersonalDebt {
+    /// How far the due date is from `today`, by calendar days. `nil` for a debt without a due date,
+    /// settled, or with nothing left to pay: none of those is due anymore.
+    public func dueStatus(today: Date, calendar: Calendar) -> DebtDue? {
+        guard let dueDate, !isSettled, remaining > 0 else { return nil }
+        let days = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: today),
+            to: calendar.startOfDay(for: dueDate),
+        ).day ?? 0
+        if days > 0 {
+            return .upcoming(daysLeft: days)
+        }
+        return days == 0 ? .today : .overdue(daysLate: -days)
+    }
+}
+
 public enum PersonalDebtOrder {
-    /// Open debts first, newest first; settled ones after them, also newest first.
+    /// Open debts with a due date first, the soonest first (so overdue ones lead); then open debts
+    /// without one, newest first; settled ones last, also newest first.
     public static func ordered(_ debts: [PersonalDebt]) -> [PersonalDebt] {
-        debts.sorted { lhs, rhs in
-            if lhs.isSettled != rhs.isSettled {
-                return !lhs.isSettled
+        func group(_ debt: PersonalDebt) -> Int {
+            debt.isSettled ? 2 : debt.dueDate == nil ? 1 : 0
+        }
+        return debts.sorted { lhs, rhs in
+            if group(lhs) != group(rhs) {
+                return group(lhs) < group(rhs)
+            }
+            if let left = lhs.dueDate, let right = rhs.dueDate, group(lhs) == 0, left != right {
+                return left < right
             }
             if lhs.date != rhs.date {
                 return lhs.date > rhs.date

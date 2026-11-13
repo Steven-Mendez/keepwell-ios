@@ -35,6 +35,8 @@ public final class TransactionDetailViewModel {
     private let getList: any GetTransactionListUseCase
     private let confirmPlanned: any ConfirmPlannedTransactionUseCase
     private let deleteTransaction: any DeleteTransactionUseCase
+    /// Offers "Undo" after a delete or a confirm; `nil` in previews.
+    private let undo: MovementUndo?
     let formatter = CurrencyFormatter()
 
     public init(
@@ -42,7 +44,9 @@ public final class TransactionDetailViewModel {
         getList: any GetTransactionListUseCase,
         confirmPlanned: any ConfirmPlannedTransactionUseCase,
         deleteTransaction: any DeleteTransactionUseCase,
+        undo: MovementUndo? = nil,
     ) {
+        self.undo = undo
         self.transactionID = transactionID
         self.getList = getList
         self.confirmPlanned = confirmPlanned
@@ -73,9 +77,13 @@ public final class TransactionDetailViewModel {
     // MARK: Actions
 
     public func confirm() async {
+        let planned = transaction
         do {
             try await confirmPlanned.execute(id: transactionID)
             actionError = nil
+            if let planned {
+                undo?.offerConfirmed(planned)
+            }
             await load()
         } catch {
             actionError = String(localized: "We couldn't save the change. Try again.", bundle: #bundle)
@@ -83,9 +91,13 @@ public final class TransactionDetailViewModel {
     }
 
     public func delete() async {
+        let deleted = transaction
         do {
             try await deleteTransaction.execute(id: transactionID)
             actionError = nil
+            if let deleted {
+                undo?.offerDeleted(deleted)
+            }
             isDeleted = true
         } catch {
             actionError = String(localized: "We couldn't save the change. Try again.", bundle: #bundle)

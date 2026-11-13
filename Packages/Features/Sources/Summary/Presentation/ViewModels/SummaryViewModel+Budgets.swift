@@ -39,4 +39,12 @@ extension SummaryViewModel {
             )
         }
     }
+
+    /// "2 budgets are in NIO and aren't compared", one line per other currency: the budgets
+    /// `budgetRows` leaves out, named instead of converted at a rate picked today.
+    var otherCurrencyBudgetNotes: [String] {
+        (report?.otherCurrencyBudgets ?? []).map { group in
+            String(localized: "\(group.count) budgets are in \(group.currency) and aren't compared", bundle: #bundle)
+        }
+    }
 }

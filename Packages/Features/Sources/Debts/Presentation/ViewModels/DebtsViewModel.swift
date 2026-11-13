@@ -157,6 +157,11 @@ public final class DebtsViewModel {
         return "\(direction) · \(note)"
     }
 
+    /// "Due Nov 28, 2026", "Due today" or "Overdue · 3 days" under the amount; `nil` when nothing is due.
+    public func debtDue(_ debt: PersonalDebt) -> DebtDueLine? {
+        DebtDisplay.due(debt, today: now(), calendar: calendar)
+    }
+
     /// What is left, or "Settled".
     public func debtAmount(_ debt: PersonalDebt, hidden: Bool) -> String {
         if debt.isSettled {
@@ -180,6 +185,28 @@ public enum DebtDisplay {
         case .iOwe: String(localized: "You owe", bundle: #bundle)
         }
     }
+
+    /// Where a debt's due date stands, said in words: color only adds to it.
+    public static func due(_ debt: PersonalDebt, today: Date, calendar: Calendar) -> DebtDueLine? {
+        guard let status = debt.dueStatus(today: today, calendar: calendar), let dueDate = debt.dueDate else { return nil }
+        return switch status {
+        case .upcoming:
+            DebtDueLine(
+                text: String(localized: "Due \(DebtDates.day(dueDate, calendar: calendar))", bundle: #bundle),
+                isOverdue: false,
+            )
+        case .today:
+            DebtDueLine(text: String(localized: "Due today", bundle: #bundle), isOverdue: false)
+        case let .overdue(daysLate):
+            DebtDueLine(text: String(localized: "Overdue · \(daysLate) days", bundle: #bundle), isOverdue: true)
+        }
+    }
+}
+
+/// The line under a debt's amount about its due date.
+public struct DebtDueLine: Equatable, Sendable {
+    public let text: String
+    public let isOverdue: Bool
 }
 
 enum DebtDates {

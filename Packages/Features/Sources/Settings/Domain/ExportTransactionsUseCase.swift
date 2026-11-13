@@ -49,18 +49,18 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
                 Self.day(transaction.date),
                 transaction.status.rawValue,
                 transaction.kind.rawValue,
-                transaction.description,
-                transaction.categoryID.map { categoryNames[$0] ?? $0 } ?? "",
+                Self.neutralized(transaction.description),
+                Self.neutralized(transaction.categoryID.map { categoryNames[$0] ?? $0 } ?? ""),
                 Self.number(transaction.amount),
                 transaction.currency,
-                accountNames[transaction.accountID] ?? "",
+                Self.neutralized(accountNames[transaction.accountID] ?? ""),
                 transaction.cardID.flatMap { lastFour[$0] } ?? "",
-                transaction.destinationAccountID.flatMap { accountNames[$0] } ?? "",
+                Self.neutralized(transaction.destinationAccountID.flatMap { accountNames[$0] } ?? ""),
                 transaction.actualDebitedPrincipal.map(Self.number) ?? "",
                 transaction.exchangeRate.hasSecondCurrency ? Self.number(transaction.exchangeRate.rate) : "",
                 transaction.isShared ? "yes" : "no",
-                transaction.note ?? "",
-                Tags.csvField(transaction.tags),
+                Self.neutralized(transaction.note ?? ""),
+                Self.neutralized(Tags.csvField(transaction.tags)),
             ]
         }
         return ([header] + rows).map { $0.map(Self.escaped).joined(separator: ",") }.joined(separator: "\n") + "\n"
@@ -78,6 +78,15 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
 
     private static func number(_ value: Decimal) -> String {
         NSDecimalNumber(decimal: value).description(withLocale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    /// Free text the person typed (descriptions, notes, tags, account and category names): a leading
+    /// `'` keeps a spreadsheet from running a value that starts like a formula (`=`, `+`, `-`, `@`, tab
+    /// or carriage return). Amounts, dates and rates never go through here, so a negative amount stays
+    /// a number. Scalars, not characters, because "\r\n" is a single `Character`.
+    static func neutralized(_ field: String) -> String {
+        guard let first = field.unicodeScalars.first, "=+-@\t\r".unicodeScalars.contains(first) else { return field }
+        return "'" + field
     }
 
     /// RFC 4180: quote fields with commas, quotes or line breaks, doubling inner quotes.

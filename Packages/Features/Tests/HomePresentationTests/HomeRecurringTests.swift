@@ -11,8 +11,7 @@ import Testing
 struct HomeRecurringTests {
     private let now = SampleData.defaultReferenceDate
 
-    private func loadedViewModel() async -> HomeViewModel {
-        let store = InMemoryStore(sample: .standard)
+    private func loadedViewModel(_ store: InMemoryStore = InMemoryStore(sample: .standard)) async -> HomeViewModel {
         let viewModel = HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
@@ -29,12 +28,52 @@ struct HomeRecurringTests {
     func upcomingShowsTheNextWeekWithoutPausedRules() async throws {
         let viewModel = await loadedViewModel()
         let overview = try #require(viewModel.overview)
-        let upcoming = viewModel.upcomingPreview(overview, now: now)
+        let rules = overview.upcomingPayments.compactMap { payment -> UUID? in
+            if case let .recurring(rule) = payment.kind {
+                rule.id
+            } else {
+                nil
+            }
+        }
         // Streaming tomorrow and the cash top-up in two days; the salary is paused, rent is next month.
-        #expect(upcoming.map(\.rule.id) == [SampleData.IDs.streamingRule, SampleData.IDs.cashRule])
-        #expect(viewModel.upcomingSubtitle(upcoming[0], now: now).hasPrefix("Tomorrow · "))
-        #expect(viewModel.upcomingAmount(upcoming[0], hidden: false) == "−$15.99")
-        #expect(viewModel.upcomingAmount(upcoming[0], hidden: true) == "••••")
+        #expect(rules == [SampleData.IDs.streamingRule, SampleData.IDs.cashRule])
+        let streaming = try #require(overview.upcomingPayments.first {
+            if case let .recurring(rule) = $0.kind {
+                rule.id == SampleData.IDs.streamingRule
+            } else {
+                false
+            }
+        })
+        #expect(viewModel.upcomingSubtitle(streaming, now: now).hasPrefix("Tomorrow · "))
+        #expect(viewModel.upcomingAmount(streaming, hidden: false) == "−$15.99")
+        #expect(viewModel.upcomingAmount(streaming, hidden: true) == "••••")
+    }
+
+    @Test
+    func upcomingShowsEverythingOverdueThenThreeMore() async throws {
+        let viewModel = await loadedViewModel()
+        let overview = try #require(viewModel.overview)
+        let rows = viewModel.upcomingRows(overview)
+        #expect(rows.allSatisfy { $0.status != .overdue })
+        #expect(rows == Array(overview.upcomingPayments.prefix(HomeViewModel.upcomingCount)))
+        // The sample's drafts are later this week: "See all" goes to the drafts.
+        #expect(viewModel.upcomingListsDrafts(overview.upcomingPayments))
+
+        let store = InMemoryStore(sample: .standard)
+        let calendar = Calendar.current
+        for daysAgo in [2, 5] {
+            await store.save(Transaction(
+                date: calendar.date(byAdding: .day, value: -daysAgo, to: now) ?? now,
+                status: .planned, description: "Late \(daysAgo)", kind: .expense, categoryID: nil, amount: 10,
+                currency: "USD", accountID: SampleData.IDs.mastercard, exchangeRate: .single("USD"),
+            ))
+        }
+        let late = await loadedViewModel(store)
+        let lateOverview = try #require(late.overview)
+        let lateRows = late.upcomingRows(lateOverview)
+        #expect(lateRows.prefix(2).map { late.upcomingTitle($0) } == ["Late 5", "Late 2"])
+        #expect(late.upcomingWhen(lateRows[0], now: now) == "Overdue · 5 days")
+        #expect(lateRows.count == 2 + HomeViewModel.upcomingCount)
     }
 
     @Test
@@ -49,6 +88,25 @@ struct HomeRecurringTests {
         #expect(reminder.body.hasPrefix("$15.99 on "))
         #expect(Calendar.current.component(.hour, from: reminder.date) == LedgerNotifications.reminderHour)
         #expect(Calendar.current.isDate(reminder.date, inSameDayAs: now))
+        #expect(reminder.target == ["screen": "recurring"])
+    }
+
+    @Test
+    func aRecurringExpenseRecordedAsADraftIsRemindedTheMorningBeforeItIsDue() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let calendar = Calendar.current
+        let due = try #require(calendar.date(byAdding: .day, value: 1, to: now))
+        let bill = RecurringRule(
+            name: "School", kind: .expense, categoryID: "education", amount: 120, currency: "USD",
+            accountID: SampleData.IDs.savings, frequency: .monthly, startDate: due,
+        )
+        await store.save(bill)
+        let viewModel = await loadedViewModel(store)
+        let earlier = calendar.startOfDay(for: now).addingTimeInterval(-60)
+        let reminder = try #require(viewModel.reminders(now: earlier).first { $0.kind == .bill })
+        #expect(reminder.id == "bill:\(bill.id.uuidString.lowercased()):\(LedgerNotifications.dayKey(due, calendar: calendar))")
+        #expect(reminder.title == "School is due tomorrow")
+        #expect(reminder.body.hasPrefix("$120.00 on "))
         #expect(reminder.target == ["screen": "recurring"])
     }
 

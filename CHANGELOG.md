@@ -9,6 +9,63 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Categorization rules now apply to every new movement, not only the ones typed in the editor:
+  Siri's "Log an expense" without a category and recurring movements recorded in "Other" take the
+  first matching rule (then "Other"). A category you choose is kept, and edits never apply rules.
+
+- Transactions: a "Filters" chip after the kind chips opens a sheet with an amount range (minimum
+  and maximum, in the principal currency at each movement's own rate) and "Subscriptions only".
+  Active filters show as chips after the account chip; a tap reopens the sheet, the ✕ clears it.
+  A recurring rule's "Recorded" section gains "See all", which opens every movement it recorded.
+
+- Accounts: "Close account", before "Delete account" on a bank account, cash or credit card. A
+  closed account leaves the wallet, Home, payment methods and pickers, but its movements stay in
+  summaries and net worth, and it can be reopened. With money left, its balance moves first to
+  another open account in that currency (a card is paid off, one transfer per currency); its
+  recurring movements are paused and their drafts deleted. "Delete account" offers "Close instead"
+  when the account has movements. Closed accounts fold under "Closed (n)" at the foot of Accounts
+  and come last, marked, in the movements filter. Syncs with the web app; the JSON backup is now
+  version 2 and version 1 files still restore.
+
+- Debts › People: a personal debt can have a due date ("Set a due date" in its editor). The list
+  puts dated debts first, soonest first, and says "Due Nov 28", "Due today" or "Overdue · 3 days"
+  under the amount and in its detail. Keepwell reminds "Ana: due in 3 days" as many days before as a
+  card payment, either way the money goes, and never once it is overdue. Syncs with the web app.
+
+- Home › Upcoming lists personal debts with a due date, either way the money goes, for what's left
+  in the debt's currency, overdue ones first. The line under the greeting counts them ("1 debt
+  overdue", and in "due today" and "due tomorrow"), so it never says "All caught up" while one is
+  late. Closed accounts' card payments and recurring movements (from or to them) leave Upcoming.
+
+- Settings › Money: "Time zone", the home zone Keepwell's server uses for "today" and month ends
+  (reminders, assistants and recurring movements it records). It starts as the iPhone's zone, the
+  first time onboarding or a sync finds none, syncs to the web app and only changes from here.
+
+- A reminder the day before a recurring expense that is recorded as a draft (rent, school fees):
+  "Rent is due tomorrow", in the inbox and as a notification, as subscriptions already had.
+- Brand logos: a recurring rule, an upcoming payment on Home or a movement whose name matches a
+  known brand (Netflix, Spotify, Uber Eats, Claro, Tigo and about 80 more) shows the brand's logo
+  from Brandfetch instead of the category's icon, over a monogram that stays when there's no logo
+  or no network. Only the brand's domain is sent, never what you typed; `BRAND_LOGOS_ENABLED = NO`
+  turns it off.
+- Settings › Data & sync: "Export backup" saves everything (accounts, cards, movements, categories,
+  recurring, goals, loans, debts, rules and the synced settings) in one JSON file, the same one the
+  web app makes; "Restore backup" brings it back, all or nothing, only when there's no data yet.
+- Recurring: under the subscriptions total, "Not including 2 subscriptions in EUR" names the
+  subscriptions left out because their currency can't be converted, instead of silently skipping them.
+- Recurring rows show a draft waiting to be confirmed: "To confirm · Nov 12", or "Overdue · 3 days"
+  in the warning color, in place of the next date, with a Confirm button (or swipe left) that
+  confirms it as on Home, without a dialog and with Undo.
+- Undo after deleting a movement or confirming a draft: a toast offers "Undo" for a few seconds.
+  A deleted movement leaves every screen at once but is only deleted (and synced) when the toast
+  runs out, or when you leave the app; undoing a confirm makes it a draft again on its planned date.
+- Home shows a line under the greeting with what needs attention ("2 payments to confirm · 1 due
+  tomorrow"), or "All caught up" when nothing is pending. Plan's cards say how many subscriptions,
+  debts and people each total adds up ("Per month · 7 subscriptions", "2 people owe you").
+- "New subscription" in Recurring's "+" menu: the rule editor opens short, with name, amount,
+  period (monthly, quarterly, half-yearly or yearly) and billing day, and shows the next charge
+  before saving. It saves an expense in Subscriptions marked as a subscription; "More options"
+  shows every other field.
 - Notifications inbox redesign: grouped by day (Today, Yesterday, date) with the newest first,
   an unread dot and bolder title, and a bell that counts unread only. Tap a row to read it and open
   it; swipe right to mark read or unread, swipe left to delete with an Undo toast; the "..." menu
@@ -78,9 +135,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Connected assistants lists each assistant with what it can do (Can read, Can read and
   record, Full control) and a Disconnect, a "How to connect Claude" link and a confirmation before
   "Disconnect assistants" cuts them all.
+- Summary → Budgets no longer hides budgets set in another currency (after changing the main
+  currency): it says "2 budgets are in NIO and aren't compared", without converting them, with an
+  "Edit budgets" link to the expense categories.
 
 ### Changed
 
+- Home's "Upcoming" lists everything pending: drafts to confirm (with "Confirm", replacing the
+  separate drafts card), recurring movements, credit card payments with something to pay and loan
+  installments. Anything overdue comes first, all of it, marked "Overdue · 3 days" in the warning
+  color; then the next three this week. The line under the greeting counts from the same list, so
+  the two never disagree, and the web app and assistants list the same things.
 - Home is lighter: "Log quickly", the budget and price-increase alerts and Proposed by Claude
   moved out (the alerts and proposals to Notifications; the widget keeps "Log quickly").
 - A card payment reminder on its due day reads "due today" instead of "payment in 0 days".
@@ -122,6 +187,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- A payment you record by hand for a recurring rule (the rent paid two days early) now counts as
+  that occurrence: the rule no longer records a second movement or leaves a draft for it. It must be
+  of the same kind, account, currency and card, within 7.5 % of the amount and up to two days
+  before the due day.
+- Sync: an edit or delete made on a device whose clock runs behind is no longer dropped by the
+  server as older than the row it changes; it is stamped just after that row.
+- Export CSV: a description, note, tag or account or category name that starts with `=`, `+`, `-`,
+  `@`, a tab or a carriage return now gets a leading `'`, so a spreadsheet shows it as text instead
+  of running it as a formula. Amounts, dates and rates are unchanged.
+- Categorization rules that two devices placed at the same position offline now apply in the same
+  order on every device, the web and Claude, so the same rule wins everywhere.
+- Sync no longer gets stuck on a change from the account that this version can't read (one made
+  by a newer version, say): that change is skipped and noted, everything else keeps syncing, and
+  it is downloaded again after you update the app.
+- A movement or recurring payment edited on one device while its category was deleted on another
+  no longer keeps the deleted category: after each sync it moves to "Other", as the deletion did.
 - Swift 6 concurrency warning in Summary's custom period picker.
 - Recurring: the monthly subscriptions total no longer counts rules that have finished. A rule
   whose category, account or currency is gone is skipped instead of recording a movement nobody can
