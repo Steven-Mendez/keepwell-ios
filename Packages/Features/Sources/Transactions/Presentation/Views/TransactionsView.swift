@@ -146,23 +146,30 @@ public struct TransactionsView: View {
     @ViewBuilder
     private var monthTotals: some View {
         if let month = viewModel.monthTotals {
-            HStack {
-                Text(month.title)
-                    .font(KWTextStyle.label.font.weight(.regular))
-                    .foregroundStyle(KWColor.Text.muted)
-                Spacer(minLength: KWSpacing.xs)
-                (Text(month.spent).foregroundStyle(KWTransactionStyle.expense.amountColor)
-                    + Text(verbatim: " · ").foregroundStyle(KWColor.Text.faint)
-                    + Text(month.earned).foregroundStyle(KWTransactionStyle.income.amountColor))
-                    .font(.kw(15, weight: 700))
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+            VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+                monthTotalsRow(month)
+                ExcludedMovementsNote(viewModel.excludedMovementLines)
             }
             .padding(.horizontal, KWSpacing.md)
             .padding(.vertical, 14)
             .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
             .accessibilityElement(children: .combine)
+        }
+    }
+
+    private func monthTotalsRow(_ month: (title: String, spent: String, earned: String)) -> some View {
+        HStack {
+            Text(month.title)
+                .font(KWTextStyle.label.font.weight(.regular))
+                .foregroundStyle(KWColor.Text.muted)
+            Spacer(minLength: KWSpacing.xs)
+            (Text(month.spent).foregroundStyle(KWTransactionStyle.expense.amountColor)
+                + Text(verbatim: " · ").foregroundStyle(KWColor.Text.faint)
+                + Text(month.earned).foregroundStyle(KWTransactionStyle.income.amountColor))
+                .font(.kw(15, weight: 700))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
     }
 

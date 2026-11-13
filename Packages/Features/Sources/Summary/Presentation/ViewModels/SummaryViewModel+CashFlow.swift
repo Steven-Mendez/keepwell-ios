@@ -121,6 +121,15 @@ extension SummaryViewModel {
         let expenseFraction: Double
     }
 
+    /// "Not including 3 movements in USD" for the selected month, one line per currency its totals
+    /// leave out because their stored rate doesn't reach the principal currency (recorded before it
+    /// changed). Counts, not amounts, so they show even with amounts hidden.
+    var excludedMovementLines: [String] {
+        (selected?.excluded ?? []).map { excluded in
+            String(localized: "Not including \(excluded.count) movements in \(excluded.currency)", bundle: #bundle)
+        }
+    }
+
     var flow: Flow? {
         guard let selected else { return nil }
         let largest = max(selected.income, selected.expense)

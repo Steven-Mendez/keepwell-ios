@@ -1,5 +1,6 @@
 import Charts
 import DesignSystem
+import SharedPresentation
 import SwiftUI
 
 /// Income next to spending per month, then a result strip where each month is a green bar up
@@ -25,6 +26,7 @@ struct CashFlowSection: View {
                 }
             }
             flowCards
+            ExcludedMovementsNote(viewModel.excludedMovementLines)
             windowCard
         }
         .onChange(of: rawSelection) { _, key in

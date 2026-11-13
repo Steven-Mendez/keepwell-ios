@@ -216,18 +216,31 @@ public final class TransactionsViewModel {
         if let tagTotals {
             return tagTotals
         }
-        guard let list else { return nil }
-        let month = YearMonth(containing: now(), calendar: calendar)
-        let summary = MonthlySummary(
-            month: month,
-            transactions: visibleTransactions(ignoringKind: true),
-            currency: list.settings.principal,
-            calendar: calendar,
-        )
+        guard let summary = monthSummary else { return nil }
         let title = now().formatted(.dateTime.month(.wide).year()).sentenceCased
         let spent = formatter.string(from: -summary.expense, currencyCode: summary.currency)
         let earned = formatter.string(from: summary.income, currencyCode: summary.currency, sign: .always)
         return (title, spent, earned)
+    }
+
+    /// "Not including 3 movements in USD", one line per currency the month's totals leave out
+    /// because their stored rate doesn't reach the principal currency (recorded before it changed).
+    /// Counts, not amounts, so they show even with amounts hidden. Empty with a tag search.
+    var excludedMovementLines: [String] {
+        guard tagTotals == nil, let summary = monthSummary else { return [] }
+        return summary.excluded.map { excluded in
+            String(localized: "Not including \(excluded.count) movements in \(excluded.currency)", bundle: #bundle)
+        }
+    }
+
+    private var monthSummary: MonthlySummary? {
+        guard let list else { return nil }
+        return MonthlySummary(
+            month: YearMonth(containing: now(), calendar: calendar),
+            transactions: visibleTransactions(ignoringKind: true),
+            currency: list.settings.principal,
+            calendar: calendar,
+        )
     }
 
     /// "Movements", "Money in", "Money out" and "Net" for what the chips, the account and the search

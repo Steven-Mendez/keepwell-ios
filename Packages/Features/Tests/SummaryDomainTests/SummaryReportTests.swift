@@ -51,7 +51,7 @@ struct SummaryReportTests {
     @Test
     func averagesOnlyCountMonthsWithMovements() async throws {
         let result = try await report()
-        let expected = SpendingHistory.averageMonthlyExpense(transactions: sample.transactions, calendar: .current)
+        let expected = SpendingHistory.averageMonthlyExpense(transactions: sample.transactions, currency: "USD", calendar: .current)
         #expect(result.averageExpense == expected)
         #expect(result.averageIncome != nil)
     }
