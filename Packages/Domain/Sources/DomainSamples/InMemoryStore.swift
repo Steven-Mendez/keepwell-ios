@@ -266,6 +266,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             upsert(merchant, into: &merchants)
         }
         merchants.removeAll { changes.deletedMerchantIDs.contains($0.id) }
+        categories.removeAll { changes.deletedCategoryIDs.contains($0.id) }
     }
 
     public func fetchNotificationStates() -> [NotificationState] {

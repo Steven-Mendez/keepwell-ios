@@ -94,6 +94,8 @@ public final class RuleEditorViewModel: Identifiable {
         do {
             let rule = try await manage.save(CategorizationRuleDraft(
                 id: editing?.id, match: match, categoryID: categoryID, kind: kind, tags: tags,
+                // The editor has no merchant field: the rule keeps the one it has.
+                merchantID: editing?.merchantID,
             ))
             errorMessage = nil
             return rule

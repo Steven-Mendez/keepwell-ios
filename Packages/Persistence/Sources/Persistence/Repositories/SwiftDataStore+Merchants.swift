@@ -13,9 +13,11 @@ extension SwiftDataStore: MerchantRepository {
         }
     }
 
+    /// Throws `.notFound` for a merchant deleted meanwhile (a pull can bring its tombstone while
+    /// the editor is open): saving it must not bring it back.
     public func save(_ merchant: Merchant) throws(DomainError) {
         try perform { context in
-            try upsert(merchant, in: context)
+            guard try upsert(merchant, in: context) else { throw DomainError.notFound(merchant.id) }
             try context.saveWithOutbox()
         }
     }
@@ -53,11 +55,16 @@ extension SwiftDataStore: MerchantRepository {
                     record.update(from: rule, sortIndex: record.sortIndex)
                     record.stampSaved()
                 }
+                // A merchant deleted meanwhile stays deleted; the repair after the next pull
+                // unlinks whatever this commit still points at it.
                 for merchant in changes.savedMerchants {
                     try upsert(merchant, in: context)
                 }
                 for id in changes.deletedMerchantIDs {
                     try tombstone(merchant: id, in: context)
+                }
+                for id in changes.deletedCategoryIDs {
+                    try tombstoneCategory(id: id, in: context)
                 }
                 try context.saveWithOutbox()
             } catch {
@@ -74,12 +81,19 @@ extension SwiftDataStore: MerchantRepository {
         }
     }
 
-    private func upsert(_ merchant: Merchant, in context: ModelContext) throws {
+    /// `false`, writing nothing, when the stored merchant is a tombstone: `stampSaved()` would
+    /// clear its `deletedAt` and revive a merchant another device deleted.
+    @discardableResult
+    private func upsert(_ merchant: Merchant, in context: ModelContext) throws -> Bool {
         let id = merchant.id
-        let record = try context.fetch(FetchDescriptor<MerchantRecord>(predicate: #Predicate { $0.id == id })).first
-            ?? MerchantRecord(id: id).inserted(into: context)
+        let stored = try context.fetch(FetchDescriptor<MerchantRecord>(predicate: #Predicate { $0.id == id })).first
+        if stored?.deletedAt != nil {
+            return false
+        }
+        let record = stored ?? MerchantRecord(id: id).inserted(into: context)
         record.update(from: merchant)
         record.stampSaved()
+        return true
     }
 
     private func tombstone(merchant id: UUID, in context: ModelContext) throws {

@@ -104,7 +104,8 @@ public protocol MerchantRepository: Sendable {
     func commit(_ changes: MerchantChanges) async throws(DomainError)
 }
 
-/// What deleting, merging or repairing merchants writes at once.
+/// What deleting, merging or repairing merchants writes at once (and deleting a category, whose
+/// movements and merchant defaults change with it).
 public struct MerchantChanges: Sendable {
     public var transactions: [Transaction]
     public var recurringRules: [RecurringRule]
@@ -112,6 +113,8 @@ public struct MerchantChanges: Sendable {
     public var categorizationRules: [CategorizationRule]
     public var savedMerchants: [Merchant]
     public var deletedMerchantIDs: [UUID]
+    /// Deleted as `CategoryRepository.deleteCategory(id:)` does, in the same save.
+    public var deletedCategoryIDs: [String]
 
     public init(
         transactions: [Transaction] = [],
@@ -119,17 +122,19 @@ public struct MerchantChanges: Sendable {
         categorizationRules: [CategorizationRule] = [],
         savedMerchants: [Merchant] = [],
         deletedMerchantIDs: [UUID] = [],
+        deletedCategoryIDs: [String] = [],
     ) {
         self.transactions = transactions
         self.recurringRules = recurringRules
         self.categorizationRules = categorizationRules
         self.savedMerchants = savedMerchants
         self.deletedMerchantIDs = deletedMerchantIDs
+        self.deletedCategoryIDs = deletedCategoryIDs
     }
 
     public var isEmpty: Bool {
         transactions.isEmpty && recurringRules.isEmpty && categorizationRules.isEmpty && savedMerchants.isEmpty
-            && deletedMerchantIDs.isEmpty
+            && deletedMerchantIDs.isEmpty && deletedCategoryIDs.isEmpty
     }
 }
 

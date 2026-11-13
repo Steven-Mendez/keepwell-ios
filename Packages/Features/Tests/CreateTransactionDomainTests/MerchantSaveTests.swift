@@ -96,6 +96,28 @@ struct MerchantSaveTests {
         #expect(cleared.merchantID == nil)
     }
 
+    /// The Siri intent builds its own use cases (no recurring rules); with the merchant store
+    /// passed, a rule's merchant applies there too, and without it the rule only categorizes.
+    @Test
+    func aRulesMerchantAppliesWithTheIntentsWiringOnlyWhenMerchantsArePassed() async throws {
+        let rule = CategorizationRule(match: "Uber", categoryID: "transport", kind: .expense, merchantID: uber.id)
+        let store = store(rules: [rule])
+        func intentSave(merchants: (any MerchantRepository)?) async throws -> Transaction {
+            let context = DefaultGetTransactionContextUseCase(
+                settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
+                merchants: merchants, now: { [now] in now },
+            )
+            return try await DefaultSaveTransactionUseCase(context: context, transactions: store, merchants: merchants)
+                .execute(expense("Uber home")).transaction
+        }
+        let linked = try await intentSave(merchants: store)
+        #expect(linked.categoryID == "transport")
+        #expect(linked.merchantID == uber.id)
+        let unlinked = try await intentSave(merchants: nil)
+        #expect(unlinked.categoryID == "transport")
+        #expect(unlinked.merchantID == nil)
+    }
+
     @Test
     func aRuleNamingAMerchantThatIsGoneLinksNothing() async throws {
         let rule = CategorizationRule(match: "Uber", categoryID: "transport", kind: .expense, merchantID: UUID())

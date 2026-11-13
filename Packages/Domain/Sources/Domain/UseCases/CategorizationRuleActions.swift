@@ -75,8 +75,12 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
     }
 
     public func save(_ draft: CategorizationRuleDraft) async throws(DomainError) -> CategorizationRule {
-        if let id = draft.id, try await !repository.fetchCategorizationRules().contains(where: { $0.id == id }) {
-            throw .notFound(id)
+        var existing: CategorizationRule?
+        if let id = draft.id {
+            existing = try await repository.fetchCategorizationRules().first { $0.id == id }
+            if existing == nil {
+                throw .notFound(id)
+            }
         }
         let known = try await categories.fetchCategories()
         let rule = try CategorizationRule(
@@ -87,7 +91,12 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
             tags: draft.tags,
             merchantID: draft.merchantID,
         ).validated(categories: known)
-        if let merchantID = rule.merchantID, try await merchants?.fetchMerchants().contains(where: { $0.id == merchantID }) != true {
+        // The merchant the rule already had stays even when it isn't here (yet): it may have been
+        // set elsewhere, and editing the rest of the rule must not clear it. A newly chosen one
+        // has to be a live merchant.
+        if let merchantID = rule.merchantID, merchantID != existing?.merchantID,
+           try await merchants?.fetchMerchants().contains(where: { $0.id == merchantID }) != true
+        {
             throw .notFound(merchantID)
         }
         try await repository.save(rule)

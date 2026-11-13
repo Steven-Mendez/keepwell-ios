@@ -18,6 +18,8 @@ actor FakeSyncStore: SyncConflictStore {
     var failsToStore = false
     /// Category tombstones, as `deletedCategoryIDs()` reports them.
     var deletedCategories: Set<String> = []
+    /// Rows handed to `fillMissingMerchantLinks`, as (entity, id).
+    var filled: [(String, String)] = []
 
     init(events: [OutboxEvent] = [], counts: [String: Int] = [:]) {
         self.events = events
@@ -62,6 +64,20 @@ actor FakeSyncStore: SyncConflictStore {
 
     func deletedMerchantIDs() throws(DomainError) -> Set<UUID> {
         []
+    }
+
+    func fillMissingMerchantLinks(entity: String, row: Data) throws(DomainError) -> Bool {
+        let object = (try? JSONSerialization.jsonObject(with: row) as? [String: Any]) ?? [:]
+        filled.append((entity, object["id"] as? String ?? ""))
+        return true
+    }
+
+    func filledRows() -> [String] {
+        filled.map { "\($0.0)/\($0.1)" }
+    }
+
+    func appliedRows() -> [String] {
+        applied.map { "\($0.0)/\($0.1["id"] as? String ?? "")" }
     }
 
     func setDeletedCategories(_ ids: Set<String>) {

@@ -17,6 +17,8 @@ import os
 /// - A row the store can't read (one written by a newer version, say) is skipped and recorded, so
 ///   one row never holds back the rest of the account. Its entity is downloaded again after the
 ///   app is updated.
+/// - A device that pulled with a build older than merchants downloads merchants and their links
+///   again once, before it pushes anything (`SyncEngine+MerchantResync`).
 public actor SyncEngine { // swiftlint:disable:this type_body_length
     /// Settings come first: a download cut short still has the account's currencies.
     static let entities = [
@@ -26,9 +28,9 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
 
     private static let legacyChoiceKey = "sync.choosing"
 
-    private let client: APIClient
+    let client: APIClient
     let store: any SyncConflictStore
-    private let defaults: UserDefaults
+    let defaults: UserDefaults
     private let clientID: String
     private let appBuild: String
     let repairCategories: (any ReassignDeletedCategoriesUseCase)?
@@ -59,7 +61,7 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
         self.fillTimeZone = fillTimeZone
     }
 
-    private var cursor: Int? {
+    var cursor: Int? {
         get { defaults.object(forKey: "sync.cursor") as? Int }
         set { defaults.set(newValue, forKey: "sync.cursor") }
     }
@@ -91,6 +93,7 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
         defaults.removeObject(forKey: Self.retryBuildKey)
         defaults.removeObject(forKey: Self.legacyChoiceKey)
         defaults.removeObject(forKey: "sync.account")
+        defaults.removeObject(forKey: Self.merchantResyncKey)
     }
 
     /// One round. Throws `CloudAccountError` as the API answered. `account` is the signed-in
@@ -130,6 +133,8 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
                 try await adoptAll(snapshot.rows)
             }
             cursor = snapshot.cursor
+            // The snapshot brought every merchant and link: nothing to download again.
+            markMerchantLinksResynced()
         }
         try await push()
         try await retrySkipped()
@@ -161,6 +166,7 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
         // Saved once the outbox holds the whole upload (or the account's data is down): a round
         // cut short sends the rest later instead of asking again.
         cursor = snapshot.cursor
+        markMerchantLinksResynced()
         try await push()
         try await pull()
         defaults.set(Date.now, forKey: "sync.lastAt")
@@ -188,6 +194,9 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
     }
 
     private func push() async throws(CloudAccountError) {
+        // Rows written by this build always carry their merchant links: until the links an older
+        // build ignored are here, sending them would clear the account's.
+        try await resyncMerchantLinks()
         while true {
             let events = await (try? store.pendingEvents(limit: 200)) ?? []
             guard !events.isEmpty else { return }
@@ -283,7 +292,7 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
 
     /// `true` when the row couldn't be stored and was skipped.
     @discardableResult
-    private func adopt(entity: String, data: Data) async throws(CloudAccountError) -> Bool {
+    func adopt(entity: String, data: Data) async throws(CloudAccountError) -> Bool {
         guard let id = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["id"] as? String else { return false }
         if await store.hasPendingEvent(entity: entity, entityID: id) {
             return false
@@ -380,7 +389,7 @@ extension SyncEngine {
         return (fetched.flatMap(\.self), lowest == .max ? 0 : lowest)
     }
 
-    private static func fetchEntity(_ entity: String, client: APIClient) async throws(CloudAccountError) -> (rows: [RemoteRow], seq: Int) {
+    static func fetchEntity(_ entity: String, client: APIClient) async throws(CloudAccountError) -> (rows: [RemoteRow], seq: Int) {
         var lowest = Int.max
         var rows: [RemoteRow] = []
         var after = ""
@@ -462,7 +471,7 @@ extension SyncEngine {
     }
 
     /// Logged and kept by entity and id only: the row's values never leave it.
-    private func recordSkipped(entity: String, id: String, error: DomainError) {
+    func recordSkipped(entity: String, id: String, error: DomainError) {
         let reason = Self.reason(for: error)
         Self.logger.error("Skipped \(entity, privacy: .public) \(id, privacy: .public): \(reason, privacy: .public)")
         let entry = SkippedRow(entity: entity, entityID: id, reason: reason, at: .now)

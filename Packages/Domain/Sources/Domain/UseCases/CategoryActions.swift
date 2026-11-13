@@ -146,18 +146,19 @@ public struct DefaultDeleteCategoryUseCase: DeleteCategoryUseCase {
             .filter { $0.categoryID == id }
             .map { $0.with(categoryID: otherID) }
         if let merchants {
-            // A merchant whose default category it was suggests none (it doesn't move to "Other"),
-            // in the same save as the movements.
+            // A merchant whose default category it was suggests none (it doesn't move to "Other").
+            // The movements, the defaults and the category's deletion are one save: a failure
+            // leaves the category with everything still in it.
             let cleared = try await merchants.fetchMerchants()
                 .filter { $0.defaultCategoryID == id }
                 .map { $0.with(defaultCategoryID: nil) }
-            try await merchants.commit(MerchantChanges(transactions: moved, savedMerchants: cleared))
+            try await merchants.commit(MerchantChanges(transactions: moved, savedMerchants: cleared, deletedCategoryIDs: [id]))
         } else {
             for movement in moved {
                 try await transactions.save(movement)
             }
+            try await categories.deleteCategory(id: id)
         }
-        try await categories.deleteCategory(id: id)
     }
 }
 

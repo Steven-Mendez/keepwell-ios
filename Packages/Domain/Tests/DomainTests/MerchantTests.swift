@@ -347,6 +347,20 @@ struct MerchantUseCaseTests {
         let merchants = try await store.fetchMerchants()
         #expect(merchants.first { $0.id == subway.id }?.defaultCategoryID == nil)
         #expect(merchants.first { $0.id == subway.id }?.name == "Subway")
+        #expect(try await !store.fetchCategories().contains { $0.id == "restaurants" })
+    }
+
+    /// The movements, the merchant defaults and the category's deletion go in the merchant commit:
+    /// the category store's own delete (a second save) isn't used.
+    @Test
+    func deletingACategoryIsOneCommit() async throws {
+        let movement = Fixtures.transaction(amount: "5").with(categoryID: "restaurants", tags: [])
+        let store = InMemoryStore(transactions: [movement], merchants: [subway])
+        let categories = CategoriesThatCantDelete(store: store)
+        try await DefaultDeleteCategoryUseCase(categories: categories, transactions: store, merchants: store).execute(id: "restaurants")
+        #expect(try await !store.fetchCategories().contains { $0.id == "restaurants" })
+        #expect(try await store.fetchTransactions(in: nil).first?.categoryID == TransactionCategory.otherExpenseID)
+        #expect(try await store.fetchMerchants().first?.defaultCategoryID == nil)
     }
 
     @Test
@@ -356,6 +370,38 @@ struct MerchantUseCaseTests {
         #expect(try await repair.execute(deletedCategoryIDs: ["restaurants"]) == 1)
         #expect(try await store.fetchMerchants().first { $0.id == subway.id }?.defaultCategoryID == nil)
         #expect(try await repair.execute(deletedCategoryIDs: ["restaurants"]) == 0)
+    }
+
+    /// A rule keeps the merchant it has even when it isn't a live merchant here (set elsewhere and
+    /// not pulled yet); choosing an unknown one, for a new rule or an existing one, is refused.
+    @Test
+    func aRuleKeepsItsStoredMerchantButANewlyChosenUnknownOneFails() async throws {
+        let notPulled = UUID()
+        let rule = CategorizationRule(match: "Uber", categoryID: "transport", kind: .expense, merchantID: notPulled)
+        let plain = CategorizationRule(match: "Taxi", categoryID: "transport", kind: .expense)
+        let store = InMemoryStore(categorizationRules: [rule, plain], merchants: [subway])
+        let manageRules = DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: store, merchants: store)
+        let kept = try await manageRules.save(CategorizationRuleDraft(
+            id: rule.id, match: "Uber trip", categoryID: "transport", kind: .expense, merchantID: notPulled,
+        ))
+        #expect(kept.merchantID == notPulled)
+        #expect(try await store.fetchCategorizationRules().first { $0.id == rule.id }?.merchantID == notPulled)
+        let other = UUID()
+        await #expect(throws: DomainError.notFound(other)) {
+            try await manageRules.save(CategorizationRuleDraft(
+                id: rule.id, match: "Uber", categoryID: "transport", kind: .expense, merchantID: other,
+            ))
+        }
+        await #expect(throws: DomainError.notFound(notPulled)) {
+            try await manageRules.save(CategorizationRuleDraft(
+                id: plain.id, match: "Taxi", categoryID: "transport", kind: .expense, merchantID: notPulled,
+            ))
+        }
+        // A live one can always be chosen.
+        let chosen = try await manageRules.save(CategorizationRuleDraft(
+            id: plain.id, match: "Taxi", categoryID: "transport", kind: .expense, merchantID: subway.id,
+        ))
+        #expect(chosen.merchantID == subway.id)
     }
 
     @Test
@@ -381,5 +427,30 @@ struct MerchantUseCaseTests {
                 merchantID: uberEats.id,
             ))
         }
+    }
+}
+
+/// A category store whose delete always fails, to show a use case doesn't call it.
+private struct CategoriesThatCantDelete: CategoryRepository {
+    let store: InMemoryStore
+
+    func fetchCategories() async throws(DomainError) -> [TransactionCategory] {
+        await store.fetchCategories()
+    }
+
+    func save(_ category: TransactionCategory) async throws(DomainError) {
+        await store.save(category)
+    }
+
+    func deleteCategory(id _: String) async throws(DomainError) {
+        throw .persistence("second save")
+    }
+
+    func reorderCategories(ids: [String]) async throws(DomainError) {
+        await store.reorderCategories(ids: ids)
+    }
+
+    func restoreDefaultCategories() async throws(DomainError) {
+        await store.restoreDefaultCategories()
     }
 }

@@ -13,7 +13,12 @@ struct SyncEngineTests {
         suite: String,
         build: String = "1",
         repair: (any ReassignDeletedCategoriesUseCase)? = nil,
+        merchantLinksResynced: Bool = true,
     ) -> SyncEngine {
+        // Most tests are about a device past the one-time merchant download; its own tests turn it off.
+        if merchantLinksResynced {
+            UserDefaults(suiteName: suite)?.set(true, forKey: "sync.merchantLinksResynced")
+        }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubProtocol.self]
         StubProtocol.requests = []
