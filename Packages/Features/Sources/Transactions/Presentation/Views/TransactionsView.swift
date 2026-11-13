@@ -204,35 +204,6 @@ public struct TransactionsView: View {
         .background(KWColor.Surface.surface, in: Capsule())
     }
 
-    private var chips: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: KWSpacing.xs) {
-                ScopeChip(
-                    title: viewModel.scopeTitle,
-                    isFiltered: viewModel.scope != .all,
-                    onPick: { isPickingScope = true },
-                    onClear: { viewModel.scope = .all },
-                )
-                ForEach(viewModel.activeFilters) { chip in
-                    ActiveFilterChipView(chip: chip, onOpen: { isEditingFilters = true }, onClear: { viewModel.clear(chip.kind) })
-                }
-                Rectangle()
-                    .fill(KWColor.Surface.border)
-                    .frame(width: 1, height: 22)
-                    .accessibilityHidden(true)
-                ForEach(TransactionFilter.allCases, id: \.self) { filter in
-                    KWChip(viewModel.filterTitle(filter), isSelected: viewModel.filter == filter) {
-                        viewModel.filter = filter
-                    }
-                }
-                FiltersChip { isEditingFilters = true }
-            }
-            .padding(.horizontal, KWLayout.gutter)
-        }
-        .scrollIndicators(.hidden)
-        .padding(.horizontal, -KWLayout.gutter)
-    }
-
     @ViewBuilder
     private var sections: some View {
         let sections = viewModel.sections
@@ -269,6 +240,55 @@ public struct TransactionsView: View {
 }
 
 extension TransactionsView {
+    /// The account chip and any amount or origin chip lead the row. Applying or changing one
+    /// brings the row back to its start, so a filter chosen from "Filters" at the far end never
+    /// leaves the list narrowed with its chip out of sight.
+    private var chips: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                HStack(spacing: KWSpacing.xs) {
+                    ScopeChip(
+                        title: viewModel.scopeTitle,
+                        isFiltered: viewModel.scope != .all,
+                        onPick: { isPickingScope = true },
+                        onClear: { viewModel.scope = .all },
+                    )
+                    .id(ChipAnchor.leading)
+                    ForEach(viewModel.activeFilters) { chip in
+                        ActiveFilterChipView(chip: chip, onOpen: { isEditingFilters = true }, onClear: { viewModel.clear(chip.kind) })
+                    }
+                    Rectangle()
+                        .fill(KWColor.Surface.border)
+                        .frame(width: 1, height: 22)
+                        .accessibilityHidden(true)
+                    ForEach(TransactionFilter.allCases, id: \.self) { filter in
+                        KWChip(viewModel.filterTitle(filter), isSelected: viewModel.filter == filter) {
+                            viewModel.filter = filter
+                        }
+                        .id(ChipAnchor.kind(filter))
+                    }
+                    FiltersChip { isEditingFilters = true }
+                }
+                .padding(.horizontal, KWLayout.gutter)
+            }
+            .scrollIndicators(.hidden)
+            .padding(.horizontal, -KWLayout.gutter)
+            .onChange(of: viewModel.activeFilters) { reveal(.leading, in: proxy, anchor: .leading) }
+            .onChange(of: viewModel.scope) { reveal(.leading, in: proxy, anchor: .leading) }
+            // A kind picked elsewhere (a shortcut, a link) scrolls just enough to show its chip.
+            .onChange(of: viewModel.filter) { _, filter in reveal(.kind(filter), in: proxy, anchor: nil) }
+        }
+    }
+
+    private enum ChipAnchor: Hashable {
+        case leading
+        case kind(TransactionFilter)
+    }
+
+    private func reveal(_ chip: ChipAnchor, in proxy: ScrollViewProxy, anchor: UnitPoint?) {
+        withAnimation(.snappy) { proxy.scrollTo(chip, anchor: anchor) }
+    }
+
     private func row(_ transaction: Domain.Transaction, display: TransactionDisplay) -> some View {
         Button { onOpenTransaction?(transaction.id) } label: {
             KWTransactionRow(
