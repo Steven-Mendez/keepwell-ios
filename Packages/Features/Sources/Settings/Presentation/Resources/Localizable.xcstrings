@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ · From this iPhone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · La de este iPhone"
+          }
+        }
+      }
+    },
     "%@ · expired %@" : {
       "localizations" : {
         "es" : {
@@ -151,6 +161,16 @@
         }
       }
     },
+    "All time zones" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las zonas horarias"
+          }
+        }
+      }
+    },
     "App language" : {
       "localizations" : {
         "es" : {
@@ -187,6 +207,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pedirlo al volver después de"
+          }
+        }
+      }
+    },
+    "Backup not restored" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se restauró la copia"
           }
         }
       }
@@ -821,6 +851,16 @@
         }
       }
     },
+    "OK" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
     "On" : {
       "localizations" : {
         "es" : {
@@ -1287,6 +1327,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos revisar tus movimientos. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't open that file. Nothing was restored." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos abrir ese archivo. No se restauró nada."
           }
         }
       }
