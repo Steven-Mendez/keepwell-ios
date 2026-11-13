@@ -4,7 +4,21 @@ import Foundation
 /// What the hub needs from Recurring, Goals and Debts. Each feature's own use case answers these
 /// through an adapter, so the hub never depends on a sibling feature's Domain.
 public protocol PlanRecurringSource: Sendable {
-    func load() async throws(DomainError) -> (rules: [RecurringRule], subscriptionsPerMonth: Money)
+    /// The rules, what live expense subscriptions cost per month, and those that total leaves out
+    /// because their currency can't be converted.
+    func load() async throws(DomainError) -> PlanRecurringFigures
+}
+
+public struct PlanRecurringFigures: Sendable {
+    public let rules: [RecurringRule]
+    public let subscriptionsPerMonth: Money
+    public let excluded: [PlanOverview.ExcludedSubscriptions]
+
+    public init(rules: [RecurringRule], subscriptionsPerMonth: Money, excluded: [PlanOverview.ExcludedSubscriptions] = []) {
+        self.rules = rules
+        self.subscriptionsPerMonth = subscriptionsPerMonth
+        self.excluded = excluded
+    }
 }
 
 public protocol PlanGoalsSource: Sendable {
@@ -52,9 +66,12 @@ public struct DefaultGetPlanOverviewUseCase: GetPlanOverviewUseCase {
         let debts = try await debts.load()
         let next = RecurringSchedule.upcoming(recurring.rules, from: now(), days: Self.lookaheadDays, calendar: calendar)
             .min { $0.date < $1.date }
-        let subscriptions = recurring.rules.count {
+        // The count says what the total adds up: live expense subscriptions, less the ones it left
+        // out for their currency (said apart, "Not including 1 in EUR").
+        let live = recurring.rules.count {
             $0.isSubscription && $0.kind == .expense && RecurringSchedule.isActive($0, calendar: calendar)
         }
+        let subscriptions = max(0, live - recurring.excluded.reduce(0) { $0 + $1.count })
         // Counted the way `DebtTotals` picks what it adds up.
         let openDebts = debts.debts.filter { !$0.isSettled && $0.remaining > 0 }
         let people = Set(openDebts.filter { $0.direction == .theyOweMe }
@@ -63,6 +80,7 @@ public struct DefaultGetPlanOverviewUseCase: GetPlanOverviewUseCase {
             recurring: .init(
                 subscriptionsPerMonth: recurring.subscriptionsPerMonth,
                 subscriptionCount: subscriptions,
+                excluded: recurring.excluded,
                 next: next,
                 hasRules: !recurring.rules.isEmpty,
             ),

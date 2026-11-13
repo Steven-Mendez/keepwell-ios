@@ -75,6 +75,11 @@ public struct PlanView: View {
                     Text(viewModel.subscriptionsCaption(recurring))
                         .font(KWTextStyle.caption.font.weight(.regular))
                         .foregroundStyle(KWColor.Text.muted)
+                    ForEach(viewModel.excludedSubscriptionLines(recurring), id: \.self) { line in
+                        Text(line)
+                            .font(KWTextStyle.caption.font.weight(.regular))
+                            .foregroundStyle(KWColor.Text.muted)
+                    }
                 }
                 if let next = viewModel.nextRecurringLine(recurring) {
                     detail(next)
