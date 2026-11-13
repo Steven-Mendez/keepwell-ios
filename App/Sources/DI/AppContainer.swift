@@ -138,7 +138,7 @@ final class AppContainer {
         HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: movements, categories: store, settings: store,
-                recurringRules: store, savingsGoals: store, loans: store, personalDebts: store,
+                recurringRules: store, savingsGoals: store, loans: store, personalDebts: store, merchants: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             getPreferredName: makeGetPreferredName(),
@@ -298,6 +298,7 @@ final class AppContainer {
     func makeGetRecurringOverview() -> any GetRecurringOverviewUseCase {
         DefaultGetRecurringOverviewUseCase(
             rules: store, accounts: store, cards: store, categories: store, transactions: movements, settings: store,
+            merchants: store,
         )
     }
 

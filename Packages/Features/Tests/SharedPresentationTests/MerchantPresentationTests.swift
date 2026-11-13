@@ -28,6 +28,25 @@ struct MerchantPresentationTests {
         #expect(LogoSubject(name: "élan", domain: "x.com").monogram == "É")
     }
 
+    /// A recurring rule's own merchant wins over the brand its name names; a merchant without a
+    /// logo, or one that's gone, falls back to the name; a transfer never shows one.
+    @Test
+    func aRecurringRuleTakesItsMerchantsLogoBeforeItsName() {
+        func rule(_ name: String, kind: TransactionKind = .expense, merchantID: UUID?) -> RecurringRule {
+            RecurringRule(
+                name: name, kind: kind, categoryID: nil, amount: 10, currency: "USD", accountID: UUID(),
+                frequency: .monthly, startDate: Date(timeIntervalSince1970: 0), merchantID: merchantID,
+            )
+        }
+        let merchants = [subway, corner]
+        #expect(MerchantLogos.logo(of: rule("Spotify", merchantID: subway.id), merchants: merchants)?.domain == "subway.com.ni")
+        #expect(MerchantLogos.logo(of: rule("Spotify", merchantID: corner.id), merchants: merchants)?.domain == "spotify.com")
+        #expect(MerchantLogos.logo(of: rule("Spotify", merchantID: UUID()), merchants: merchants)?.domain == "spotify.com")
+        #expect(MerchantLogos.logo(of: rule("Spotify", merchantID: nil), merchants: merchants)?.domain == "spotify.com")
+        #expect(MerchantLogos.logo(of: rule("Alquiler", merchantID: nil), merchants: merchants) == nil)
+        #expect(MerchantLogos.logo(of: rule("Spotify", kind: .transfer, merchantID: subway.id), merchants: merchants) == nil)
+    }
+
     @Test
     func theRowReadsTheBusinessAndPlatformAndSearchFindsThem() {
         let sample = SampleData.standard

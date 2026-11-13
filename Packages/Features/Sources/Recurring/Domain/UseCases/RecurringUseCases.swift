@@ -12,8 +12,10 @@ public struct DefaultGetRecurringOverviewUseCase: GetRecurringOverviewUseCase {
     private let categories: any CategoryRepository
     private let transactions: any TransactionRepository
     private let settings: any SettingsRepository
+    private let merchants: (any MerchantRepository)?
     private let calendar: Calendar
 
+    /// Without `merchants`, rules show the logo their name suggests only.
     public init(
         rules: any RecurringRuleRepository,
         accounts: any AccountRepository,
@@ -21,9 +23,11 @@ public struct DefaultGetRecurringOverviewUseCase: GetRecurringOverviewUseCase {
         categories: any CategoryRepository,
         transactions: any TransactionRepository,
         settings: any SettingsRepository,
+        merchants: (any MerchantRepository)? = nil,
         calendar: Calendar = .current,
     ) {
         self.calendar = calendar
+        self.merchants = merchants
         self.rules = rules
         self.accounts = accounts
         self.cards = cards
@@ -41,6 +45,7 @@ public struct DefaultGetRecurringOverviewUseCase: GetRecurringOverviewUseCase {
             cards: cards.fetchCards(),
             categories: categories.fetchCategories(),
             recorded: transactions.fetchTransactions(in: nil).filter { $0.recurringID != nil },
+            merchants: merchants?.fetchMerchants() ?? [],
             calendar: calendar,
         )
     }

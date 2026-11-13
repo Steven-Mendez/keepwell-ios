@@ -130,13 +130,20 @@ struct DebtDetailView: View {
             if let due = viewModel.due {
                 DebtDueText(line: due)
             }
-            Text("Only tracked here: it doesn't record a movement or change your balances.", bundle: #bundle)
+            trackingNote
                 .font(KWTextStyle.captionSm.font.weight(.regular))
                 .foregroundStyle(KWColor.Text.muted)
         }
         .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
+    }
+
+    /// Only a debt owed to the person can have its repayments deposited, so only its note says so.
+    private var trackingNote: Text {
+        viewModel.debt.direction == .theyOweMe
+            ? Text("Only tracked here: it doesn't change your balances unless you deposit a repayment into an account.", bundle: #bundle)
+            : Text("Only tracked here: it doesn't record a movement or change your balances.", bundle: #bundle)
     }
 
     private var repayment: some View {

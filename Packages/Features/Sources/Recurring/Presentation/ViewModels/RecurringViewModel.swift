@@ -145,6 +145,11 @@ public final class RecurringViewModel {
         overview?.categories.first { $0.id == rule.categoryID }
     }
 
+    /// The rule's own merchant's logo first, then the brand its name names.
+    public func logo(of rule: RecurringRule) -> LogoSubject? {
+        MerchantLogos.logo(of: rule, merchants: overview?.merchants ?? [])
+    }
+
     /// "Every month · Tomorrow · Debit •••• 3922", or "Paused" in place of the date. While a draft
     /// waits (`pendingDraft(of:)`), the date gives way to its state, which the row shows apart.
     public func subtitle(of rule: RecurringRule) -> String {
