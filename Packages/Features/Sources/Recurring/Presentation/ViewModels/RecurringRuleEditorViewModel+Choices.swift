@@ -9,7 +9,12 @@ extension RecurringRuleEditorViewModel {
     // MARK: Choices
 
     public var title: String {
-        isEditing ? String(localized: "Edit recurring", bundle: #bundle) : String(localized: "New recurring", bundle: #bundle)
+        if isEditing {
+            return String(localized: "Edit recurring", bundle: #bundle)
+        }
+        return isNewSubscription
+            ? String(localized: "New subscription", bundle: #bundle)
+            : String(localized: "New recurring", bundle: #bundle)
     }
 
     public var kindOptions: [(value: TransactionKind, title: String)] {
@@ -33,7 +38,7 @@ extension RecurringRuleEditorViewModel {
     /// without any (cash). Transfers move between accounts, so they list the accounts that can send.
     public var methodOptions: [MethodOption] {
         guard let overview else { return [] }
-        return overview.accounts.flatMap { account -> [MethodOption] in
+        return pickable(overview.accounts).flatMap { account -> [MethodOption] in
             let cards = overview.cards.filter { $0.accountID == account.id }
             if kind == .transfer {
                 guard account.kind != .credit else { return [] }
@@ -73,7 +78,12 @@ extension RecurringRuleEditorViewModel {
 
     /// Any other account; paying into a credit card is a transfer too.
     public var destinationOptions: [Account] {
-        overview?.accounts.filter { $0.id != sourceAccountID } ?? []
+        pickable(overview?.accounts ?? []).filter { $0.id != sourceAccountID }
+    }
+
+    /// Open accounts, plus the ones the rule being edited already uses, even closed.
+    private func pickable(_ accounts: [Account]) -> [Account] {
+        accounts.filter { $0.isOpen || $0.id == rule?.accountID || $0.id == rule?.destinationAccountID }
     }
 
     public var destinationTitle: String? {
@@ -110,6 +120,41 @@ extension RecurringRuleEditorViewModel {
 
     public var intervalRange: ClosedRange<Int> {
         RecurringRule.intervalRange
+    }
+
+    // MARK: Short subscription form
+
+    public var periodOptions: [(value: SubscriptionPeriod, title: String)] {
+        [
+            (.monthly, String(localized: "Monthly", bundle: #bundle)),
+            (.quarterly, String(localized: "Quarterly", bundle: #bundle)),
+            (.halfYearly, String(localized: "Half-yearly", bundle: #bundle)),
+            (.yearly, String(localized: "Yearly", bundle: #bundle)),
+        ]
+    }
+
+    /// The schedule as one of the four periods; monthly while "More options" holds another one.
+    public var subscriptionPeriod: SubscriptionPeriod {
+        get { SubscriptionPeriod(frequency: frequency, interval: interval) ?? .monthly }
+        set {
+            frequency = newValue.frequency
+            interval = newValue.interval
+        }
+    }
+
+    /// The first charge from today, before saving: "Tomorrow", "Dec 5".
+    public var nextCharge: String? {
+        nextDates.first
+    }
+
+    /// The short form hides only what already has a value: without a payment method or the
+    /// "Subscriptions" category it still asks for them.
+    public var shortFormNeedsChoices: Bool {
+        method == nil || category == nil
+    }
+
+    public func showMoreOptions() {
+        showsAllFields = true
     }
 
     public var showsSubscriptionToggle: Bool {

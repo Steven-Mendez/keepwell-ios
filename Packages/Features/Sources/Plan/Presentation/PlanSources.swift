@@ -13,9 +13,15 @@ public struct RecurringPlanSource: PlanRecurringSource {
         self.getOverview = getOverview
     }
 
-    public func load() async throws(DomainError) -> (rules: [RecurringRule], subscriptionsPerMonth: Money) {
+    /// The Recurring screen's own total and exclusions (`RecurringOverview.monthlyTotal`), so the
+    /// hub never counts differently from the screen it opens.
+    public func load() async throws(DomainError) -> PlanRecurringFigures {
         let overview = try await getOverview.execute()
-        return (overview.rules, overview.subscriptionsPerMonth)
+        return PlanRecurringFigures(
+            rules: overview.rules,
+            subscriptionsPerMonth: overview.subscriptionsPerMonth,
+            excluded: overview.excludedSubscriptions.map { .init(currency: $0.currency, count: $0.count) },
+        )
     }
 }
 

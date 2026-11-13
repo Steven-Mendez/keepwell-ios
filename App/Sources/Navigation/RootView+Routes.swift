@@ -6,6 +6,7 @@ import HomePresentation
 import PlanPresentation
 import SettingsPresentation
 import SwiftUI
+import TransactionsDomain
 import TransactionsPresentation
 
 extension RootView {
@@ -24,21 +25,30 @@ extension RootView {
             PaymentMethodsRoute(container: container, onBack: navigator.pop, onOpenAccount: openAccount)
         case .creditCard, .bankAccount, .cash:
             accountRoute(route)
-        case let .transactions(accountID):
-            transactionsRoute(accountID: accountID)
+        case let .transactions(accountID, ruleID):
+            transactionsRoute(accountID: accountID, ruleID: ruleID)
         case let .transaction(id):
             transactionDetailRoute(id: id)
         case .recurring:
             RecurringRoute(
                 container: container,
                 onBack: navigator.pop,
-                onAdd: { navigator.push(.recurringRule(id: nil)) },
+                onAdd: { navigator.push($0 ? .newSubscription : .recurringRule(id: nil)) },
                 onOpen: { navigator.push(.recurringRule(id: $0)) },
             )
         case let .recurringRule(id):
             RecurringRuleRoute(
                 container: container,
                 ruleID: id,
+                onBack: navigator.pop,
+                onOpenTransaction: { navigator.push(.transaction(id: $0)) },
+                onSeeAllRecorded: { navigator.push(.transactions(ruleID: $0)) },
+            )
+        case .newSubscription:
+            RecurringRuleRoute(
+                container: container,
+                ruleID: nil,
+                isNewSubscription: true,
                 onBack: navigator.pop,
                 onOpenTransaction: { navigator.push(.transaction(id: $0)) },
             )
@@ -90,10 +100,11 @@ extension RootView {
         }
     }
 
-    private func transactionsRoute(accountID: UUID?) -> some View {
+    private func transactionsRoute(accountID: UUID?, ruleID: UUID?) -> some View {
         TransactionsRoute(
             container: container,
             scope: accountID.map(TransactionScope.account) ?? .all,
+            origin: ruleID.map(TransactionOrigin.rule) ?? .any,
             onBack: navigator.pop,
             onOpenTransaction: { navigator.push(.transaction(id: $0)) },
             onOpenRecurringRule: { navigator.push(.recurringRule(id: $0)) },

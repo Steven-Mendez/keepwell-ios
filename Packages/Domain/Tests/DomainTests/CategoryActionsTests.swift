@@ -226,6 +226,51 @@ struct CategoryActionsTests {
     }
 
     @Test
+    func afterAPullRecordsOnADeletedCategoryMoveToOtherOfTheirKind() async throws {
+        let expense = try #require(sample.transactions.first { $0.kind == .expense })
+        let income = try #require(sample.transactions.first { $0.kind == .income })
+        let rule = try #require(sample.recurringRules.first { $0.kind == .expense })
+        let kept = UUID()
+        let unknown = UUID()
+        let store = InMemoryStore(
+            transactions: [
+                expense.with(categoryID: "custom-boat"),
+                income.with(categoryID: "custom-bonus"),
+                Transaction(
+                    id: kept, date: expense.date, description: "Kept", kind: .expense, categoryID: "groceries",
+                    amount: expense.amount, currency: expense.currency, accountID: expense.accountID,
+                    exchangeRate: expense.exchangeRate,
+                ),
+                Transaction(
+                    id: unknown, date: expense.date, description: "Not pulled yet", kind: .expense,
+                    categoryID: "custom-not-pulled-yet", amount: expense.amount, currency: expense.currency,
+                    accountID: expense.accountID, exchangeRate: expense.exchangeRate,
+                ),
+            ],
+            recurringRules: [rule.with(categoryID: "custom-boat")],
+        )
+        let moved = try await DefaultReassignDeletedCategoriesUseCase(transactions: store, recurringRules: store)
+            .execute(deletedCategoryIDs: ["custom-boat", "custom-bonus"])
+        #expect(moved == 3)
+        let byID = await Dictionary(uniqueKeysWithValues: store.fetchTransactions(in: nil).map { ($0.id, $0.categoryID) })
+        #expect(byID[expense.id] == TransactionCategory.otherExpenseID)
+        #expect(byID[income.id] == TransactionCategory.otherIncomeID)
+        #expect(byID[kept] == "groceries")
+        #expect(byID[unknown] == "custom-not-pulled-yet")
+        #expect(await store.fetchRecurringRules().first { $0.id == rule.id }?.categoryID == TransactionCategory.otherExpenseID)
+    }
+
+    @Test
+    func theRepairAfterAPullMovesNothingWhenNothingPointsAtADeletedCategory() async throws {
+        let expense = try #require(sample.transactions.first { $0.kind == .expense })
+        let store = InMemoryStore(transactions: [expense.with(categoryID: "groceries")])
+        let repair = DefaultReassignDeletedCategoriesUseCase(transactions: store, recurringRules: store)
+        #expect(try await repair.execute(deletedCategoryIDs: ["custom-boat"]) == 0)
+        #expect(try await repair.execute(deletedCategoryIDs: []) == 0)
+        #expect(await store.fetchTransactions(in: nil).map(\.categoryID) == ["groceries"])
+    }
+
+    @Test
     func listingReturnsThePickerOrder() async throws {
         let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense)
         let store = InMemoryStore(categories: [boat] + TransactionCategory.defaults)

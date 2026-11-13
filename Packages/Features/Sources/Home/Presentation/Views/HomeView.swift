@@ -5,7 +5,7 @@ import SharedPresentation
 import SwiftUI
 
 /// Home: a balance carousel on the brand hero, quick actions, the latest movements, the month so
-/// far, planned movements waiting for confirmation and the balance of each account.
+/// far, what's pending (drafts to confirm among it) and the balance of each account.
 public struct HomeView: View {
     /// Where home leads. The root decides how each one is shown.
     public struct Actions {
@@ -24,6 +24,10 @@ public struct HomeView: View {
         public var debts: () -> Void
         /// A recent movement's detail.
         public var openTransaction: (UUID) -> Void
+        /// A recurring rule's editor, from its row in "Upcoming".
+        public var openRecurringRule: (UUID) -> Void
+        /// A credit card's screen, from its payment in "Upcoming".
+        public var openCreditCard: (UUID) -> Void
 
         public init(
             search: @escaping () -> Void,
@@ -39,6 +43,8 @@ public struct HomeView: View {
             goals: @escaping () -> Void = {},
             debts: @escaping () -> Void = {},
             openTransaction: @escaping (UUID) -> Void = { _ in },
+            openRecurringRule: @escaping (UUID) -> Void = { _ in },
+            openCreditCard: @escaping (UUID) -> Void = { _ in },
         ) {
             self.search = search
             self.summary = summary
@@ -53,6 +59,8 @@ public struct HomeView: View {
             self.goals = goals
             self.debts = debts
             self.openTransaction = openTransaction
+            self.openRecurringRule = openRecurringRule
+            self.openCreditCard = openCreditCard
         }
     }
 
@@ -65,9 +73,6 @@ public struct HomeView: View {
         self.viewModel = viewModel
         self.actions = actions
     }
-
-    /// The planned rows home lists before "See all".
-    private let plannedPreviewCount = 2
 
     public var body: some View {
         ScrollView {
@@ -117,12 +122,19 @@ public struct HomeView: View {
             ) { actions.newMovement(.expense) }
                 .padding(.vertical, KWSpacing.xl)
         }
-        let upcoming = viewModel.upcomingPreview(overview)
+        let upcoming = viewModel.upcomingRows(overview)
         if !upcoming.isEmpty {
-            HomeUpcomingCard(viewModel: viewModel, occurrences: upcoming, hidesBalances: hidesBalances, onSeeAll: actions.allRecurring)
-        }
-        if !overview.planned.isEmpty {
-            plannedCard(overview)
+            HomeUpcomingCard(
+                viewModel: viewModel,
+                rows: upcoming,
+                hidesBalances: hidesBalances,
+                actions: HomeUpcomingCard.Actions(
+                    openRule: actions.openRecurringRule,
+                    openCard: actions.openCreditCard,
+                    debts: actions.debts,
+                    seeAll: viewModel.upcomingListsDrafts(upcoming) ? actions.allPlanned : actions.allRecurring,
+                ),
+            )
         }
         HomeGoalsCard(viewModel: viewModel, top: overview.goals.first, hidesBalances: hidesBalances, onOpen: actions.goals)
         HomeDebtsCard(viewModel: viewModel, overview: overview, hidesBalances: hidesBalances, onOpen: actions.debts)
@@ -193,40 +205,6 @@ public struct HomeView: View {
         .foregroundStyle(KWColor.Text.secondary)
         .lineLimit(1)
         .accessibilityElement(children: .combine)
-    }
-
-    private func plannedCard(_ overview: HomeOverview) -> some View {
-        VStack(alignment: .leading, spacing: KWSpacing.sm) {
-            HStack {
-                Text(viewModel.plannedTitle(overview))
-                    .font(KWTextStyle.heading.font)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer()
-                Button(action: actions.allPlanned) {
-                    Text("See all", bundle: #bundle)
-                        .font(KWTextStyle.label.font)
-                        .foregroundStyle(KWColor.Brand.link)
-                        .frame(minHeight: KWLayout.minTouch)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.vertical, -KWSpacing.sm)
-            Text(viewModel.plannedCaption(overview, hidden: hidesBalances))
-                .font(KWTextStyle.caption.font.weight(.regular))
-                .foregroundStyle(KWColor.Text.muted)
-                .fixedSize(horizontal: false, vertical: true)
-            if let display = viewModel.display {
-                ForEach(overview.planned.prefix(plannedPreviewCount)) { transaction in
-                    PlannedDraftRow(viewModel: viewModel, transaction: transaction, display: display)
-                }
-            }
-            if let error = viewModel.actionError {
-                Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
-            }
-        }
-        .padding(KWSpacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(KWColor.Surface.surface, in: RoundedRectangle(cornerRadius: KWRadius.surface, style: .continuous))
     }
 
     private func balancesCard(_ overview: HomeOverview) -> some View {

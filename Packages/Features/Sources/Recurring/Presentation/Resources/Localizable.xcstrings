@@ -31,6 +31,16 @@
         }
       }
     },
+    "Billing day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día de cobro"
+          }
+        }
+      }
+    },
     "Bills and other expenses" : {
       "localizations" : {
         "es" : {
@@ -77,6 +87,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elige otra cuenta de destino."
+          }
+        }
+      }
+    },
+    "Confirm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar"
+          }
+        }
+      }
+    },
+    "Confirm %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar %@"
           }
         }
       }
@@ -191,6 +221,16 @@
         }
       }
     },
+    "Half-yearly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semestral"
+          }
+        }
+      }
+    },
     "Hide amounts" : {
       "localizations" : {
         "es" : {
@@ -261,6 +301,16 @@
         }
       }
     },
+    "More options" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más opciones"
+          }
+        }
+      }
+    },
     "Name" : {
       "localizations" : {
         "es" : {
@@ -281,6 +331,26 @@
         }
       }
     },
+    "New subscription" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva suscripción"
+          }
+        }
+      }
+    },
+    "Next charge" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximo cobro"
+          }
+        }
+      }
+    },
     "Next dates" : {
       "localizations" : {
         "es" : {
@@ -297,6 +367,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nota"
+          }
+        }
+      }
+    },
+    "Not including %lld subscriptions in %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Not including %lld subscription in %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Not including %lld subscriptions in %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sin incluir %lld suscripción en %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sin incluir %lld suscripciones en %@"
+                }
+              }
+            }
           }
         }
       }
@@ -327,6 +437,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opcional"
+          }
+        }
+      }
+    },
+    "Overdue · %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld días"
+                }
+              }
+            }
           }
         }
       }
@@ -367,6 +517,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Propuesto por Claude · reanúdalo para confirmar"
+          }
+        }
+      }
+    },
+    "Quarterly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trimestral"
           }
         }
       }
@@ -441,6 +601,16 @@
         }
       }
     },
+    "See all" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver todos"
+          }
+        }
+      }
+    },
     "Show amounts" : {
       "localizations" : {
         "es" : {
@@ -501,6 +671,16 @@
         }
       }
     },
+    "To confirm · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por confirmar · %@"
+          }
+        }
+      }
+    },
     "Transfer" : {
       "localizations" : {
         "es" : {
@@ -517,6 +697,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transferencias"
+          }
+        }
+      }
+    },
+    "We couldn't confirm it. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos confirmarlo. Inténtalo de nuevo."
           }
         }
       }

@@ -21,6 +21,9 @@ public struct SummaryReport: Hashable, Sendable {
     public let paces: [SpendingPace]
     /// Same order as `months`: how each budgeted category did that month, closest to its limit first.
     public let budgets: [[CategoryBudgetStatus]]
+    /// The budgets `budgets` leaves out for being in another currency (the principal changed since),
+    /// counted per currency so the card can name them instead of converting.
+    public let otherCurrencyBudgets: [OtherCurrencyBudgets]
     /// Net worth at the end of each of the last twelve months (`NetWorthHistory`), oldest first.
     public let netWorth: [NetWorthHistory.Point]
     /// Whether a second currency goes into net worth, each month at its own rate, which the card then
@@ -50,6 +53,7 @@ public struct SummaryReport: Hashable, Sendable {
         incomeBreakdowns = months.map { CategoryBreakdown(totals: $0.incomeCategories) }
         // Today's budgets measure past months too: the app keeps no history of budget changes.
         budgets = months.map { CategoryBudgetStatus.statuses(of: $0, categories: categories) }
+        otherCurrencyBudgets = OtherCurrencyBudgets.of(categories: categories, currency: currency)
     }
 }
 

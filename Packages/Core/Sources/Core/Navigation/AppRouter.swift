@@ -17,14 +17,17 @@ public enum AppRoute: Hashable, Sendable {
     case bankAccount(accountID: UUID)
     /// A cash account's detail: rename, latest movements and delete.
     case cash(accountID: UUID)
-    /// The movement list opened from an account, already filtered to it.
-    case transactions(accountID: UUID? = nil)
+    /// The movement list opened from an account, already filtered to it, or from a recurring rule
+    /// ("See all" it recorded), narrowed to that rule.
+    case transactions(accountID: UUID? = nil, ruleID: UUID? = nil)
     /// One movement's detail, with its actions (edit, receipt, split, delete).
     case transaction(id: UUID)
     /// Recurring movements and subscriptions.
     case recurring
     /// A recurring rule's editor; `nil` creates one.
     case recurringRule(id: UUID?)
+    /// A new recurring rule from the short subscription form.
+    case newSubscription
     /// Savings goals, reached from home.
     case goals
     /// Loans and personal debts, reached from home.

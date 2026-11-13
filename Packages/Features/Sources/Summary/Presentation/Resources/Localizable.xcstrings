@@ -121,6 +121,46 @@
         }
       }
     },
+    "%lld budgets are in %@ and aren't compared" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld budget is in %@ and isn't compared"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld budgets are in %@ and aren't compared"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld presupuesto está en %@ y no se compara"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld presupuestos están en %@ y no se comparan"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld categories" : {
       "localizations" : {
         "en" : {
@@ -387,6 +427,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lo que más bajó"
+          }
+        }
+      }
+    },
+    "Edit budgets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar presupuestos"
           }
         }
       }

@@ -5,11 +5,9 @@ import SwiftData
 extension SwiftDataStore: CategorizationRuleRepository {
     public func fetchCategorizationRules() throws(DomainError) -> [CategorizationRule] {
         try perform { context in
-            try context.fetch(FetchDescriptor<CategorizationRuleRecord>(
-                predicate: #Predicate { $0.deletedAt == nil },
-                sortBy: [SortDescriptor(\.sortIndex), SortDescriptor(\.createdAt)],
-            ))
-            .map { try $0.toDomain() }
+            try context.fetch(FetchDescriptor<CategorizationRuleRecord>(predicate: #Predicate { $0.deletedAt == nil }))
+                .sorted(by: CategorizationRuleRecord.inPlace)
+                .map { try $0.toDomain() }
         }
     }
 
@@ -40,13 +38,12 @@ extension SwiftDataStore: CategorizationRuleRepository {
     public func reorderCategorizationRules(ids: [UUID]) throws(DomainError) {
         try perform { context in
             let rank = Dictionary(ids.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
-            let records = try context.fetch(FetchDescriptor<CategorizationRuleRecord>(
-                sortBy: [SortDescriptor(\.sortIndex), SortDescriptor(\.createdAt)],
-            ))
+            let records = try context.fetch(FetchDescriptor<CategorizationRuleRecord>())
+                .sorted(by: CategorizationRuleRecord.inPlace)
             let listed = records.filter { rank[$0.id] != nil }.sorted { rank[$0.id] ?? 0 < rank[$1.id] ?? 0 }
             for (index, record) in (listed + records.filter { rank[$0.id] == nil }).enumerated() where record.sortIndex != index {
                 record.sortIndex = index
-                record.updatedAt = .now
+                record.stampChanged()
             }
             try context.saveWithOutbox()
         }

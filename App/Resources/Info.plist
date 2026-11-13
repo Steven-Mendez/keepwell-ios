@@ -23,6 +23,10 @@
 	<string>$(APP_GROUP_ID)</string>
 	<key>KeepwellAPIBaseURL</key>
 	<string>$(API_BASE_URL)</string>
+	<key>KeepwellBrandLogosEnabled</key>
+	<string>$(BRAND_LOGOS_ENABLED)</string>
+	<key>KeepwellBrandfetchClientID</key>
+	<string>$(BRANDFETCH_CLIENT_ID)</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

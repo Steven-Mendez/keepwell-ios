@@ -48,16 +48,36 @@ public final class RecurringViewModel {
         public var id: Group { group }
     }
 
-    public private(set) var state = State.loading
+    public private(set) var state = State.loading {
+        didSet { pendingDrafts = Self.pendingDrafts(in: overview, now: now(), calendar: calendar) }
+    }
+
+    /// The draft each rule left waiting from today or before, by rule: derived once per load from
+    /// the same list home reads (`UpcomingPayments`), not per row.
+    private var pendingDrafts: [UUID: PendingRuleDraft] = [:]
+    /// Drafts being confirmed from their rule's row, so the button can't fire twice.
+    public private(set) var confirming: Set<UUID> = []
+    public private(set) var actionError: String?
 
     private let getOverview: any GetRecurringOverviewUseCase
+    private let confirmPlanned: (any ConfirmPlannedTransactionUseCase)?
+    /// Offers "Undo" after confirming a draft; `nil` in previews.
+    private let undo: MovementUndo?
     private let calendar: Calendar
     private let now: () -> Date
     let formatter = CurrencyFormatter()
     static let maskedAmount = "••••"
 
-    public init(getOverview: any GetRecurringOverviewUseCase, calendar: Calendar = .current, now: @escaping () -> Date = { .now }) {
+    public init(
+        getOverview: any GetRecurringOverviewUseCase,
+        confirmPlanned: (any ConfirmPlannedTransactionUseCase)? = nil,
+        undo: MovementUndo? = nil,
+        calendar: Calendar = .current,
+        now: @escaping () -> Date = { .now },
+    ) {
         self.getOverview = getOverview
+        self.confirmPlanned = confirmPlanned
+        self.undo = undo
         self.calendar = calendar
         self.now = now
     }
@@ -110,17 +130,28 @@ public final class RecurringViewModel {
         return String(localized: "≈ \(yearly) per year", bundle: #bundle)
     }
 
+    /// "Not including 2 subscriptions in EUR", one line per currency the total can't convert. Counts,
+    /// not amounts, so they show even with amounts hidden.
+    public var excludedSubscriptions: [String] {
+        guard let overview else { return [] }
+        return overview.excludedSubscriptions.map { excluded in
+            String(localized: "Not including \(excluded.count) subscriptions in \(excluded.currency)", bundle: #bundle)
+        }
+    }
+
     // MARK: Rows
 
     public func category(of rule: RecurringRule) -> TransactionCategory? {
         overview?.categories.first { $0.id == rule.categoryID }
     }
 
-    /// "Every month · Tomorrow · Debit •••• 3922", or "Paused" in place of the date.
+    /// "Every month · Tomorrow · Debit •••• 3922", or "Paused" in place of the date. While a draft
+    /// waits (`pendingDraft(of:)`), the date gives way to its state, which the row shows apart.
     public func subtitle(of rule: RecurringRule) -> String {
         // A rule an assistant proposed waits paused until the person resumes (confirms) or deletes it.
         let when = rule.source == .mcp && rule.isPaused
             ? String(localized: "Proposed by Claude · resume to confirm", bundle: #bundle)
+            : pendingDraft(of: rule) != nil ? ""
             : rule.isPaused ? String(localized: "Paused", bundle: #bundle) : nextLabel(of: rule)
         return [RecurringDisplay.frequency(of: rule), when, methodName(of: rule)]
             .filter { !$0.isEmpty }
@@ -133,6 +164,48 @@ public final class RecurringViewModel {
             return String(localized: "Ended", bundle: #bundle)
         }
         return RecurringDisplay.day(rule.nextDate, today: now(), calendar: calendar)
+    }
+
+    /// The draft the rule left waiting from today or before, if any.
+    public func pendingDraft(of rule: RecurringRule) -> PendingRuleDraft? {
+        pendingDrafts[rule.id]
+    }
+
+    private static func pendingDrafts(in overview: RecurringOverview?, now: Date, calendar: Calendar) -> [UUID: PendingRuleDraft] {
+        guard let overview else { return [:] }
+        let ledger = UpcomingPayments.Ledger(transactions: overview.recorded, settings: overview.settings)
+        let payments = UpcomingPayments.compute(ledger, on: now, days: 0, calendar: calendar)
+        return UpcomingPayments.pendingRuleDrafts(payments)
+    }
+
+    /// "To confirm · Nov 12" for today's draft, "Overdue · 3 days" for an older one.
+    public func pendingLabel(_ pending: PendingRuleDraft) -> String {
+        if pending.daysOverdue > 0 {
+            return String(localized: "Overdue · \(pending.daysOverdue) days", bundle: #bundle)
+        }
+        let date = pending.transaction.date
+        let sameYear = calendar.component(.year, from: date) == calendar.component(.year, from: now())
+        var style: Date.FormatStyle = sameYear ? .dateTime.day().month(.abbreviated) : .dateTime.day().month(.abbreviated).year()
+        style.timeZone = calendar.timeZone
+        // Spanish abbreviates months with a trailing dot ("nov."), which reads badly mid-sentence.
+        let day = date.formatted(style).replacingOccurrences(of: ".", with: "")
+        return String(localized: "To confirm · \(day)", bundle: #bundle)
+    }
+
+    /// Confirms the rule's waiting draft as Home does: no dialog, "Undo" for a few seconds.
+    public func confirm(_ pending: PendingRuleDraft) async {
+        let planned = pending.transaction
+        guard let confirmPlanned, !confirming.contains(planned.id) else { return }
+        confirming.insert(planned.id)
+        defer { confirming.remove(planned.id) }
+        do {
+            try await confirmPlanned.execute(id: planned.id)
+            actionError = nil
+            undo?.offerConfirmed(planned)
+            await load()
+        } catch {
+            actionError = String(localized: "We couldn't confirm it. Try again.", bundle: #bundle)
+        }
     }
 
     /// The card's short name, or the account's; transfers read "Savings → Cash".

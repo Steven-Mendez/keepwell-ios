@@ -21,6 +21,16 @@
         }
       }
     },
+    "%@ is due tomorrow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ vence mañana"
+          }
+        }
+      }
+    },
     "%@ of %@" : {
       "localizations" : {
         "es" : {
@@ -107,6 +117,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@%% ahorrado"
+          }
+        }
+      }
+    },
+    "%@: due in %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: due in %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: due in %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: vence en %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: vence en %lld días"
+                }
+              }
+            }
           }
         }
       }
@@ -291,6 +341,166 @@
         }
       }
     },
+    "%lld debts overdue" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld debt overdue"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld debts overdue"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld deuda atrasada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld deudas atrasadas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld due today" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld due today"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld due today"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vence hoy"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vencen hoy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld due tomorrow" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld due tomorrow"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld due tomorrow"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vence mañana"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vencen mañana"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld installments overdue" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld installment overdue"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld installments overdue"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuota atrasada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cuotas atrasadas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld notifications deleted" : {
       "localizations" : {
         "en" : {
@@ -331,12 +541,72 @@
         }
       }
     },
+    "%lld payments to confirm" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld payment to confirm"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld payments to confirm"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pago por confirmar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pagos por confirmar"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "All caught up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo al día"
+          }
+        }
+      }
+    },
     "Available today" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Disponible hoy"
+          }
+        }
+      }
+    },
+    "Card payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pago de tarjeta"
           }
         }
       }
@@ -571,6 +841,16 @@
         }
       }
     },
+    "Installment %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuota %1$lld de %2$lld"
+          }
+        }
+      }
+    },
     "Installment %lld of %lld · %@" : {
       "localizations" : {
         "es" : {
@@ -761,6 +1041,46 @@
         }
       }
     },
+    "Overdue · %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasado · %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Owed to you" : {
       "localizations" : {
         "es" : {
@@ -907,6 +1227,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No cuentan en saldos hasta que los confirmes · %@"
+          }
+        }
+      }
+    },
+    "They owe you %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te debe %@."
           }
         }
       }
@@ -1103,6 +1433,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "You owe %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le debes %@."
           }
         }
       }

@@ -54,6 +54,37 @@ struct RecurringUseCaseTests {
         let expected = (Decimal(string: "15.99") ?? 0) + Decimal(10) / 12
         #expect(overview.subscriptionsPerMonth.currency == "USD")
         #expect(abs(NSDecimalNumber(decimal: overview.subscriptionsPerMonth.amount - expected).doubleValue) < 0.0001)
+        #expect(overview.excludedSubscriptions.isEmpty)
+    }
+
+    @Test
+    func subscriptionsInACurrencyTheSettingsCannotConvertAreCountedApartByCurrency() async throws {
+        let store = InMemoryStore(sample: sample)
+        func subscription(
+            _ amount: Decimal,
+            _ currency: String,
+            frequency: RecurringFrequency = .monthly,
+            isSubscription: Bool = true,
+            isPaused: Bool = false,
+        ) -> RecurringRule {
+            RecurringRule(
+                name: "Abroad", kind: .expense, categoryID: "subscriptions", amount: amount, currency: currency,
+                accountID: IDs.savings, frequency: frequency, startDate: today, isSubscription: isSubscription, isPaused: isPaused,
+            )
+        }
+        await store.save(subscription(8, "GBP"))
+        await store.save(subscription(5, "EUR"))
+        await store.save(subscription(7, "EUR", frequency: .yearly))
+        await store.save(subscription(9, "EUR", isPaused: true))
+        await store.save(subscription(9, "EUR", isSubscription: false))
+        let overview = try await DefaultGetRecurringOverviewUseCase(
+            rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
+        ).execute()
+        #expect(overview.subscriptionsPerMonth == Money(Decimal(string: "15.99") ?? 0, "USD"))
+        #expect(overview.excludedSubscriptions == [
+            UnconvertedSubscriptions(currency: "EUR", count: 2),
+            UnconvertedSubscriptions(currency: "GBP", count: 1),
+        ])
     }
 
     @Test

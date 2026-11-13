@@ -12,10 +12,11 @@ extension AppContainer {
         TransactionDetailViewModel(
             transactionID: id,
             getList: DefaultGetTransactionListUseCase(
-                transactions: store, accounts: store, cards: store, categories: store, settings: store, recurringRules: store,
+                transactions: movements, accounts: store, cards: store, categories: store, settings: store, recurringRules: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
-            deleteTransaction: DefaultDeleteTransactionUseCase(transactions: store),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
+            deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
+            undo: movementUndo,
         )
     }
 
@@ -25,8 +26,8 @@ extension AppContainer {
         return CreateTransactionViewModel(
             stored: .edit(id),
             getStored: stored,
-            update: DefaultUpdateTransactionUseCase(stored: stored, transactions: store, settings: store),
-            manageRules: DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: store),
+            update: DefaultUpdateTransactionUseCase(stored: stored, transactions: movements, settings: store),
+            manageRules: DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: movements),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
         )
     }
@@ -42,7 +43,7 @@ extension AppContainer {
 
     private func makeGetStoredTransaction() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
-            settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
+            settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
         )
     }
 }

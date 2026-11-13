@@ -1,6 +1,7 @@
 import Domain
 import DomainSamples
 import Foundation
+import SwiftData
 import Testing
 @testable import Persistence
 
@@ -27,6 +28,40 @@ struct SwiftDataStoreRulesTests {
 
         try await store.reorderCategorizationRules(ids: [payroll.id, uber.id])
         #expect(try await store.fetchCategorizationRules().map(\.id) == [payroll.id, uber.id, cafe.id])
+    }
+
+    /// Two offline devices can give rules the same `sortIndex`; the id decides, not the creation date.
+    @Test
+    func rulesWithTheSameIndexAreOrderedByID() async throws {
+        let container = try ModelContainerFactory.make(store: .inMemory)
+        let store = SwiftDataStore(modelContainer: container)
+        let first = try CategorizationRule(
+            id: #require(UUID(uuidString: "AAAAAAAA-0000-4000-8000-000000000000")),
+            match: "Uber", categoryID: "transport", kind: .expense,
+        )
+        let tiedHigh = try CategorizationRule(
+            id: #require(UUID(uuidString: "CCCCCCCC-0000-4000-8000-000000000000")),
+            match: "Café", categoryID: "restaurants", kind: .expense,
+        )
+        let tiedLow = try CategorizationRule(
+            id: #require(UUID(uuidString: "BBBBBBBB-0000-4000-8000-000000000000")),
+            match: "Payroll", categoryID: "salary", kind: .income,
+        )
+        for rule in [first, tiedHigh, tiedLow] {
+            try await store.save(rule)
+        }
+
+        let otherDevice = ModelContext(container)
+        let created = Date(timeIntervalSince1970: 1_800_000_000)
+        for record in try otherDevice.fetch(FetchDescriptor<CategorizationRuleRecord>()) where record.id != first.id {
+            record.sortIndex = 1
+            // The higher id is the older one, so ordering by creation date would put it first.
+            record.createdAt = record.id == tiedHigh.id ? created : created.addingTimeInterval(60)
+        }
+        try otherDevice.save()
+
+        let reopened = SwiftDataStore(modelContainer: container)
+        #expect(try await reopened.fetchCategorizationRules().map(\.id) == [first.id, tiedLow.id, tiedHigh.id])
     }
 
     @Test

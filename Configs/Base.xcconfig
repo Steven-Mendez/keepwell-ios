@@ -32,6 +32,13 @@ API_BASE_URL = https:/$()/keepwell-web.vercel.app
 // The web app's host: passkeys' relying party, shared through the associated domain.
 WEB_HOST = keepwell-web.vercel.app
 
+// Brand logos, linked live from Brandfetch's Logo API (the app's one call to a third party: it sees
+// the device's IP and the domain of each known brand shown). NO makes no request and shows
+// monograms only; so does an empty client id. The id is public by design (it travels in every
+// logo URL); the account's API key is secret and not used.
+BRAND_LOGOS_ENABLED = YES
+BRANDFETCH_CLIENT_ID = 1idMF4-f4zDduiiadcZ
+
 // Platform and language
 IPHONEOS_DEPLOYMENT_TARGET = 26.0
 TARGETED_DEVICE_FAMILY = 1

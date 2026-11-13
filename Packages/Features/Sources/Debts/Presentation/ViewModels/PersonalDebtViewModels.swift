@@ -20,8 +20,26 @@ public final class DebtEditorViewModel: Identifiable {
         didSet { errorMessage = nil }
     }
 
-    public var date: Date
+    public var date: Date {
+        didSet { errorMessage = nil }
+    }
+
     public var note = ""
+    /// "Set a due date": turning it on proposes a month after the debt's date; off removes it.
+    public var hasDueDate = false {
+        didSet {
+            errorMessage = nil
+            if hasDueDate, !oldValue {
+                dueDate = Calendar.current.date(byAdding: .day, value: Self.defaultDueDays, to: date) ?? date
+            }
+        }
+    }
+
+    public var dueDate: Date {
+        didSet { errorMessage = nil }
+    }
+
+    static let defaultDueDays = 30
     /// Fixed when editing: repayments were counted in it.
     public var currency: String
     public let currencyOptions: [String]
@@ -35,6 +53,7 @@ public final class DebtEditorViewModel: Identifiable {
         currency = currencies.principal
         currencyOptions = [currencies.principal] + (currencies.second.map { [$0] } ?? [])
         date = today
+        dueDate = today
         self.useCases = useCases
     }
 
@@ -45,6 +64,8 @@ public final class DebtEditorViewModel: Identifiable {
         amountText = CurrencyFormatter().number(debt.amount.amount)
         date = debt.date
         note = debt.note ?? ""
+        hasDueDate = debt.dueDate != nil
+        dueDate = debt.dueDate ?? debt.date
         currency = debt.amount.currency
         currencyOptions = [debt.amount.currency]
         self.useCases = useCases
@@ -80,12 +101,14 @@ public final class DebtEditorViewModel: Identifiable {
         do {
             try await useCases.saveDebt.execute(PersonalDebtDraft(
                 id: editing?.id, person: person, direction: direction, amount: Money(amount, currency), date: date, note: note,
+                dueDate: hasDueDate ? dueDate : nil,
             ))
             return true
         } catch {
             errorMessage = switch error {
             case .missingName: String(localized: "Write who it's with.", bundle: #bundle)
             case .invalidAmount: String(localized: "It can't be less than what was already paid back.", bundle: #bundle)
+            case .invalidDueDate: String(localized: "The due date can't be before the debt's date.", bundle: #bundle)
             default: String(localized: "We couldn't save the debt. Try again.", bundle: #bundle)
             }
             return false
@@ -147,6 +170,11 @@ public final class DebtDetailViewModel: Identifiable {
 
     public func day(_ date: Date) -> String {
         DebtDates.day(date, calendar: calendar)
+    }
+
+    /// The due date's line, as in the list.
+    public var due: DebtDueLine? {
+        DebtDisplay.due(debt, today: now(), calendar: calendar)
     }
 
     public func amount(_ value: Decimal, hidden: Bool) -> String {

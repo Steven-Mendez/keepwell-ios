@@ -53,6 +53,21 @@ public final class PlanViewModel {
         hidden ? Self.maskedAmount : formatter.string(recurring.subscriptionsPerMonth)
     }
 
+    /// "Per month · 7 subscriptions", under the monthly total.
+    func subscriptionsCaption(_ recurring: PlanOverview.Recurring) -> String {
+        let count = recurring.subscriptionCount
+        guard count > 0 else { return String(localized: "Subscriptions per month", bundle: #bundle) }
+        return String(localized: "Per month · \(count) subscriptions", bundle: #bundle)
+    }
+
+    /// "Not including 1 in EUR", one line per currency the total leaves out. Counts, not amounts,
+    /// so they show with amounts hidden too.
+    func excludedSubscriptionLines(_ recurring: PlanOverview.Recurring) -> [String] {
+        recurring.excluded.map { excluded in
+            String(localized: "Not including \(excluded.count) in \(excluded.currency)", bundle: #bundle)
+        }
+    }
+
     /// "Next: Netflix · Tomorrow", or `nil` when nothing is scheduled.
     func nextRecurringLine(_ recurring: PlanOverview.Recurring) -> String? {
         guard let next = recurring.next else { return nil }
@@ -92,6 +107,20 @@ public final class PlanViewModel {
     func debtTotal(_ lines: [Money], hidden: Bool) -> String {
         guard !lines.isEmpty else { return String(localized: "Nothing", bundle: #bundle) }
         return lines.map { hidden ? Self.maskedAmount : formatter.string($0) }.joined(separator: " · ")
+    }
+
+    /// "3 debts to pay", or "You owe" when there's nothing to count.
+    func youOweTitle(_ debts: PlanOverview.Debts) -> String {
+        let count = debts.youOweCount
+        guard count > 0 else { return String(localized: "You owe", bundle: #bundle) }
+        return String(localized: "\(count) debts to pay", bundle: #bundle)
+    }
+
+    /// "2 people owe you", or "Owed to you" when nobody does.
+    func owedToYouTitle(_ debts: PlanOverview.Debts) -> String {
+        let count = debts.peopleOwingCount
+        guard count > 0 else { return String(localized: "Owed to you", bundle: #bundle) }
+        return String(localized: "\(count) people owe you", bundle: #bundle)
     }
 
     /// "Next: 3/12 on Nov 28, 2026 · C$5,500.00" or "Overdue: …", `nil` without an open loan.

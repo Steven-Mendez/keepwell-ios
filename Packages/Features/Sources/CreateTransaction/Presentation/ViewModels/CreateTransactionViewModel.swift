@@ -169,10 +169,11 @@ public final class CreateTransactionViewModel {
     }
 
     private func loadNew() async {
-        guard let loaded = try? await getContext?.execute() else {
+        guard let everything = try? await getContext?.execute() else {
             errorMessage = String(localized: "We couldn't load your accounts.", bundle: #bundle)
             return
         }
+        let loaded = everything.forPickers()
         context = loaded
         // The second currency is the everyday one in the design ("C$" by default).
         currency = loaded.currencies.second ?? loaded.currencies.principal
@@ -315,6 +316,7 @@ public final class CreateTransactionViewModel {
         switch error {
         case .invalidAmount: String(localized: "Check the amount.", bundle: #bundle)
         case .invalidTransferDestination: String(localized: "Choose a different destination account.", bundle: #bundle)
+        case .accountClosed: AccountClosingText.accountClosedError
         default: String(localized: "We couldn't save the movement. Try again.", bundle: #bundle)
         }
     }

@@ -89,6 +89,8 @@ struct SelectedMark: View {
 struct RecurringRuleDetail: View {
     let viewModel: RecurringRuleEditorViewModel
     let onOpenTransaction: (UUID) -> Void
+    /// Every movement the rule recorded, in the movement list; `nil` hides "See all".
+    var onSeeAllRecorded: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: KWSpacing.xs) {
@@ -107,7 +109,7 @@ struct RecurringRuleDetail: View {
                 }
             }
             if let display = viewModel.display, !viewModel.recorded.isEmpty {
-                KWSectionHeader(String(localized: "Recorded", bundle: #bundle))
+                KWSectionHeader(String(localized: "Recorded", bundle: #bundle)) { seeAllRecorded }
                     .padding(.top, KWSpacing.xs)
                 KWGroupedCard(verticalPadding: KWSpacing.xxs) {
                     ForEach(viewModel.recorded) { transaction in
@@ -126,6 +128,20 @@ struct RecurringRuleDetail: View {
                     }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var seeAllRecorded: some View {
+        if let onSeeAllRecorded {
+            Button(action: onSeeAllRecorded) {
+                Text("See all", bundle: #bundle)
+                    .font(KWTextStyle.label.font)
+                    .foregroundStyle(KWColor.Brand.link)
+                    .frame(minHeight: KWLayout.minTouch)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 }

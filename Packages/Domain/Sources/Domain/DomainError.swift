@@ -31,6 +31,12 @@ public enum DomainError: Error, Equatable, Sendable {
     case invalidInterval(Int)
     /// A recurring rule can't end on a day before it starts.
     case invalidEndDate
+    /// A personal debt can't be due before the day it was lent or borrowed.
+    case invalidDueDate
+    /// An account with money left can't close without a transfer that empties it.
+    case accountNotEmpty(UUID)
+    /// A closed account's balance stays as it was closed: nothing new is recorded in it until it is reopened.
+    case accountClosed(UUID)
     case notFound(UUID)
     /// An app passcode must be exactly `Passcode.length` digits.
     case invalidPasscode

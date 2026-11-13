@@ -31,6 +31,8 @@ public final class CreditCardViewModel {
     private let setCardNumber: any SetCardNumberUseCase
     private let renameAccount: any RenameAccountUseCase
     private let deleteAccount: any DeleteAccountUseCase
+    /// Closing and reopening the account; without it the screen offers only deleting.
+    public let closing: AccountClosingModel?
     private let getPreferredName: any GetPreferredNameUseCase
     let formatter = CurrencyFormatter()
 
@@ -44,6 +46,7 @@ public final class CreditCardViewModel {
         renameAccount: any RenameAccountUseCase,
         deleteAccount: any DeleteAccountUseCase,
         getPreferredName: any GetPreferredNameUseCase,
+        closing: AccountClosingModel? = nil,
     ) {
         self.getPreferredName = getPreferredName
         self.accountID = accountID
@@ -54,6 +57,7 @@ public final class CreditCardViewModel {
         self.setCardNumber = setCardNumber
         self.renameAccount = renameAccount
         self.deleteAccount = deleteAccount
+        self.closing = closing
     }
 
     public var detail: CreditCardDetail? {
@@ -195,6 +199,11 @@ public final class CreditCardViewModel {
     func deleteTitle(_ detail: CreditCardDetail) -> String {
         let name = CardDisplay.name(of: detail.account)
         return String(localized: "Delete \(name)?", bundle: #bundle)
+    }
+
+    /// Delete offers "Close instead" for an open account with a history worth keeping.
+    func offersCloseInstead(_ detail: CreditCardDetail) -> Bool {
+        closing != nil && detail.account.isOpen && detail.movementCount > 0
     }
 
     /// Says what goes with the account before the person confirms, including the transfers that

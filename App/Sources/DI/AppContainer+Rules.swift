@@ -7,7 +7,7 @@ import SettingsPresentation
 extension AppContainer {
     func makeRulesViewModel() -> RulesViewModel {
         RulesViewModel(
-            manage: DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: store),
+            manage: DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: movements),
             getCategories: DefaultGetCategoriesUseCase(categories: store),
         )
     }

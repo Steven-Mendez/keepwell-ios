@@ -69,6 +69,36 @@ struct SettingsUseCasesTests {
         #expect(DefaultExportTransactionsUseCase.escaped("Rice, beans") == "\"Rice, beans\"")
         #expect(DefaultExportTransactionsUseCase.escaped("The \"good\" one") == "\"The \"\"good\"\" one\"")
     }
+
+    @Test
+    func exportNeutralizesFormulasInFreeTextAndLeavesAmountsAlone() throws {
+        let formula = "=HYPERLINK(\"http://x\")"
+        #expect(DefaultExportTransactionsUseCase.neutralized(formula) == "'" + formula)
+        #expect(
+            DefaultExportTransactionsUseCase.escaped(DefaultExportTransactionsUseCase.neutralized(formula))
+                == "\"'=HYPERLINK(\"\"http://x\"\")\"",
+        )
+        for start in ["+", "-", "@", "\t", "\r", "\r\n"] {
+            #expect(DefaultExportTransactionsUseCase.neutralized(start + "1") == "'" + start + "1")
+        }
+        #expect(DefaultExportTransactionsUseCase.neutralized("Lunch = 5") == "Lunch = 5")
+        #expect(DefaultExportTransactionsUseCase.neutralized("").isEmpty)
+
+        let account = Account(name: "+Cash", kind: .cash, openingBalances: [], openingDate: .now)
+        let category = TransactionCategory(id: "food", name: "-Food", kind: .expense)
+        let rate = try #require(sample.transactions.first).exchangeRate
+        let movement = Transaction(
+            date: .now, description: formula, kind: .expense, categoryID: category.id,
+            amount: Decimal(string: "12.5") ?? 0, currency: "USD", accountID: account.id, exchangeRate: rate,
+            note: "@SUM(A1)",
+        )
+        let csv = DefaultExportTransactionsUseCase.csv(
+            transactions: [movement], accounts: [account], cards: [], categories: [category],
+        )
+        let row = try #require(csv.split(separator: "\n").dropFirst().first)
+        #expect(row.contains(",confirmed,expense,\"'=HYPERLINK(\"\"http://x\"\")\",'-Food,12.5,USD,'+Cash,,,"))
+        #expect(row.hasSuffix(",'@SUM(A1),"))
+    }
 }
 
 @Suite("Settings lock profile")

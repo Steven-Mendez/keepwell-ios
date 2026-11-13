@@ -170,10 +170,20 @@ extension HomeViewModel {
             return NotificationContent(
                 icon: .cash, category: nil, tone: .pending, title: wording.title, body: wording.body, bodyHasAmounts: true,
             )
+        case let .debt(debt, _, daysLeft):
+            let wording = debtWording(debt, days: daysLeft)
+            return NotificationContent(
+                icon: .cash, category: nil, tone: .pending, title: wording.title, body: wording.body, bodyHasAmounts: true,
+            )
         case let .renewal(occurrence):
             let wording = renewalWording(occurrence, display: display)
             return NotificationContent(
                 icon: .subscription, category: nil, tone: .accent, title: wording.title, body: wording.body, bodyHasAmounts: true,
+            )
+        case let .bill(occurrence):
+            let wording = billWording(occurrence, display: display)
+            return NotificationContent(
+                icon: .cash, category: nil, tone: .pending, title: wording.title, body: wording.body, bodyHasAmounts: true,
             )
         case let .expiry(cardID):
             guard let card = overview.cards.first(where: { $0.id == cardID }) else { return nil }

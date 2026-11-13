@@ -66,23 +66,32 @@ public struct KWTransactionIcon: View {
 }
 
 /// One movement: icon, title and subtitle, amount and its conversion. Amounts arrive formatted
-/// because the sign and currency rules live outside the design system.
-public struct KWTransactionRow<Trailing: View>: View {
+/// because the sign and currency rules live outside the design system. The icon is the kind's
+/// unless a screen passes another 40 pt badge (a brand's logo).
+public struct KWTransactionRow<Leading: View, Trailing: View>: View {
     private let style: KWTransactionStyle
     private let title: String
     private let subtitle: String
+    private let leading: Leading
     private let trailing: Trailing
 
-    public init(_ style: KWTransactionStyle, title: String, subtitle: String, @ViewBuilder trailing: () -> Trailing) {
+    public init(
+        _ style: KWTransactionStyle,
+        title: String,
+        subtitle: String,
+        @ViewBuilder leading: () -> Leading,
+        @ViewBuilder trailing: () -> Trailing,
+    ) {
         self.style = style
         self.title = title
         self.subtitle = subtitle
+        self.leading = leading()
         self.trailing = trailing()
     }
 
     public var body: some View {
         HStack(spacing: KWSpacing.sm) {
-            KWTransactionIcon(style)
+            leading
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.kw(15, weight: 600))
@@ -100,10 +109,31 @@ public struct KWTransactionRow<Trailing: View>: View {
     }
 }
 
+extension KWTransactionRow where Leading == KWTransactionIcon {
+    public init(_ style: KWTransactionStyle, title: String, subtitle: String, @ViewBuilder trailing: () -> Trailing) {
+        self.init(style, title: title, subtitle: subtitle, leading: { KWTransactionIcon(style) }, trailing: trailing)
+    }
+}
+
 extension KWTransactionRow where Trailing == KWTransactionAmounts {
-    public init(_ style: KWTransactionStyle, title: String, subtitle: String, amount: String, secondaryAmount: String? = nil) {
-        self.init(style, title: title, subtitle: subtitle) {
+    public init(
+        _ style: KWTransactionStyle,
+        title: String,
+        subtitle: String,
+        amount: String,
+        secondaryAmount: String? = nil,
+        @ViewBuilder leading: () -> Leading,
+    ) {
+        self.init(style, title: title, subtitle: subtitle, leading: leading) {
             KWTransactionAmounts(style, amount: amount, secondaryAmount: secondaryAmount)
+        }
+    }
+}
+
+extension KWTransactionRow where Leading == KWTransactionIcon, Trailing == KWTransactionAmounts {
+    public init(_ style: KWTransactionStyle, title: String, subtitle: String, amount: String, secondaryAmount: String? = nil) {
+        self.init(style, title: title, subtitle: subtitle, amount: amount, secondaryAmount: secondaryAmount) {
+            KWTransactionIcon(style)
         }
     }
 }

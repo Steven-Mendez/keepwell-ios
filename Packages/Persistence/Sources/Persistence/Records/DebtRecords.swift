@@ -88,6 +88,8 @@ public final class PersonalDebtRecord: AuditedRecord {
     var createdAt = Date.now
     var updatedAt = Date.now
     var deletedAt: Date?
+    /// When it should be paid back (`PersonalDebt.dueDate`), from schema V13.
+    var dueDate: Date?
 
     init(id: UUID) {
         self.id = id
@@ -114,6 +116,7 @@ public final class PersonalDebtRecord: AuditedRecord {
         ) })
         settledAt = debt.settledAt
         transactionID = debt.transactionID
+        dueDate = debt.dueDate
     }
 
     /// Replaces the repayments only (a repayment row pulled from the server).
@@ -143,6 +146,7 @@ public final class PersonalDebtRecord: AuditedRecord {
             repayments: repayments,
             settledAt: settledAt,
             transactionID: transactionID,
+            dueDate: dueDate,
         )
     }
 }

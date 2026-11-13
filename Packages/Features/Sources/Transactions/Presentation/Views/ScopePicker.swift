@@ -125,10 +125,12 @@ struct ScopePickerSheet: View {
     }
 
     /// "Bank account · •••• 1234": the kind, and the digits that tell two cards of a bank apart.
+    /// Closed accounts say so, at the end of the list (`scopeOptions`).
     private func subtitle(_ option: TransactionScopeOption) -> String {
         let kind = kindTitle(option.account.kind)
-        guard let digits = option.card?.lastFour else { return kind }
-        return "\(kind) · •••• \(digits)"
+        let closed = option.account.isOpen ? "" : " · \(AccountClosingText.closed)"
+        guard let digits = option.card?.lastFour else { return kind + closed }
+        return "\(kind) · •••• \(digits)\(closed)"
     }
 
     private func kindTitle(_ kind: AccountKind) -> String {

@@ -27,3 +27,21 @@ extension StorePreferences: ProfileRepository {
         }
     }
 }
+
+extension StorePreferences: PendingDeletionStore {
+    /// Movement id → when its deletion falls due, kept on this device only: the deletion syncs once written.
+    private static let pendingDeletionsKey = "transactions.pendingDeletions"
+
+    public func pendingDeletions() async -> [UUID: Date] {
+        let stored = defaults.dictionary(forKey: Self.pendingDeletionsKey) as? [String: Date] ?? [:]
+        return Dictionary(uniqueKeysWithValues: stored.compactMap { key, date in UUID(uuidString: key).map { ($0, date) } })
+    }
+
+    public func setPendingDeletions(_ pending: [UUID: Date]) async {
+        if pending.isEmpty {
+            defaults.removeObject(forKey: Self.pendingDeletionsKey)
+        } else {
+            defaults.set(Dictionary(uniqueKeysWithValues: pending.map { ($0.uuidString, $1) }), forKey: Self.pendingDeletionsKey)
+        }
+    }
+}

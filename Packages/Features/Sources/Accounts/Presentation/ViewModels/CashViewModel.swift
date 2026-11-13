@@ -25,6 +25,8 @@ public final class CashViewModel {
     private let getDetail: any GetCashDetailUseCase
     private let renameAccount: any RenameAccountUseCase
     private let deleteAccount: any DeleteAccountUseCase
+    /// Closing and reopening the account; without it the screen offers only deleting.
+    public let closing: AccountClosingModel?
     private let formatter = CurrencyFormatter()
 
     public init(
@@ -32,11 +34,13 @@ public final class CashViewModel {
         getDetail: any GetCashDetailUseCase,
         renameAccount: any RenameAccountUseCase,
         deleteAccount: any DeleteAccountUseCase,
+        closing: AccountClosingModel? = nil,
     ) {
         self.accountID = accountID
         self.getDetail = getDetail
         self.renameAccount = renameAccount
         self.deleteAccount = deleteAccount
+        self.closing = closing
     }
 
     public var detail: CashDetail? {
@@ -111,6 +115,11 @@ public final class CashViewModel {
     func deleteTitle(_ detail: CashDetail) -> String {
         let name = detail.account.name
         return String(localized: "Delete \(name)?", bundle: #bundle)
+    }
+
+    /// Delete offers "Close instead" for an open account with a history worth keeping.
+    func offersCloseInstead(_ detail: CashDetail) -> Bool {
+        closing != nil && detail.account.isOpen && detail.movementCount > 0
     }
 
     /// Says what goes with the account before the person confirms, including the transfers that

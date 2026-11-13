@@ -21,6 +21,35 @@ struct TransactionActionsTests {
     }
 
     @Test
+    func unconfirmingPutsTheDraftBackAsItWasBalancesIncluded() async throws {
+        let store = InMemoryStore(sample: sample)
+        let today = SampleData.defaultReferenceDate
+        let planned = try #require(sample.transactions.first { !$0.isConfirmed && $0.date > today })
+        let account = try #require(sample.accounts.first { $0.id == planned.accountID })
+        let balance = { () async -> [Money] in
+            await Balances.balance(of: account, transactions: store.fetchTransactions(in: nil), calendar: Fixtures.calendar)
+        }
+        let before = await balance()
+        try await DefaultConfirmPlannedTransactionUseCase(transactions: store, now: { today }).execute(id: planned.id)
+        #expect(await balance() != before)
+        try await DefaultUnconfirmTransactionUseCase(transactions: store).execute(id: planned.id, plannedDate: planned.date)
+        #expect(await store.fetchTransactions(in: nil).first { $0.id == planned.id } == planned)
+        #expect(await balance() == before)
+    }
+
+    @Test
+    func unconfirmingLeavesADraftAloneAndFailsForAnUnknownMovement() async throws {
+        let store = InMemoryStore(sample: sample)
+        let planned = try #require(sample.transactions.first { !$0.isConfirmed })
+        try await DefaultUnconfirmTransactionUseCase(transactions: store).execute(id: planned.id, plannedDate: .distantPast)
+        #expect(await store.fetchTransactions(in: nil).first { $0.id == planned.id } == planned)
+        let missing = UUID()
+        await #expect(throws: DomainError.notFound(missing)) {
+            try await DefaultUnconfirmTransactionUseCase(transactions: store).execute(id: missing, plannedDate: .now)
+        }
+    }
+
+    @Test
     func confirmingAnUnknownMovementFails() async throws {
         let store = InMemoryStore(sample: sample)
         let missing = UUID()

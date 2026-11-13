@@ -14,6 +14,9 @@ public struct RecurringOverview: Hashable, Sendable {
     public let recorded: [Transaction]
     /// Live expense subscriptions per month, in the principal currency, unrounded.
     public let subscriptionsPerMonth: Money
+    /// Live expense subscriptions the total leaves out because their currency can't be converted,
+    /// by currency code. Empty when the total counts them all.
+    public let excludedSubscriptions: [UnconvertedSubscriptions]
 
     public init(
         settings: CurrencySettings,
@@ -30,11 +33,13 @@ public struct RecurringOverview: Hashable, Sendable {
         self.cards = cards
         self.categories = categories
         self.recorded = recorded
-        subscriptionsPerMonth = Self.monthlyTotal(
+        let total = Self.monthlyTotal(
             of: rules.filter { $0.isSubscription && $0.kind == .expense },
             settings: settings,
             calendar: calendar,
         )
+        subscriptionsPerMonth = total.perMonth
+        excludedSubscriptions = total.excluded
     }
 
     public func rule(_ id: UUID) -> RecurringRule? {
@@ -42,14 +47,25 @@ public struct RecurringOverview: Hashable, Sendable {
     }
 
     /// Paused and finished subscriptions don't cost anything this month. Each rule is converted
-    /// with today's rate; one in a currency outside the rate can't be added and is left out.
-    static func monthlyTotal(of rules: [RecurringRule], settings: CurrencySettings, calendar: Calendar) -> Money {
+    /// with today's rate; one in a currency outside the rate can't be added, so it is left out and
+    /// counted under its currency for the screen to say the total is incomplete.
+    static func monthlyTotal(
+        of rules: [RecurringRule],
+        settings: CurrencySettings,
+        calendar: Calendar,
+    ) -> (perMonth: Money, excluded: [UnconvertedSubscriptions]) {
         let rate = settings.exchangeRate
-        let total = rules.filter { RecurringSchedule.isActive($0, calendar: calendar) }.reduce(Decimal(0)) { sum, rule in
+        var total = Decimal(0)
+        var excluded: [String: Int] = [:]
+        for rule in rules where RecurringSchedule.isActive(rule, calendar: calendar) {
             let monthly = Money(RecurringSchedule.monthlyEquivalent(of: rule), rule.currency)
-            guard let converted = try? rate.convert(monthly, to: settings.principal) else { return sum }
-            return sum + converted.amount
+            if let converted = try? rate.convert(monthly, to: settings.principal) {
+                total += converted.amount
+            } else {
+                excluded[rule.currency, default: 0] += 1
+            }
         }
-        return Money(total, settings.principal)
+        let unconverted = excluded.keys.sorted().map { UnconvertedSubscriptions(currency: $0, count: excluded[$0] ?? 0) }
+        return (Money(total, settings.principal), unconverted)
     }
 }

@@ -10,6 +10,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     static let recentCount = 3
     /// How far ahead recurring occurrences are listed (home shows a week; reminders use the rest).
     static let upcomingDays = 30
+    /// How far ahead home's "Upcoming" card looks.
+    static let upcomingPaymentDays = 7
 
     private let accounts: any AccountRepository
     private let cards: any CardRepository
@@ -87,8 +89,9 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             netWorth: netWorth,
             netWorthInSecond: NetWorth.inSecondCurrency(netWorth, settings: currencies),
             netWorthExcluded: NetWorth.excludedCurrencies(of: allBalances, settings: currencies),
-            accountCount: accounts.count { $0.kind != .credit },
-            cardCount: cards.count { $0.kind != .transfer },
+            // Lists and counts show open accounts; the totals above still add up every one.
+            accountCount: accounts.count { $0.kind != .credit && $0.isOpen },
+            cardCount: cards.count { card in card.kind != .transfer && accounts.open.contains { $0.id == card.accountID } },
             month: month,
             hasTransactions: !transactions.isEmpty,
             recent: Array(recent),
@@ -100,6 +103,13 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
             cardSubscriptions: cardSubscriptions(records, rules: rules, calendar: calendar),
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
+            upcomingPayments: upcomingPayments(
+                records,
+                rules: rules,
+                debts: debts,
+                settings: currencies,
+                at: (now, calendar),
+            ),
             proposedRules: rules.filter { $0.source == .mcp && $0.isPaused },
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             latestExpenseDays: latestExpenseDays(transactions, month: month.month, calendar: calendar, now: now),
@@ -108,10 +118,30 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             priceIncreases: PriceIncrease.detect(in: transactions, now: now, calendar: calendar),
             loans: LoanProgress.ordered(debts.loans, today: now, calendar: calendar),
             debtTotals: DebtTotals(loans: debts.loans, debts: debts.personal),
+            personalDebts: debts.personal,
             accounts: accounts,
             cards: cards,
             categories: records.categories,
         )
+    }
+
+    /// What home's "Upcoming" card and its status line read.
+    private static func upcomingPayments(
+        _ records: LedgerRecords,
+        rules: [RecurringRule],
+        debts: DebtRecords,
+        settings: CurrencySettings,
+        at moment: (now: Date, calendar: Calendar),
+    ) -> [UpcomingPayment] {
+        let ledger = UpcomingPayments.Ledger(
+            transactions: records.transactions,
+            rules: rules,
+            accounts: records.accounts,
+            loans: debts.loans,
+            personalDebts: debts.personal,
+            settings: settings,
+        )
+        return UpcomingPayments.compute(ledger, on: moment.now, days: upcomingPaymentDays, calendar: moment.calendar)
     }
 
     /// When each category was last spent in this month, up to now.
@@ -147,7 +177,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             allBalances += accountBalances
             if account.kind == .credit {
                 cardDebt += try NetWorth.total(of: accountBalances, settings: currencies).amount
-            } else if let balance = accountBalances.first {
+            } else if account.isOpen, let balance = accountBalances.first {
                 balances.append(HomeOverview.Balance(account: account, balance: balance))
             }
         }

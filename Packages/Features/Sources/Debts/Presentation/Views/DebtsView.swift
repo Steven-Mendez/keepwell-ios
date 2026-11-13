@@ -198,10 +198,15 @@ public struct DebtsView: View {
                         HStack {
                             KWTitleSubtitle(debt.person, subtitle: viewModel.debtLine(debt))
                             Spacer(minLength: KWSpacing.xs)
-                            Text(viewModel.debtAmount(debt, hidden: hidesBalances))
-                                .font(.kw(15, weight: 600))
-                                .foregroundStyle(amountColor(debt))
-                                .monospacedDigit()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(viewModel.debtAmount(debt, hidden: hidesBalances))
+                                    .font(.kw(15, weight: 600))
+                                    .foregroundStyle(amountColor(debt))
+                                    .monospacedDigit()
+                                if let due = viewModel.debtDue(debt) {
+                                    DebtDueText(line: due)
+                                }
+                            }
                         }
                         .padding(.vertical, KWSpacing.sm)
                         .contentShape(Rectangle())

@@ -38,3 +38,14 @@ struct TransactionsSnapshotTests {
         )
     }
 }
+
+extension TransactionsSnapshotTests {
+    /// The chip row with an amount range and a rule's origin active, after the account chip.
+    @Test
+    func transactionsWithFilters() async {
+        let viewModel = await TransactionFiltersViewModelTests.loaded()
+        viewModel.amount = AmountRange(min: 100, max: 500)
+        viewModel.origin = .rule(SampleData.IDs.rentRule)
+        await assertScreenSnapshot(of: TransactionsView(viewModel: viewModel, onNewMovement: {}), height: 700, named: "filters")
+    }
+}
