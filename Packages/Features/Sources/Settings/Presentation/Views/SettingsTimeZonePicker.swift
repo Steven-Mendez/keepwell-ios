@@ -14,14 +14,24 @@ struct TimeZoneRow: View {
         settings.timeZone ?? TimeZone.current.identifier
     }
 
+    /// "America/Managua", or "America/Managua · From this iPhone" while none is saved yet. It is the
+    /// row's second line rather than its trailing value: a zone name is long, and beside a title
+    /// with a description the trailing value was squeezed to nothing.
+    static func summary(saved: String?, device: TimeZone = .current) -> String {
+        guard let saved else {
+            let zone = SettingsTimeZonePicker.label(device.identifier)
+            return String(localized: "\(zone) · From this iPhone", bundle: #bundle)
+        }
+        return SettingsTimeZonePicker.label(saved)
+    }
+
     var body: some View {
         Button { isPicking = true } label: {
             KWSettingsRow(
                 String(localized: "Time zone", bundle: #bundle),
-                description: String(localized: "Reminders and your assistant use it for today and for month ends.", bundle: #bundle),
+                description: Self.summary(saved: settings.timeZone),
                 icon: .globe,
                 tint: KWSettingsTint.reminders,
-                value: SettingsTimeZonePicker.label(current),
                 accessory: .chevron,
             )
         }
@@ -55,21 +65,26 @@ struct SettingsTimeZonePicker: View {
 
     var body: some View {
         NavigationStack {
-            List(zones, id: \.self) { zone in
-                Button { onPick(zone) } label: {
-                    HStack {
-                        Text(Self.label(zone)).font(KWTextStyle.body.font)
-                        Spacer()
-                        if zone == selected {
-                            KWIconView(.check, size: 16)
-                                .foregroundStyle(KWColor.Brand.linkHover)
-                        }
+            List {
+                // The zone in use leads the list, marked, so it opens on it rather than on
+                // "Africa/Abidjan" at the top of the alphabet. Searching shows matches only.
+                if query.isEmpty {
+                    Section {
+                        row(selected)
+                    } header: {
+                        Text("Reminders and your assistant use it for today and for month ends.", bundle: #bundle)
+                            .font(KWTextStyle.caption.font)
+                            .foregroundStyle(KWColor.Text.muted)
+                            .textCase(nil)
                     }
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(zone == selected ? .isSelected : [])
-                .listRowBackground(KWColor.Surface.surface)
+                Section {
+                    ForEach(zones, id: \.self, content: row)
+                } header: {
+                    if query.isEmpty {
+                        Text("All time zones", bundle: #bundle)
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(KWColor.Surface.bg)
@@ -77,5 +92,22 @@ struct SettingsTimeZonePicker: View {
             .navigationTitle(String(localized: "Time zone", bundle: #bundle))
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    private func row(_ zone: String) -> some View {
+        Button { onPick(zone) } label: {
+            HStack {
+                Text(Self.label(zone)).font(KWTextStyle.body.font)
+                Spacer()
+                if zone == selected {
+                    KWIconView(.check, size: 16)
+                        .foregroundStyle(KWColor.Brand.linkHover)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(zone == selected ? .isSelected : [])
+        .listRowBackground(KWColor.Surface.surface)
     }
 }
