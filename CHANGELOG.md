@@ -187,6 +187,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Settings › Time zone shows the zone in use under its title (with "From this iPhone" while none is
+  saved); beside the description it used to be squeezed out of sight. The list opens on that zone,
+  marked, above all the others, instead of on Africa/Abidjan.
+- Settings › Restore backup answers in an alert: restored, or why not ("only when there's no data
+  yet", a newer or damaged file, a file that can't be opened). The reason used to land at the end of
+  Settings, out of sight.
+- Transactions: applying or changing a filter, or the account, scrolls the chips back to the start,
+  so the active ones are always in view.
+- Recurring: while a draft waits, its state goes under the name and "Confirm" under the amount, so
+  the name keeps its room ("U…" in Spanish before).
+- Plan › Recurring counts the subscriptions its total adds up and names those left out for their
+  currency ("Not including 1 in EUR"), as the Recurring screen does.
 - A payment you record by hand for a recurring rule (the rent paid two days early) now counts as
   that occurrence: the rule no longer records a second movement or leaves a draft for it. It must be
   of the same kind, account, currency and card, within 7.5 % of the amount and up to two days
