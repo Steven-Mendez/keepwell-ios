@@ -295,16 +295,44 @@ struct DataSection: View {
             .buttonStyle(.plain)
         }
         .fileImporter(isPresented: $isPickingBackup, allowedContentTypes: [.json]) { result in
-            guard case let .success(url) = result else { return }
+            guard case let .success(url) = result else {
+                viewModel.restoreBackupFileUnreadable()
+                return
+            }
             let isScoped = url.startAccessingSecurityScopedResource()
             defer {
                 if isScoped {
                     url.stopAccessingSecurityScopedResource()
                 }
             }
-            guard let data = try? Data(contentsOf: url) else { return }
+            guard let data = try? Data(contentsOf: url) else {
+                viewModel.restoreBackupFileUnreadable()
+                return
+            }
             Task { await viewModel.restoreBackup(data) }
         }
+        .alert(
+            viewModel.restoreOutcome?.title ?? "",
+            isPresented: isShowingRestoreOutcome,
+            presenting: viewModel.restoreOutcome,
+        ) { _ in
+            Button(role: .cancel) {} label: { Text("OK", bundle: #bundle) }
+        } message: { outcome in
+            if let reason = outcome.reason {
+                Text(reason)
+            }
+        }
+    }
+
+    private var isShowingRestoreOutcome: Binding<Bool> {
+        Binding(
+            get: { viewModel.restoreOutcome != nil },
+            set: { isShown in
+                if !isShown {
+                    viewModel.restoreOutcome = nil
+                }
+            },
+        )
     }
 
     @ViewBuilder

@@ -132,25 +132,42 @@ public struct RecurringView: View {
         .padding(.top, 96)
     }
 
-    /// While a draft the rule made waits from today or before, its state takes the date's place,
-    /// with "Confirm" beside it; swiping the row left confirms too.
+    /// While a draft the rule made waits from today or before, its state takes the date's place
+    /// under the name, and "Confirm" sits under the amount; swiping the row left confirms too.
+    /// Stacking them keeps the name most of the row: side by side, the amount, the state and the
+    /// button left it a letter or two ("U…") in Spanish.
     private func row(_ rule: RecurringRule) -> some View {
         let pending = viewModel.pendingDraft(of: rule)
-        return HStack(spacing: KWSpacing.sm) {
+        return HStack(alignment: .center, spacing: KWSpacing.sm) {
             Button { onOpen(rule.id) } label: { rowLabel(rule, pending: pending) }
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
-            if let pending {
-                Button {
-                    Task { await viewModel.confirm(pending) }
-                } label: {
-                    Text("Confirm", bundle: #bundle)
+                .accessibilityValue(Text(viewModel.amount(of: rule, hidden: hidesBalances)))
+            VStack(alignment: .trailing, spacing: KWSpacing.xs) {
+                Button { onOpen(rule.id) } label: {
+                    Text(viewModel.amount(of: rule, hidden: hidesBalances))
+                        .font(.kw(15, weight: 700))
+                        .foregroundStyle(amountColor(rule))
+                        .monospacedDigit()
+                        .lineLimit(1)
                 }
-                .buttonStyle(.kw(.primary, size: .mini))
-                .disabled(viewModel.confirming.contains(pending.transaction.id))
-                .accessibilityLabel(Text("Confirm \(pending.transaction.description)", bundle: #bundle))
+                .buttonStyle(.plain)
+                .accessibilityHidden(true)
+                if let pending {
+                    Button {
+                        Task { await viewModel.confirm(pending) }
+                    } label: {
+                        Text("Confirm", bundle: #bundle)
+                    }
+                    .buttonStyle(.kw(.primary, size: .mini))
+                    .disabled(viewModel.confirming.contains(pending.transaction.id))
+                    .accessibilityLabel(Text("Confirm \(pending.transaction.description)", bundle: #bundle))
+                }
             }
+            .fixedSize()
+            .opacity(rule.isPaused && pending == nil ? 0.5 : 1)
         }
+        .padding(.vertical, KWSpacing.sm)
         .kwSwipeAction(
             .check,
             tint: KWColor.State.positive,
@@ -166,27 +183,26 @@ public struct RecurringView: View {
     private func rowLabel(_ rule: RecurringRule, pending: PendingRuleDraft?) -> some View {
         HStack(spacing: KWSpacing.sm) {
             icon(rule)
+            // On a narrow iPhone with a wide amount, the name and the state wrap to a second line
+            // rather than shrink to a letter; the schedule line under them is the one that gives way.
             VStack(alignment: .leading, spacing: 2) {
-                Text(rule.name).font(.kw(15, weight: 600))
-                Text(viewModel.subtitle(of: rule))
-                    .font(KWTextStyle.caption.font)
-                    .foregroundStyle(KWColor.Text.muted)
-            }
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(viewModel.amount(of: rule, hidden: hidesBalances))
-                    .font(.kw(15, weight: 700))
-                    .foregroundStyle(amountColor(rule))
-                    .monospacedDigit()
+                Text(rule.name)
+                    .font(.kw(15, weight: 600))
+                    .lineLimit(pending == nil ? 1 : 2)
                 if let pending {
                     pendingState(pending)
+                        .lineLimit(2)
+                }
+                let subtitle = viewModel.subtitle(of: rule)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.Text.muted)
+                        .lineLimit(1)
                 }
             }
-            .lineLimit(1)
-            .fixedSize()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.vertical, KWSpacing.sm)
         .contentShape(Rectangle())
         .opacity(rule.isPaused && pending == nil ? 0.5 : 1)
     }

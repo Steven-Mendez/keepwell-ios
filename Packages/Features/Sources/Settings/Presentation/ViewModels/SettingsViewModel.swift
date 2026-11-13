@@ -19,13 +19,22 @@ public final class SettingsViewModel {
         public var id: URL { url }
     }
 
+    /// The result of "Restore backup": restored, or why nothing was.
+    public struct RestoreOutcome: Equatable {
+        public let title: String
+        /// Why nothing was restored; `nil` when it was.
+        public let reason: String?
+        public var isFailure: Bool { reason != nil }
+    }
+
     public private(set) var state = State.loading
     public var rateText = ""
     /// The lock screen's name as typed; saved when the field loses focus.
     public var nameText = ""
     public private(set) var errorMessage: String?
-    /// A finished action worth saying, such as a restored backup.
-    public private(set) var noticeMessage: String?
+    /// How restoring a backup went, shown as an alert: the restore is picked near the end of a long
+    /// screen, so a line in the list would land out of sight and look like nothing happened.
+    public var restoreOutcome: RestoreOutcome?
     public var exportedFile: ExportedFile?
     public private(set) var isWorking = false
 
@@ -224,15 +233,24 @@ public final class SettingsViewModel {
         guard let restoreBackupFile else { return }
         isWorking = true
         defer { isWorking = false }
-        noticeMessage = nil
+        restoreOutcome = nil
         do {
             try await restoreBackupFile.execute(data, at: now())
             errorMessage = nil
-            noticeMessage = String(localized: "Backup restored", bundle: #bundle)
+            restoreOutcome = RestoreOutcome(title: String(localized: "Backup restored", bundle: #bundle), reason: nil)
             await load()
         } catch {
-            errorMessage = Self.restoreMessage(error)
+            restoreFailed(because: Self.restoreMessage(error))
         }
+    }
+
+    /// The file picker failed, or the chosen file couldn't be read: said like any other refusal.
+    public func restoreBackupFileUnreadable() {
+        restoreFailed(because: String(localized: "We couldn't open that file. Nothing was restored.", bundle: #bundle))
+    }
+
+    private func restoreFailed(because reason: String) {
+        restoreOutcome = RestoreOutcome(title: String(localized: "Backup not restored", bundle: #bundle), reason: reason)
     }
 
     private static func restoreMessage(_ error: BackupRestoreError) -> String {

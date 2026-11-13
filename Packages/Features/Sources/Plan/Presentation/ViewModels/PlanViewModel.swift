@@ -60,6 +60,14 @@ public final class PlanViewModel {
         return String(localized: "Per month · \(count) subscriptions", bundle: #bundle)
     }
 
+    /// "Not including 1 in EUR", one line per currency the total leaves out. Counts, not amounts,
+    /// so they show with amounts hidden too.
+    func excludedSubscriptionLines(_ recurring: PlanOverview.Recurring) -> [String] {
+        recurring.excluded.map { excluded in
+            String(localized: "Not including \(excluded.count) in \(excluded.currency)", bundle: #bundle)
+        }
+    }
+
     /// "Next: Netflix · Tomorrow", or `nil` when nothing is scheduled.
     func nextRecurringLine(_ recurring: PlanOverview.Recurring) -> String? {
         guard let next = recurring.next else { return nil }

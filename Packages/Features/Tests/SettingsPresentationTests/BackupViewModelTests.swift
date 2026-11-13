@@ -57,7 +57,7 @@ struct BackupViewModelTests {
     func saysWhenTheBackupIsRestored() async {
         let viewModel = model(restoring: nil)
         await viewModel.restoreBackup(Data())
-        #expect(viewModel.noticeMessage == "Backup restored")
+        #expect(viewModel.restoreOutcome == .init(title: "Backup restored", reason: nil))
         #expect(viewModel.errorMessage == nil)
     }
 
@@ -71,7 +71,19 @@ struct BackupViewModelTests {
     func explainsWhyARestoreFailed(error: BackupRestoreError, message: String) async {
         let viewModel = model(restoring: error)
         await viewModel.restoreBackup(Data())
-        #expect(viewModel.errorMessage == message)
-        #expect(viewModel.noticeMessage == nil)
+        // An alert, not a line at the end of Settings that the person would have to scroll to.
+        #expect(viewModel.restoreOutcome == .init(title: "Backup not restored", reason: message))
+        #expect(viewModel.restoreOutcome?.isFailure == true)
+        #expect(viewModel.errorMessage == nil)
+    }
+
+    @Test
+    func aFileThatCantBeReadIsSaidLikeAnyOtherRefusal() {
+        let viewModel = model(restoring: nil)
+        viewModel.restoreBackupFileUnreadable()
+        #expect(viewModel.restoreOutcome == .init(
+            title: "Backup not restored",
+            reason: "We couldn't open that file. Nothing was restored.",
+        ))
     }
 }

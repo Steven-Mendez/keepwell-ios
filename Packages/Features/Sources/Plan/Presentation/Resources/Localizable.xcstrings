@@ -191,6 +191,16 @@
         }
       }
     },
+    "Not including %lld in %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin incluir %lld en %@"
+          }
+        }
+      }
+    },
     "Nothing" : {
       "localizations" : {
         "es" : {
