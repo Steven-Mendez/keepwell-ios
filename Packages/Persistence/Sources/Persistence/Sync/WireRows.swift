@@ -106,6 +106,8 @@ extension TransactionRecord: SyncableRecord {
             "actual_debited_principal": Wire.value(actualDebitedPrincipal), "rate_principal": ratePrincipal, "rate_second": rateSecond,
             "rate": rate, "is_shared": isShared, "note": Wire.value(note), "recurring_id": Wire.id(recurringID),
             "tags": TagsText.decode(tagsText), "source": sourceRaw ?? RecordSource.app.rawValue,
+            // Always sent, null for none: removing one has to clear it on the other devices.
+            "merchant_id": Wire.id(merchantID), "via_merchant_id": Wire.id(viaMerchantID),
         ]) { $1 }
     }
 }
@@ -122,6 +124,7 @@ extension RecurringRuleRecord: SyncableRecord {
             "start_date": Wire.date(startDate), "next_date": Wire.date(nextDate), "end_date": Wire.date(endDate),
             "is_subscription": isSubscription, "auto_confirm": autoConfirm, "is_paused": isPaused, "note": Wire.value(note),
             "tags": TagsText.decode(tagsText), "source": sourceRaw ?? RecordSource.app.rawValue,
+            "merchant_id": Wire.id(merchantID), "via_merchant_id": Wire.id(viaMerchantID),
         ]) { $1 }
     }
 }
@@ -178,6 +181,8 @@ extension PersonalDebtRecord: SyncableRecord {
         [
             "id": Wire.id(repayment.id), "debt_id": Wire.id(id), "amount": DecimalCoding.string(repayment.amount),
             "date": Wire.date(repayment.date),
+            // Always sent, null for none, like the merchant links.
+            "transaction_id": Wire.id(repayment.transactionID),
             "created_at": Wire.date(createdAt), "updated_at": Wire.date(deletedAt ?? updatedAt), "deleted_at": Wire.date(deletedAt),
         ]
     }
@@ -190,7 +195,19 @@ extension CategorizationRuleRecord: SyncableRecord {
     func wireRow() throws -> WireRow {
         Wire.audit(self).merging([
             "id": Wire.id(id), "match": match, "category_id": categoryID, "kind": kindRaw, "tags": TagsText.decode(tagsText),
-            "sort_index": sortIndex,
+            "sort_index": sortIndex, "merchant_id": Wire.id(merchantID),
+        ]) { $1 }
+    }
+}
+
+extension MerchantRecord: SyncableRecord {
+    static var syncEntity: String { "merchant" }
+    var syncID: String { Wire.id(id) }
+
+    func wireRow() throws -> WireRow {
+        Wire.audit(self).merging([
+            "id": Wire.id(id), "name": name, "domain": Wire.value(domain), "brand_id": Wire.value(brandID),
+            "default_category_id": Wire.value(defaultCategoryID), "is_platform": isPlatform,
         ]) { $1 }
     }
 }

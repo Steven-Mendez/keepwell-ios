@@ -52,6 +52,9 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
     /// `mcp` when Claude created the rule; `nil` (older data) reads as `app`. Optional so rules
     /// encoded before the field existed still decode.
     public let source: RecordSource?
+    /// Copied to each movement it records, like the category.
+    public let merchantID: UUID?
+    public let viaMerchantID: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -74,6 +77,8 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
         note: String? = nil,
         tags: [String] = [],
         source: RecordSource? = nil,
+        merchantID: UUID? = nil,
+        viaMerchantID: UUID? = nil,
     ) {
         self.id = id
         self.name = name
@@ -95,6 +100,8 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
         self.note = note
         self.tags = Tags.normalized(tags)
         self.source = source
+        self.merchantID = merchantID
+        self.viaMerchantID = viaMerchantID == merchantID ? nil : viaMerchantID
     }
 
     /// The rule's own limits: a positive amount, a name, an interval of 1–99 and an end that isn't
@@ -147,6 +154,17 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
         )
     }
 
+    /// The same rule with other merchant links.
+    public func with(merchantID: UUID?, viaMerchantID: UUID?) -> Self {
+        Self(
+            id: id, name: name, kind: kind, categoryID: categoryID, amount: amount, currency: currency,
+            accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
+            interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
+            isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
+        )
+    }
+
     /// The same rule with its next occurrence moved.
     public func with(nextDate: Date) -> Self {
         Self(
@@ -154,7 +172,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
-            source: source,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
         )
     }
 
@@ -164,7 +182,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
-            source: source,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
         )
     }
 
@@ -175,7 +193,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
-            source: source,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
         )
     }
 
@@ -185,7 +203,7 @@ public struct RecurringRule: Identifiable, Hashable, Sendable, Codable {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
-            source: source,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
         )
     }
 }

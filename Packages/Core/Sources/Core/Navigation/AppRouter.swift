@@ -11,6 +11,8 @@ public enum AppRoute: Hashable, Sendable {
     case paymentMethods
     /// Settings › Rules: categorization rules ("if it says Uber → Transport").
     case categorizationRules
+    /// Settings › Businesses: the person's merchants and platforms.
+    case merchants
     /// A credit card's detail, by its account.
     case creditCard(accountID: UUID)
     /// A bank account and its one debit card, which share a screen.

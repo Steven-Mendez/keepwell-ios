@@ -152,6 +152,7 @@ struct SettingsRoute: View {
     let onOpenCategories: (TransactionKind) -> Void
     let onOpenPaymentMethods: () -> Void
     let onOpenRules: () -> Void
+    let onOpenMerchants: () -> Void
     let onShowKeyboardShortcuts: () -> Void
 
     init(
@@ -161,6 +162,7 @@ struct SettingsRoute: View {
         onOpenCategories: @escaping (TransactionKind) -> Void,
         onOpenPaymentMethods: @escaping () -> Void,
         onOpenRules: @escaping () -> Void,
+        onOpenMerchants: @escaping () -> Void,
         onShowKeyboardShortcuts: @escaping () -> Void,
     ) {
         _viewModel = State(initialValue: container.makeSettingsViewModel())
@@ -171,6 +173,7 @@ struct SettingsRoute: View {
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
         self.onOpenRules = onOpenRules
+        self.onOpenMerchants = onOpenMerchants
         self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
 
@@ -183,6 +186,7 @@ struct SettingsRoute: View {
             onOpenCategories: onOpenCategories,
             onOpenPaymentMethods: onOpenPaymentMethods,
             onOpenRules: onOpenRules,
+            onOpenMerchants: onOpenMerchants,
             onShowKeyboardShortcuts: onShowKeyboardShortcuts,
             account: cloudAccount.map { account in
                 SettingsAccountViews(
@@ -219,6 +223,21 @@ struct CategoriesRoute: View {
 
     var body: some View {
         CategoriesView(viewModel: viewModel, onBack: onBack)
+            .navigationBarBackButtonHidden()
+    }
+}
+
+struct MerchantsRoute: View {
+    @State private var viewModel: MerchantsViewModel
+    let onBack: () -> Void
+
+    init(container: AppContainer, onBack: @escaping () -> Void) {
+        _viewModel = State(initialValue: container.makeMerchantsViewModel())
+        self.onBack = onBack
+    }
+
+    var body: some View {
+        MerchantsView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
     }
 }

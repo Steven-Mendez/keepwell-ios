@@ -1090,6 +1090,106 @@
           }
         }
       }
+    },
+    "Deposit into account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depositar en cuenta"
+          }
+        }
+      }
+    },
+    "Don't deposit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No depositar"
+          }
+        }
+      }
+    },
+    "Records an income in %@. It changes the balance but doesn't count as income: the money only came back." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra un ingreso en %@. Cambia el saldo pero no cuenta como ingreso: el dinero solo volvió."
+          }
+        }
+      }
+    },
+    "%@ · deposited" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · depositado"
+          }
+        }
+      }
+    },
+    "Delete repayment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar abono"
+          }
+        }
+      }
+    },
+    "Delete this repayment?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar este abono?"
+          }
+        }
+      }
+    },
+    "The income it deposited is deleted too, and the balance goes back." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "También se elimina el ingreso que depositó y el saldo vuelve a como estaba."
+          }
+        }
+      }
+    },
+    "Repayments you deposited stay as movements in their accounts." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los abonos que depositaste se quedan como movimientos en sus cuentas."
+          }
+        }
+      }
+    },
+    "Touch and hold a repayment to delete it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén presionado un abono para eliminarlo."
+          }
+        }
+      }
+    },
+    "Already split: %@ left to share" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya dividido: quedan %@ por repartir"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

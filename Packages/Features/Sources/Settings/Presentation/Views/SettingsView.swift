@@ -39,6 +39,8 @@ public struct SettingsView: View {
     private let onOpenCategories: (TransactionKind) -> Void
     private let onOpenPaymentMethods: () -> Void
     private let onOpenRules: () -> Void
+    /// Settings › Businesses; `nil` leaves the row out.
+    private let onOpenMerchants: (() -> Void)?
     private let onShowKeyboardShortcuts: () -> Void
     private let account: SettingsAccountViews?
     private let about: SettingsAbout
@@ -53,6 +55,7 @@ public struct SettingsView: View {
         onOpenCategories: @escaping (TransactionKind) -> Void = { _ in },
         onOpenPaymentMethods: @escaping () -> Void = {},
         onOpenRules: @escaping () -> Void = {},
+        onOpenMerchants: (() -> Void)? = nil,
         onShowKeyboardShortcuts: @escaping () -> Void = {},
         account: SettingsAccountViews? = nil,
         about: SettingsAbout = SettingsAbout(),
@@ -66,6 +69,7 @@ public struct SettingsView: View {
         self.onOpenCategories = onOpenCategories
         self.onOpenPaymentMethods = onOpenPaymentMethods
         self.onOpenRules = onOpenRules
+        self.onOpenMerchants = onOpenMerchants
         self.onShowKeyboardShortcuts = onShowKeyboardShortcuts
     }
 
@@ -168,6 +172,17 @@ public struct SettingsView: View {
                     )
                 }
                 Button(action: onOpenRules) { rulesRow(count: overview.categorizationRuleCount) }
+                if let onOpenMerchants {
+                    Button(action: onOpenMerchants) {
+                        KWSettingsRow(
+                            String(localized: "Businesses", bundle: #bundle),
+                            description: String(localized: "Rename, merge or delete the businesses of your movements", bundle: #bundle),
+                            icon: .globe,
+                            tint: KWSettingsTint.organization,
+                            accessory: .chevron,
+                        )
+                    }
+                }
             }
             .buttonStyle(.plain)
         }

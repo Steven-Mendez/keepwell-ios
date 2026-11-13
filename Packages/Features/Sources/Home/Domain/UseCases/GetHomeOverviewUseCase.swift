@@ -58,7 +58,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         let goals = try await savingsGoals?.fetchSavingsGoals() ?? []
         let loanRows = try await loans?.fetchLoans() ?? []
         let personalRows = try await personalDebts?.fetchPersonalDebts() ?? []
-        let debts = DebtRecords(loans: loanRows, personal: personalRows)
+        let deposits = try await personalDebts?.fetchRepaymentDepositIDs() ?? []
+        let debts = DebtRecords(loans: loanRows, personal: personalRows, deposits: deposits)
         return try Self.overview(records, rules: rules, goals: goals, debts: debts, settings: stored, calendar: calendar, now: now())
     }
 
@@ -77,11 +78,12 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         let netWorth = try NetWorth.total(of: allBalances, settings: currencies)
         let planned = transactions.filter { !$0.isConfirmed }.sorted { $0.date < $1.date }
         let recent = transactions.filter(\.isConfirmed).sorted { $0.date > $1.date }.prefix(recentCount)
+        // Split expenses count only the person's part, here and in the budgets and forecast; deposits
+        // of deleted debts still aren't income.
+        let links = DebtLinks(debts.personal, deposits: debts.deposits)
         let month = MonthlySummary(
-            month: YearMonth(containing: now, calendar: calendar),
-            transactions: transactions,
-            currency: currencies.principal,
-            calendar: calendar,
+            month: YearMonth(containing: now, calendar: calendar), transactions: transactions, currency: currencies.principal,
+            calendar: calendar, debts: links,
         )
 
         return HomeOverview(
@@ -114,7 +116,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             latestExpenseDays: latestExpenseDays(transactions, month: month.month, calendar: calendar, now: now),
             goals: SavingsGoalProgress.ordered(goals, currentMonth: month.month),
-            forecast: forecast(records, rules: rules, settings: currencies, calendar: calendar, now: now),
+            forecast: forecast(records, rules: rules, settings: currencies, debts: links, at: (now, calendar)),
             priceIncreases: PriceIncrease.detect(in: transactions, now: now, calendar: calendar),
             loans: LoanProgress.ordered(debts.loans, today: now, calendar: calendar),
             debtTotals: DebtTotals(loans: debts.loans, debts: debts.personal),
@@ -191,8 +193,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         _ records: LedgerRecords,
         rules: [RecurringRule],
         settings: CurrencySettings,
-        calendar: Calendar,
-        now: Date,
+        debts: DebtLinks,
+        at moment: (now: Date, calendar: Calendar),
     ) -> BalanceForecast? {
         guard records.accounts.contains(where: { $0.kind != .credit }) else { return nil }
         return BalanceForecast(
@@ -200,8 +202,9 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             transactions: records.transactions,
             rules: rules,
             settings: settings,
-            now: now,
-            calendar: calendar,
+            now: moment.now,
+            calendar: moment.calendar,
+            debts: debts,
         )
     }
 
@@ -231,4 +234,6 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
 struct DebtRecords {
     var loans: [Loan] = []
     var personal: [PersonalDebt] = []
+    /// Every movement a repayment deposited, deleted debts' included.
+    var deposits: [UUID] = []
 }

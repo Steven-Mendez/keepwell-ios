@@ -116,7 +116,9 @@ public final class TransactionDetailViewModel {
     // MARK: Display
 
     var display: TransactionDisplay? {
-        list.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories) }
+        list.map {
+            TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories, merchants: $0.merchants)
+        }
     }
 
     /// The live recurring rule that recorded it; `nil` once that rule is deleted.
@@ -162,7 +164,10 @@ public final class TransactionDetailViewModel {
             let method = transaction.kind == .expense
                 ? String(localized: "Paid with", bundle: #bundle)
                 : String(localized: "Into", bundle: #bundle)
-            return [
+            let business = display.merchantLine(of: transaction).map {
+                Row(label: String(localized: "Business", bundle: #bundle), value: $0)
+            }
+            return [business].compactMap(\.self) + [
                 Row(label: String(localized: "Category", bundle: #bundle), value: display.categoryName(of: transaction) ?? "—"),
                 Row(label: method, value: display.methodName(of: transaction)),
             ]
@@ -179,6 +184,19 @@ public final class TransactionDetailViewModel {
             rows.append(Row(label: String(localized: "Bank rate", bundle: #bundle), value: "\(formatter.number(bankRate)) \(rate.second)"))
         }
         return rows
+    }
+
+    /// "Your share: C$300.00 of C$900.00" and "Split with Ana and Luis", for an expense with debts
+    /// split from it.
+    var splitLines: (share: String, people: String)? {
+        guard let list, let transaction, let split = list.split(of: transaction) else { return nil }
+        let share = formatter.string(split.share)
+        let total = formatter.string(split.total)
+        let people = split.people.formatted(.list(type: .and))
+        return (
+            String(localized: "Your share: \(share) of \(total)", bundle: #bundle),
+            String(localized: "Split with \(people)", bundle: #bundle),
+        )
     }
 
     /// A short code to find the movement again, the same one its receipt shows.

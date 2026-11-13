@@ -34,6 +34,14 @@ public protocol SyncStore: Sendable {
     func adoptUpdatedAt(entity: String, entityID: String, updatedAt: Date) async throws(DomainError)
     /// Ids of the categories that are tombstones here, for the repair after a pull.
     func deletedCategoryIDs() async throws(DomainError) -> Set<String>
+    /// Ids of the merchants that are tombstones here, for the same repair.
+    func deletedMerchantIDs() async throws(DomainError) -> Set<UUID>
+    /// For a server row (`transaction`, `recurringRule`, `categorizationRule`) whose local record
+    /// has a pending change: the merchant links empty here take the row's, in the record and in
+    /// its pending events, and nothing else changes. Silent like `applyRemote`. `false` when
+    /// nothing was filled (no record, a tombstone, links already set, another entity).
+    @discardableResult
+    func fillMissingMerchantLinks(entity: String, row: Data) async throws(DomainError) -> Bool
 }
 
 /// A row as the server's snapshot sent it, for settling the first sync of this device with an

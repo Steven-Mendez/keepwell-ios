@@ -25,6 +25,21 @@ public struct InstallmentMovementRecorder: InstallmentExpenseRecorder {
     }
 }
 
+/// Builds a deposited repayment's income through the same movement-saving rules.
+extension InstallmentMovementRecorder: RepaymentIncomeRecorder {
+    public func prepare(_ income: RepaymentIncome) async throws(DomainError) -> Transaction {
+        try await prepare.execute(TransactionDraft(
+            kind: .income,
+            amount: income.amount.amount,
+            currency: income.amount.currency,
+            categoryID: income.categoryID,
+            source: .account(income.accountID),
+            description: income.description,
+            date: income.date,
+        ))
+    }
+}
+
 extension InstallmentSource {
     init(_ source: PaymentSource) {
         switch source {

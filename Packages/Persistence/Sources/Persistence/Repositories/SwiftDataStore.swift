@@ -270,22 +270,27 @@ extension SwiftDataStore: CategoryRepository {
 
     public func deleteCategory(id: String) throws(DomainError) {
         try perform { context in
-            let records = try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id }))
-            var tombstones = records
-            // A default deleted before it was ever seeded still needs its tombstone, or the next
-            // fetch would seed it back. A created category that isn't stored has nothing to delete.
-            if records.isEmpty, let shipped = TransactionCategory.shipped(id: id) {
-                let last = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])).first
-                let record = CategoryRecord(id: id).inserted(into: context)
-                record.update(from: shipped, sortIndex: last.map { $0.sortIndex + 1 } ?? 0)
-                record.createdAt = .now
-                tombstones = [record]
-            }
-            for record in tombstones where !record.isTombstone {
-                record.isRemoved = true
-                record.stampDeleted()
-            }
+            try tombstoneCategory(id: id, in: context)
             try context.saveWithOutbox()
+        }
+    }
+
+    /// Unsaved, so a merchant commit can delete a category in its own save.
+    func tombstoneCategory(id: String, in context: ModelContext) throws {
+        let records = try context.fetch(FetchDescriptor<CategoryRecord>(predicate: #Predicate { $0.id == id }))
+        var tombstones = records
+        // A default deleted before it was ever seeded still needs its tombstone, or the next
+        // fetch would seed it back. A created category that isn't stored has nothing to delete.
+        if records.isEmpty, let shipped = TransactionCategory.shipped(id: id) {
+            let last = try context.fetch(FetchDescriptor<CategoryRecord>(sortBy: [SortDescriptor(\.sortIndex, order: .reverse)])).first
+            let record = CategoryRecord(id: id).inserted(into: context)
+            record.update(from: shipped, sortIndex: last.map { $0.sortIndex + 1 } ?? 0)
+            record.createdAt = .now
+            tombstones = [record]
+        }
+        for record in tombstones where !record.isTombstone {
+            record.isRemoved = true
+            record.stampDeleted()
         }
     }
 
@@ -377,6 +382,7 @@ extension SwiftDataStore: DataEraser {
             try context.delete(model: PersonalDebtRecord.self)
             try context.delete(model: CategorizationRuleRecord.self)
             try context.delete(model: NotificationStateRecord.self)
+            try context.delete(model: MerchantRecord.self)
             try context.delete(model: CardRecord.self)
             try context.delete(model: AccountRecord.self)
             try context.delete(model: CategoryRecord.self)

@@ -77,8 +77,19 @@ public protocol PersonalDebtRepository: Sendable {
     func fetchPersonalDebts() async throws(DomainError) -> [PersonalDebt]
     /// Inserts or replaces the debt with the same id.
     func save(_ debt: PersonalDebt) async throws(DomainError)
-    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    /// Soft-deletes. Its deposited repayments stay as movements: that money did come in.
+    /// Throws `.notFound` for an unknown or deleted id.
     func deletePersonalDebt(id: UUID) async throws(DomainError)
+    /// The income movement a repayment deposited and the debt that records the repayment, in a
+    /// single save: a failure records neither.
+    func save(_ debt: PersonalDebt, recording transaction: Transaction) async throws(DomainError)
+    /// The debt without a repayment and the movement it deposited soft-deleted, in a single save. A
+    /// movement already deleted (or `nil`) leaves only the debt to save.
+    func save(_ debt: PersonalDebt, deletingTransaction transactionID: UUID?) async throws(DomainError)
+    /// The income movements debt repayments deposited (`DebtRepayment.transactionID`), read from
+    /// every repayment, deleted ones and those of deleted debts included: deleting a debt keeps the
+    /// movements it deposited, and those still aren't income (`DebtLinks(_:deposits:)`).
+    func fetchRepaymentDepositIDs() async throws(DomainError) -> [UUID]
 }
 
 public protocol CategorizationRuleRepository: Sendable {
@@ -90,6 +101,52 @@ public protocol CategorizationRuleRepository: Sendable {
     func deleteCategorizationRule(id: UUID) async throws(DomainError)
     /// Stores this order; ids it leaves out keep their relative order after the listed ones.
     func reorderCategorizationRules(ids: [UUID]) async throws(DomainError)
+}
+
+public protocol MerchantRepository: Sendable {
+    /// Live merchants (businesses and platforms), in no particular order.
+    func fetchMerchants() async throws(DomainError) -> [Merchant]
+    /// Inserts or replaces the merchant with the same id.
+    func save(_ merchant: Merchant) async throws(DomainError)
+    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    func deleteMerchant(id: UUID) async throws(DomainError)
+    /// Every change of a merge, a deletion or a repair in a single save: a failure changes none, so
+    /// nothing is left naming a merchant that is gone.
+    func commit(_ changes: MerchantChanges) async throws(DomainError)
+}
+
+/// What deleting, merging or repairing merchants writes at once (and deleting a category, whose
+/// movements and merchant defaults change with it).
+public struct MerchantChanges: Sendable {
+    public var transactions: [Transaction]
+    public var recurringRules: [RecurringRule]
+    /// Saved in place: each keeps its position in the person's order.
+    public var categorizationRules: [CategorizationRule]
+    public var savedMerchants: [Merchant]
+    public var deletedMerchantIDs: [UUID]
+    /// Deleted as `CategoryRepository.deleteCategory(id:)` does, in the same save.
+    public var deletedCategoryIDs: [String]
+
+    public init(
+        transactions: [Transaction] = [],
+        recurringRules: [RecurringRule] = [],
+        categorizationRules: [CategorizationRule] = [],
+        savedMerchants: [Merchant] = [],
+        deletedMerchantIDs: [UUID] = [],
+        deletedCategoryIDs: [String] = [],
+    ) {
+        self.transactions = transactions
+        self.recurringRules = recurringRules
+        self.categorizationRules = categorizationRules
+        self.savedMerchants = savedMerchants
+        self.deletedMerchantIDs = deletedMerchantIDs
+        self.deletedCategoryIDs = deletedCategoryIDs
+    }
+
+    public var isEmpty: Bool {
+        transactions.isEmpty && recurringRules.isEmpty && categorizationRules.isEmpty && savedMerchants.isEmpty
+            && deletedMerchantIDs.isEmpty && deletedCategoryIDs.isEmpty
+    }
 }
 
 public protocol NotificationStateRepository: Sendable {

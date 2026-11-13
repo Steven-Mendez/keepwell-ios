@@ -29,6 +29,9 @@ public final class RecurringRuleRecord: AuditedRecord {
     var tagsText = ""
     /// Added in V10: who created it (`RecordSource`); `nil` on older rows reads as `app`.
     var sourceRaw: String?
+    /// Added in V15, like a movement's.
+    var merchantID: UUID?
+    var viaMerchantID: UUID?
     var createdAt = Date.now
     var updatedAt = Date.now
     var deletedAt: Date?
@@ -58,6 +61,8 @@ public final class RecurringRuleRecord: AuditedRecord {
         isPaused = rule.isPaused
         note = rule.note
         tagsText = TagsText.encode(rule.tags)
+        merchantID = rule.merchantID
+        viaMerchantID = rule.viaMerchantID
         // Set when created, never changed afterwards (an edit of Claude's movement stays Claude's).
         if sourceRaw == nil {
             sourceRaw = rule.source?.rawValue ?? RecordSource.app.rawValue
@@ -90,6 +95,8 @@ public final class RecurringRuleRecord: AuditedRecord {
             tags: TagsText.decode(tagsText),
             // `nil` means made in the app, so a rule reads back as it was saved.
             source: sourceRaw == RecordSource.mcp.rawValue ? .mcp : nil,
+            merchantID: merchantID,
+            viaMerchantID: viaMerchantID,
         )
     }
 }

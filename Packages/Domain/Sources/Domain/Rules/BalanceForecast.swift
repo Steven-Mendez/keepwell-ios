@@ -62,7 +62,8 @@ public struct BalanceForecast: Hashable, Sendable {
     ///   paid through `cardPayments` instead of on their own.
     /// - Usual spending averages confirmed expenses on bank and cash accounts not recorded by a
     ///   rule (rules are already counted) over the last `usualSpendingMonths` complete months that
-    ///   had any, times the days after today over the days in the month.
+    ///   had any, times the days after today over the days in the month. A split expense counts
+    ///   only the person's part (`debts`): the others' shares come back or are owed, not spent.
     public init(
         accounts: [Account],
         transactions: [Transaction],
@@ -70,6 +71,7 @@ public struct BalanceForecast: Hashable, Sendable {
         settings: CurrencySettings,
         now: Date,
         calendar: Calendar,
+        debts: DebtLinks = .empty,
     ) {
         let period = Period(accounts: accounts, settings: settings, now: now, calendar: calendar)
         let available = accounts.filter { $0.kind != .credit }
@@ -96,6 +98,7 @@ public struct BalanceForecast: Hashable, Sendable {
             before: period.month,
             currency: settings.principal,
             calendar: calendar,
+            debts: debts,
         )
         self.init(
             currency: settings.principal,
@@ -179,12 +182,14 @@ public struct BalanceForecast: Hashable, Sendable {
     }
 
     /// Average confirmed spending of the complete months before `month` that had any, so a month
-    /// before the person started doesn't drag it down. Zero without any.
+    /// before the person started doesn't drag it down. Zero without any. With `debts`, a split
+    /// expense counts only the person's part, as in the summary.
     static func averageUsualSpending(
         _ transactions: [Transaction],
         before month: YearMonth,
         currency: String,
         calendar: Calendar,
+        debts: DebtLinks = .empty,
     ) -> Decimal {
         let totals = SpendingHistory.monthlyExpenses(
             endingAt: month.adding(months: -1),
@@ -192,6 +197,7 @@ public struct BalanceForecast: Hashable, Sendable {
             transactions: transactions,
             currency: currency,
             calendar: calendar,
+            debts: debts,
         )
         .map(\.expense)
         .filter { $0 > 0 }

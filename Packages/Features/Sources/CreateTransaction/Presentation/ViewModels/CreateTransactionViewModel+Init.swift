@@ -1,12 +1,14 @@
 import CreateTransactionDomain
 import Domain
 import Foundation
+import SharedPresentation
 
 /// The two ways to open the flow: logging a new movement, or a saved one to edit or show again.
 extension CreateTransactionViewModel {
     public convenience init(
         getContext: any GetTransactionContextUseCase,
         save: any SaveTransactionUseCase,
+        brandSearch: (any BrandSearching)? = nil,
         saveCategory: (any SaveCategoryUseCase)? = nil,
         receiptSaver: (any ReceiptImageSaving)? = nil,
         type: MovementType = .expense,
@@ -16,7 +18,7 @@ extension CreateTransactionViewModel {
     ) {
         self.init(
             mode: .create,
-            useCases: UseCases(getContext: getContext, save: save),
+            useCases: UseCases(getContext: getContext, save: save, brandSearch: brandSearch),
             saveCategory: saveCategory,
             receiptSaver: receiptSaver,
             type: type,
@@ -33,6 +35,7 @@ extension CreateTransactionViewModel {
         getStored: any GetStoredTransactionUseCase,
         update: (any UpdateTransactionUseCase)? = nil,
         manageRules: (any ManageCategorizationRulesUseCase)? = nil,
+        brandSearch: (any BrandSearching)? = nil,
         saveCategory: (any SaveCategoryUseCase)? = nil,
         receiptSaver: (any ReceiptImageSaving)? = nil,
         calendar: Calendar = .current,
@@ -40,7 +43,12 @@ extension CreateTransactionViewModel {
     ) {
         self.init(
             mode: mode,
-            useCases: UseCases(getStored: getStored, update: update, manageRules: manageRules),
+            useCases: UseCases(
+                getStored: getStored,
+                update: update,
+                manageRules: manageRules,
+                brandSearch: brandSearch,
+            ),
             saveCategory: saveCategory,
             receiptSaver: receiptSaver,
             type: .expense,
@@ -58,5 +66,6 @@ extension CreateTransactionViewModel {
         var getStored: (any GetStoredTransactionUseCase)?
         var update: (any UpdateTransactionUseCase)?
         var manageRules: (any ManageCategorizationRulesUseCase)?
+        var brandSearch: (any BrandSearching)?
     }
 }

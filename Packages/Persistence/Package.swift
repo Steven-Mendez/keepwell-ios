@@ -24,7 +24,7 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DomainSamples", package: "Domain"),
             ],
-            // `wire-columns.json` and `sync-v1.json`, copied verbatim from keepwell-web's shared fixtures.
+            // `wire-columns.json`, `sync.json` and `sync-v1.json`, copied verbatim from keepwell-web's shared fixtures.
             resources: [.copy("Fixtures")],
         ),
     ],

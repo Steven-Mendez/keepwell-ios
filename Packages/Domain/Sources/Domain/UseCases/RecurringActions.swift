@@ -18,12 +18,14 @@ public struct DefaultMaterializeRecurringUseCase: MaterializeRecurringUseCase {
     private let cards: any CardRepository
     private let categories: any CategoryRepository
     private let categorizationRules: (any CategorizationRuleRepository)?
+    private let merchants: (any MerchantRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
     /// Accounts, cards and categories are there so a rule that no longer validates (its category,
     /// account or currency is gone) is skipped and left as it was, not recorded as bad data.
-    /// `categorizationRules` categorizes an occurrence in "Other"; without it none is.
+    /// `categorizationRules` categorizes an occurrence in "Other"; without it none is. A rule's
+    /// merchant is linked only when it is one of `merchants`.
     public init(
         rules: any RecurringRuleRepository,
         transactions: any TransactionRepository,
@@ -32,9 +34,11 @@ public struct DefaultMaterializeRecurringUseCase: MaterializeRecurringUseCase {
         cards: any CardRepository,
         categories: any CategoryRepository,
         categorizationRules: (any CategorizationRuleRepository)? = nil,
+        merchants: (any MerchantRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
+        self.merchants = merchants
         self.rules = rules
         self.transactions = transactions
         self.settings = settings
@@ -63,6 +67,7 @@ public struct DefaultMaterializeRecurringUseCase: MaterializeRecurringUseCase {
                 categorizationRules?.fetchCategorizationRules() ?? [],
                 categories: categories,
             ),
+            merchants: merchants?.fetchMerchants() ?? [],
         )
         guard !result.isEmpty else { return 0 }
         try await rules.saveMaterialized(transactions: result.transactions, rules: result.rules)

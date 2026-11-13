@@ -31,6 +31,11 @@ public struct TransactionDraft: Sendable {
     public var date: Date
     /// "USD charged by the bank".
     public var actualDebitedPrincipal: Decimal?
+    /// What a charge carried over from a saved movement (`init(editing:)`) was charged for: the
+    /// amount, currency and account it was recorded with. Once any of them changes that charge no
+    /// longer applies, so the movement saves without it (`applicableDebit`). A charge typed for the
+    /// draft leaves this out.
+    public var debitedFor: DebitedFor?
     public var note: String
     /// Saved without counting toward balances until the person confirms it.
     public var isDraft: Bool
@@ -40,6 +45,13 @@ public struct TransactionDraft: Sendable {
     public var recurringRuleID: UUID
     /// Labels besides the category; normalized when saved.
     public var tags: [String]
+    /// The business it was with. `keep` leaves an edited movement's as it was (a caller that doesn't
+    /// know merchants never unlinks one); `unlinked` removes it, and no categorization rule sets one
+    /// then; `new` creates it with the movement. A new movement without a category that no rule
+    /// matches takes the merchant's default category. A transfer never names one.
+    public var merchant: MerchantLink
+    /// The platform it went through, like `merchant`. Never the business itself.
+    public var via: MerchantLink
 
     public init(
         id: UUID = UUID(),
@@ -52,11 +64,14 @@ public struct TransactionDraft: Sendable {
         description: String = "",
         date: Date = .now,
         actualDebitedPrincipal: Decimal? = nil,
+        debitedFor: DebitedFor? = nil,
         note: String = "",
         isDraft: Bool = false,
         repeatFrequency: RecurringFrequency? = nil,
         recurringRuleID: UUID = UUID(),
         tags: [String] = [],
+        merchant: MerchantLink = .keep,
+        via: MerchantLink = .keep,
     ) {
         self.id = id
         self.kind = kind
@@ -68,11 +83,43 @@ public struct TransactionDraft: Sendable {
         self.description = description
         self.date = date
         self.actualDebitedPrincipal = actualDebitedPrincipal
+        self.debitedFor = debitedFor
         self.note = note
         self.isDraft = isDraft
         self.repeatFrequency = repeatFrequency
         self.recurringRuleID = recurringRuleID
         self.tags = tags
+        self.merchant = merchant
+        self.via = via
+    }
+}
+
+extension TransactionDraft {
+    /// The amount, currency and account a bank charge in the principal currency was recorded for.
+    public struct DebitedFor: Equatable, Sendable {
+        public let amount: Decimal
+        public let currency: String
+        public let accountID: UUID
+
+        public init(amount: Decimal, currency: String, accountID: UUID) {
+            self.amount = amount
+            self.currency = currency
+            self.accountID = accountID
+        }
+    }
+
+    /// The charge in the principal currency the draft saves: none when it is in the principal
+    /// currency, and none when it was carried over from a saved movement (`debitedFor`) whose amount,
+    /// currency or account changed since, since the bank charged it for something else and balances
+    /// would follow it.
+    public func applicableDebit(principal: String, accountID: UUID?) -> Decimal? {
+        guard let actualDebitedPrincipal, currency != principal else { return nil }
+        if let debitedFor,
+           debitedFor.amount != amount || debitedFor.currency != currency || debitedFor.accountID != accountID
+        {
+            return nil
+        }
+        return actualDebitedPrincipal
     }
 }
 
@@ -91,6 +138,9 @@ public struct TransactionContext: Sendable {
     public let tagUsage: [String]
     /// The person's categorization rules in order, only those whose category still exists.
     public let rules: [CategorizationRule]
+    /// The person's merchants; `nil` when they weren't loaded (a movement's links are then taken as
+    /// they come).
+    public let merchants: [Merchant]?
 
     public init(
         currencies: CurrencySettings,
@@ -102,6 +152,7 @@ public struct TransactionContext: Sendable {
         categoryUsage: [String: Int],
         tagUsage: [String] = [],
         rules: [CategorizationRule] = [],
+        merchants: [Merchant]? = nil,
     ) {
         self.currencies = currencies
         self.categories = categories
@@ -112,6 +163,29 @@ public struct TransactionContext: Sendable {
         self.categoryUsage = categoryUsage
         self.tagUsage = tagUsage
         self.rules = rules.filter { rule in categories.contains { $0.id == rule.categoryID && $0.kind == rule.kind } }
+        self.merchants = merchants
+    }
+
+    public func merchant(_ id: UUID?) -> Merchant? {
+        merchants?.first { $0.id == id }
+    }
+
+    /// The same context with merchants the person just created, so the flow can show them without
+    /// reloading.
+    public func adding(merchants added: [Merchant]) -> Self {
+        let ids = Set(added.map(\.id))
+        return Self(
+            currencies: currencies,
+            categories: categories,
+            accounts: accounts,
+            cards: cards,
+            balances: balances,
+            lastUsed: lastUsed,
+            categoryUsage: categoryUsage,
+            tagUsage: tagUsage,
+            rules: rules,
+            merchants: (merchants ?? []).filter { !ids.contains($0.id) } + added,
+        )
     }
 
     public func account(_ id: UUID?) -> Account? {
@@ -134,6 +208,7 @@ public struct TransactionContext: Sendable {
             categoryUsage: categoryUsage,
             tagUsage: tagUsage,
             rules: rules,
+            merchants: merchants,
         )
     }
 
@@ -162,6 +237,7 @@ public struct TransactionContext: Sendable {
             categoryUsage: categoryUsage,
             tagUsage: tagUsage,
             rules: rules,
+            merchants: merchants,
         )
     }
 

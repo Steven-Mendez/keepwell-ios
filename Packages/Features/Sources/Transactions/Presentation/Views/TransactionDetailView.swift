@@ -185,6 +185,9 @@ private struct TransactionDetailCards: View {
 
     var body: some View {
         VStack(spacing: KWSpacing.md) {
+            if let split = viewModel.splitLines {
+                splitCard(split)
+            }
             mainCard
             let rateRows = viewModel.rateRows
             if !rateRows.isEmpty {
@@ -230,6 +233,19 @@ private struct TransactionDetailCards: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
+
+    /// What a split expense cost the person, and who owes the rest.
+    private func splitCard(_ split: (share: String, people: String)) -> some View {
+        KWGroupedCard {
+            VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+                Text(split.share).font(KWTextStyle.body.font.weight(.semibold)).monospacedDigit()
+                Text(split.people).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.muted)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 12)
+            .accessibilityElement(children: .combine)
         }
     }
 

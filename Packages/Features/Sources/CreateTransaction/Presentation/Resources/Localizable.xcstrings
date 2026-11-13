@@ -61,6 +61,16 @@
         }
       }
     },
+    "Add" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar"
+          }
+        }
+      }
+    },
     "Add a note" : {
       "localizations" : {
         "es" : {
@@ -187,6 +197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entre mis cuentas"
+          }
+        }
+      }
+    },
+    "Business" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negocio"
           }
         }
       }
@@ -577,6 +597,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ninguna cuenta puede recibirlo desde esta."
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguno"
           }
         }
       }
@@ -1069,6 +1099,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usado ayer"
+          }
+        }
+      }
+    },
+    "Via (optional)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vía (opcional)"
           }
         }
       }

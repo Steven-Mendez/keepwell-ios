@@ -13,17 +13,21 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
     private let accounts: any AccountRepository
     private let cards: any CardRepository
     private let categories: any CategoryRepository
+    private let personalDebts: (any PersonalDebtRepository)?
 
+    /// With `personalDebts`, an expense with debts split from it reads `shared`.
     public init(
         transactions: any TransactionRepository,
         accounts: any AccountRepository,
         cards: any CardRepository,
         categories: any CategoryRepository,
+        personalDebts: (any PersonalDebtRepository)? = nil,
     ) {
         self.transactions = transactions
         self.accounts = accounts
         self.cards = cards
         self.categories = categories
+        self.personalDebts = personalDebts
     }
 
     public func execute() async throws(DomainError) -> String {
@@ -32,6 +36,7 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
             accounts: accounts.fetchAccounts(),
             cards: cards.fetchCards(),
             categories: categories.fetchCategories(),
+            debts: personalDebts?.fetchPersonalDebts() ?? [],
         )
     }
 
@@ -40,7 +45,15 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
         "card_last_four", "destination_account", "debited_principal", "rate", "shared", "note", "tags",
     ]
 
-    static func csv(transactions: [Transaction], accounts: [Account], cards: [Card], categories: [TransactionCategory]) -> String {
+    /// `debts` make an expense split from them read `shared` (`isSplit`); old rows' `isShared` still does.
+    static func csv(
+        transactions: [Transaction],
+        accounts: [Account],
+        cards: [Card],
+        categories: [TransactionCategory],
+        debts: [PersonalDebt] = [],
+    ) -> String {
+        let links = DebtLinks(debts)
         let accountNames = Dictionary(accounts.map { ($0.id, Self.name(of: $0)) }, uniquingKeysWith: { first, _ in first })
         let lastFour = Dictionary(cards.map { ($0.id, $0.lastFour ?? "") }, uniquingKeysWith: { first, _ in first })
         let categoryNames = Dictionary(categories.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
@@ -58,7 +71,7 @@ public struct DefaultExportTransactionsUseCase: ExportTransactionsUseCase {
                 Self.neutralized(transaction.destinationAccountID.flatMap { accountNames[$0] } ?? ""),
                 transaction.actualDebitedPrincipal.map(Self.number) ?? "",
                 transaction.exchangeRate.hasSecondCurrency ? Self.number(transaction.exchangeRate.rate) : "",
-                transaction.isShared ? "yes" : "no",
+                transaction.isSplit(links) || transaction.isShared ? "yes" : "no",
                 Self.neutralized(transaction.note ?? ""),
                 Self.neutralized(Tags.csvField(transaction.tags)),
             ]

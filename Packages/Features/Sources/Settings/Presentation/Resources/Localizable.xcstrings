@@ -81,6 +81,16 @@
         }
       }
     },
+    "%lld movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld movimientos"
+          }
+        }
+      }
+    },
     "%lld movements updated." : {
       "localizations" : {
         "en" : {
@@ -121,6 +131,16 @@
         }
       }
     },
+    "1 movement" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 movimiento"
+          }
+        }
+      }
+    },
     "A backup can only be restored when there's no data yet. Delete all your data first." : {
       "localizations" : {
         "es" : {
@@ -137,6 +157,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Una copia de todos tus movimientos"
+          }
+        }
+      }
+    },
+    "A new movement with this business takes its category when no rule picks one. Platforms (delivery apps, app stores) come first in “Via”." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un movimiento nuevo con este negocio toma su categoría cuando ninguna regla elige una. Las plataformas (apps de delivery, tiendas de apps) aparecen primero en “Vía”."
           }
         }
       }
@@ -237,6 +267,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
+    "Businesses" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negocios"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
           }
         }
       }
@@ -361,6 +411,16 @@
         }
       }
     },
+    "Default category" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría predeterminada"
+          }
+        }
+      }
+    },
     "Delete" : {
       "localizations" : {
         "es" : {
@@ -391,6 +451,16 @@
         }
       }
     },
+    "Delete business" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar negocio"
+          }
+        }
+      }
+    },
     "Delete everything" : {
       "localizations" : {
         "es" : {
@@ -407,6 +477,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar regla"
+          }
+        }
+      }
+    },
+    "Delete this business?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar este negocio?"
           }
         }
       }
@@ -551,6 +631,16 @@
         }
       }
     },
+    "Give it a name." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponle un nombre."
+          }
+        }
+      }
+    },
     "Hide amounts when leaving" : {
       "localizations" : {
         "es" : {
@@ -597,6 +687,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Categorías de ingreso"
+          }
+        }
+      }
+    },
+    "Its movements and rules move to the other business, and this one is deleted." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sus movimientos y reglas pasan al otro negocio, y este se elimina."
+          }
+        }
+      }
+    },
+    "Its movements keep everything else and no longer name a business." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sus movimientos conservan todo lo demás y ya no nombran un negocio."
           }
         }
       }
@@ -691,6 +801,36 @@
         }
       }
     },
+    "Merge" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unir"
+          }
+        }
+      }
+    },
+    "Merge into %@?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Unir con %@?"
+          }
+        }
+      }
+    },
+    "Merge into…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unir con…"
+          }
+        }
+      }
+    },
     "Money" : {
       "localizations" : {
         "es" : {
@@ -771,6 +911,16 @@
         }
       }
     },
+    "Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        }
+      }
+    },
     "Net worth, summaries and new movements will be in %@, and the rate is turned around. Past movements keep the rate they were logged with." : {
       "localizations" : {
         "es" : {
@@ -807,6 +957,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nueva regla"
+          }
+        }
+      }
+    },
+    "No businesses yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no hay negocios"
           }
         }
       }
@@ -921,6 +1081,26 @@
         }
       }
     },
+    "Pick the business when you log a movement, and it shows up here to rename, merge or delete." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige el negocio al registrar un movimiento y aparecerá aquí para renombrarlo, unirlo o eliminarlo."
+          }
+        }
+      }
+    },
+    "Platform" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plataforma"
+          }
+        }
+      }
+    },
     "Privacy policy" : {
       "localizations" : {
         "es" : {
@@ -967,6 +1147,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los recordatorios y tu asistente la usan para saber qué día es hoy y cuándo cierra el mes."
+          }
+        }
+      }
+    },
+    "Rename, merge or delete the businesses of your movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renombra, une o elimina los negocios de tus movimientos"
           }
         }
       }
@@ -1161,6 +1351,16 @@
         }
       }
     },
+    "That isn't a web address, like subway.com." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esa no es una dirección web, como subway.com."
+          }
+        }
+      }
+    },
     "The rate has to be a number greater than zero." : {
       "localizations" : {
         "es" : {
@@ -1291,6 +1491,16 @@
         }
       }
     },
+    "We couldn't load your businesses." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus negocios."
+          }
+        }
+      }
+    },
     "We couldn't load your categories." : {
       "localizations" : {
         "es" : {
@@ -1361,6 +1571,16 @@
         }
       }
     },
+    "We couldn't save the business. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos guardar el negocio. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
     "We couldn't save the change. Try again." : {
       "localizations" : {
         "es" : {
@@ -1407,6 +1627,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usamos Face ID o Touch ID según tu iPhone"
+          }
+        }
+      }
+    },
+    "Web address (for the logo)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección web (para el logo)"
           }
         }
       }

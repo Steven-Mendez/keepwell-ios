@@ -25,6 +25,9 @@ public struct ReviewView: View {
                     header
                     summaryCard.padding(.top, 30)
                     KWGroupedCard { details }
+                    if viewModel.showsMerchantFields {
+                        KWGroupedCard { merchantRows }
+                    }
                     if !viewModel.type.movesBetweenAccounts {
                         tagsCard
                     }
@@ -56,6 +59,9 @@ public struct ReviewView: View {
         }
         .sheet(isPresented: $isEditingNote) {
             NoteSheet(note: $viewModel.note) { isEditingNote = false }
+        }
+        .sheet(item: $viewModel.merchantPicker) { picker in
+            MerchantPickerView(viewModel: picker)
         }
         .alert(
             viewModel.ruleOffer?.title ?? "",
@@ -271,6 +277,25 @@ extension ReviewView {
         if viewModel.showsDebitedField {
             debitedRow
         }
+    }
+
+    /// "Business" and "Via (optional)": who it was with and the platform it went through.
+    @ViewBuilder
+    private var merchantRows: some View {
+        Button { viewModel.openBusinessPicker() } label: {
+            KWValueRow(
+                String(localized: "Business", bundle: #bundle),
+                value: "\(viewModel.businessName ?? String(localized: "Add", bundle: #bundle)) ›",
+            )
+        }
+        .buttonStyle(.plain)
+        Button { viewModel.openViaPicker() } label: {
+            KWValueRow(
+                String(localized: "Via (optional)", bundle: #bundle),
+                value: "\(viewModel.viaName ?? String(localized: "None", bundle: #bundle)) ›",
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     /// "#chips" besides the category, with the tags already used offered first.

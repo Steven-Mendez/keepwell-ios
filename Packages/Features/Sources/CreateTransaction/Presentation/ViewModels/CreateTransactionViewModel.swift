@@ -42,8 +42,14 @@ public final class CreateTransactionViewModel {
     /// The steps pushed on top of `rootStep`.
     public var path: [Step] = []
     public internal(set) var type: MovementType
-    public internal(set) var amountText = "0"
-    public var currency = "USD"
+    public internal(set) var amountText = "0" {
+        didSet { clearStaleDebit(amountChanged: !Self.sameAmount(oldValue, amountText)) }
+    }
+
+    public var currency = "USD" {
+        didSet { clearStaleDebit(amountChanged: false, currencyChanged: oldValue != currency) }
+    }
+
     public internal(set) var context: TransactionContext?
     public internal(set) var categoryID: String?
     public internal(set) var source: PaymentSource?
@@ -57,15 +63,17 @@ public final class CreateTransactionViewModel {
     /// The open "New category" sheet.
     public var categoryEditor: CategoryEditorViewModel?
     public var description = "" {
-        didSet { applyRules() }
+        didSet { textChanged() }
     }
 
     /// The suggestion last written into `description`, so a later category change can replace it.
     var prefilledDescription: String?
     public var date: Date
     public var debitedText = ""
+    /// The charge an edit opened with (`debitedText` as loaded), empty otherwise; see `clearStaleDebit`.
+    var carriedDebitText = ""
     public var note = "" {
-        didSet { applyRules() }
+        didSet { textChanged() }
     }
 
     /// Labels besides the category, normalized as they're added.
@@ -79,6 +87,8 @@ public final class CreateTransactionViewModel {
     var categoryBeforeRule: String?
     /// The tags the applied rule added, so a different rule can take them back.
     var ruleAddedTags: [String] = []
+    /// "Business" and "Via" (`+Merchants`), and the picker open on either.
+    var merchantFields = MerchantFields()
     /// "Repeat": `nil` records this movement once.
     public var repeatFrequency: RecurringFrequency?
     public internal(set) var saved: SavedTransaction?
@@ -111,6 +121,8 @@ public final class CreateTransactionViewModel {
     let updateTransaction: (any UpdateTransactionUseCase)?
     /// "Always use … for …?" after an edit; without it the offer never shows.
     let manageRules: (any ManageCategorizationRulesUseCase)?
+    /// Brandfetch's brand search in the pickers; `nil` with the logos off.
+    let brandSearch: (any BrandSearching)?
     private let makeID: () -> UUID
     let saveCategory: (any SaveCategoryUseCase)?
     /// Without one the receipt offers sharing only.
@@ -136,6 +148,7 @@ public final class CreateTransactionViewModel {
         getStored = useCases.getStored
         updateTransaction = useCases.update
         manageRules = useCases.manageRules
+        brandSearch = useCases.brandSearch
         self.saveCategory = saveCategory
         self.receiptSaver = receiptSaver
         self.type = type
@@ -262,6 +275,8 @@ public final class CreateTransactionViewModel {
             repeatFrequency: repeatFrequency,
             recurringRuleID: recurringRuleID,
             tags: tags,
+            merchant: merchantLinks.merchant,
+            via: merchantLinks.via,
         )
     }
 
@@ -295,6 +310,7 @@ public final class CreateTransactionViewModel {
         recurringRuleID = UUID()
         repeatFrequency = nil
         tags = []
+        resetMerchantFields()
         appliedRule = nil
         categoryPickedByPerson = false
         categoryBeforeRule = nil
