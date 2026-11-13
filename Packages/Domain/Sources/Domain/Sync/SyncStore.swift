@@ -34,6 +34,8 @@ public protocol SyncStore: Sendable {
     func adoptUpdatedAt(entity: String, entityID: String, updatedAt: Date) async throws(DomainError)
     /// Ids of the categories that are tombstones here, for the repair after a pull.
     func deletedCategoryIDs() async throws(DomainError) -> Set<String>
+    /// Ids of the merchants that are tombstones here, for the same repair.
+    func deletedMerchantIDs() async throws(DomainError) -> Set<UUID>
 }
 
 /// A row as the server's snapshot sent it, for settling the first sync of this device with an

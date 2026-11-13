@@ -2,6 +2,7 @@ import CreateTransactionDomain
 import CreateTransactionPresentation
 import Domain
 import Foundation
+import SharedPresentation
 import TransactionsDomain
 import TransactionsPresentation
 
@@ -13,6 +14,7 @@ extension AppContainer {
             transactionID: id,
             getList: DefaultGetTransactionListUseCase(
                 transactions: movements, accounts: store, cards: store, categories: store, settings: store, recurringRules: store,
+                merchants: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
@@ -26,8 +28,11 @@ extension AppContainer {
         return CreateTransactionViewModel(
             stored: .edit(id),
             getStored: stored,
-            update: DefaultUpdateTransactionUseCase(stored: stored, transactions: movements, settings: store),
-            manageRules: DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: movements),
+            update: DefaultUpdateTransactionUseCase(stored: stored, transactions: movements, settings: store, merchants: store),
+            manageRules: DefaultManageCategorizationRulesUseCase(
+                rules: store, categories: store, transactions: movements, merchants: store,
+            ),
+            brandSearch: Self.makeBrandSearch(),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
         )
     }
@@ -44,6 +49,7 @@ extension AppContainer {
     private func makeGetStoredTransaction() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
+            merchants: store,
         )
     }
 }

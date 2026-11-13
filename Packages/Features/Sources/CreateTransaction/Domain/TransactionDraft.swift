@@ -45,6 +45,13 @@ public struct TransactionDraft: Sendable {
     public var recurringRuleID: UUID
     /// Labels besides the category; normalized when saved.
     public var tags: [String]
+    /// The business it was with. `keep` leaves an edited movement's as it was (a caller that doesn't
+    /// know merchants never unlinks one); `unlinked` removes it, and no categorization rule sets one
+    /// then; `new` creates it with the movement. A new movement without a category that no rule
+    /// matches takes the merchant's default category. A transfer never names one.
+    public var merchant: MerchantLink
+    /// The platform it went through, like `merchant`. Never the business itself.
+    public var via: MerchantLink
 
     public init(
         id: UUID = UUID(),
@@ -63,6 +70,8 @@ public struct TransactionDraft: Sendable {
         repeatFrequency: RecurringFrequency? = nil,
         recurringRuleID: UUID = UUID(),
         tags: [String] = [],
+        merchant: MerchantLink = .keep,
+        via: MerchantLink = .keep,
     ) {
         self.id = id
         self.kind = kind
@@ -80,6 +89,8 @@ public struct TransactionDraft: Sendable {
         self.repeatFrequency = repeatFrequency
         self.recurringRuleID = recurringRuleID
         self.tags = tags
+        self.merchant = merchant
+        self.via = via
     }
 }
 
@@ -127,6 +138,9 @@ public struct TransactionContext: Sendable {
     public let tagUsage: [String]
     /// The person's categorization rules in order, only those whose category still exists.
     public let rules: [CategorizationRule]
+    /// The person's merchants; `nil` when they weren't loaded (a movement's links are then taken as
+    /// they come).
+    public let merchants: [Merchant]?
 
     public init(
         currencies: CurrencySettings,
@@ -138,6 +152,7 @@ public struct TransactionContext: Sendable {
         categoryUsage: [String: Int],
         tagUsage: [String] = [],
         rules: [CategorizationRule] = [],
+        merchants: [Merchant]? = nil,
     ) {
         self.currencies = currencies
         self.categories = categories
@@ -148,6 +163,29 @@ public struct TransactionContext: Sendable {
         self.categoryUsage = categoryUsage
         self.tagUsage = tagUsage
         self.rules = rules.filter { rule in categories.contains { $0.id == rule.categoryID && $0.kind == rule.kind } }
+        self.merchants = merchants
+    }
+
+    public func merchant(_ id: UUID?) -> Merchant? {
+        merchants?.first { $0.id == id }
+    }
+
+    /// The same context with merchants the person just created, so the flow can show them without
+    /// reloading.
+    public func adding(merchants added: [Merchant]) -> Self {
+        let ids = Set(added.map(\.id))
+        return Self(
+            currencies: currencies,
+            categories: categories,
+            accounts: accounts,
+            cards: cards,
+            balances: balances,
+            lastUsed: lastUsed,
+            categoryUsage: categoryUsage,
+            tagUsage: tagUsage,
+            rules: rules,
+            merchants: (merchants ?? []).filter { !ids.contains($0.id) } + added,
+        )
     }
 
     public func account(_ id: UUID?) -> Account? {
@@ -170,6 +208,7 @@ public struct TransactionContext: Sendable {
             categoryUsage: categoryUsage,
             tagUsage: tagUsage,
             rules: rules,
+            merchants: merchants,
         )
     }
 
@@ -198,6 +237,7 @@ public struct TransactionContext: Sendable {
             categoryUsage: categoryUsage,
             tagUsage: tagUsage,
             rules: rules,
+            merchants: merchants,
         )
     }
 

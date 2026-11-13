@@ -55,26 +55,42 @@ public struct DefaultUpdateTransactionUseCase: UpdateTransactionUseCase {
     private let stored: any GetStoredTransactionUseCase
     private let transactions: any TransactionRepository
     private let settings: any SettingsRepository
+    private let merchants: (any MerchantRepository)?
     private let calendar: Calendar
+    private let makeID: @Sendable () -> UUID
 
+    /// Without `merchants`, a merchant the draft picked new isn't created.
     public init(
         stored: any GetStoredTransactionUseCase,
         transactions: any TransactionRepository,
         settings: any SettingsRepository,
+        merchants: (any MerchantRepository)? = nil,
         calendar: Calendar = .current,
+        makeID: @escaping @Sendable () -> UUID = { UUID() },
     ) {
         self.stored = stored
         self.transactions = transactions
         self.settings = settings
+        self.merchants = merchants
         self.calendar = calendar
+        self.makeID = makeID
     }
 
     public func execute(_ draft: TransactionDraft) async throws(DomainError) -> SavedTransaction {
         let current = try await stored.execute(id: draft.id)
         var draft = draft
         draft.repeatFrequency = nil
-        let transaction = try DefaultSaveTransactionUseCase.validated(draft, context: current.context, existing: current.transaction)
-        try await transactions.save(transaction)
+        var context = current.context
+        let created = try DefaultSaveTransactionUseCase.creatingMerchants(
+            &draft, context: &context, canCreate: merchants != nil, makeID: makeID,
+        )
+        let transaction = try DefaultSaveTransactionUseCase.validated(draft, context: context, existing: current.transaction)
+        if let merchants, !created.isEmpty {
+            // The new merchants and the movement in one save.
+            try await merchants.commit(MerchantChanges(transactions: [transaction], savedMerchants: created))
+        } else {
+            try await transactions.save(transaction)
+        }
         let principal = try await settings.load()?.currencies.principal ?? current.context.currencies.principal
         return try await DefaultSaveTransactionUseCase.receipt(
             of: transaction,
@@ -110,6 +126,8 @@ extension TransactionDraft {
             note: transaction.note ?? "",
             isDraft: !transaction.isConfirmed,
             tags: transaction.tags,
+            merchant: MerchantLink(transaction.merchantID),
+            via: MerchantLink(transaction.viaMerchantID),
         )
     }
 }

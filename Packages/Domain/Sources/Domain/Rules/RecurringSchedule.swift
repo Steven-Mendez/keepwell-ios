@@ -144,7 +144,7 @@ public enum RecurringSchedule {
     /// typed by hand already pays it (`manualPayment(for:on:in:taken:calendar:)`; rules claim
     /// payments in id order). Each rule then moves to its first occurrence after the last one due.
     /// An occurrence in "Other" takes the first categorization rule in `categorizationRules` that
-    /// matches, like any new movement.
+    /// matches, like any new movement (its merchant only when it is one of the live `merchants`).
     public static func materialize(
         _ rules: [RecurringRule],
         transactions: [Transaction],
@@ -152,6 +152,7 @@ public enum RecurringSchedule {
         exchangeRate: ExchangeRate,
         calendar: Calendar,
         categorizationRules: [CategorizationRule] = [],
+        merchants: [Merchant] = [],
     ) -> Materialization {
         var recordedDays: [UUID: Set<Date>] = [:]
         for transaction in transactions {
@@ -173,7 +174,7 @@ public enum RecurringSchedule {
                     continue
                 }
                 let occurrence = movement(from: rule, on: date, exchangeRate: exchangeRate, id: id)
-                created.append(CategorizationRules.autoCategorized(occurrence, rules: categorizationRules))
+                created.append(CategorizationRules.autoCategorized(occurrence, rules: categorizationRules, merchants: merchants))
                 recordedDays[rule.id, default: []].insert(calendar.startOfDay(for: date))
             }
             // Past the last owed occurrence, recorded now or before, so a trailing one already on
@@ -236,6 +237,8 @@ public enum RecurringSchedule {
             note: rule.note,
             recurringID: rule.id,
             tags: rule.tags,
+            merchantID: rule.merchantID,
+            viaMerchantID: rule.viaMerchantID,
         )
     }
 

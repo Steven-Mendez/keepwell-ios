@@ -167,8 +167,8 @@ struct BackupTests {
         let store = try await emptyLedger()
         await #expect(throws: BackupRestoreError.notBackup) { try await store.importBackup(Data("{ not json".utf8), at: now) }
         await #expect(throws: BackupRestoreError.notBackup) { try await store.importBackup(Data(#"{"accounts":[]}"#.utf8), at: now) }
-        let newer = Data(#"{"format":"keepwell-backup","version":3,"exported_at":"2026-11-12T00:00:00.000Z","entities":{}}"#.utf8)
-        await #expect(throws: BackupRestoreError.newerVersion(3)) { try await store.importBackup(newer, at: now) }
+        let newer = Data(#"{"format":"keepwell-backup","version":4,"exported_at":"2026-11-12T00:00:00.000Z","entities":{}}"#.utf8)
+        await #expect(throws: BackupRestoreError.newerVersion(4)) { try await store.importBackup(newer, at: now) }
         let unknown = Data(#"{"format":"keepwell-backup","version":1,"exported_at":"2026-11-12T00:00:00.000Z","entities":{"budget":[]}}"#
             .utf8)
         await #expect(throws: BackupRestoreError.invalid("entities: unknown entity budget")) {
@@ -176,7 +176,7 @@ struct BackupTests {
         }
     }
 
-    /// Version 2 carries `closed_at`, so a closed account comes back closed.
+    /// Version 2 added `closed_at`, so a closed account comes back closed.
     @Test
     func keepsAClosedAccountClosed() async throws {
         let source = try await device()
@@ -185,7 +185,7 @@ struct BackupTests {
         try await source.save(account.with(closedAt: closing))
         let backup = try await source.exportBackup(at: now)
         let file = try #require(JSONSerialization.jsonObject(with: backup) as? [String: Any])
-        #expect(file["version"] as? Int == 2)
+        #expect(file["version"] as? Int == 3)
 
         let restored = try await emptyLedger()
         try await restored.importBackup(backup, at: now)
@@ -211,7 +211,8 @@ struct BackupTests {
         #expect(try await store.fetchCategories().contains { $0.id == "custom-pets" })
         #expect(try await store.fetchCategories().contains { $0.id == "gifts" } == false)
         #expect(try await store.load()?.currencies.principal == "USD")
-        #expect(try await counts(store.exportBackup(at: now)) == counts(backup))
+        // The web's version 1 file predates merchants, which an export lists (none).
+        #expect(try await counts(store.exportBackup(at: now)).filter { $0.key != "merchant" } == counts(backup))
     }
 
     /// `BackupColumns` is `wire-columns.json` written out; a change to the wire format updates both.

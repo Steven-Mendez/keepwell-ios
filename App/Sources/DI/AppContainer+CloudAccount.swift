@@ -30,7 +30,10 @@ extension AppContainer {
             client: client,
             store: store,
             clientID: installationID,
-            repairCategories: DefaultReassignDeletedCategoriesUseCase(transactions: store, recurringRules: store),
+            repairCategories: DefaultReassignDeletedCategoriesUseCase(transactions: store, recurringRules: store, merchants: store),
+            repairMerchants: DefaultUnlinkDeletedMerchantsUseCase(
+                merchants: store, transactions: store, recurringRules: store, categorizationRules: store,
+            ),
             fillTimeZone: DefaultFillHomeTimeZoneUseCase(settings: store),
         )
     }

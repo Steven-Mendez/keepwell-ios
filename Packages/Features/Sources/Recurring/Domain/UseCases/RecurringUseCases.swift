@@ -109,6 +109,10 @@ public struct DefaultSaveRecurringRuleUseCase: SaveRecurringRuleUseCase {
             note: draft.note,
             // Tags come from "Repeat" on a tagged movement; the rule editor keeps them as they are.
             tags: existing?.tags ?? [],
+            // Likewise the merchant and platform "Repeat" copied from the movement; a transfer names
+            // neither.
+            merchantID: draft.kind == .transfer ? nil : existing?.merchantID,
+            viaMerchantID: draft.kind == .transfer ? nil : existing?.viaMerchantID,
         )
         let currencies = try await settings.load()?.currencies ?? .initial
         let valid = try await candidate.validated(

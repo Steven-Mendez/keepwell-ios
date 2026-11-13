@@ -4,7 +4,7 @@ import Foundation
 /// Repository implementations kept in memory, for previews, snapshot tests and use case tests.
 public actor InMemoryStore: AccountRepository, CardRepository, TransactionRepository, CategoryRepository,
     SettingsRepository, DataEraser, RecurringRuleRepository, SavingsGoalRepository,
-    LoanRepository, PersonalDebtRepository, CategorizationRuleRepository, NotificationStateRepository
+    LoanRepository, PersonalDebtRepository, CategorizationRuleRepository, NotificationStateRepository, MerchantRepository
 {
     private var accounts: [Account]
     private var cards: [Card]
@@ -17,6 +17,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
     private var personalDebts: [PersonalDebt]
     private var categorizationRules: [CategorizationRule]
     private var notificationStates: [String: NotificationState] = [:]
+    private var merchants: [Merchant]
 
     public init(
         accounts: [Account] = [],
@@ -29,6 +30,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         loans: [Loan] = [],
         personalDebts: [PersonalDebt] = [],
         categorizationRules: [CategorizationRule] = [],
+        merchants: [Merchant] = [],
     ) {
         self.accounts = accounts
         self.cards = cards
@@ -40,6 +42,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         self.loans = loans
         self.personalDebts = personalDebts
         self.categorizationRules = categorizationRules
+        self.merchants = merchants
     }
 
     public init(sample: SampleData) {
@@ -54,6 +57,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
             loans: sample.loans,
             personalDebts: sample.personalDebts,
             categorizationRules: sample.categorizationRules,
+            merchants: sample.merchants,
         )
     }
 
@@ -229,6 +233,39 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         personalDebts = []
         categorizationRules = []
         notificationStates = [:]
+        merchants = []
+    }
+
+    public func fetchMerchants() -> [Merchant] {
+        merchants
+    }
+
+    public func save(_ merchant: Merchant) {
+        upsert(merchant, into: &merchants)
+    }
+
+    public func deleteMerchant(id: UUID) throws(DomainError) {
+        try remove(id, from: &merchants)
+    }
+
+    /// An actor runs it whole, so it is as atomic as the store's single save.
+    public func commit(_ changes: MerchantChanges) throws(DomainError) {
+        for id in changes.deletedMerchantIDs where !merchants.contains(where: { $0.id == id }) {
+            throw .notFound(id)
+        }
+        for transaction in changes.transactions {
+            upsert(transaction, into: &transactions)
+        }
+        for rule in changes.recurringRules {
+            upsert(rule, into: &recurringRules)
+        }
+        for rule in changes.categorizationRules {
+            upsert(rule, into: &categorizationRules)
+        }
+        for merchant in changes.savedMerchants {
+            upsert(merchant, into: &merchants)
+        }
+        merchants.removeAll { changes.deletedMerchantIDs.contains($0.id) }
     }
 
     public func fetchNotificationStates() -> [NotificationState] {

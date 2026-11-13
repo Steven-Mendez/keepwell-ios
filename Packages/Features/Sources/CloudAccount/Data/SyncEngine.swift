@@ -17,26 +17,27 @@ import os
 /// - A row the store can't read (one written by a newer version, say) is skipped and recorded, so
 ///   one row never holds back the rest of the account. Its entity is downloaded again after the
 ///   app is updated.
-public actor SyncEngine {
+public actor SyncEngine { // swiftlint:disable:this type_body_length
     /// Settings come first: a download cut short still has the account's currencies.
     static let entities = [
         "settings", "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
-        "personalDebt", "personalDebtRepayment", "categorizationRule", "notificationState",
+        "personalDebt", "personalDebtRepayment", "categorizationRule", "notificationState", "merchant",
     ]
 
     private static let legacyChoiceKey = "sync.choosing"
 
     private let client: APIClient
-    private let store: any SyncConflictStore
+    let store: any SyncConflictStore
     private let defaults: UserDefaults
     private let clientID: String
     private let appBuild: String
-    private let repairCategories: (any ReassignDeletedCategoriesUseCase)?
+    let repairCategories: (any ReassignDeletedCategoriesUseCase)?
+    let repairMerchants: (any UnlinkDeletedMerchantsUseCase)?
     let fillTimeZone: (any FillHomeTimeZoneUseCase)?
 
     /// `defaultsSuite` keeps the cursor apart (tests); `nil` is the app's standard defaults.
     /// `appBuild` tells an updated app, which may read rows this one skipped.
-    /// `repairCategories` runs after every pull (keepwell-web does the same), and `fillTimeZone`
+    /// `repairCategories` and `repairMerchants` run after every pull (keepwell-web does the same), and `fillTimeZone`
     /// after a round, once the account's settings are here.
     public init(
         client: APIClient,
@@ -45,6 +46,7 @@ public actor SyncEngine {
         clientID: String,
         appBuild: String = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "",
         repairCategories: (any ReassignDeletedCategoriesUseCase)? = nil,
+        repairMerchants: (any UnlinkDeletedMerchantsUseCase)? = nil,
         fillTimeZone: (any FillHomeTimeZoneUseCase)? = nil,
     ) {
         self.client = client
@@ -53,6 +55,7 @@ public actor SyncEngine {
         self.clientID = clientID
         self.appBuild = appBuild
         self.repairCategories = repairCategories
+        self.repairMerchants = repairMerchants
         self.fillTimeZone = fillTimeZone
     }
 
@@ -270,6 +273,7 @@ public actor SyncEngine {
             }
         }
         try await repairDeletedCategories()
+        try await repairDeletedMerchants()
     }
 
     /// The server's row is the truth, except for a row with a pending local change.
@@ -498,19 +502,6 @@ extension SyncEngine {
             defaults.set(retryEntities.union(entities).sorted(), forKey: Self.retryEntitiesKey)
             defaults.set(build, forKey: Self.retryBuildKey)
             throw error
-        }
-    }
-}
-
-extension SyncEngine {
-    /// A movement edited here before the pull brought its category's deletion keeps the deleted id
-    /// (its later edit won). It moves to "Other" now, through the outbox, so the account gets it too.
-    private func repairDeletedCategories() async throws(CloudAccountError) {
-        guard let repairCategories else { return }
-        do {
-            try await repairCategories.execute(deletedCategoryIDs: store.deletedCategoryIDs())
-        } catch {
-            throw .server(code: "local_write_failed", requestID: nil)
         }
     }
 }

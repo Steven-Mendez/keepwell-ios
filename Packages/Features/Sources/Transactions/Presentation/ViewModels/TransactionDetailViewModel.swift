@@ -116,7 +116,9 @@ public final class TransactionDetailViewModel {
     // MARK: Display
 
     var display: TransactionDisplay? {
-        list.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories) }
+        list.map {
+            TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories, merchants: $0.merchants)
+        }
     }
 
     /// The live recurring rule that recorded it; `nil` once that rule is deleted.
@@ -162,7 +164,10 @@ public final class TransactionDetailViewModel {
             let method = transaction.kind == .expense
                 ? String(localized: "Paid with", bundle: #bundle)
                 : String(localized: "Into", bundle: #bundle)
-            return [
+            let business = display.merchantLine(of: transaction).map {
+                Row(label: String(localized: "Business", bundle: #bundle), value: $0)
+            }
+            return [business].compactMap(\.self) + [
                 Row(label: String(localized: "Category", bundle: #bundle), value: display.categoryName(of: transaction) ?? "—"),
                 Row(label: method, value: display.methodName(of: transaction)),
             ]

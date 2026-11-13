@@ -33,6 +33,11 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
     public let tags: [String]
     /// `mcp` when Claude (or another MCP client) recorded it.
     public let source: RecordSource
+    /// The business it was with (`Merchant`); `nil` when nobody said.
+    public let merchantID: UUID?
+    /// The platform it went through (Uber Eats delivering from a restaurant, Apple billing an app).
+    /// Never the business itself.
+    public let viaMerchantID: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -53,6 +58,8 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         recurringID: UUID? = nil,
         tags: [String] = [],
         source: RecordSource = .app,
+        merchantID: UUID? = nil,
+        viaMerchantID: UUID? = nil,
     ) {
         self.id = id
         self.date = date
@@ -72,6 +79,8 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         self.recurringID = recurringID
         self.tags = Tags.normalized(tags)
         self.source = source
+        self.merchantID = merchantID
+        self.viaMerchantID = viaMerchantID == merchantID ? nil : viaMerchantID
     }
 
     /// The rule behind "`amount` is always positive", kept here so every path that records a
@@ -96,7 +105,18 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
-            source: source,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
+        )
+    }
+
+    /// The same movement with other merchant links (a merchant merged, deleted or set by a rule).
+    public func with(merchantID: UUID?, viaMerchantID: UUID?) -> Self {
+        Self(
+            id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
+            amount: amount, currency: currency, accountID: accountID, cardID: cardID,
+            destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
         )
     }
 
@@ -107,7 +127,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
-            source: source,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
         )
     }
 }
@@ -135,6 +155,8 @@ extension Transaction {
             recurringID: container.decodeIfPresent(UUID.self, forKey: .recurringID),
             tags: container.decodeIfPresent([String].self, forKey: .tags) ?? [],
             source: container.decodeIfPresent(RecordSource.self, forKey: .source) ?? .app,
+            merchantID: container.decodeIfPresent(UUID.self, forKey: .merchantID),
+            viaMerchantID: container.decodeIfPresent(UUID.self, forKey: .viaMerchantID),
         )
     }
 }

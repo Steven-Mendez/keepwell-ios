@@ -305,9 +305,10 @@ extension TransactionsView {
                 amount: display.amount(of: transaction),
                 secondaryAmount: display.secondaryAmount(of: transaction),
             ) {
-                // A known brand shows its logo; a transfer is never a merchant.
+                // The merchant's logo, else a known brand's; a transfer is never a merchant.
                 BrandOrFallbackIcon(
                     text: transaction.kind == .transfer ? "" : transaction.description,
+                    logo: display.logo(of: transaction),
                     tint: CategoryDisplay.color(for: display.category(of: transaction)),
                 ) {
                     KWTransactionIcon(display.style(of: transaction))

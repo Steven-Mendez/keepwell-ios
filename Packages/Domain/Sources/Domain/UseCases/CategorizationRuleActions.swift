@@ -10,13 +10,23 @@ public struct CategorizationRuleDraft: Hashable, Sendable {
     public var categoryID: String
     public var kind: TransactionKind
     public var tags: [String]
+    /// The business the rule sets on the movements it matches; `nil` for none.
+    public var merchantID: UUID?
 
-    public init(id: UUID? = nil, match: String, categoryID: String, kind: TransactionKind, tags: [String] = []) {
+    public init(
+        id: UUID? = nil,
+        match: String,
+        categoryID: String,
+        kind: TransactionKind,
+        tags: [String] = [],
+        merchantID: UUID? = nil,
+    ) {
         self.id = id
         self.match = match
         self.categoryID = categoryID
         self.kind = kind
         self.tags = tags
+        self.merchantID = merchantID
     }
 }
 
@@ -42,17 +52,21 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
     private let repository: any CategorizationRuleRepository
     private let categories: any CategoryRepository
     private let transactions: any TransactionRepository
+    private let merchants: (any MerchantRepository)?
     private let makeID: @Sendable () -> UUID
 
+    /// Without `merchants`, a rule's merchant can't be checked, so a draft naming one is refused.
     public init(
         rules: any CategorizationRuleRepository,
         categories: any CategoryRepository,
         transactions: any TransactionRepository,
+        merchants: (any MerchantRepository)? = nil,
         makeID: @escaping @Sendable () -> UUID = { UUID() },
     ) {
         repository = rules
         self.categories = categories
         self.transactions = transactions
+        self.merchants = merchants
         self.makeID = makeID
     }
 
@@ -71,7 +85,11 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
             categoryID: draft.categoryID,
             kind: draft.kind,
             tags: draft.tags,
+            merchantID: draft.merchantID,
         ).validated(categories: known)
+        if let merchantID = rule.merchantID, try await merchants?.fetchMerchants().contains(where: { $0.id == merchantID }) != true {
+            throw .notFound(merchantID)
+        }
         try await repository.save(rule)
         return rule
     }
@@ -91,7 +109,8 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
     public func applyToPast(_ rule: CategorizationRule) async throws(DomainError) -> Int {
         let matches = try await CategorizationRules.pastMatches(of: rule, in: transactions.fetchTransactions(in: nil))
         // One save, so a failure leaves every movement as it was.
-        try await transactions.save(matches.map { CategorizationRules.applying(rule, to: $0) })
+        let live = try await merchants?.fetchMerchants() ?? []
+        try await transactions.save(matches.map { CategorizationRules.applying(rule, to: $0, merchants: live) })
         return matches.count
     }
 

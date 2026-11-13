@@ -60,6 +60,33 @@ struct WireReader {
         return formatter.date(from: text) ?? ISO8601DateFormatter().date(from: text)
     }
 
+    /// An optional id column: `nil` for null, and a row whose value isn't an id is unreadable.
+    func link(_ key: String) throws -> UUID? {
+        guard let value = row[key], !(value is NSNull) else { return nil }
+        guard let text = value as? String, let id = UUID(uuidString: text) else { throw DomainCorruption("wire \(key)") }
+        return id
+    }
+
+    /// Throws before anything is written when a link isn't an id.
+    func checkLinks() throws {
+        _ = try link("merchant_id")
+        _ = try link("via_merchant_id")
+    }
+
+    /// `merchant_id` and `via_merchant_id`: a row without a key comes from an app older than
+    /// merchants, so that link stays as it was; null clears it.
+    func merchantLinks(_ merchantID: inout UUID?, _ viaMerchantID: inout UUID?) throws {
+        if row.keys.contains("merchant_id") {
+            merchantID = try link("merchant_id")
+        }
+        if row.keys.contains("via_merchant_id") {
+            viaMerchantID = try link("via_merchant_id")
+        }
+        if viaMerchantID == merchantID {
+            viaMerchantID = nil
+        }
+    }
+
     func audit(_ record: some AuditedRecord) throws {
         try record.apply(RecordMetadata(
             createdAt: date("created_at"),
@@ -112,6 +139,7 @@ extension SwiftDataStore {
         case "loan": try fetch(LoanRecord.self, #Predicate { $0.id == uuid }, in: context)
         case "personalDebt": try fetch(PersonalDebtRecord.self, #Predicate { $0.id == uuid }, in: context)
         case "categorizationRule": try fetch(CategorizationRuleRecord.self, #Predicate { $0.id == uuid }, in: context)
+        case "merchant": try fetch(MerchantRecord.self, #Predicate { $0.id == uuid }, in: context)
         default: nil
         }
     }
@@ -184,6 +212,7 @@ extension SwiftDataStore {
             if record?.deletedAt != nil {
                 return false
             }
+            try wire.checkLinks()
             let transaction = record ?? TransactionRecord(id: id).inserted(into: context)
             transaction.date = try wire.date("date")
             transaction.statusRaw = try wire.string("status")
@@ -204,6 +233,7 @@ extension SwiftDataStore {
             transaction.recurringID = wire.optionalUUID("recurring_id")
             transaction.tagsText = TagsText.encode(wire.strings("tags"))
             transaction.sourceRaw = wire.optionalString("source") ?? transaction.sourceRaw
+            try wire.merchantLinks(&transaction.merchantID, &transaction.viaMerchantID)
             try wire.audit(transaction)
         case "recurringRule":
             let id = try wire.uuid("id")
@@ -211,6 +241,7 @@ extension SwiftDataStore {
             if record?.deletedAt != nil {
                 return false
             }
+            try wire.checkLinks()
             let rule = record ?? RecurringRuleRecord(id: id).inserted(into: context)
             rule.name = try wire.string("name")
             rule.kindRaw = try wire.string("kind")
@@ -231,6 +262,7 @@ extension SwiftDataStore {
             rule.note = wire.optionalString("note")
             rule.tagsText = TagsText.encode(wire.strings("tags"))
             rule.sourceRaw = wire.optionalString("source") ?? rule.sourceRaw
+            try wire.merchantLinks(&rule.merchantID, &rule.viaMerchantID)
             try wire.audit(rule)
         case "savingsGoal":
             let id = try wire.uuid("id")
@@ -317,13 +349,35 @@ extension SwiftDataStore {
             if record?.deletedAt != nil {
                 return false
             }
+            try wire.checkLinks()
             let rule = record ?? CategorizationRuleRecord(id: id).inserted(into: context)
             rule.match = try wire.string("match")
             rule.categoryID = try wire.string("category_id")
             rule.kindRaw = try wire.string("kind")
             rule.tagsText = TagsText.encode(wire.strings("tags"))
             rule.sortIndex = try wire.int("sort_index")
+            if wire.row.keys.contains("merchant_id") {
+                rule.merchantID = try wire.link("merchant_id")
+            }
             try wire.audit(rule)
+        case "merchant":
+            let id = try wire.uuid("id")
+            let record = try fetch(MerchantRecord.self, #Predicate { $0.id == id }, in: context)
+            if record?.deletedAt != nil {
+                return false
+            }
+            let name = try wire.string("name")
+            let domain = wire.optionalString("domain")
+            guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, domain.map(Merchants.isDomain) ?? true,
+                  wire.row["is_platform"] is Bool
+            else { throw DomainCorruption("wire merchant") }
+            let merchant = record ?? MerchantRecord(id: id).inserted(into: context)
+            merchant.name = name
+            merchant.domain = domain
+            merchant.brandID = wire.optionalString("brand_id")
+            merchant.defaultCategoryID = wire.optionalString("default_category_id")
+            merchant.isPlatform = wire.bool("is_platform")
+            try wire.audit(merchant)
         case "notificationState":
             let id = try wire.string("id")
             let record = try fetch(NotificationStateRecord.self, #Predicate { $0.id == id }, in: context)

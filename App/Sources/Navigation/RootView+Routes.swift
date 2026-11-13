@@ -21,6 +21,8 @@ extension RootView {
             CategoriesRoute(container: container, kind: showsIncome ? .income : .expense, onBack: navigator.pop)
         case .categorizationRules:
             RulesRoute(container: container, onBack: navigator.pop)
+        case .merchants:
+            MerchantsRoute(container: container, onBack: navigator.pop)
         case .paymentMethods:
             PaymentMethodsRoute(container: container, onBack: navigator.pop, onOpenAccount: openAccount)
         case .creditCard, .bankAccount, .cash:
@@ -130,6 +132,7 @@ extension RootView {
             onOpenCategories: { navigator.push(.categories(showsIncome: $0 == .income)) },
             onOpenPaymentMethods: { navigator.push(.paymentMethods) },
             onOpenRules: { navigator.push(.categorizationRules) },
+            onOpenMerchants: { navigator.push(.merchants) },
             onShowKeyboardShortcuts: { perform(.showShortcuts) },
         )
     }

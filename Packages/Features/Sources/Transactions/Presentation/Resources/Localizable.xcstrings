@@ -81,6 +81,16 @@
         }
       }
     },
+    "Business" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negocio"
+          }
+        }
+      }
+    },
     "Cash" : {
       "localizations" : {
         "es" : {

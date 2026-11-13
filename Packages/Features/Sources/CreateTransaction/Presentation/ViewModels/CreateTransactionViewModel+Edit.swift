@@ -51,6 +51,7 @@ extension CreateTransactionViewModel {
         currency = transaction.currency
         categoryPickedByPerson = true
         categoryID = transaction.categoryID
+        loadMerchantFields(of: transaction)
         source = transaction.cardID.map(PaymentSource.card) ?? .account(transaction.accountID)
         destinationAccountID = transaction.destinationAccountID
         description = transaction.description

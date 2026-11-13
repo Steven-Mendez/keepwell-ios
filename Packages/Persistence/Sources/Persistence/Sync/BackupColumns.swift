@@ -23,11 +23,12 @@ enum BackupColumns {
             + "created_at:s updated_at:s deleted_at:s?",
         "transaction": "id:s date:s status:s description:s kind:s category_id:s? amount:s currency:s account_id:s card_id:s? "
             + "destination_account_id:s? actual_debited_principal:s? rate_principal:s rate_second:s rate:s "
-            + "is_shared:b note:s? recurring_id:s? tags:a source:s~ created_at:s updated_at:s deleted_at:s?",
+            + "is_shared:b note:s? recurring_id:s? tags:a source:s~ imported_id:s?~ merchant_id:s?~ via_merchant_id:s?~ "
+            + "created_at:s updated_at:s deleted_at:s?",
         "recurringRule": "id:s name:s kind:s category_id:s? amount:s currency:s account_id:s card_id:s? "
             + "destination_account_id:s? frequency:s interval:n start_date:s next_date:s end_date:s? "
-            + "is_subscription:b auto_confirm:b is_paused:b note:s? tags:a source:s~ created_at:s updated_at:s "
-            + "deleted_at:s?",
+            + "is_subscription:b auto_confirm:b is_paused:b note:s? tags:a source:s~ merchant_id:s?~ via_merchant_id:s?~ "
+            + "created_at:s updated_at:s deleted_at:s?",
         "savingsGoal": "id:s name:s target_amount:s target_currency:s saved:s target_month:n? target_year:n? icon:s? "
             + "color:s? created_at:s updated_at:s deleted_at:s?",
         "loan": "id:s name:s lender:s? borrowed_amount:s borrowed_currency:s installment_amount:s installment_count:n "
@@ -36,10 +37,12 @@ enum BackupColumns {
         "personalDebt": "id:s person:s direction:s amount:s currency:s date:s note:s? settled_at:s? transaction_id:s? "
             + "due_date:s?~ created_at:s updated_at:s deleted_at:s?",
         "personalDebtRepayment": "id:s debt_id:s amount:s date:s created_at:s updated_at:s deleted_at:s?",
-        "categorizationRule": "id:s match:s category_id:s kind:s tags:a sort_index:n created_at:s updated_at:s deleted_at:s?",
+        "categorizationRule": "id:s match:s category_id:s kind:s tags:a sort_index:n merchant_id:s?~ created_at:s updated_at:s "
+            + "deleted_at:s?",
         "settings": "id:s principal:s second:s? rate:s payment_reminder_days_before:n has_completed_onboarding:b "
             + "time_zone:s?~ created_at:s updated_at:s deleted_at:s?",
         "notificationState": "id:s read_at:s? dismissed_at:s? created_at:s updated_at:s deleted_at:s?",
+        "merchant": "id:s name:s domain:s? brand_id:s? default_category_id:s? is_platform:b created_at:s updated_at:s deleted_at:s?",
     ]
 
     static let entities: [String: [Column]] = spec.mapValues { text in
@@ -58,6 +61,7 @@ enum BackupColumns {
 
     static let idColumns: Set<String> = [
         "account_id", "card_id", "destination_account_id", "recurring_id", "loan_id", "debt_id", "transaction_id",
+        "merchant_id", "via_merchant_id",
     ]
 
     /// The first column of `row` that doesn't fit its entity, or `nil` when the row is well formed.
@@ -101,6 +105,9 @@ enum BackupColumns {
         }
         if idColumns.contains(name) {
             return isUUID(value)
+        }
+        if name == "domain" {
+            return (value as? String).map(Merchants.isDomain) ?? false
         }
         if name == "time_zone" {
             return (value as? String).map(HomeTimeZone.isWellFormed) ?? false

@@ -125,27 +125,54 @@ public protocol DeleteCategoryUseCase: Sendable {
 public struct DefaultDeleteCategoryUseCase: DeleteCategoryUseCase {
     private let categories: any CategoryRepository
     private let transactions: any TransactionRepository
+    private let merchants: (any MerchantRepository)?
 
-    public init(categories: any CategoryRepository, transactions: any TransactionRepository) {
+    /// With `merchants`, the ones that suggested the category suggest none afterwards.
+    public init(
+        categories: any CategoryRepository,
+        transactions: any TransactionRepository,
+        merchants: (any MerchantRepository)? = nil,
+    ) {
         self.categories = categories
         self.transactions = transactions
+        self.merchants = merchants
     }
 
     public func execute(id: String) async throws(DomainError) {
         guard let category = try await categories.fetchCategories().first(where: { $0.id == id }) else { return }
         guard !category.isFallback else { throw .fallbackCategoryCantBeDeleted(id) }
         let otherID = TransactionCategory.otherID(for: category.kind)
-        for movement in try await transactions.fetchTransactions(in: nil) where movement.categoryID == id {
-            try await transactions.save(movement.with(categoryID: otherID))
+        let moved = try await transactions.fetchTransactions(in: nil)
+            .filter { $0.categoryID == id }
+            .map { $0.with(categoryID: otherID) }
+        if let merchants {
+            // A merchant whose default category it was suggests none (it doesn't move to "Other"),
+            // in the same save as the movements.
+            let cleared = try await merchants.fetchMerchants()
+                .filter { $0.defaultCategoryID == id }
+                .map { $0.with(defaultCategoryID: nil) }
+            try await merchants.commit(MerchantChanges(transactions: moved, savedMerchants: cleared))
+        } else {
+            for movement in moved {
+                try await transactions.save(movement)
+            }
         }
         try await categories.deleteCategory(id: id)
+    }
+}
+
+extension Merchant {
+    /// The same merchant suggesting another category, or none.
+    public func with(defaultCategoryID: String?) -> Self {
+        Self(id: id, name: name, domain: domain, brandID: brandID, defaultCategoryID: defaultCategoryID, isPlatform: isPlatform)
     }
 }
 
 /// Runs after every pull. A device that edited a movement (or recurring rule) before it heard of a
 /// category's deletion wins with its later edit and brings the deleted id back (ADR 0005 keeps the
 /// newest row whole). Whatever still points at one of `deletedCategoryIDs` (the tombstones) moves
-/// to "Other" of its kind; with nothing to repair nothing is written. Returns how many records moved.
+/// to "Other" of its kind, and a merchant whose default category it is loses that default; with
+/// nothing to repair nothing is written. Returns how many records changed.
 public protocol ReassignDeletedCategoriesUseCase: Sendable {
     @discardableResult
     func execute(deletedCategoryIDs: Set<String>) async throws(DomainError) -> Int
@@ -154,10 +181,17 @@ public protocol ReassignDeletedCategoriesUseCase: Sendable {
 public struct DefaultReassignDeletedCategoriesUseCase: ReassignDeletedCategoriesUseCase {
     private let transactions: any TransactionRepository
     private let recurringRules: any RecurringRuleRepository
+    private let merchants: (any MerchantRepository)?
 
-    public init(transactions: any TransactionRepository, recurringRules: any RecurringRuleRepository) {
+    /// With `merchants`, a merchant whose default category is a tombstone loses that default too.
+    public init(
+        transactions: any TransactionRepository,
+        recurringRules: any RecurringRuleRepository,
+        merchants: (any MerchantRepository)? = nil,
+    ) {
         self.transactions = transactions
         self.recurringRules = recurringRules
+        self.merchants = merchants
     }
 
     @discardableResult
@@ -174,10 +208,21 @@ public struct DefaultReassignDeletedCategoriesUseCase: ReassignDeletedCategories
         let rules = try await recurringRules.fetchRecurringRules()
             .filter { isOrphaned($0.categoryID, $0.kind) }
             .map { $0.with(categoryID: TransactionCategory.otherID(for: $0.kind)) }
-        guard !movements.isEmpty || !rules.isEmpty else { return 0 }
+        let cleared = try await merchants?.fetchMerchants()
+            .filter { merchant in
+                guard let id = merchant.defaultCategoryID else { return false }
+                let isFallback = id == TransactionCategory.otherExpenseID || id == TransactionCategory.otherIncomeID
+                return !isFallback && deletedCategoryIDs.contains(id)
+            }
+            .map { $0.with(defaultCategoryID: nil) } ?? []
+        guard !movements.isEmpty || !rules.isEmpty || !cleared.isEmpty else { return 0 }
         // One save: a failure moves nothing, and the next pull tries again.
-        try await recurringRules.saveMaterialized(transactions: movements, rules: rules)
-        return movements.count + rules.count
+        if let merchants {
+            try await merchants.commit(MerchantChanges(transactions: movements, recurringRules: rules, savedMerchants: cleared))
+        } else {
+            try await recurringRules.saveMaterialized(transactions: movements, rules: rules)
+        }
+        return movements.count + rules.count + cleared.count
     }
 }
 
@@ -232,7 +277,7 @@ extension RecurringRule {
             accountID: accountID, cardID: cardID, destinationAccountID: destinationAccountID, frequency: frequency,
             interval: interval, startDate: startDate, nextDate: nextDate, endDate: endDate,
             isSubscription: isSubscription, autoConfirm: autoConfirm, isPaused: isPaused, note: note, tags: tags,
-            source: source,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
         )
     }
 }

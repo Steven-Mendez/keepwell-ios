@@ -60,6 +60,10 @@ actor FakeSyncStore: SyncConflictStore {
         deletedCategories
     }
 
+    func deletedMerchantIDs() throws(DomainError) -> Set<UUID> {
+        []
+    }
+
     func setDeletedCategories(_ ids: Set<String>) {
         deletedCategories = ids
     }

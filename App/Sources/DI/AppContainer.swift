@@ -171,6 +171,7 @@ final class AppContainer {
                 categories: store,
                 settings: store,
                 recurringRules: store,
+                merchants: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
@@ -227,7 +228,7 @@ final class AppContainer {
             kind: kind,
             getCategories: DefaultGetCategoriesUseCase(categories: store),
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: movements),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: movements, merchants: store),
             reorder: DefaultReorderCategoriesUseCase(categories: store),
             restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
             getPrincipalCurrency: DefaultGetPrincipalCurrencyUseCase(settings: store),
@@ -326,7 +327,9 @@ final class AppContainer {
             getContext: context,
             save: DefaultSaveTransactionUseCase(
                 context: context, transactions: movements, recurringRules: store, materialize: makeMaterializeRecurring(),
+                merchants: store,
             ),
+            brandSearch: Self.makeBrandSearch(),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
             receiptSaver: PhotoLibraryReceiptSaver(),
             type: type,
@@ -340,6 +343,7 @@ final class AppContainer {
     private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
+            merchants: store,
         )
     }
 }
@@ -357,6 +361,7 @@ extension AppContainer {
             cards: store,
             categories: store,
             categorizationRules: store,
+            merchants: store,
         )
     }
 

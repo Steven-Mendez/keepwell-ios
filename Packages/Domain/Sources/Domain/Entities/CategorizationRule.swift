@@ -15,13 +15,28 @@ public struct CategorizationRule: Identifiable, Hashable, Sendable, Codable {
     public let kind: TransactionKind
     /// Added to the movement, normalized like any tag.
     public let tags: [String]
+    /// The business the movement was with, set when it names none yet.
+    public let merchantID: UUID?
 
-    public init(id: UUID = UUID(), match: String, categoryID: String, kind: TransactionKind, tags: [String] = []) {
+    public init(
+        id: UUID = UUID(),
+        match: String,
+        categoryID: String,
+        kind: TransactionKind,
+        tags: [String] = [],
+        merchantID: UUID? = nil,
+    ) {
         self.id = id
         self.match = match
         self.categoryID = categoryID
         self.kind = kind
         self.tags = Tags.normalized(tags)
+        self.merchantID = merchantID
+    }
+
+    /// The same rule naming another merchant, or none.
+    public func with(merchantID: UUID?) -> Self {
+        Self(id: id, match: match, categoryID: categoryID, kind: kind, tags: tags, merchantID: merchantID)
     }
 
     /// Whether a movement of this kind with this description and note falls under the rule.
@@ -39,7 +54,7 @@ public struct CategorizationRule: Identifiable, Hashable, Sendable, Codable {
         guard !text.isEmpty else { throw .missingName }
         guard kind != .transfer else { throw .unsupportedTransactionKind(.transfer) }
         try Transaction.checkCategory(categoryID, kind: kind, categories: categories)
-        return Self(id: id, match: text, categoryID: categoryID, kind: kind, tags: tags)
+        return Self(id: id, match: text, categoryID: categoryID, kind: kind, tags: tags, merchantID: merchantID)
     }
 }
 
@@ -90,7 +105,12 @@ public enum CategorizationRules {
 
     /// A new uncategorized movement takes the first rule that matches; otherwise it stays as it is.
     /// Saving a new movement and recording a recurring occurrence go through it; edits never do.
-    public static func autoCategorized(_ transaction: Transaction, rules: [CategorizationRule]) -> Transaction {
+    /// `merchants` are the live ones a rule's merchant may link (`applying`).
+    public static func autoCategorized(
+        _ transaction: Transaction,
+        rules: [CategorizationRule],
+        merchants: [Merchant] = [],
+    ) -> Transaction {
         let rule = categorizing(
             kind: transaction.kind,
             categoryID: transaction.categoryID,
@@ -98,7 +118,7 @@ public enum CategorizationRules {
             note: transaction.note,
             in: rules,
         )
-        return rule.map { applying($0, to: transaction) } ?? transaction
+        return rule.map { applying($0, to: transaction, merchants: merchants) } ?? transaction
     }
 
     /// The rules saving may apply: those whose category still exists with the rule's kind, in order.
@@ -106,8 +126,22 @@ public enum CategorizationRules {
         rules.filter { rule in categories.contains { $0.id == rule.categoryID && $0.kind == rule.kind } }
     }
 
-    /// The movement in the rule's category, with the rule's tags after its own.
-    public static func applying(_ rule: CategorizationRule, to transaction: Transaction) -> Transaction {
-        transaction.with(categoryID: rule.categoryID, tags: Tags.merging(transaction.tags, with: rule.tags))
+    /// The movement in the rule's category, with the rule's tags after its own and the rule's
+    /// merchant when it names none yet (one the person picked stays). The rule's merchant is set only
+    /// when it is one of `merchants` (the live ones: a rule may still name one deleted elsewhere until
+    /// the repair after a pull) and `mayLinkMerchant` (`false` when the person cleared the business on
+    /// purpose: a cleared business is never overridden by a rule).
+    public static func applying(
+        _ rule: CategorizationRule,
+        to transaction: Transaction,
+        merchants: [Merchant] = [],
+        mayLinkMerchant: Bool = true,
+    ) -> Transaction {
+        let categorized = transaction.with(categoryID: rule.categoryID, tags: Tags.merging(transaction.tags, with: rule.tags))
+        guard mayLinkMerchant, let merchantID = rule.merchantID, transaction.merchantID == nil,
+              merchants.contains(where: { $0.id == merchantID })
+        else { return categorized }
+        // The platform is never the business itself (`Transaction.init` drops it).
+        return categorized.with(merchantID: merchantID, viaMerchantID: transaction.viaMerchantID)
     }
 }

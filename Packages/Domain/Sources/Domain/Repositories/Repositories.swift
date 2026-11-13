@@ -92,6 +92,47 @@ public protocol CategorizationRuleRepository: Sendable {
     func reorderCategorizationRules(ids: [UUID]) async throws(DomainError)
 }
 
+public protocol MerchantRepository: Sendable {
+    /// Live merchants (businesses and platforms), in no particular order.
+    func fetchMerchants() async throws(DomainError) -> [Merchant]
+    /// Inserts or replaces the merchant with the same id.
+    func save(_ merchant: Merchant) async throws(DomainError)
+    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    func deleteMerchant(id: UUID) async throws(DomainError)
+    /// Every change of a merge, a deletion or a repair in a single save: a failure changes none, so
+    /// nothing is left naming a merchant that is gone.
+    func commit(_ changes: MerchantChanges) async throws(DomainError)
+}
+
+/// What deleting, merging or repairing merchants writes at once.
+public struct MerchantChanges: Sendable {
+    public var transactions: [Transaction]
+    public var recurringRules: [RecurringRule]
+    /// Saved in place: each keeps its position in the person's order.
+    public var categorizationRules: [CategorizationRule]
+    public var savedMerchants: [Merchant]
+    public var deletedMerchantIDs: [UUID]
+
+    public init(
+        transactions: [Transaction] = [],
+        recurringRules: [RecurringRule] = [],
+        categorizationRules: [CategorizationRule] = [],
+        savedMerchants: [Merchant] = [],
+        deletedMerchantIDs: [UUID] = [],
+    ) {
+        self.transactions = transactions
+        self.recurringRules = recurringRules
+        self.categorizationRules = categorizationRules
+        self.savedMerchants = savedMerchants
+        self.deletedMerchantIDs = deletedMerchantIDs
+    }
+
+    public var isEmpty: Bool {
+        transactions.isEmpty && recurringRules.isEmpty && categorizationRules.isEmpty && savedMerchants.isEmpty
+            && deletedMerchantIDs.isEmpty
+    }
+}
+
 public protocol NotificationStateRepository: Sendable {
     /// Live states only: a pruned (tombstoned) one is gone for good.
     func fetchNotificationStates() async throws(DomainError) -> [NotificationState]

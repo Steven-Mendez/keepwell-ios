@@ -7,17 +7,20 @@ import SwiftData
 // every row in the sync wire format. A version this app doesn't know is refused, not half read.
 // Version 2 adds `account.closed_at`: a column that changes what the person sees raises the version,
 // so an app that predates it refuses the file instead of reopening closed accounts without a word.
-// Version 1 files still restore (their accounts are open).
+// Version 3 adds merchants (their own entity, and the links on movements, recurring rules and
+// categorization rules), which an older app would drop. Version 1 and 2 files still restore (their
+// accounts are open and they name no merchants).
 
 enum BackupFile {
     static let format = "keepwell-backup"
-    static let version = 2
+    static let version = 3
     static let entities = [
         "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
-        "personalDebt", "personalDebtRepayment", "categorizationRule", "settings", "notificationState",
+        "personalDebt", "personalDebtRepayment", "categorizationRule", "settings", "notificationState", "merchant",
     ]
-    /// Settings first, so the currencies arrive before any movement in them; then parents before children.
-    static let importOrder = ["settings"] + entities.filter { $0 != "settings" }
+    /// Settings first, so the currencies arrive before any movement in them; then parents before
+    /// children, merchants before what names them.
+    static let importOrder = ["settings", "merchant"] + entities.filter { $0 != "settings" && $0 != "merchant" }
 }
 
 extension SwiftDataStore: LedgerBackupStore {
@@ -126,6 +129,13 @@ extension SwiftDataStore: LedgerBackupStore {
         for record in try context.fetch(FetchDescriptor<SettingsRecord>()) {
             _ = try record.toDomain()
         }
+        try checkMerchants(in: context)
+    }
+
+    private func checkMerchants(in context: ModelContext) throws {
+        for record in try context.fetch(FetchDescriptor<MerchantRecord>()) where !record.toDomain().isWellFormed {
+            throw DomainCorruption("Merchant \(record.id)")
+        }
     }
 
     func ledgerIsEmpty(in context: ModelContext) throws -> Bool {
@@ -139,6 +149,7 @@ extension SwiftDataStore: LedgerBackupStore {
             context.fetchCount(FetchDescriptor<LoanRecord>()),
             context.fetchCount(FetchDescriptor<PersonalDebtRecord>()),
             context.fetchCount(FetchDescriptor<CategorizationRuleRecord>()),
+            context.fetchCount(FetchDescriptor<MerchantRecord>()),
         ]
         guard counts.allSatisfy({ $0 == 0 }) else { return false }
         return try context.fetch(FetchDescriptor<CategoryRecord>()).allSatisfy { TransactionCategory.shipped(id: $0.id) != nil }

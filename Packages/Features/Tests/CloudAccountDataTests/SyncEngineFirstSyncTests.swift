@@ -227,7 +227,7 @@ extension SyncEngineTests {
 
     private static let order = [
         "settings", "account", "card", "category", "transaction", "recurringRule", "savingsGoal", "loan", "loanPayment",
-        "personalDebt", "personalDebtRepayment", "categorizationRule", "notificationState",
+        "personalDebt", "personalDebtRepayment", "categorizationRule", "notificationState", "merchant",
     ]
 
     /// One row per entity, two pages for transactions, and later entities answering first: whatever

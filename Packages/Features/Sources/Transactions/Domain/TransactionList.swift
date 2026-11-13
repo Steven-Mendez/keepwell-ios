@@ -10,6 +10,8 @@ public struct TransactionList: Hashable, Sendable {
     public let categories: [TransactionCategory]
     /// Live recurring rules, to name the one a movement came from.
     public let recurringRules: [RecurringRule]
+    /// The person's merchants, to name the business and platform of a movement.
+    public let merchants: [Merchant]
 
     public init(
         settings: CurrencySettings,
@@ -18,6 +20,7 @@ public struct TransactionList: Hashable, Sendable {
         cards: [Card],
         categories: [TransactionCategory],
         recurringRules: [RecurringRule] = [],
+        merchants: [Merchant] = [],
     ) {
         self.settings = settings
         self.transactions = transactions
@@ -25,6 +28,7 @@ public struct TransactionList: Hashable, Sendable {
         self.cards = cards
         self.categories = categories
         self.recurringRules = recurringRules
+        self.merchants = merchants
     }
 
     /// The live rule that recorded the movement; `nil` when it was deleted since.
@@ -64,6 +68,7 @@ public struct DefaultGetTransactionListUseCase: GetTransactionListUseCase {
     private let categories: any CategoryRepository
     private let settings: any SettingsRepository
     private let recurringRules: (any RecurringRuleRepository)?
+    private let merchants: (any MerchantRepository)?
 
     public init(
         transactions: any TransactionRepository,
@@ -72,7 +77,9 @@ public struct DefaultGetTransactionListUseCase: GetTransactionListUseCase {
         categories: any CategoryRepository,
         settings: any SettingsRepository,
         recurringRules: (any RecurringRuleRepository)? = nil,
+        merchants: (any MerchantRepository)? = nil,
     ) {
+        self.merchants = merchants
         self.transactions = transactions
         self.accounts = accounts
         self.cards = cards
@@ -90,6 +97,7 @@ public struct DefaultGetTransactionListUseCase: GetTransactionListUseCase {
             cards: cards.fetchCards(),
             categories: categories.fetchCategories(),
             recurringRules: recurringRules?.fetchRecurringRules() ?? [],
+            merchants: merchants?.fetchMerchants() ?? [],
         )
     }
 }

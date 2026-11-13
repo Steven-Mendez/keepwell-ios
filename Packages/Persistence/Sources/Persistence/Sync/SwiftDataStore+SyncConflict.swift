@@ -20,6 +20,7 @@ extension SwiftDataStore: SyncConflictStore {
                 "categorizationRule": context.fetchCount(
                     FetchDescriptor<CategorizationRuleRecord>(predicate: #Predicate { $0.deletedAt == nil }),
                 ),
+                "merchant": context.fetchCount(FetchDescriptor<MerchantRecord>(predicate: #Predicate { $0.deletedAt == nil })),
             ]
         }
     }
@@ -41,6 +42,7 @@ extension SwiftDataStore: SyncConflictStore {
                 try deleteAll(PersonalDebtRecord.self, in: context)
                 try deleteAll(CategorizationRuleRecord.self, in: context)
                 try deleteAll(NotificationStateRecord.self, in: context)
+                try deleteAll(MerchantRecord.self, in: context)
                 try deleteAll(CardRecord.self, in: context)
                 try deleteAll(AccountRecord.self, in: context)
                 try deleteAll(CategoryRecord.self, in: context)
@@ -106,6 +108,8 @@ extension SwiftDataStore: SyncConflictStore {
             }
             rows.append(("category", row))
         }
+        // Merchants before the movements and rules that name them.
+        try add(context.fetch(FetchDescriptor<MerchantRecord>()))
         try add(context.fetch(FetchDescriptor<TransactionRecord>()))
         try add(context.fetch(FetchDescriptor<RecurringRuleRecord>()))
         try add(context.fetch(FetchDescriptor<SavingsGoalRecord>()))
