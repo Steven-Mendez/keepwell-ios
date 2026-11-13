@@ -180,8 +180,10 @@ final class AppContainer {
     }
 
     func makeSummaryViewModel() -> SummaryViewModel {
-        let report = DefaultGetSummaryReportUseCase(transactions: movements, categories: store, settings: store, accounts: store)
-        let range = DefaultGetRangeSummaryUseCase(transactions: movements, settings: store)
+        let report = DefaultGetSummaryReportUseCase(
+            transactions: movements, categories: store, settings: store, accounts: store, personalDebts: store,
+        )
+        let range = DefaultGetRangeSummaryUseCase(transactions: movements, settings: store, personalDebts: store)
         return SummaryViewModel(getReport: report, getRange: range)
     }
 
@@ -195,7 +197,9 @@ final class AppContainer {
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
             changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: movements),
-            exportTransactions: DefaultExportTransactionsUseCase(transactions: movements, accounts: store, cards: store, categories: store),
+            exportTransactions: DefaultExportTransactionsUseCase(
+                transactions: movements, accounts: store, cards: store, categories: store, personalDebts: store,
+            ),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
@@ -327,7 +331,7 @@ final class AppContainer {
             getContext: context,
             save: DefaultSaveTransactionUseCase(
                 context: context, transactions: movements, recurringRules: store, materialize: makeMaterializeRecurring(),
-                merchants: store,
+                merchants: store, personalDebts: store,
             ),
             brandSearch: Self.makeBrandSearch(),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
@@ -343,7 +347,7 @@ final class AppContainer {
     private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
-            merchants: store,
+            merchants: store, personalDebts: store,
         )
     }
 }

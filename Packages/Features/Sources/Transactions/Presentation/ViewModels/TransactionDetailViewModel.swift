@@ -186,6 +186,19 @@ public final class TransactionDetailViewModel {
         return rows
     }
 
+    /// "Your share: C$300.00 of C$900.00" and "Split with Ana and Luis", for an expense with debts
+    /// split from it.
+    var splitLines: (share: String, people: String)? {
+        guard let list, let transaction, let split = list.split(of: transaction) else { return nil }
+        let share = formatter.string(split.share)
+        let total = formatter.string(split.total)
+        let people = split.people.formatted(.list(type: .and))
+        return (
+            String(localized: "Your share: \(share) of \(total)", bundle: #bundle),
+            String(localized: "Split with \(people)", bundle: #bundle),
+        )
+    }
+
     /// A short code to find the movement again, the same one its receipt shows.
     var reference: String {
         "KW-" + transactionID.uuidString.prefix(8).uppercased()

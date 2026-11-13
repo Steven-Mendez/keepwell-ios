@@ -95,11 +95,44 @@ public final class PersonalDebtRecord: AuditedRecord {
         self.id = id
     }
 
-    /// `id` is absent in rows written before repayments had ids.
+    /// `id` is absent in rows written before repayments had ids, `transactionID` in rows written
+    /// before deposits (and in repayments only recorded). Inside the JSON text, so the column needs
+    /// no schema change. `isRemoved` marks a deposited repayment taken off the debt: kept as a
+    /// tombstone only so the movement it deposited is still known (`depositIDs`), never read back.
     private struct StoredRepayment: Codable {
         var id: UUID?
         let amount: String
         let date: Date
+        var transactionID: UUID?
+        var isRemoved: Bool?
+
+        init(_ repayment: DebtRepayment) {
+            id = repayment.id
+            amount = DecimalCoding.string(repayment.amount)
+            date = repayment.date
+            transactionID = repayment.transactionID
+        }
+    }
+
+    /// The repayments as stored, keeping a tombstone for each deposited one they leave out.
+    private func storing(_ repayments: [DebtRepayment]) -> String {
+        let kept = Set(repayments.map(\.id))
+        let stored: [StoredRepayment] = (try? JSONText.decode(repaymentsJSON, what: "Debt repayments")) ?? []
+        let tombstones = stored.filter { row in
+            row.transactionID != nil && (row.isRemoved == true || row.id.map { !kept.contains($0) } == true)
+        }
+        .map { row in
+            var row = row
+            row.isRemoved = true
+            return row
+        }
+        return JSONText.encode(repayments.map(StoredRepayment.init) + tombstones)
+    }
+
+    /// Every movement a repayment of this debt deposited, removed repayments' included.
+    var depositIDs: [UUID] {
+        let stored: [StoredRepayment] = (try? JSONText.decode(repaymentsJSON, what: "Debt repayments")) ?? []
+        return stored.compactMap(\.transactionID)
     }
 
     func update(from debt: PersonalDebt) {
@@ -109,11 +142,7 @@ public final class PersonalDebtRecord: AuditedRecord {
         currency = debt.amount.currency
         date = debt.date
         note = debt.note
-        repaymentsJSON = JSONText.encode(debt.repayments.map { StoredRepayment(
-            id: $0.id,
-            amount: DecimalCoding.string($0.amount),
-            date: $0.date,
-        ) })
+        repaymentsJSON = storing(debt.repayments)
         settledAt = debt.settledAt
         transactionID = debt.transactionID
         dueDate = debt.dueDate
@@ -121,8 +150,7 @@ public final class PersonalDebtRecord: AuditedRecord {
 
     /// Replaces the repayments only (a repayment row pulled from the server).
     func setRepayments(_ repayments: [DebtRepayment]) {
-        repaymentsJSON = JSONText
-            .encode(repayments.map { StoredRepayment(id: $0.id, amount: DecimalCoding.string($0.amount), date: $0.date) })
+        repaymentsJSON = storing(repayments)
     }
 
     func toDomain() throws(DomainCorruption) -> PersonalDebt {
@@ -131,10 +159,10 @@ public final class PersonalDebtRecord: AuditedRecord {
         }
         let stored: [StoredRepayment] = try JSONText.decode(repaymentsJSON, what: "Debt repayments")
         var repayments: [DebtRepayment] = []
-        for (index, row) in stored.enumerated() {
+        for (index, row) in stored.enumerated() where row.isRemoved != true {
             let amount = try DecimalCoding.decimal(row.amount)
             let id = row.id ?? NameBasedID.legacyRepayment(debtID: id, index: index, date: row.date, amount: amount)
-            repayments.append(DebtRepayment(id: id, amount: amount, date: row.date))
+            repayments.append(DebtRepayment(id: id, amount: amount, date: row.date, transactionID: row.transactionID))
         }
         return try PersonalDebt(
             id: id,

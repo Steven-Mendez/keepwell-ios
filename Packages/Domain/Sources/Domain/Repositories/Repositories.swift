@@ -77,8 +77,19 @@ public protocol PersonalDebtRepository: Sendable {
     func fetchPersonalDebts() async throws(DomainError) -> [PersonalDebt]
     /// Inserts or replaces the debt with the same id.
     func save(_ debt: PersonalDebt) async throws(DomainError)
-    /// Soft-deletes. Throws `.notFound` for an unknown or deleted id.
+    /// Soft-deletes. Its deposited repayments stay as movements: that money did come in.
+    /// Throws `.notFound` for an unknown or deleted id.
     func deletePersonalDebt(id: UUID) async throws(DomainError)
+    /// The income movement a repayment deposited and the debt that records the repayment, in a
+    /// single save: a failure records neither.
+    func save(_ debt: PersonalDebt, recording transaction: Transaction) async throws(DomainError)
+    /// The debt without a repayment and the movement it deposited soft-deleted, in a single save. A
+    /// movement already deleted (or `nil`) leaves only the debt to save.
+    func save(_ debt: PersonalDebt, deletingTransaction transactionID: UUID?) async throws(DomainError)
+    /// The income movements debt repayments deposited (`DebtRepayment.transactionID`), read from
+    /// every repayment, deleted ones and those of deleted debts included: deleting a debt keeps the
+    /// movements it deposited, and those still aren't income (`DebtLinks(_:deposits:)`).
+    func fetchRepaymentDepositIDs() async throws(DomainError) -> [UUID]
 }
 
 public protocol CategorizationRuleRepository: Sendable {

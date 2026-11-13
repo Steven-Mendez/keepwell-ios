@@ -38,6 +38,7 @@ extension DefaultGetTransactionContextUseCase: GetStoredTransactionUseCase {
             movements: movements,
             principal: principalCurrency(),
             calendar: calendar,
+            debts: personalDebts?.fetchPersonalDebts() ?? [],
         )
         return StoredTransaction(transaction: transaction, context: context, receipt: receipt)
     }
@@ -56,15 +57,18 @@ public struct DefaultUpdateTransactionUseCase: UpdateTransactionUseCase {
     private let transactions: any TransactionRepository
     private let settings: any SettingsRepository
     private let merchants: (any MerchantRepository)?
+    private let personalDebts: (any PersonalDebtRepository)?
     private let calendar: Calendar
     private let makeID: @Sendable () -> UUID
 
-    /// Without `merchants`, a merchant the draft picked new isn't created.
+    /// Without `merchants`, a merchant the draft picked new isn't created. With `personalDebts`,
+    /// the receipt's category total counts the person's part of split expenses.
     public init(
         stored: any GetStoredTransactionUseCase,
         transactions: any TransactionRepository,
         settings: any SettingsRepository,
         merchants: (any MerchantRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         makeID: @escaping @Sendable () -> UUID = { UUID() },
     ) {
@@ -72,6 +76,7 @@ public struct DefaultUpdateTransactionUseCase: UpdateTransactionUseCase {
         self.transactions = transactions
         self.settings = settings
         self.merchants = merchants
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.makeID = makeID
     }
@@ -98,6 +103,7 @@ public struct DefaultUpdateTransactionUseCase: UpdateTransactionUseCase {
             movements: transactions.fetchTransactions(in: nil),
             principal: principal,
             calendar: calendar,
+            debts: personalDebts?.fetchPersonalDebts() ?? [],
         )
     }
 }

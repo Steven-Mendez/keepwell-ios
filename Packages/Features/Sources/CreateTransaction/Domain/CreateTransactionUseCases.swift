@@ -13,11 +13,13 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
     let transactions: any TransactionRepository
     private let rules: (any CategorizationRuleRepository)?
     private let merchants: (any MerchantRepository)?
+    let personalDebts: (any PersonalDebtRepository)?
     let calendar: Calendar
     private let now: @Sendable () -> Date
 
     /// Without `rules`, no category comes from a rule; without `merchants`, the context names none
-    /// and a movement's links are kept as they come.
+    /// and a movement's links are kept as they come. With `personalDebts`, a stored movement's
+    /// receipt counts the person's part of split expenses in its category total.
     public init(
         settings: any SettingsRepository,
         categories: any CategoryRepository,
@@ -26,6 +28,7 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
         transactions: any TransactionRepository,
         rules: (any CategorizationRuleRepository)? = nil,
         merchants: (any MerchantRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -36,6 +39,7 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
         self.transactions = transactions
         self.rules = rules
         self.merchants = merchants
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.now = now
     }
@@ -103,17 +107,20 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     private let recurringRules: (any RecurringRuleRepository)?
     private let materialize: (any MaterializeRecurringUseCase)?
     private let merchants: (any MerchantRepository)?
+    private let personalDebts: (any PersonalDebtRepository)?
     private let calendar: Calendar
     private let makeID: @Sendable () -> UUID
 
     /// Without `recurringRules`, "Repeat" is ignored and only the movement is saved. Without
-    /// `merchants`, a merchant the draft picked new (`MerchantLink.new`) isn't created.
+    /// `merchants`, a merchant the draft picked new (`MerchantLink.new`) isn't created. With
+    /// `personalDebts`, the receipt's category total counts the person's part of split expenses.
     public init(
         context: any GetTransactionContextUseCase,
         transactions: any TransactionRepository,
         recurringRules: (any RecurringRuleRepository)? = nil,
         materialize: (any MaterializeRecurringUseCase)? = nil,
         merchants: (any MerchantRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         makeID: @escaping @Sendable () -> UUID = { UUID() },
     ) {
@@ -122,6 +129,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
         self.recurringRules = recurringRules
         self.materialize = materialize
         self.merchants = merchants
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.makeID = makeID
     }
@@ -161,6 +169,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             movements: transactions.fetchTransactions(in: nil),
             principal: current.currencies.principal,
             calendar: calendar,
+            debts: personalDebts?.fetchPersonalDebts() ?? [],
         )
     }
 
@@ -198,20 +207,24 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     }
 
     /// What the receipt states about a stored movement: its account's balances with every movement
-    /// and, for an expense, its category's spending that month. Also rebuilds a receipt from history.
+    /// and, for an expense, its category's spending that month (the person's part of split expenses,
+    /// as the summary counts it with `debts`). Also rebuilds a receipt from history.
     static func receipt(
         of transaction: Transaction,
         accounts: [Account],
         movements: [Transaction],
         principal: String,
         calendar: Calendar,
+        debts: [PersonalDebt] = [],
     ) throws(DomainError) -> SavedTransaction {
         guard let account = accounts.first(where: { $0.id == transaction.accountID }) else { throw .notFound(transaction.accountID) }
         let newBalances = Balances.balance(of: account, transactions: movements, calendar: calendar)
         var categoryTotal: Money?
         if transaction.kind == .expense {
             let month = YearMonth(containing: transaction.date, calendar: calendar)
-            let summary = MonthlySummary(month: month, transactions: movements, currency: principal, calendar: calendar)
+            let summary = MonthlySummary(
+                month: month, transactions: movements, currency: principal, calendar: calendar, debts: DebtLinks(debts),
+            )
             let total = summary.categories.first { $0.categoryID == transaction.categoryID }?.amount ?? 0
             categoryTotal = Money(total, principal)
         }

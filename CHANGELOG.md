@@ -9,6 +9,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Shared expenses: an expense split with others counts only your share as spending in the
+  summary (months, averages, pace, trends and years), budgets and their notifications, Home's
+  month, the forecast's usual spending and the receipt's category total; balances and net worth
+  still move by the whole amount. The movement's detail reads "Your share: C$300 of C$900 · Split
+  with Ana, Luis", and the CSV marks it shared. "Record repayment" on a "they owe me" debt in your
+  currencies can "Deposit into account": it records an income in that bank or cash account (under
+  "Refunds", or "Other income" without it) that changes the balance but doesn't count as income,
+  also after the debt is deleted. Deposited repayments read "· deposited"; touch and hold a
+  repayment to delete it, which deletes its income too and reopens a debt it settled. Splitting
+  an expense again shares only what is left ("Already split: C$100 left to share"). Syncs with
+  the web app; the JSON backup (version 3) carries the deposit link.
+
 - Businesses and platforms: a movement's review has "Business" and "Via (optional)" ("Subway",
   via "Uber Eats"). The pickers offer your businesses first (platforms first for "Via"), then the
   brands Keepwell knows and, when nothing matches, Brandfetch's brand search (with brand logos on);

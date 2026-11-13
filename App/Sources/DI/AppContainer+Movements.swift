@@ -14,7 +14,7 @@ extension AppContainer {
             transactionID: id,
             getList: DefaultGetTransactionListUseCase(
                 transactions: movements, accounts: store, cards: store, categories: store, settings: store, recurringRules: store,
-                merchants: store,
+                merchants: store, personalDebts: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
@@ -28,7 +28,9 @@ extension AppContainer {
         return CreateTransactionViewModel(
             stored: .edit(id),
             getStored: stored,
-            update: DefaultUpdateTransactionUseCase(stored: stored, transactions: movements, settings: store, merchants: store),
+            update: DefaultUpdateTransactionUseCase(
+                stored: stored, transactions: movements, settings: store, merchants: store, personalDebts: store,
+            ),
             manageRules: DefaultManageCategorizationRulesUseCase(
                 rules: store, categories: store, transactions: movements, merchants: store,
             ),
@@ -49,7 +51,7 @@ extension AppContainer {
     private func makeGetStoredTransaction() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
-            merchants: store,
+            merchants: store, personalDebts: store,
         )
     }
 }

@@ -136,17 +136,25 @@ public struct DebtRepayment: Hashable, Sendable, Codable {
     /// Always positive.
     public let amount: Decimal
     public let date: Date
+    /// The income movement that deposited it into an account ("Deposit into account"), created
+    /// with it and deleted with it; `nil` when it was only recorded. That movement changes the
+    /// balance but isn't income: the money only came back (`Transaction.isReimbursement`).
+    public let transactionID: UUID?
 
-    public init(id: UUID = UUID(), amount: Decimal, date: Date) {
+    public init(id: UUID = UUID(), amount: Decimal, date: Date, transactionID: UUID? = nil) {
         self.id = id
         self.amount = amount
         self.date = date
+        self.transactionID = transactionID
     }
 }
 
 /// Money lent to or borrowed from a person, outside any bank ("I lent Juan C$500"). Like savings
-/// goals it is only tracked: recording, repaying or settling it never records a movement or
-/// changes a balance, because the cash may have changed hands in ways the ledger never saw.
+/// goals it is tracked on its own: recording, repaying or settling it never records a movement or
+/// changes a balance, because the cash may have changed hands in ways the ledger never saw; except
+/// a repayment the person deposits into an account (`DebtRepayment.transactionID`). A "they owe
+/// me" debt split from an expense (`transactionID`) takes its share out of the person's spending
+/// (`Transaction.spendingAmount(in:debts:)`).
 public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
     public static let maxNameLength = 60
 
@@ -217,12 +225,38 @@ public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
         }
     }
 
-    /// "Record repayment": a positive amount no larger than what is left. Paying the rest settles it.
-    public func repaying(_ value: Decimal, on day: Date) throws(DomainError) -> Self {
+    /// "Record repayment": a positive amount no larger than what is left. Paying the rest settles
+    /// it. `transactionID` is the income movement that deposited it, when it was deposited.
+    public func repaying(_ value: Decimal, on day: Date, transactionID: UUID? = nil, id: UUID = UUID()) throws(DomainError) -> Self {
         guard !isSettled, value > 0, value <= remaining else { throw .invalidAmount }
-        let repayments = repayments + [DebtRepayment(amount: value, date: day)]
+        let repayments = repayments + [DebtRepayment(id: id, amount: value, date: day, transactionID: transactionID)]
         let isPaid = repaid + value >= amount.amount
         return with(repayments: repayments, settledAt: isPaid ? day : nil)
+    }
+
+    /// Takes one repayment out. A debt that repayment settled (settled the moment it was paid)
+    /// opens again; one settled by hand stays settled. Throws `.notFound` for an unknown repayment.
+    public func removingRepayment(id: UUID) throws(DomainError) -> (debt: Self, repayment: DebtRepayment) {
+        guard let repayment = repayments.first(where: { $0.id == id }) else { throw .notFound(id) }
+        let reopens = settledAt != nil && settledAt == repayment.date
+        return (with(repayments: repayments.filter { $0.id != id }, settledAt: reopens ? nil : settledAt), repayment)
+    }
+
+    /// Where a deposited repayment is filed as income: "Refunds", or "Other income" once it was
+    /// deleted.
+    public static func repaymentCategoryID(in categories: [TransactionCategory]) -> String {
+        categories.contains { $0.id == repaymentCategoryID && $0.kind == .income }
+            ? repaymentCategoryID
+            : TransactionCategory.otherIncomeID
+    }
+
+    public static let repaymentCategoryID = "refunds"
+
+    /// "Ana · Dinner": a deposited repayment's description, the same on every app (the person,
+    /// then the debt's note).
+    public var repaymentDescription: String {
+        let note = note?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return note.isEmpty ? person : "\(person) · \(note)"
     }
 
     /// "Mark as settled", even with something left.

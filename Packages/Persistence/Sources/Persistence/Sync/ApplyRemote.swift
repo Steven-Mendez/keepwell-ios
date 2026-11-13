@@ -333,14 +333,21 @@ extension SwiftDataStore {
             }
             try wire.audit(debt)
         case "personalDebtRepayment":
+            // Checked first: a link that isn't an id is refused even when the debt isn't here.
+            let link = try wire.link("transaction_id")
             let debtID = try wire.uuid("debt_id")
             guard let debt = try fetch(PersonalDebtRecord.self, #Predicate { $0.id == debtID }, in: context),
                   debt.deletedAt == nil else { return false }
             let id = try wire.uuid("id")
-            var repayments = try debt.toDomain().repayments.filter { $0.id != id }
+            let stored = try debt.toDomain().repayments
+            var repayments = stored.filter { $0.id != id }
             if wire.optionalString("deleted_at") == nil {
                 guard let amount = try Decimal(string: wire.string("amount")) else { throw DomainCorruption("wire amount") }
-                try repayments.append(DebtRepayment(id: id, amount: amount, date: wire.date("date")))
+                // A row without the key comes from an app older than deposits: the link stays as it was.
+                let transactionID = wire.row.keys.contains("transaction_id")
+                    ? link
+                    : stored.first { $0.id == id }?.transactionID
+                try repayments.append(DebtRepayment(id: id, amount: amount, date: wire.date("date"), transactionID: transactionID))
             }
             debt.setRepayments(repayments.sorted { $0.date < $1.date })
         case "categorizationRule":

@@ -8,7 +8,9 @@ import SwiftData
 // Version 2 adds `account.closed_at`: a column that changes what the person sees raises the version,
 // so an app that predates it refuses the file instead of reopening closed accounts without a word.
 // Version 3 adds merchants (their own entity, and the links on movements, recurring rules and
-// categorization rules), which an older app would drop. Version 1 and 2 files still restore (their
+// categorization rules) and the movement a debt repayment deposited
+// (`personal_debt_repayments.transaction_id`, which keeps that income out of the totals), which an
+// older app would drop. Version 1 and 2 files still restore (their
 // accounts are open and they name no merchants).
 
 enum BackupFile {

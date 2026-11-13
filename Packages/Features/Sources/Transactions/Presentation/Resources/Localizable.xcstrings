@@ -798,6 +798,26 @@
           }
         }
       }
+    },
+    "Your share: %@ of %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu parte: %1$@ de %2$@"
+          }
+        }
+      }
+    },
+    "Split with %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dividido con %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

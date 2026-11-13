@@ -15,6 +15,8 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
     private var savingsGoals: [SavingsGoal]
     private var loans: [Loan]
     private var personalDebts: [PersonalDebt]
+    /// Movements deposited by repayments no longer in `personalDebts` (deleted, alone or with their debt).
+    private var removedRepaymentDeposits: [UUID] = []
     private var categorizationRules: [CategorizationRule]
     private var notificationStates: [String: NotificationState] = [:]
     private var merchants: [Merchant]
@@ -165,11 +167,22 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
     }
 
     public func save(_ debt: PersonalDebt) {
-        upsert(debt, into: &personalDebts)
+        storing(debt)
     }
 
     public func deletePersonalDebt(id: UUID) throws(DomainError) {
+        forgetDeposits(of: personalDebts.first { $0.id == id }?.repayments ?? [])
         try remove(id, from: &personalDebts)
+    }
+
+    public func save(_ debt: PersonalDebt, recording transaction: Transaction) {
+        upsert(transaction, into: &transactions)
+        storing(debt)
+    }
+
+    public func save(_ debt: PersonalDebt, deletingTransaction transactionID: UUID?) {
+        transactions.removeAll { $0.id == transactionID }
+        storing(debt)
     }
 
     public func fetchCategorizationRules() -> [CategorizationRule] {
@@ -231,6 +244,7 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
         savingsGoals = []
         loans = []
         personalDebts = []
+        removedRepaymentDeposits = []
         categorizationRules = []
         notificationStates = [:]
         merchants = []
@@ -294,5 +308,25 @@ public actor InMemoryStore: AccountRepository, CardRepository, TransactionReposi
     private func remove(_ id: UUID, from list: inout [some Identifiable<UUID>]) throws(DomainError) {
         guard let index = list.firstIndex(where: { $0.id == id }) else { throw .notFound(id) }
         list.remove(at: index)
+    }
+}
+
+/// Debt repayments that leave the store keep their deposits known.
+extension InMemoryStore {
+    public func fetchRepaymentDepositIDs() -> [UUID] {
+        var seen = Set<UUID>()
+        return (removedRepaymentDeposits + personalDebts.flatMap { $0.repayments.compactMap(\.transactionID) })
+            .filter { seen.insert($0).inserted }
+    }
+
+    /// Repayments leaving the store keep their deposits known, as the database's tombstones do.
+    private func storing(_ debt: PersonalDebt) {
+        let kept = Set(debt.repayments.map(\.id))
+        forgetDeposits(of: (personalDebts.first { $0.id == debt.id }?.repayments ?? []).filter { !kept.contains($0.id) })
+        upsert(debt, into: &personalDebts)
+    }
+
+    private func forgetDeposits(of repayments: [DebtRepayment]) {
+        removedRepaymentDeposits += repayments.compactMap(\.transactionID)
     }
 }

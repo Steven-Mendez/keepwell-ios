@@ -127,8 +127,8 @@ public final class DebtEditorViewModel: Identifiable {
     }
 }
 
-/// One personal debt: what is left, its repayments, and "Record repayment", "Mark as settled"
-/// or "Reopen". None of them records a movement.
+/// One personal debt: what is left, its repayments, and "Record repayment" (optionally deposited
+/// into an account, the one action that records a movement), "Mark as settled" or "Reopen".
 @MainActor
 @Observable
 public final class DebtDetailViewModel: Identifiable {
@@ -138,6 +138,10 @@ public final class DebtDetailViewModel: Identifiable {
         didSet { errorMessage = nil }
     }
 
+    /// "Deposit into account": `nil` records the repayment only, as before.
+    public var depositAccountID: UUID?
+    /// Where a repayment can be deposited: the open bank and cash accounts. Empty until `load()`.
+    public private(set) var depositAccounts: [Account] = []
     public private(set) var errorMessage: String?
     public private(set) var isSaving = false
     public private(set) var didChange = false
@@ -198,14 +202,59 @@ public final class DebtDetailViewModel: Identifiable {
         return repayment > 0 && repayment <= debt.remaining
     }
 
+    public func load() async {
+        guard debt.direction == .theyOweMe, depositAccounts.isEmpty,
+              let context = try? await useCases.paymentContext.execute(),
+              debt.canDepositRepayment(currencies: context.currencies)
+        else { return }
+        depositAccounts = context.accounts.open.filter { $0.kind != .credit }
+    }
+
+    /// Only someone who owes the person pays money back into an account, and only in the ledger's
+    /// currencies (`load()` leaves no accounts otherwise).
+    public var canDeposit: Bool {
+        debt.direction == .theyOweMe && !depositAccounts.isEmpty
+    }
+
+    public var depositOptions: [(id: UUID?, title: String)] {
+        [(nil, String(localized: "Don't deposit", bundle: #bundle))]
+            + depositAccounts.map { (Optional($0.id), CardDisplay.name(of: $0)) }
+    }
+
+    public var depositTitle: String {
+        depositOptions.first { $0.id == depositAccountID }?.title ?? String(localized: "Don't deposit", bundle: #bundle)
+    }
+
+    /// Explains the deposit once an account is picked.
+    public var depositNote: String? {
+        guard canDeposit, let account = depositAccounts.first(where: { $0.id == depositAccountID }) else { return nil }
+        let name = CardDisplay.name(of: account)
+        return String(
+            localized: "Records an income in \(name). It changes the balance but doesn't count as income: the money only came back.",
+            bundle: #bundle,
+        )
+    }
+
     public func repay() async {
         guard canRepay, let repayment else { return }
         let id = debt.id
         let today = now()
-        await run { [useCases] in try await useCases.updateDebt.repay(id: id, amount: repayment, on: today) }
+        let deposit = canDeposit ? depositAccountID.map { RepaymentDeposit(accountID: $0) } : nil
+        await run { [useCases] in try await useCases.updateDebt.repay(id: id, amount: repayment, on: today, deposit: deposit) }
         if errorMessage == nil {
             repaymentText = ""
         }
+    }
+
+    /// "Nov 5, 2026 · deposited" for a repayment that entered an account.
+    public func repaymentTitle(_ repayment: DebtRepayment) -> String {
+        let day = day(repayment.date)
+        return repayment.transactionID == nil ? day : String(localized: "\(day) · deposited", bundle: #bundle)
+    }
+
+    public func deleteRepayment(_ repayment: DebtRepayment) async {
+        let debtID = debt.id
+        await run { [useCases] in try await useCases.updateDebt.deleteRepayment(debtID: debtID, repaymentID: repayment.id) }
     }
 
     public func settle() async {

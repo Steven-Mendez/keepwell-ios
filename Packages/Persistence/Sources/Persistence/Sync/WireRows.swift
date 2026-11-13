@@ -181,6 +181,8 @@ extension PersonalDebtRecord: SyncableRecord {
         [
             "id": Wire.id(repayment.id), "debt_id": Wire.id(id), "amount": DecimalCoding.string(repayment.amount),
             "date": Wire.date(repayment.date),
+            // Always sent, null for none, like the merchant links.
+            "transaction_id": Wire.id(repayment.transactionID),
             "created_at": Wire.date(createdAt), "updated_at": Wire.date(deletedAt ?? updatedAt), "deleted_at": Wire.date(deletedAt),
         ]
     }
