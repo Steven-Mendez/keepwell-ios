@@ -181,6 +181,7 @@ public struct HomeView: View {
                     overview,
                 )
             }
+            ExcludedMovementsNote(viewModel.excludedMovementLines(overview))
         }
         .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -187,6 +187,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- After the main currency changes (swapping your two currencies, or a change from another device),
+  month totals no longer add up old amounts in the previous currency and label them with the new
+  one. Each movement converts with the rate it was recorded with; one whose rate doesn't include
+  the new main currency is left out, and Home, Summary and Transactions say "Not including N
+  movements in USD". The Transactions month total now matches its "Money out" strip, and the
+  spending widget, trends, spending pace, the forecast's usual spending and the category total on
+  the saved receipt follow the same rule.
+
 - Settings › Time zone shows the zone in use under its title (with "From this iPhone" while none is
   saved); beside the description it used to be squeezed out of sight. The list opens on that zone,
   marked, above all the others, instead of on Africa/Abidjan.

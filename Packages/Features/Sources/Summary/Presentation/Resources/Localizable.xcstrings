@@ -661,6 +661,46 @@
         }
       }
     },
+    "Not including %lld movements in %@" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Not including %lld movement in %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Not including %lld movements in %@"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sin incluir %lld movimiento en %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Sin incluir %lld movimientos en %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Nothing came in during %@." : {
       "localizations" : {
         "es" : {

@@ -73,6 +73,7 @@ struct MonthlySummaryTests {
                 Fixtures.transaction(.expense, amount: "709.58", date: Fixtures.date(2026, 10, 10)),
                 Fixtures.transaction(.income, amount: "3.02", date: Fixtures.date(2026, 8, 10)),
             ],
+            currency: "USD",
             calendar: Fixtures.calendar,
         )
         #expect(average.map { $0.rounded(scale: 2) } == Fixtures.decimal("378.36"))
@@ -80,7 +81,7 @@ struct MonthlySummaryTests {
 
     @Test
     func averageIsNilWithoutSpending() {
-        #expect(SpendingHistory.averageMonthlyExpense(transactions: [], calendar: Fixtures.calendar) == nil)
+        #expect(SpendingHistory.averageMonthlyExpense(transactions: [], currency: "USD", calendar: Fixtures.calendar) == nil)
     }
 
     @Test
@@ -89,6 +90,7 @@ struct MonthlySummaryTests {
             endingAt: october,
             count: 6,
             transactions: [Fixtures.transaction(.expense, amount: "47.13", date: Fixtures.date(2026, 9, 10))],
+            currency: "USD",
             calendar: Fixtures.calendar,
         )
         #expect(series.map(\.month.month) == [5, 6, 7, 8, 9, 10])
