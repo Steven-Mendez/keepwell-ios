@@ -57,7 +57,7 @@ public struct BalanceForecast: Hashable, Sendable {
     }
 
     /// - Second-currency amounts convert at today's settings rate, as net worth does; past spending
-    ///   keeps each movement's own principal amount, as the summary does.
+    ///   converts each movement with its own rate to today's principal currency, as the summary does.
     /// - Transfers move money between the person's accounts and are left out; card purchases are
     ///   paid through `cardPayments` instead of on their own.
     /// - Usual spending averages confirmed expenses on bank and cash accounts not recorded by a
@@ -94,6 +94,7 @@ public struct BalanceForecast: Hashable, Sendable {
         let average = Self.averageUsualSpending(
             transactions.filter { $0.recurringID == nil && period.isSpendable($0.accountID) },
             before: period.month,
+            currency: settings.principal,
             calendar: calendar,
         )
         self.init(
@@ -179,11 +180,17 @@ public struct BalanceForecast: Hashable, Sendable {
 
     /// Average confirmed spending of the complete months before `month` that had any, so a month
     /// before the person started doesn't drag it down. Zero without any.
-    static func averageUsualSpending(_ transactions: [Transaction], before month: YearMonth, calendar: Calendar) -> Decimal {
+    static func averageUsualSpending(
+        _ transactions: [Transaction],
+        before month: YearMonth,
+        currency: String,
+        calendar: Calendar,
+    ) -> Decimal {
         let totals = SpendingHistory.monthlyExpenses(
             endingAt: month.adding(months: -1),
             count: usualSpendingMonths,
             transactions: transactions,
+            currency: currency,
             calendar: calendar,
         )
         .map(\.expense)

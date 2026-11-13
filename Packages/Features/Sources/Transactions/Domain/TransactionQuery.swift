@@ -42,7 +42,8 @@ public struct TransactionQuery: Hashable, Sendable {
 }
 
 /// What the movements a tag search leaves came to over all time, in the principal currency like
-/// the month's totals: what was spent and what was received. Drafts and transfers don't count.
+/// the month's totals: what was spent and what was received. Drafts and transfers don't count, nor
+/// movements whose stored rate can't reach the principal currency.
 public struct TagTotals: Hashable, Sendable {
     public let tag: String
     public let currency: String
@@ -53,8 +54,8 @@ public struct TagTotals: Hashable, Sendable {
         self.tag = tag
         self.currency = currency
         let counted = transactions.filter { $0.isConfirmed && $0.tags.contains(tag) }
-        expense = counted.filter { $0.kind == .expense }.reduce(0) { $0 + $1.principalAmount }
-        income = counted.filter { $0.kind == .income }.reduce(0) { $0 + $1.principalAmount }
+        expense = counted.filter { $0.kind == .expense }.reduce(0) { $0 + ($1.storedAmount(in: currency) ?? 0) }
+        income = counted.filter { $0.kind == .income }.reduce(0) { $0 + ($1.storedAmount(in: currency) ?? 0) }
     }
 }
 

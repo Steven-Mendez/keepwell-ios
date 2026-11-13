@@ -152,6 +152,7 @@ struct SummaryChartsTests {
         let pace = try SpendingPace(
             month: Self.month(2026, 11),
             transactions: transactions,
+            currency: "USD",
             calendar: Self.calendar,
             now: Self.date(2026, 11, 3),
         )
@@ -174,6 +175,7 @@ struct SummaryChartsTests {
         let pace = try SpendingPace(
             month: Self.month(2026, 3),
             transactions: transactions,
+            currency: "USD",
             calendar: Self.calendar,
             now: Self.date(2026, 11, 3),
         )
@@ -190,10 +192,28 @@ struct SummaryChartsTests {
         let pace = try SpendingPace(
             month: Self.month(2026, 11),
             transactions: transactions,
+            currency: "USD",
             calendar: Self.calendar,
             now: Self.date(2026, 11, 1),
         )
         #expect(pace.spentSoFar == 10)
+    }
+
+    @Test
+    func paceLeavesOutWhatTheStoredRateCantBringToTheCurrency() throws {
+        let euros = try ExchangeRate(principal: "EUR", second: "EUR", rate: 1)
+        let transactions = [
+            Self.transaction(.expense, 100, on: Self.date(2026, 11, 1)),
+            Self.transaction(.expense, 9, on: Self.date(2026, 11, 1), currency: "EUR", rate: euros),
+        ]
+        let pace = try SpendingPace(
+            month: Self.month(2026, 11),
+            transactions: transactions,
+            currency: "EUR",
+            calendar: Self.calendar,
+            now: Self.date(2026, 11, 1),
+        )
+        #expect(pace.spentSoFar == 9)
     }
 
     // MARK: Report

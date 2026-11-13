@@ -18,7 +18,9 @@ public struct SpendingPace: Hashable, Sendable {
     /// The whole previous month.
     public let previous: [Point]
 
-    public init(month: YearMonth, transactions: [Transaction], calendar: Calendar, now: Date) {
+    /// Amounts in `currency`, each converted with its stored rate; what that rate can't convert is
+    /// left out, as in `MonthlySummary`.
+    public init(month: YearMonth, transactions: [Transaction], currency: String, calendar: Calendar, now: Date) {
         let previousMonth = month.adding(months: -1)
         let daysInMonth = Self.dayCount(of: month, calendar: calendar)
         let lastDay = YearMonth(containing: now, calendar: calendar) == month
@@ -26,11 +28,12 @@ public struct SpendingPace: Hashable, Sendable {
             : daysInMonth
         self.month = month
         self.previousMonth = previousMonth
-        current = Self.points(month, through: lastDay, transactions: transactions, calendar: calendar)
+        current = Self.points(month, through: lastDay, transactions: transactions, currency: currency, calendar: calendar)
         previous = Self.points(
             previousMonth,
             through: Self.dayCount(of: previousMonth, calendar: calendar),
             transactions: transactions,
+            currency: currency,
             calendar: calendar,
         )
     }
@@ -63,13 +66,20 @@ public struct SpendingPace: Hashable, Sendable {
         return calendar.range(of: .day, in: .month, for: start)?.count ?? 30
     }
 
-    private static func points(_ month: YearMonth, through lastDay: Int, transactions: [Transaction], calendar: Calendar) -> [Point] {
+    private static func points(
+        _ month: YearMonth,
+        through lastDay: Int,
+        transactions: [Transaction],
+        currency: String,
+        calendar: Calendar,
+    ) -> [Point] {
         var perDay: [Int: Decimal] = [:]
         for transaction in transactions
             where transaction.isConfirmed && transaction.kind == .expense
             && YearMonth(containing: transaction.date, calendar: calendar) == month
         {
-            perDay[calendar.component(.day, from: transaction.date), default: 0] += transaction.principalAmount
+            guard let amount = transaction.storedAmount(in: currency) else { continue }
+            perDay[calendar.component(.day, from: transaction.date), default: 0] += amount
         }
         var running = Decimal(0)
         return (1 ... max(lastDay, 1)).map { day in
