@@ -58,6 +58,8 @@ extension AccountRecord: SyncableRecord {
             "id": Wire.id(id), "name": name, "bank": Wire.value(bank), "kind": kindRaw, "opening_balances": balances,
             "opening_date": Wire.date(openingDate), "debt_mode": Wire.value(debtModeRaw), "limit_amount": Wire.value(limitAmount),
             "limit_currency": Wire.value(limitCurrency), "cutoff_day": Wire.value(cutoffDay), "due_day": Wire.value(dueDay),
+            // Always sent, null while open: reopening has to clear it on the other devices.
+            "closed_at": Wire.date(closedAt),
         ]) { $1 }
     }
 }
@@ -167,6 +169,8 @@ extension PersonalDebtRecord: SyncableRecord {
         Wire.audit(self).merging([
             "id": Wire.id(id), "person": person, "direction": directionRaw, "amount": amount, "currency": currency,
             "date": Wire.date(date), "note": Wire.value(note), "settled_at": Wire.date(settledAt), "transaction_id": Wire.id(transactionID),
+            // Always sent, null for none: removing the date has to clear it on the other devices.
+            "due_date": Wire.date(dueDate),
         ]) { $1 }
     }
 
@@ -204,11 +208,17 @@ extension NotificationStateRecord: SyncableRecord {
 
 extension SettingsRecord {
     /// Only what is the same on every device; unlock, relock, hiding amounts and the iCloud switch stay here.
+    /// `time_zone` is left out while there is none, never sent as null: the server keeps the zone a
+    /// row lacks, so a save here can't clear one another device set.
     func wireRow() -> WireRow {
-        [
+        var row: WireRow = [
             "id": "settings", "principal": principal, "second": Wire.value(second == principal ? nil : second), "rate": rate,
             "payment_reminder_days_before": paymentReminderDaysBefore, "has_completed_onboarding": hasCompletedOnboarding,
             "created_at": Wire.date(updatedAt), "updated_at": Wire.date(updatedAt), "deleted_at": NSNull(),
         ]
+        if let timeZone {
+            row["time_zone"] = timeZone
+        }
+        return row
     }
 }

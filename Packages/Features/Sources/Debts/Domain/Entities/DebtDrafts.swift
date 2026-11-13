@@ -44,14 +44,26 @@ public struct PersonalDebtDraft: Hashable, Sendable {
     public var amount: Money
     public var date: Date
     public var note: String
+    /// When it should be paid back, saved as the start of that day. `nil` saves it without one, also
+    /// when editing: that is how a due date is removed.
+    public var dueDate: Date?
 
-    public init(id: UUID? = nil, person: String, direction: DebtDirection, amount: Money, date: Date, note: String = "") {
+    public init(
+        id: UUID? = nil,
+        person: String,
+        direction: DebtDirection,
+        amount: Money,
+        date: Date,
+        note: String = "",
+        dueDate: Date? = nil,
+    ) {
         self.id = id
         self.person = person
         self.direction = direction
         self.amount = amount
         self.date = date
         self.note = note
+        self.dueDate = dueDate
     }
 }
 
@@ -117,7 +129,7 @@ public struct DebtsOverview: Hashable, Sendable {
     public let currencies: CurrencySettings
     /// Open loans first, soonest installment first.
     public let loans: [LoanProgress]
-    /// Open debts first, newest first.
+    /// Open debts with a due date first, soonest first; then open ones, newest first.
     public let debts: [PersonalDebt]
     public let totals: DebtTotals
 

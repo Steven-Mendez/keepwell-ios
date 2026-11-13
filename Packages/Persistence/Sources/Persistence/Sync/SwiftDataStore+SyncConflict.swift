@@ -77,17 +77,8 @@ extension SwiftDataStore: SyncConflictStore {
         try perform { context in
             var upload = FullUpload(remote: rows, now: now)
             try context.delete(model: OutboxRecord.self)
-            try queueLedger(into: &upload, from: context)
-            try queueLoansAndDebts(into: &upload, from: context)
-            for record in try context.fetch(FetchDescriptor<CategorizationRuleRecord>()) {
-                try upload.queue("categorizationRule", record.wireRow())
-            }
-            for record in try context.fetch(FetchDescriptor<NotificationStateRecord>()) {
-                try upload.queue("notificationState", record.wireRow())
-            }
-            let settings = try context.fetch(FetchDescriptor<SettingsRecord>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]))
-            if let record = settings.first {
-                upload.queue("settings", record.wireRow())
+            for (entity, row) in try allWireRows(in: context) {
+                upload.queue(entity, row)
             }
             upload.queueTombstones()
             for event in upload.events {
@@ -97,52 +88,50 @@ extension SwiftDataStore: SyncConflictStore {
         }
     }
 
-    private func queueLedger(into upload: inout FullUpload, from context: ModelContext) throws {
-        for record in try context.fetch(FetchDescriptor<AccountRecord>()) {
-            try upload.queue("account", record.wireRow())
+    /// Every stored row as it travels, tombstones included, parents before their children: what a
+    /// full upload sends and what a backup holds. A removed default category is a tombstone.
+    func allWireRows(in context: ModelContext) throws -> [(entity: String, row: WireRow)] {
+        var rows: [(entity: String, row: WireRow)] = []
+        func add(_ records: [some SyncableRecord]) throws {
+            for record in records {
+                try rows.append((type(of: record).syncEntity, record.wireRow()))
+            }
         }
-        for record in try context.fetch(FetchDescriptor<CardRecord>()) {
-            try upload.queue("card", record.wireRow())
-        }
+        try add(context.fetch(FetchDescriptor<AccountRecord>()))
+        try add(context.fetch(FetchDescriptor<CardRecord>()))
         for (record, isRemoved) in try uniqueCategoryRows(in: context) {
             var row = try record.wireRow()
             if isRemoved, row["deleted_at"] is NSNull {
                 row["deleted_at"] = Wire.date(record.updatedAt)
             }
-            upload.queue("category", row)
+            rows.append(("category", row))
         }
-        for record in try context.fetch(FetchDescriptor<TransactionRecord>()) {
-            try upload.queue("transaction", record.wireRow())
-        }
-        for record in try context.fetch(FetchDescriptor<RecurringRuleRecord>()) {
-            try upload.queue("recurringRule", record.wireRow())
-        }
-        for record in try context.fetch(FetchDescriptor<SavingsGoalRecord>()) {
-            try upload.queue("savingsGoal", record.wireRow())
-        }
-    }
-
-    /// Payments and repayments follow every loan and debt, as `enqueueChild` does: a device can
-    /// only attach a payment to a loan it already has.
-    private func queueLoansAndDebts(into upload: inout FullUpload, from context: ModelContext) throws {
+        try add(context.fetch(FetchDescriptor<TransactionRecord>()))
+        try add(context.fetch(FetchDescriptor<RecurringRuleRecord>()))
+        try add(context.fetch(FetchDescriptor<SavingsGoalRecord>()))
+        // Payments and repayments follow every loan and debt, as `enqueueChild` does: a device can
+        // only attach a payment to a loan it already has.
         let loans = try context.fetch(FetchDescriptor<LoanRecord>())
-        for record in loans {
-            try upload.queue("loan", record.wireRow())
-        }
+        try add(loans)
         for record in loans where record.deletedAt == nil {
             for payment in try record.toDomain().payments {
-                upload.queue("loanPayment", record.paymentRow(payment))
+                rows.append(("loanPayment", record.paymentRow(payment)))
             }
         }
         let debts = try context.fetch(FetchDescriptor<PersonalDebtRecord>())
-        for record in debts {
-            try upload.queue("personalDebt", record.wireRow())
-        }
+        try add(debts)
         for record in debts where record.deletedAt == nil {
             for repayment in try record.toDomain().repayments {
-                upload.queue("personalDebtRepayment", record.repaymentRow(repayment))
+                rows.append(("personalDebtRepayment", record.repaymentRow(repayment)))
             }
         }
+        try add(context.fetch(FetchDescriptor<CategorizationRuleRecord>()))
+        try add(context.fetch(FetchDescriptor<NotificationStateRecord>()))
+        let settings = try context.fetch(FetchDescriptor<SettingsRecord>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]))
+        if let record = settings.first {
+            rows.append(("settings", record.wireRow()))
+        }
+        return rows
     }
 }
 

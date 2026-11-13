@@ -25,8 +25,11 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV8.versionIdentifier == Schema.Version(8, 0, 0))
         #expect(KeepwellSchemaV9.versionIdentifier == Schema.Version(9, 0, 0))
         #expect(KeepwellSchemaV11.versionIdentifier == Schema.Version(11, 0, 0))
-        #expect(KeepwellMigrationPlan.schemas.count == 11)
-        #expect(KeepwellMigrationPlan.stages.count == 10)
+        #expect(KeepwellSchemaV12.versionIdentifier == Schema.Version(12, 0, 0))
+        #expect(KeepwellSchemaV13.versionIdentifier == Schema.Version(13, 0, 0))
+        #expect(KeepwellSchemaV14.versionIdentifier == Schema.Version(14, 0, 0))
+        #expect(KeepwellMigrationPlan.schemas.count == 14)
+        #expect(KeepwellMigrationPlan.stages.count == 13)
         #expect(KeepwellSchemaV1.models.count == 5)
         #expect(KeepwellSchemaV2.models.count == 5)
         #expect(KeepwellSchemaV3.models.count == 5)
@@ -37,6 +40,9 @@ struct ModelContainerFactoryTests {
         #expect(KeepwellSchemaV8.models.count == 7)
         #expect(KeepwellSchemaV9.models.count == 10)
         #expect(KeepwellSchemaV11.models.count == 12)
+        #expect(KeepwellSchemaV12.models.count == 12)
+        #expect(KeepwellSchemaV13.models.count == 12)
+        #expect(KeepwellSchemaV14.models.count == 12)
     }
 
     /// A store written by V3 opens with today's schema: cards keep their digits and start with no

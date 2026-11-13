@@ -23,6 +23,7 @@ import RecurringDomain
 import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
+import SharedPresentation
 import SummaryDomain
 import SummaryPresentation
 import SwiftData
@@ -49,13 +50,26 @@ final class AppContainer {
     private(set) lazy var apiClient: APIClient? = makeAPIClient()
     /// The sync engine behind `cloudAccount`, kept so erasing this iPhone can forget its cursor.
     private(set) lazy var syncEngine: SyncEngine? = makeSyncEngine()
+    /// Brandfetch's logos for the rows of known brands; `nil` shows monograms only.
+    let brandLogos: (any BrandLogoProviding)? = makeBrandLogos()
     /// This iPhone's registration for the server's pushes; `nil` in builds without an API.
     private(set) lazy var push: PushRegistration? = makePushRegistration()
     /// Set by the root view: what to do when the server starts or stops sending notifications.
     var pushChanged: (() -> Void)?
 
+    /// The movements as screens and use cases see them: a deletion with "Undo" pending is hidden
+    /// here and written to `store` only when the undo window runs out.
+    let movements: DeferredTransactionDeletions
+    /// "Undo" after deleting or confirming a movement, shown over every screen.
+    let movementUndo: MovementUndo
+
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
+        movements = DeferredTransactionDeletions(base: store, store: preferences)
+        movementUndo = MovementUndo(
+            undoDelete: DefaultUndoDeleteTransactionUseCase(deletions: movements),
+            unconfirm: DefaultUnconfirmTransactionUseCase(transactions: movements, accounts: store),
+        )
     }
 
     #if DEBUG
@@ -102,7 +116,7 @@ final class AppContainer {
 
     func makeAccountsViewModel() -> AccountsViewModel {
         AccountsViewModel(
-            getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: store, settings: store),
+            getOverview: DefaultGetAccountsOverviewUseCase(accounts: store, cards: store, transactions: movements, settings: store),
             getPreferredName: makeGetPreferredName(),
         )
     }
@@ -123,17 +137,18 @@ final class AppContainer {
     func makeHomeViewModel() -> HomeViewModel {
         HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
-                accounts: store, cards: store, transactions: store, categories: store, settings: store,
+                accounts: store, cards: store, transactions: movements, categories: store, settings: store,
                 recurringRules: store, savingsGoals: store, loans: store, personalDebts: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             getPreferredName: makeGetPreferredName(),
-            discard: DefaultDeleteTransactionUseCase(transactions: store),
+            discard: DeferredDeleteTransactionUseCase(deletions: movements),
             resumeRule: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
-            deleteRule: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
+            deleteRule: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: movements),
             listNotificationStates: DefaultListNotificationStatesUseCase(repository: store),
             changeNotifications: makeChangeNotifications(),
             pruneNotificationStates: DefaultPruneNotificationStatesUseCase(repository: store),
+            undo: movementUndo,
         )
     }
 
@@ -150,21 +165,22 @@ final class AppContainer {
     func makeTransactionsViewModel() -> TransactionsViewModel {
         TransactionsViewModel(
             getList: DefaultGetTransactionListUseCase(
-                transactions: store,
+                transactions: movements,
                 accounts: store,
                 cards: store,
                 categories: store,
                 settings: store,
                 recurringRules: store,
             ),
-            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
-            deleteTransaction: DefaultDeleteTransactionUseCase(transactions: store),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
+            deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
+            undo: movementUndo,
         )
     }
 
     func makeSummaryViewModel() -> SummaryViewModel {
-        let report = DefaultGetSummaryReportUseCase(transactions: store, categories: store, settings: store, accounts: store)
-        let range = DefaultGetRangeSummaryUseCase(transactions: store, settings: store)
+        let report = DefaultGetSummaryReportUseCase(transactions: movements, categories: store, settings: store, accounts: store)
+        let range = DefaultGetRangeSummaryUseCase(transactions: movements, settings: store)
         return SummaryViewModel(getReport: report, getRange: range)
     }
 
@@ -173,15 +189,17 @@ final class AppContainer {
     func makeSettingsViewModel() -> SettingsViewModel {
         SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(
-                settings: store, categories: store, cards: store, accounts: store, transactions: store, rules: store,
+                settings: store, categories: store, cards: store, accounts: store, transactions: movements, rules: store,
                 passcodes: passcodes, profile: preferences,
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
-            changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: store),
-            exportTransactions: DefaultExportTransactionsUseCase(transactions: store, accounts: store, cards: store, categories: store),
+            changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: movements),
+            exportTransactions: DefaultExportTransactionsUseCase(transactions: movements, accounts: store, cards: store, categories: store),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
+            exportBackup: DefaultExportBackupUseCase(store: store),
+            restoreBackup: DefaultRestoreBackupUseCase(store: store),
             signOutBeforeErasing: { [weak self] in await self?.cloudAccount?.signOutBeforeErasing() ?? true },
         )
     }
@@ -209,7 +227,7 @@ final class AppContainer {
             kind: kind,
             getCategories: DefaultGetCategoriesUseCase(categories: store),
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: store),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: movements),
             reorder: DefaultReorderCategoriesUseCase(categories: store),
             restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
             getPrincipalCurrency: DefaultGetPrincipalCurrencyUseCase(settings: store),
@@ -264,19 +282,6 @@ final class AppContainer {
 
     // MARK: - Recurring
 
-    /// Records the recurring movements whose day has come. Runs at launch, on returning to the
-    /// app and after a rule is saved; it skips what another device already recorded.
-    func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
-        DefaultMaterializeRecurringUseCase(
-            rules: store,
-            transactions: store,
-            settings: store,
-            accounts: store,
-            cards: store,
-            categories: store,
-        )
-    }
-
     func materializeRecurring() async {
         do {
             try await makeMaterializeRecurring().execute()
@@ -287,24 +292,29 @@ final class AppContainer {
 
     func makeGetRecurringOverview() -> any GetRecurringOverviewUseCase {
         DefaultGetRecurringOverviewUseCase(
-            rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
+            rules: store, accounts: store, cards: store, categories: store, transactions: movements, settings: store,
         )
     }
 
     func makeRecurringViewModel() -> RecurringViewModel {
-        RecurringViewModel(getOverview: makeGetRecurringOverview())
+        RecurringViewModel(
+            getOverview: makeGetRecurringOverview(),
+            confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
+            undo: movementUndo,
+        )
     }
 
-    func makeRecurringRuleEditorViewModel(ruleID: UUID?) -> RecurringRuleEditorViewModel {
+    func makeRecurringRuleEditorViewModel(ruleID: UUID?, isNewSubscription: Bool = false) -> RecurringRuleEditorViewModel {
         RecurringRuleEditorViewModel(
             ruleID: ruleID,
+            isNewSubscription: isNewSubscription,
             getOverview: makeGetRecurringOverview(),
             save: DefaultSaveRecurringRuleUseCase(
                 rules: store, accounts: store, cards: store, categories: store, settings: store,
                 materialize: makeMaterializeRecurring(),
             ),
             setPaused: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: makeMaterializeRecurring()),
-            delete: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
+            delete: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: movements),
         )
     }
 
@@ -315,7 +325,7 @@ final class AppContainer {
         return CreateTransactionViewModel(
             getContext: context,
             save: DefaultSaveTransactionUseCase(
-                context: context, transactions: store, recurringRules: store, materialize: makeMaterializeRecurring(),
+                context: context, transactions: movements, recurringRules: store, materialize: makeMaterializeRecurring(),
             ),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
             receiptSaver: PhotoLibraryReceiptSaver(),
@@ -329,17 +339,33 @@ final class AppContainer {
 
     private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
-            settings: store, categories: store, accounts: store, cards: store, transactions: store, rules: store,
+            settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
         )
     }
 }
 
 extension AppContainer {
+    /// Records the recurring movements whose day has come. Runs at launch, on returning to the
+    /// app and after a rule is saved; it skips what another device already recorded. An occurrence
+    /// in "Other" takes the first categorization rule that matches, like any new movement.
+    func makeMaterializeRecurring() -> any MaterializeRecurringUseCase {
+        DefaultMaterializeRecurringUseCase(
+            rules: store,
+            transactions: movements,
+            settings: store,
+            accounts: store,
+            cards: store,
+            categories: store,
+            categorizationRules: store,
+        )
+    }
+
     /// Gives every bank account exactly one card before any screen reads them: older versions
     /// allowed several, and a sync can bring an account whose card hasn't arrived yet.
     func normalizeBankCards() async {
         do {
-            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: store, recurringRules: store).execute()
+            try await DefaultNormalizeBankCardsUseCase(accounts: store, cards: store, transactions: movements, recurringRules: store)
+                .execute()
         } catch {
             Logger.app.error("Bank cards could not be normalized: \(String(describing: error), privacy: .public)")
         }

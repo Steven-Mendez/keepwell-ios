@@ -75,6 +75,37 @@ public enum CategorizationRules {
         }
     }
 
+    /// The rule that categorizes a new movement with these fields: none unless it is uncategorized
+    /// (no category, or "Other" of its kind), otherwise the first that matches.
+    public static func categorizing(
+        kind: TransactionKind,
+        categoryID: String?,
+        description: String,
+        note: String?,
+        in rules: [CategorizationRule],
+    ) -> CategorizationRule? {
+        guard kind != .transfer, categoryID == nil || categoryID == TransactionCategory.otherID(for: kind) else { return nil }
+        return firstMatch(in: rules, kind: kind, description: description, note: note)
+    }
+
+    /// A new uncategorized movement takes the first rule that matches; otherwise it stays as it is.
+    /// Saving a new movement and recording a recurring occurrence go through it; edits never do.
+    public static func autoCategorized(_ transaction: Transaction, rules: [CategorizationRule]) -> Transaction {
+        let rule = categorizing(
+            kind: transaction.kind,
+            categoryID: transaction.categoryID,
+            description: transaction.description,
+            note: transaction.note,
+            in: rules,
+        )
+        return rule.map { applying($0, to: transaction) } ?? transaction
+    }
+
+    /// The rules saving may apply: those whose category still exists with the rule's kind, in order.
+    public static func usable(_ rules: [CategorizationRule], categories: [TransactionCategory]) -> [CategorizationRule] {
+        rules.filter { rule in categories.contains { $0.id == rule.categoryID && $0.kind == rule.kind } }
+    }
+
     /// The movement in the rule's category, with the rule's tags after its own.
     public static func applying(_ rule: CategorizationRule, to transaction: Transaction) -> Transaction {
         transaction.with(categoryID: rule.categoryID, tags: Tags.merging(transaction.tags, with: rule.tags))

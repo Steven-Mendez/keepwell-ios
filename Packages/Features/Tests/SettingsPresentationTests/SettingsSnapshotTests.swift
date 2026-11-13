@@ -10,7 +10,12 @@ import Testing
 @MainActor
 struct SettingsSnapshotTests {
     private func loaded() async -> SettingsViewModel {
+        // Pin the home time zone: left unset, the row falls back to the runner's own zone (GMT on CI),
+        // so the reference would depend on the machine that recorded it.
+        var settings = SampleData.standard.settings
+        settings.timeZone = "America/Managua"
         let store = InMemoryStore(sample: .standard)
+        await store.save(settings)
         let passcodes = InMemoryPasscodeStore(name: "Steven")
         let viewModel = SettingsViewModel(
             getOverview: DefaultGetSettingsOverviewUseCase(

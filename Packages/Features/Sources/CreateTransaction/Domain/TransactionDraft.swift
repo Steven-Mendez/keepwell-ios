@@ -118,6 +118,25 @@ public struct TransactionContext: Sendable {
         accounts.first { $0.id == id }
     }
 
+    /// The context the flow's pickers read: open accounts and their methods, plus the closed ones in
+    /// `kept` (the accounts of the movement being edited, which still show, marked closed).
+    public func forPickers(keeping kept: [UUID?] = []) -> Self {
+        let shown = accounts.filter { $0.isOpen || kept.contains($0.id) }
+        guard shown.count != accounts.count else { return self }
+        let ids = Set(shown.map(\.id))
+        return Self(
+            currencies: currencies,
+            categories: categories,
+            accounts: shown,
+            cards: cards.filter { ids.contains($0.accountID) },
+            balances: balances,
+            lastUsed: lastUsed,
+            categoryUsage: categoryUsage,
+            tagUsage: tagUsage,
+            rules: rules,
+        )
+    }
+
     public func card(_ id: UUID?) -> Card? {
         cards.first { $0.id == id }
     }

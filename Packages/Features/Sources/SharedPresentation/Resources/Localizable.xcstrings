@@ -71,6 +71,16 @@
         }
       }
     },
+    "Balance isn't zero" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El saldo no es cero"
+          }
+        }
+      }
+    },
     "Bank transfer" : {
       "localizations" : {
         "es" : {
@@ -121,12 +131,92 @@
         }
       }
     },
+    "Close %@?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cerrar %@?"
+          }
+        }
+      }
+    },
+    "Close account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar cuenta"
+          }
+        }
+      }
+    },
+    "Close instead" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar en su lugar"
+          }
+        }
+      }
+    },
+    "Closed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrada"
+          }
+        }
+      }
+    },
+    "Closed (%lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerradas (%lld)"
+          }
+        }
+      }
+    },
+    "Closed on %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrada el %@"
+          }
+        }
+      }
+    },
+    "Closing transfer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferencia de cierre"
+          }
+        }
+      }
+    },
     "Color" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Color"
+          }
+        }
+      }
+    },
+    "Confirmed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmado"
           }
         }
       }
@@ -227,6 +317,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Donaciones"
+          }
+        }
+      }
+    },
+    "Drafts deleted: %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borradores que se borran: %lld"
           }
         }
       }
@@ -591,6 +691,16 @@
         }
       }
     },
+    "It disappears from your lists and pickers. Its movements stay in your summaries and net worth. You can reopen it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desaparece de tus listas y selectores. Sus movimientos siguen en tus resúmenes y tu patrimonio. Puedes reabrirla."
+          }
+        }
+      }
+    },
     "Its movements move to “%@”." : {
       "localizations" : {
         "es" : {
@@ -637,6 +747,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Presupuesto mensual"
+          }
+        }
+      }
+    },
+    "Move and close" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover y cerrar"
+          }
+        }
+      }
+    },
+    "Move or record the balance first" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primero mueve o registra el saldo"
+          }
+        }
+      }
+    },
+    "Move the balance to" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover el saldo a"
           }
         }
       }
@@ -801,6 +941,16 @@
         }
       }
     },
+    "Recurring rules paused: %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas recurrentes que se pausan: %lld"
+          }
+        }
+      }
+    },
     "Recurring · %@" : {
       "localizations" : {
         "es" : {
@@ -837,6 +987,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alquiler"
+          }
+        }
+      }
+    },
+    "Reopen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reabrir"
           }
         }
       }
@@ -941,6 +1101,26 @@
         }
       }
     },
+    "This account is closed. Reopen it first." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta cuenta está cerrada. Reábrela primero."
+          }
+        }
+      }
+    },
+    "To keep its history, close it instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para conservar su historia, ciérrala en su lugar."
+          }
+        }
+      }
+    },
     "Today" : {
       "localizations" : {
         "es" : {
@@ -971,6 +1151,16 @@
         }
       }
     },
+    "Transaction deleted" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movimiento eliminado"
+          }
+        }
+      }
+    },
     "Transport" : {
       "localizations" : {
         "es" : {
@@ -991,12 +1181,32 @@
         }
       }
     },
+    "Undo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer"
+          }
+        }
+      }
+    },
     "Utilities" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Servicios"
+          }
+        }
+      }
+    },
+    "We couldn't close the account. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cerrar la cuenta. Inténtalo de nuevo."
           }
         }
       }

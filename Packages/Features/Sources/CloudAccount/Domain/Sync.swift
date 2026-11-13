@@ -102,6 +102,23 @@ public enum SyncRoundOutcome: Equatable, Sendable {
     case needsChoice(SyncConflict)
 }
 
+/// A row the server sent that this version of the app couldn't store (typically one written by a
+/// newer version). It is skipped so the rest of the account keeps syncing, and tried again once the
+/// app is updated. `reason` names the failure, never the row's values.
+public struct SkippedRow: Equatable, Sendable, Codable {
+    public let entity: String
+    public let entityID: String
+    public let reason: String
+    public let at: Date
+
+    public init(entity: String, entityID: String, reason: String, at: Date) {
+        self.entity = entity
+        self.entityID = entityID
+        self.reason = reason
+        self.at = at
+    }
+}
+
 /// An event the server refused, kept so the person can see what stayed only on this iPhone.
 public struct RejectedChange: Equatable, Sendable, Codable {
     public let entity: String

@@ -8,7 +8,12 @@ import Testing
 struct SyncEngineTests {
     let base = URL(string: "https://api.example.com") ?? URL(fileURLWithPath: "/")
 
-    func engine(_ store: FakeSyncStore, suite: String) -> SyncEngine {
+    func engine(
+        _ store: FakeSyncStore,
+        suite: String,
+        build: String = "1",
+        repair: (any ReassignDeletedCategoriesUseCase)? = nil,
+    ) -> SyncEngine {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubProtocol.self]
         StubProtocol.requests = []
@@ -17,7 +22,14 @@ struct SyncEngineTests {
             store: InMemorySessionStore(cookie: "better-auth.session_token=x"),
             configuration: configuration,
         )
-        return SyncEngine(client: client, store: store, defaultsSuite: suite, clientID: "client-1")
+        return SyncEngine(
+            client: client,
+            store: store,
+            defaultsSuite: suite,
+            clientID: "client-1",
+            appBuild: build,
+            repairCategories: repair,
+        )
     }
 
     func suite() -> String {
@@ -151,5 +163,151 @@ struct SyncEngineTests {
             try await engine(store, suite: suite()).syncOnce()
         }
         #expect(await store.pendingCount() == 1)
+    }
+
+    // MARK: - Rows this version can't store
+
+    static func category(_ id: String, name: String) -> [String: Any] {
+        ["id": id, "name": name, "updated_at": "2026-11-03T00:00:00.000Z", "deleted_at": NSNull()]
+    }
+
+    /// A pull page of three categories, the middle one unreadable here; snapshots hold the same rows.
+    static func serveThreeCategories(_ request: URLRequest) -> (Int, [String: String], Data) {
+        let rows = [category("first", name: "First"), category("newer", name: "Newer"), category("last", name: "Last")]
+        switch request.url?.path {
+        case "/sync/pull":
+            let changes = rows.enumerated().map { index, row in
+                ["server_seq": index + 1, "entity": "category", "entity_id": row["id"] ?? "", "operation": "create", "row": row]
+            }
+            return (200, [:], json(["changes": changes, "next_cursor": 3, "has_more": false]))
+        case "/sync/snapshot":
+            return (200, [:], json(["rows": rows, "server_seq": 3, "next_after": NSNull()]))
+        default:
+            return (404, [:], Data())
+        }
+    }
+
+    @Test
+    func aRowThatCantBeStoredIsSkippedAndRecordedAndTheCursorMovesOn() async throws {
+        let store = FakeSyncStore()
+        await store.setUnreadable(["newer"])
+        let suite = suite()
+        UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
+        StubProtocol.handler = Self.serveThreeCategories
+        let engine = engine(store, suite: suite)
+
+        try await engine.syncOnce()
+
+        #expect(await store.appliedNames() == ["First", "Last"])
+        #expect(cursor(suite) == 3)
+        let skipped = await engine.skipped
+        #expect(skipped.map(\.entity) == ["category"])
+        #expect(skipped.map(\.entityID) == ["newer"])
+        #expect(skipped.map(\.reason) == ["corruptedData: wire amount"])
+    }
+
+    @Test
+    func aStoreThatCantWriteStopsThePullWithoutMovingTheCursor() async {
+        let store = FakeSyncStore()
+        await store.setFailsToStore(true)
+        let suite = suite()
+        UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
+        StubProtocol.handler = Self.serveThreeCategories
+        let engine = engine(store, suite: suite)
+
+        await #expect(throws: CloudAccountError.server(code: "apply_failed", requestID: nil)) {
+            try await engine.syncOnce()
+        }
+        #expect(cursor(suite) == 0)
+        #expect(await engine.skipped.isEmpty)
+    }
+
+    @Test
+    func anUpdatedAppDownloadsTheSkippedEntityAgainOnce() async throws {
+        let store = FakeSyncStore()
+        await store.setUnreadable(["newer"])
+        let suite = suite()
+        UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
+        StubProtocol.handler = Self.serveThreeCategories
+        try await engine(store, suite: suite, build: "1").syncOnce()
+
+        // The same build doesn't try again: it would skip the row again.
+        let sameBuild = engine(store, suite: suite, build: "1")
+        try await sameBuild.syncOnce()
+        #expect(!StubProtocol.requests.contains { $0.url?.path == "/sync/snapshot" })
+        #expect(await sameBuild.skipped.count == 1)
+
+        await store.setUnreadable([])
+        let updated = engine(store, suite: suite, build: "2")
+        try await updated.syncOnce()
+        let snapshots = StubProtocol.requests.filter { $0.url?.path == "/sync/snapshot" }
+        #expect(snapshots.count == 1)
+        #expect(snapshots.first?.url?.query?.contains("entity=category") == true)
+        #expect(await store.appliedNames().contains("Newer"))
+        #expect(await updated.skipped.isEmpty)
+
+        let again = engine(store, suite: suite, build: "2")
+        try await again.syncOnce()
+        #expect(!StubProtocol.requests.contains { $0.url?.path == "/sync/snapshot" })
+    }
+
+    @Test
+    func aRowStillUnreadableAfterTheUpdateWaitsForTheNextOne() async throws {
+        let store = FakeSyncStore()
+        await store.setUnreadable(["newer"])
+        let suite = suite()
+        UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
+        StubProtocol.handler = Self.serveThreeCategories
+        try await engine(store, suite: suite, build: "1").syncOnce()
+
+        let updated = engine(store, suite: suite, build: "2")
+        try await updated.syncOnce()
+        #expect(await updated.skipped.map(\.entityID) == ["newer"])
+
+        let sameBuild = engine(store, suite: suite, build: "2")
+        try await sameBuild.syncOnce()
+        #expect(!StubProtocol.requests.contains { $0.url?.path == "/sync/snapshot" })
+    }
+
+    @Test
+    func theRecordedReasonNeverCarriesTheRowsValues() async throws {
+        let store = FakeSyncStore()
+        await store.setUnreadable(["newer"], as: .corruptedData("Money entry 120.50 USD"))
+        let suite = suite()
+        UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
+        StubProtocol.handler = Self.serveThreeCategories
+        let engine = engine(store, suite: suite)
+
+        try await engine.syncOnce()
+
+        #expect(await engine.skipped.map(\.reason) == ["corruptedData"])
+    }
+}
+
+// MARK: - Category repair
+
+extension SyncEngineTests {
+    @Test
+    func afterThePullTheRepairGetsTheCategoryTombstones() async throws {
+        let store = FakeSyncStore()
+        await store.setDeletedCategories(["custom-boat"])
+        let suite = suite()
+        UserDefaults(suiteName: suite)?.set(0, forKey: "sync.cursor")
+        StubProtocol.handler = { _ in
+            (200, [:], Self.json(["changes": [], "next_cursor": 0, "has_more": false]))
+        }
+        let repair = SpyRepair()
+        try await engine(store, suite: suite, repair: repair).syncOnce()
+        #expect(await repair.calls == [["custom-boat"]])
+    }
+}
+
+/// Records what the engine hands the repair after a pull.
+actor SpyRepair: ReassignDeletedCategoriesUseCase {
+    private(set) var calls: [Set<String>] = []
+
+    func execute(deletedCategoryIDs: Set<String>) throws(DomainError) -> Int {
+        calls.append(deletedCategoryIDs)
+        return 0
     }
 }

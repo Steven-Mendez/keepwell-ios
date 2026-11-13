@@ -34,6 +34,7 @@ public struct DefaultUpdateCreditTermsUseCase: UpdateCreditTermsUseCase {
             openingBalances: account.openingBalances,
             openingDate: account.openingDate,
             creditTerms: terms,
+            closedAt: account.closedAt,
         ))
     }
 }

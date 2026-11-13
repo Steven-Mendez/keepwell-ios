@@ -137,6 +137,7 @@ extension Account {
             openingBalances: openingBalances,
             openingDate: openingDate,
             creditTerms: creditTerms,
+            closedAt: closedAt,
         )
     }
 }

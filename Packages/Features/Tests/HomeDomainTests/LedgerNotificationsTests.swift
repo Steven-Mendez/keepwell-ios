@@ -100,6 +100,37 @@ struct LedgerNotificationsTests {
     }
 
     @Test
+    func aRecurringExpenseRecordedAsADraftIsRemindedTheDayBeforeAndNoOtherRule() async throws {
+        let now = date(11, 12)
+        let due = date(11, 13, hour: 9)
+        let store = InMemoryStore(sample: .standard)
+        let rule = { (name: String, kind: TransactionKind, autoConfirm: Bool, isSubscription: Bool, start: Date) in
+            RecurringRule(
+                name: name, kind: kind, categoryID: kind == .income ? "salary" : "housing", amount: 450, currency: "USD",
+                accountID: SampleData.IDs.savings, frequency: .monthly, startDate: start, isSubscription: isSubscription,
+                autoConfirm: autoConfirm, source: .app,
+            )
+        }
+        let rent = rule("Rent", .expense, false, false, due)
+        let mine = [
+            rent, rule("Auto", .expense, true, false, due), rule("Salary", .income, false, false, due),
+            rule("Gym", .expense, false, true, due), rule("Later", .expense, false, false, date(11, 14, hour: 9)),
+        ]
+        for candidate in mine {
+            await store.save(candidate)
+        }
+        let ours = Set(mine.map { $0.id.uuidString.lowercased() })
+        let found = try await LedgerNotifications.applying(on: now, in: overview(store, now: now), calendar: calendar)
+            .filter { ($0.kind == .bill || $0.kind == .renewal) && ours.contains(String($0.id.split(separator: ":")[1])) }
+        let gym = mine[3].id.uuidString.lowercased()
+        #expect(Set(found.map(\.id)) == ["bill:\(rent.id.uuidString.lowercased()):2026-11-13", "renewal:\(gym):2026-11-13"])
+        let bill = try #require(found.first { $0.kind == .bill })
+        // A target every published app already decodes, so an older one still opens a pushed bill.
+        #expect(bill.target == .recurring)
+        #expect(bill.date == calendar.startOfDay(for: now))
+    }
+
+    @Test
     func draftsDatedTodayOrBeforeApplyAndLaterOnesDontYet() async throws {
         let now = SampleData.defaultReferenceDate
         let overview = try await overview(now: now)
@@ -237,5 +268,20 @@ struct NotificationPayloadTests {
         #expect(LedgerNotification.Target(userInfo: ["target": ["screen": "nowhere"]]) == nil)
         #expect(LedgerNotification.Target(userInfo: [:]) == nil)
         #expect(LedgerNotification.id(in: [:]) == nil)
+    }
+
+    @Test
+    func aPushOfAKindTheAppDoesntKnowStillOpensItsTarget() throws {
+        // The body the server sends for a bill (keepwell-api `tests/notifications/bill.test.ts`):
+        // the app reads `notification_id` and `target` only, never the kind, which rides in
+        // `thread-id`, so an app that predates a kind opens it like any other.
+        let body = #"{"aps":{"alert":{"title":"Rent is due tomorrow","body":"US$450.00 on Savings"},"sound":"default","#
+            + #""thread-id":"bill","badge":1},"notification_id":"bill:cccccccc-cccc-4ccc-8ccc-cccccccccccc:2026-11-14","#
+            + #""target":{"screen":"recurring"}}"#
+        let info = try #require(try JSONSerialization.jsonObject(with: Data(body.utf8)) as? [String: Any])
+        #expect(LedgerNotification.Target(userInfo: info) == .recurring)
+        #expect(LedgerNotification.id(in: info) == "bill:cccccccc-cccc-4ccc-8ccc-cccccccccccc:2026-11-14")
+        #expect(NotificationState.day(ofID: "bill:cccccccc-cccc-4ccc-8ccc-cccccccccccc:2026-11-14", calendar: .current)
+            == Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 14)))
     }
 }

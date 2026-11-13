@@ -7,11 +7,14 @@ import SwiftUI
 
 /// Creates or edits a recurring rule: what it is, how much, what pays, how often and from when.
 /// Editing also shows its next dates and what it recorded, with "Pause" and "Delete" at the end.
+/// A new subscription opens the same form short: name, amount, period and billing day, with the
+/// rest one "More options" away.
 public struct RecurringRuleEditorView: View {
     @Bindable private var viewModel: RecurringRuleEditorViewModel
     private let onBack: () -> Void
     private let onDone: () -> Void
     private let onOpenTransaction: (UUID) -> Void
+    private let onSeeAllRecorded: ((UUID) -> Void)?
     @State private var choice: Choice?
     @State private var isConfirmingDelete = false
 
@@ -23,17 +26,20 @@ public struct RecurringRuleEditorView: View {
         var id: String { rawValue }
     }
 
-    /// `onDone` runs after saving or deleting; `onOpenTransaction` opens a movement the rule recorded.
+    /// `onDone` runs after saving or deleting; `onOpenTransaction` opens a movement the rule recorded;
+    /// `onSeeAllRecorded` opens the movement list narrowed to everything it recorded.
     public init(
         viewModel: RecurringRuleEditorViewModel,
         onBack: @escaping () -> Void,
         onDone: @escaping () -> Void,
         onOpenTransaction: @escaping (UUID) -> Void,
+        onSeeAllRecorded: ((UUID) -> Void)? = nil,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onDone = onDone
         self.onOpenTransaction = onOpenTransaction
+        self.onSeeAllRecorded = onSeeAllRecorded
     }
 
     public var body: some View {
@@ -89,7 +95,42 @@ public struct RecurringRuleEditorView: View {
 
     @ViewBuilder
     private var form: some View {
+        if viewModel.showsAllFields {
+            fullForm
+        } else {
+            amountCard
+            if viewModel.shortFormNeedsChoices {
+                choicesCard
+            }
+            shortSchedule
+        }
+    }
+
+    @ViewBuilder
+    private var fullForm: some View {
         KWSegmentedControl(viewModel.kindOptions, selection: $viewModel.kind)
+        amountCard
+        choicesCard
+        schedule
+        options
+        KWGroupedCard {
+            KWTextFieldRow(
+                String(localized: "Note", bundle: #bundle),
+                placeholder: String(localized: "Optional", bundle: #bundle),
+                text: $viewModel.note,
+            )
+        }
+        RecurringRuleDetail(
+            viewModel: viewModel,
+            onOpenTransaction: onOpenTransaction,
+            onSeeAllRecorded: viewModel.ruleID.flatMap { id in onSeeAllRecorded.map { open in { open(id) } } },
+        )
+        if viewModel.isEditing {
+            manage
+        }
+    }
+
+    private var amountCard: some View {
         KWGroupedCard {
             KWTextFieldRow(
                 String(localized: "Name", bundle: #bundle),
@@ -101,7 +142,7 @@ public struct RecurringRuleEditorView: View {
                 symbol: CurrencyFormatter.symbol(for: viewModel.currency),
                 text: $viewModel.amountText,
             )
-            if viewModel.currencyOptions.count > 1 {
+            if viewModel.showsAllFields, viewModel.currencyOptions.count > 1 {
                 menuRow(String(localized: "Currency", bundle: #bundle), value: viewModel.currency) {
                     ForEach(viewModel.currencyOptions, id: \.self) { code in
                         Button(code) { viewModel.currency = code }
@@ -109,6 +150,9 @@ public struct RecurringRuleEditorView: View {
                 }
             }
         }
+    }
+
+    private var choicesCard: some View {
         KWGroupedCard {
             pickerRow(methodLabel, value: viewModel.methodTitle, choice: .method)
             if viewModel.kind == .transfer {
@@ -121,18 +165,27 @@ public struct RecurringRuleEditorView: View {
                 )
             }
         }
-        schedule
-        options
-        KWGroupedCard {
-            KWTextFieldRow(
-                String(localized: "Note", bundle: #bundle),
-                placeholder: String(localized: "Optional", bundle: #bundle),
-                text: $viewModel.note,
-            )
-        }
-        RecurringRuleDetail(viewModel: viewModel, onOpenTransaction: onOpenTransaction)
-        if viewModel.isEditing {
-            manage
+    }
+
+    /// The four periods, the billing day (the schedule's start) and the first charge it gives.
+    private var shortSchedule: some View {
+        VStack(alignment: .leading, spacing: KWSpacing.md) {
+            KWSegmentedControl(viewModel.periodOptions, selection: $viewModel.subscriptionPeriod)
+            KWGroupedCard {
+                DatePicker(selection: $viewModel.startDate, displayedComponents: [.date]) {
+                    Text("Billing day", bundle: #bundle).font(KWTextStyle.body.font).foregroundStyle(KWColor.Text.secondary)
+                }
+                .padding(.vertical, KWSpacing.xs)
+                if let nextCharge = viewModel.nextCharge {
+                    KWValueRow(String(localized: "Next charge", bundle: #bundle), value: nextCharge, verticalPadding: 14)
+                }
+            }
+            Button {
+                withAnimation(.snappy) { viewModel.showMoreOptions() }
+            } label: {
+                Text("More options", bundle: #bundle)
+            }
+            .buttonStyle(.kw(.surface, size: .row))
         }
     }
 

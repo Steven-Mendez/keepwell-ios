@@ -21,7 +21,7 @@ public final class NewMovementMenuViewModel {
     }
 
     public func load() async {
-        let accounts = await (try? getContext.execute())?.accounts ?? []
+        let accounts = await (try? getContext.execute())?.accounts.open ?? []
         // Without accounts yet, expenses still open the flow, which explains what is missing.
         let types = accounts.isEmpty ? [.expense, .income] : MovementType.available(with: accounts)
         options = types.map { Option(type: $0, title: CreateTransactionViewModel.title(of: $0), subtitle: Self.subtitle(of: $0)) }

@@ -31,7 +31,7 @@ public struct DefaultGetPaymentMethodsUseCase: GetPaymentMethodsUseCase {
 
     public func execute() async throws(DomainError) -> [PaymentMethodGroup] {
         let cards = try await cards.fetchCards()
-        return try await accounts.fetchAccounts().compactMap { account in
+        return try await accounts.fetchAccounts().open.compactMap { account in
             let methods = cards.filter { $0.accountID == account.id }
             guard !methods.isEmpty else { return nil }
             return PaymentMethodGroup(

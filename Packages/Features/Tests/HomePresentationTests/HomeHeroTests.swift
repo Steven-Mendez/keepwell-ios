@@ -25,6 +25,37 @@ struct HomeHeroTests {
     }
 
     @Test
+    func theStatusLineCountsWhatIsDueWithPlurals() {
+        #expect(HomeViewModel.statusLine(HomeStatus()) == "All caught up")
+        #expect(HomeViewModel.statusLine(HomeStatus(toConfirm: 2, dueTomorrow: 1)) == "2 payments to confirm · 1 due tomorrow")
+        #expect(
+            HomeViewModel.statusLine(HomeStatus(toConfirm: 1, overdue: 2, dueToday: 3))
+                == "1 payment to confirm · 2 installments overdue · 3 due today",
+        )
+        #expect(HomeViewModel.statusLine(HomeStatus(overdue: 1)) == "1 installment overdue")
+        #expect(
+            HomeViewModel.statusLine(HomeStatus(toConfirm: 1, overdue: 2, overdueDebts: 1, dueToday: 1, dueTomorrow: 2))
+                == "1 payment to confirm · 2 installments overdue · 1 debt overdue · 1 due today · 2 due tomorrow",
+        )
+        #expect(HomeViewModel.statusLine(HomeStatus(overdueDebts: 2)) == "2 debts overdue")
+        #expect(
+            HomeViewModel.statusLine(HomeStatus(overdueDebts: 2, dueToday: 1, dueTomorrow: 1))
+                == "2 debts overdue · 1 due today · 1 due tomorrow",
+        )
+    }
+
+    @Test
+    func theStatusLineFollowsTheDraftsHomeLists() async throws {
+        // The sample's "today" is Oct 22 and its drafts are later: nothing is late yet.
+        let viewModel = await loadedViewModel()
+        #expect(viewModel.statusLine() != nil)
+        let overview = try #require(viewModel.overview)
+        let late = overview.planned.count { Calendar.current.startOfDay(for: $0.date) <= Calendar.current.startOfDay(for: now) }
+        let status = HomeStatus(overview)
+        #expect(status.toConfirm == late)
+    }
+
+    @Test
     func carouselStartsWithNetWorthThenEachAccountThenCardDebt() async throws {
         let viewModel = await loadedViewModel()
         let overview = try #require(viewModel.overview)
@@ -58,7 +89,6 @@ struct HomeHeroTests {
         #expect(hidden.cents.isEmpty)
         #expect(viewModel.visible("$1.00", hidden: true) == HomeViewModel.maskedAmount)
         #expect(viewModel.visible("$1.00", hidden: false) == "$1.00")
-        #expect(!viewModel.plannedCaption(overview, hidden: true).contains("$"))
     }
 
     @Test

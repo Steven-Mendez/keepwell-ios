@@ -140,6 +140,10 @@ extension SwiftDataStore {
             account.limitCurrency = wire.optionalString("limit_currency")
             account.cutoffDay = wire.optionalInt("cutoff_day")
             account.dueDay = wire.optionalInt("due_day")
+            // A row without the key comes from an app older than the column: the account stays as it was.
+            if wire.row.keys.contains("closed_at") {
+                account.closedAt = wire.optionalDate("closed_at")
+            }
             try wire.audit(account)
         case "card":
             let id = try wire.uuid("id")
@@ -291,6 +295,10 @@ extension SwiftDataStore {
             debt.note = wire.optionalString("note")
             debt.settledAt = wire.optionalDate("settled_at")
             debt.transactionID = wire.optionalUUID("transaction_id")
+            // A row without the key comes from an app older than the column: the date stays as it was.
+            if wire.row.keys.contains("due_date") {
+                debt.dueDate = wire.optionalDate("due_date")
+            }
             try wire.audit(debt)
         case "personalDebtRepayment":
             let debtID = try wire.uuid("debt_id")
@@ -335,6 +343,10 @@ extension SwiftDataStore {
             settings.rate = try wire.string("rate")
             settings.paymentReminderDaysBefore = try wire.int("payment_reminder_days_before")
             settings.hasCompletedOnboarding = wire.bool("has_completed_onboarding")
+            // A row without the key comes from an app older than the column: it says nothing about it.
+            if wire.row.keys.contains("time_zone") {
+                settings.timeZone = wire.optionalString("time_zone")
+            }
             settings.updatedAt = try wire.date("updated_at")
         default:
             return false

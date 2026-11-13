@@ -41,6 +41,50 @@ struct PlanViewModelTests {
     }
 
     @Test
+    func theCardsCountWhatTheirTotalsAddUp() async throws {
+        let viewModel = await loaded()
+        let overview = try #require(viewModel.overview)
+        // The sample: Juan owes part of a dinner; the motorbike loan and Ana's tickets are owed.
+        #expect(viewModel.youOweTitle(overview.debts) == "2 debts to pay")
+        #expect(viewModel.owedToYouTitle(overview.debts) == "1 person owes you")
+        let count = overview.recurring.subscriptionCount
+        #expect(count > 0)
+        #expect(viewModel
+            .subscriptionsCaption(overview.recurring) == (count == 1 ? "Per month · 1 subscription" : "Per month · \(count) subscriptions"))
+    }
+
+    /// T10/T13: a subscription in a currency the rate can't convert stays out of the total and of
+    /// the count, and the card says so, as the Recurring screen does.
+    @Test
+    func aSubscriptionTheTotalLeavesOutIsNamedApart() async throws {
+        let before = try #require(await loaded().overview?.recurring)
+        let store = InMemoryStore(sample: .standard)
+        let streaming = try #require(SampleData.standard.recurringRules.first { $0.id == SampleData.IDs.streamingRule })
+        await store.save(RecurringRule(
+            name: "Music", kind: .expense, categoryID: streaming.categoryID, amount: 9, currency: "EUR",
+            accountID: streaming.accountID, frequency: .monthly, startDate: streaming.startDate,
+            nextDate: streaming.nextDate, isSubscription: true,
+        ))
+        let viewModel = await loaded(store)
+        let recurring = try #require(viewModel.overview?.recurring)
+        #expect(recurring.subscriptionsPerMonth == before.subscriptionsPerMonth)
+        #expect(recurring.subscriptionCount == before.subscriptionCount)
+        #expect(viewModel.subscriptionsCaption(recurring) == viewModel.subscriptionsCaption(before))
+        #expect(viewModel.excludedSubscriptionLines(recurring) == ["Not including 1 in EUR"])
+        #expect(viewModel.excludedSubscriptionLines(before).isEmpty)
+    }
+
+    @Test
+    func withoutCountsTheCardsKeepTheirTitles() {
+        let viewModel = PlanViewModel(getOverview: PlanOverviewStub())
+        let debts = PlanOverview.Debts(totals: DebtTotals(loans: [], debts: []), nextLoan: nil, hasDebts: false)
+        let recurring = PlanOverview.Recurring(subscriptionsPerMonth: Money(0, "USD"), next: nil, hasRules: true)
+        #expect(viewModel.youOweTitle(debts) == "You owe")
+        #expect(viewModel.owedToYouTitle(debts) == "Owed to you")
+        #expect(viewModel.subscriptionsCaption(recurring) == "Subscriptions per month")
+    }
+
+    @Test
     func noDebtsReadNothing() {
         let viewModel = PlanViewModel(getOverview: PlanOverviewStub())
         #expect(viewModel.debtTotal([], hidden: false) == "Nothing")

@@ -16,8 +16,10 @@ import PlanPresentation
 import RecurringPresentation
 import SettingsDomain
 import SettingsPresentation
+import SharedPresentation
 import SummaryPresentation
 import SwiftUI
+import TransactionsDomain
 import TransactionsPresentation
 
 /// When the app asks to unlock again, from the person's settings.
@@ -322,8 +324,8 @@ struct CashRoute: View {
     }
 }
 
-/// The movement list pushed from an account. It has its own view model so filtering it
-/// leaves the Transactions tab as the person left it.
+/// The movement list pushed from an account or a recurring rule. It has its own view model so
+/// filtering it leaves the Transactions tab as the person left it.
 struct TransactionsRoute: View {
     @State private var viewModel: TransactionsViewModel
     let onBack: () -> Void
@@ -334,6 +336,7 @@ struct TransactionsRoute: View {
     init(
         container: AppContainer,
         scope: TransactionScope,
+        origin: TransactionOrigin = .any,
         onBack: @escaping () -> Void,
         onOpenTransaction: @escaping (UUID) -> Void,
         onOpenRecurringRule: @escaping (UUID) -> Void,
@@ -341,6 +344,7 @@ struct TransactionsRoute: View {
     ) {
         let viewModel = container.makeTransactionsViewModel()
         viewModel.scope = scope
+        viewModel.origin = origin
         _viewModel = State(initialValue: viewModel)
         self.onBack = onBack
         self.onOpenTransaction = onOpenTransaction
@@ -362,23 +366,28 @@ struct TransactionsRoute: View {
     }
 }
 
-/// Recurring movements and subscriptions. The screen reloads itself when it reappears after a rule closes.
+/// Recurring movements and subscriptions. The screen reloads itself when it reappears after a rule
+/// closes, and after "Undo" turns a draft it confirmed back into one.
 struct RecurringRoute: View {
     @State private var viewModel: RecurringViewModel
+    private let undo: MovementUndo
     let onBack: () -> Void
-    let onAdd: () -> Void
+    /// `true` for "New subscription", the short form.
+    let onAdd: (_ isSubscription: Bool) -> Void
     let onOpen: (UUID) -> Void
 
-    init(container: AppContainer, onBack: @escaping () -> Void, onAdd: @escaping () -> Void, onOpen: @escaping (UUID) -> Void) {
+    init(container: AppContainer, onBack: @escaping () -> Void, onAdd: @escaping (Bool) -> Void, onOpen: @escaping (UUID) -> Void) {
         _viewModel = State(initialValue: container.makeRecurringViewModel())
+        undo = container.movementUndo
         self.onBack = onBack
         self.onAdd = onAdd
         self.onOpen = onOpen
     }
 
     var body: some View {
-        RecurringView(viewModel: viewModel, onBack: onBack, onAdd: onAdd, onOpen: onOpen)
+        RecurringView(viewModel: viewModel, onBack: onBack, onAdd: { onAdd(false) }, onAddSubscription: { onAdd(true) }, onOpen: onOpen)
             .navigationBarBackButtonHidden()
+            .onChange(of: undo.undoneCount) { Task { await viewModel.load() } }
     }
 }
 
@@ -435,24 +444,6 @@ extension View {
                 .presentationDetents([.large])
                 .presentationBackground(KWColor.Surface.bg)
         }
-    }
-}
-
-/// A recurring rule's editor, which closes itself after saving or deleting.
-struct RecurringRuleRoute: View {
-    @State private var viewModel: RecurringRuleEditorViewModel
-    let onBack: () -> Void
-    let onOpenTransaction: (UUID) -> Void
-
-    init(container: AppContainer, ruleID: UUID?, onBack: @escaping () -> Void, onOpenTransaction: @escaping (UUID) -> Void) {
-        _viewModel = State(initialValue: container.makeRecurringRuleEditorViewModel(ruleID: ruleID))
-        self.onBack = onBack
-        self.onOpenTransaction = onOpenTransaction
-    }
-
-    var body: some View {
-        RecurringRuleEditorView(viewModel: viewModel, onBack: onBack, onDone: onBack, onOpenTransaction: onOpenTransaction)
-            .navigationBarBackButtonHidden()
     }
 }
 

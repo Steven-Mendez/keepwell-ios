@@ -2,6 +2,7 @@ import DesignSystem
 import OnboardingPresentation
 import OSLog
 import Persistence
+import SharedPresentation
 import SwiftData
 import SwiftUI
 
@@ -21,6 +22,7 @@ struct KeepwellApp: App {
             Group {
                 if let container {
                     RootView(container: container, notifications: notifications)
+                        .environment(\.brandLogos, container.brandLogos)
                 } else {
                     SplashView()
                 }

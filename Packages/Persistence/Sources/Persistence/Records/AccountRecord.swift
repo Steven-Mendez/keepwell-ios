@@ -21,6 +21,8 @@ public final class AccountRecord: AuditedRecord {
     /// Added in V5, with `deletedAt`: a deleted account stays as a tombstone so the deletion syncs.
     var updatedAt = Date.now
     var deletedAt: Date?
+    /// When it was closed (`Account.closedAt`), from schema V14.
+    var closedAt: Date?
 
     init(id: UUID) {
         self.id = id
@@ -37,6 +39,7 @@ public final class AccountRecord: AuditedRecord {
         limitCurrency = account.creditTerms?.limit?.currency
         cutoffDay = account.creditTerms?.cutoffDay
         dueDay = account.creditTerms?.dueDay
+        closedAt = account.closedAt
     }
 
     func toDomain() throws(DomainCorruption) -> Account {
@@ -62,6 +65,7 @@ public final class AccountRecord: AuditedRecord {
             openingBalances: MoneyListCoding.list(openingBalances),
             openingDate: openingDate,
             creditTerms: terms,
+            closedAt: closedAt,
         )
     }
 }

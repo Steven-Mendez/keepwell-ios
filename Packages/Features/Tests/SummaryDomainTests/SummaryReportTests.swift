@@ -84,5 +84,26 @@ struct SummaryReportTests {
         }
         let unbudgeted = try await report()
         #expect(unbudgeted.budgets.joined().isEmpty)
+        #expect(unbudgeted.otherCurrencyBudgets.isEmpty)
+    }
+
+    @Test
+    func namesTheBudgetsLeftOutForBeingInAnotherCurrency() {
+        let inCordobas = sample.categories.map { category in
+            category.kind == .expense
+                ? TransactionCategory(id: category.id, name: category.name, kind: category.kind, monthlyBudget: Money(100, "NIO"))
+                : category
+        }
+        let result = DefaultGetSummaryReportUseCase.report(
+            transactions: sample.transactions,
+            categories: inCordobas,
+            currency: "USD",
+            calendar: .current,
+            now: SampleData.defaultReferenceDate,
+        )
+        #expect(result.budgets.joined().isEmpty)
+        #expect(result.otherCurrencyBudgets == [
+            OtherCurrencyBudgets(currency: "NIO", count: TransactionCategory.defaultExpense.count),
+        ])
     }
 }

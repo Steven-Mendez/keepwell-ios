@@ -48,6 +48,7 @@ struct LogExpenseIntent: AppIntent {
             accounts: store,
             cards: store,
             transactions: store,
+            rules: store,
         )
         let current = try await context.execute()
         guard let amount, amount.amount > 0 else {
@@ -75,9 +76,11 @@ struct LogExpenseIntent: AppIntent {
         do {
             let saved = try await DefaultSaveTransactionUseCase(context: context, transactions: store).execute(draft)
             let spent = CurrencyFormatter().string(from: -saved.transaction.amount, currencyCode: saved.transaction.currency)
-            let name = category?.name ?? categoryName
+            // Without a category a rule may have chosen one; say the one it was saved in.
+            let savedCategory = current.categories.first { $0.id == saved.transaction.categoryID }
+            let name = category?.name ?? savedCategory.map(CategoryDisplay.name(of:)) ?? categoryName
             let snippet = ExpenseSnippet(
-                category: current.categories.first { $0.id == categoryID },
+                category: savedCategory,
                 categoryName: name,
                 amount: spent,
                 source: holder.map(CardDisplay.shortName(of:)) ?? CardDisplay.name(of: saved.account),

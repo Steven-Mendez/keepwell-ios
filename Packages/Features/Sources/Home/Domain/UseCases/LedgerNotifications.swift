@@ -31,6 +31,7 @@ public enum LedgerNotifications {
         let found = drafts(in: overview, now: now, calendar: calendar)
             + cards(in: overview, now: now, calendar: calendar)
             + installments(in: overview, now: now, calendar: calendar)
+            + debts(in: overview, now: now, calendar: calendar)
             + renewals(in: overview, now: now, calendar: calendar)
             + expiries(in: overview, now: now, calendar: calendar)
             + budgets(in: overview, now: now, month: YearMonth(containing: now, calendar: calendar), calendar: calendar)
@@ -60,7 +61,8 @@ public enum LedgerNotifications {
         let today = calendar.startOfDay(for: now)
         let window = overview.paymentReminderDaysBefore
         var found: [LedgerNotification] = []
-        for account in overview.accounts where account.kind == .credit {
+        // A closed card has no statement to pay or close.
+        for account in overview.accounts where account.kind == .credit && account.isOpen {
             if let dueDay = account.creditTerms?.dueDay,
                let due = BillingCycle.nextOccurrence(ofDay: dueDay, onOrAfter: now, calendar: calendar),
                let daysLeft = days(from: today, to: due, calendar: calendar),
@@ -106,26 +108,58 @@ public enum LedgerNotifications {
         }
     }
 
-    /// Subscriptions renewing tomorrow.
+    /// Personal debts with a due date, open and with something left, from the reminder window
+    /// through the due day, in either direction. Like an installment, an overdue one is Debts' to
+    /// show: its id's day would get its state pruned and the reminder back.
+    private static func debts(in overview: HomeOverview, now: Date, calendar: Calendar) -> [LedgerNotification] {
+        let window = overview.paymentReminderDaysBefore
+        return overview.personalDebts.compactMap { debt in
+            guard let status = debt.dueStatus(today: now, calendar: calendar), let dueDate = debt.dueDate else { return nil }
+            let daysLeft: Int
+            switch status {
+            case let .upcoming(days): daysLeft = days
+            case .today: daysLeft = 0
+            case .overdue: return nil
+            }
+            guard daysLeft <= window else { return nil }
+            let due = calendar.startOfDay(for: dueDate)
+            // A target every published app already decodes, so an older one still opens a pushed one.
+            return LedgerNotification(
+                id: "debt:\(lower(debt.id)):\(dayKey(due, calendar: calendar))",
+                subject: .debt(debt, due: due, daysLeft: daysLeft),
+                date: calendar.date(byAdding: .day, value: -window, to: due) ?? due,
+                target: .debts,
+            )
+        }
+    }
+
+    /// Subscriptions renewing tomorrow, and other recurring expenses due tomorrow that are recorded
+    /// as drafts (`bill`): one recorded on its own needs nothing from the person.
     private static func renewals(in overview: HomeOverview, now: Date, calendar: Calendar) -> [LedgerNotification] {
         let today = calendar.startOfDay(for: now)
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) else { return [] }
         return overview.upcoming.compactMap { occurrence in
-            guard occurrence.rule.isSubscription, calendar.startOfDay(for: occurrence.date) == tomorrow else { return nil }
-            return LedgerNotification(
-                id: "renewal:\(lower(occurrence.rule.id)):\(dayKey(occurrence.date, calendar: calendar))",
-                subject: .renewal(occurrence),
-                date: today,
-                target: .recurring,
-            )
+            let rule = occurrence.rule
+            guard calendar.startOfDay(for: occurrence.date) == tomorrow else { return nil }
+            let day = dayKey(occurrence.date, calendar: calendar)
+            if rule.isSubscription {
+                return LedgerNotification(
+                    id: "renewal:\(lower(rule.id)):\(day)", subject: .renewal(occurrence), date: today, target: .recurring,
+                )
+            }
+            // A target every published app already decodes, so an older one still opens a pushed bill.
+            guard rule.kind == .expense, !rule.autoConfirm else { return nil }
+            return LedgerNotification(id: "bill:\(lower(rule.id)):\(day)", subject: .bill(occurrence), date: today, target: .recurring)
         }
     }
 
     /// Plastics expiring this month.
     private static func expiries(in overview: HomeOverview, now: Date, calendar: Calendar) -> [LedgerNotification] {
         let month = YearMonth(containing: now, calendar: calendar)
+        let open = Set(overview.accounts.open.map(\.id))
         return overview.cards.compactMap { card in
-            guard let expiry = card.expiry, expiry.year == month.year, expiry.month == month.month else { return nil }
+            guard let expiry = card.expiry, expiry.year == month.year, expiry.month == month.month,
+                  open.contains(card.accountID) else { return nil }
             return LedgerNotification(
                 id: "expiry:\(lower(card.id)):\(monthKey(month))",
                 subject: .expiry(cardID: card.id),

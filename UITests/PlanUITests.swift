@@ -15,7 +15,9 @@ final class PlanUITests: XCTestCase {
         let planTab = app.buttons["Plan"].firstMatch
         XCTAssertTrue(planTab.waitForExistence(timeout: 10))
         planTab.tap()
-        XCTAssertTrue(app.staticTexts["Subscriptions per month"].waitForExistence(timeout: 5))
+        // The sample has subscriptions, so the caption counts them: "Per month · 7 subscriptions".
+        let subscriptionsCaption = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Per month · ")).firstMatch
+        XCTAssertTrue(subscriptionsCaption.waitForExistence(timeout: 5))
 
         // The card is one combined element, so its label carries the figures after the title.
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Savings goals")).firstMatch.tap()

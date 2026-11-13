@@ -135,7 +135,9 @@ extension CreateTransactionViewModel {
     }
 
     /// "Visa •••• 1234 · Bank One Savings" style subtitle: the card that identifies the account.
+    /// The edited movement's own closed account says it is closed instead.
     public func cardLabel(of account: Account) -> String? {
+        guard account.isOpen else { return AccountClosingText.closed }
         let cards = context?.cards.filter { $0.accountID == account.id } ?? []
         guard let card = cards.first(where: { $0.kind == .debit || $0.kind == .creditHolder }) else { return nil }
         return card.kind == .debit ? CardDisplay.methodTitle(card, account: account) : CardDisplay.cardNumber(card)

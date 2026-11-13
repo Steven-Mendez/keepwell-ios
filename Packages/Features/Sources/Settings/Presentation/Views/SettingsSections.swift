@@ -3,6 +3,7 @@ import Domain
 import SettingsDomain
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 /// A muted section title over its card, and an optional footnote under it.
 struct SettingsSection<Content: View>: View {
@@ -262,11 +263,12 @@ struct SecuritySection: View {
     }
 }
 
-/// Sync with the Keepwell account when there is one, then the CSV export: the way to
-/// keep a copy of the movements.
+/// Sync with the Keepwell account when there is one, the CSV export of the movements, and the
+/// full JSON backup with its restore (only into an empty ledger).
 struct DataSection: View {
     let viewModel: SettingsViewModel
     let syncRow: AnyView?
+    @State private var isPickingBackup = false
 
     var body: some View {
         SettingsSection(title: String(localized: "Data & sync", bundle: #bundle)) {
@@ -286,8 +288,78 @@ struct DataSection: View {
                     )
                 }
                 .disabled(viewModel.isWorking)
+                if viewModel.offersBackup {
+                    backupRows
+                }
             }
             .buttonStyle(.plain)
         }
+        .fileImporter(isPresented: $isPickingBackup, allowedContentTypes: [.json]) { result in
+            guard case let .success(url) = result else {
+                viewModel.restoreBackupFileUnreadable()
+                return
+            }
+            let isScoped = url.startAccessingSecurityScopedResource()
+            defer {
+                if isScoped {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+            guard let data = try? Data(contentsOf: url) else {
+                viewModel.restoreBackupFileUnreadable()
+                return
+            }
+            Task { await viewModel.restoreBackup(data) }
+        }
+        .alert(
+            viewModel.restoreOutcome?.title ?? "",
+            isPresented: isShowingRestoreOutcome,
+            presenting: viewModel.restoreOutcome,
+        ) { _ in
+            Button(role: .cancel) {} label: { Text("OK", bundle: #bundle) }
+        } message: { outcome in
+            if let reason = outcome.reason {
+                Text(reason)
+            }
+        }
+    }
+
+    private var isShowingRestoreOutcome: Binding<Bool> {
+        Binding(
+            get: { viewModel.restoreOutcome != nil },
+            set: { isShown in
+                if !isShown {
+                    viewModel.restoreOutcome = nil
+                }
+            },
+        )
+    }
+
+    @ViewBuilder
+    private var backupRows: some View {
+        Button {
+            Task { await viewModel.exportBackup() }
+        } label: {
+            KWSettingsRow(
+                String(localized: "Export backup", bundle: #bundle),
+                description: String(localized: "Everything, in a file you can restore", bundle: #bundle),
+                icon: .download,
+                tint: KWSettingsTint.data,
+                accessory: .chevron,
+            )
+        }
+        .disabled(viewModel.isWorking)
+        Button {
+            isPickingBackup = true
+        } label: {
+            KWSettingsRow(
+                String(localized: "Restore backup", bundle: #bundle),
+                description: String(localized: "Only when there's no data yet", bundle: #bundle),
+                icon: .refresh,
+                tint: KWSettingsTint.data,
+                accessory: .chevron,
+            )
+        }
+        .disabled(viewModel.isWorking)
     }
 }

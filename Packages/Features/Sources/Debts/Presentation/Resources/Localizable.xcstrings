@@ -261,6 +261,36 @@
         }
       }
     },
+    "Due %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vence el %@"
+          }
+        }
+      }
+    },
+    "Due date" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha de pago"
+          }
+        }
+      }
+    },
+    "Due today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vence hoy"
+          }
+        }
+      }
+    },
     "Each person gets a debt that owes you their share. Your movement doesn't change." : {
       "localizations" : {
         "es" : {
@@ -571,6 +601,46 @@
         }
       }
     },
+    "Overdue · %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Overdue · %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasada · %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Atrasada · %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Overdue: %@ on %@ · %@" : {
       "localizations" : {
         "es" : {
@@ -751,6 +821,16 @@
         }
       }
     },
+    "Set a due date" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poner fecha de pago"
+          }
+        }
+      }
+    },
     "Settled" : {
       "localizations" : {
         "es" : {
@@ -817,6 +897,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Es más de lo que falta."
+          }
+        }
+      }
+    },
+    "The due date can't be before the debt's date." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fecha de pago no puede ser anterior a la de la deuda."
           }
         }
       }
