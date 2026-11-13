@@ -43,6 +43,7 @@ extension CreateTransactionViewModel {
         }
         let transaction = stored.transaction
         original = transaction
+        carriedDebitText = ""
         context = stored.context.forPickers(keeping: [stored.transaction.accountID, stored.transaction.destinationAccountID])
         type = MovementType(of: transaction, accounts: stored.context.accounts)
         movementID = transaction.id
@@ -54,13 +55,32 @@ extension CreateTransactionViewModel {
         destinationAccountID = transaction.destinationAccountID
         description = transaction.description
         date = transaction.date
-        debitedText = transaction.actualDebitedPrincipal.map { "\($0)" } ?? ""
+        // Only a movement in another currency carries one (`TransactionDraft(editing:)`).
+        debitedText = TransactionDraft(editing: transaction).actualDebitedPrincipal.map { "\($0)" } ?? ""
+        carriedDebitText = debitedText
         note = transaction.note ?? ""
         tags = transaction.tags
         isDraft = !transaction.isConfirmed
         if isShowingStoredReceipt {
             saved = stored.receipt
         }
+    }
+
+    /// Clears the charge an edit opened with once the amount or the currency changes, since the bank
+    /// charged it for the old ones (the domain's `debitedFor`), so the screen shows what saving keeps.
+    /// A charge the person typed stays.
+    func clearStaleDebit(amountChanged: Bool, currencyChanged: Bool = false) {
+        guard amountChanged || currencyChanged, !carriedDebitText.isEmpty, debitedText == carriedDebitText else { return }
+        debitedText = ""
+    }
+
+    /// Whether two amount texts say the same amount ("24.5" and "24.50").
+    static func sameAmount(_ first: String, _ second: String) -> Bool {
+        let posix = Locale(identifier: "en_US_POSIX")
+        guard let one = Decimal(string: first, locale: posix), let other = Decimal(string: second, locale: posix) else {
+            return first.trimmingCharacters(in: .whitespaces) == second.trimmingCharacters(in: .whitespaces)
+        }
+        return one == other
     }
 
     /// "Save changes": stores the edit, then offers a rule when the category changed, or closes.

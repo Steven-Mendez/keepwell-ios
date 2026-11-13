@@ -31,6 +31,11 @@ public struct TransactionDraft: Sendable {
     public var date: Date
     /// "USD charged by the bank".
     public var actualDebitedPrincipal: Decimal?
+    /// What a charge carried over from a saved movement (`init(editing:)`) was charged for: the
+    /// amount, currency and account it was recorded with. Once any of them changes that charge no
+    /// longer applies, so the movement saves without it (`applicableDebit`). A charge typed for the
+    /// draft leaves this out.
+    public var debitedFor: DebitedFor?
     public var note: String
     /// Saved without counting toward balances until the person confirms it.
     public var isDraft: Bool
@@ -52,6 +57,7 @@ public struct TransactionDraft: Sendable {
         description: String = "",
         date: Date = .now,
         actualDebitedPrincipal: Decimal? = nil,
+        debitedFor: DebitedFor? = nil,
         note: String = "",
         isDraft: Bool = false,
         repeatFrequency: RecurringFrequency? = nil,
@@ -68,11 +74,41 @@ public struct TransactionDraft: Sendable {
         self.description = description
         self.date = date
         self.actualDebitedPrincipal = actualDebitedPrincipal
+        self.debitedFor = debitedFor
         self.note = note
         self.isDraft = isDraft
         self.repeatFrequency = repeatFrequency
         self.recurringRuleID = recurringRuleID
         self.tags = tags
+    }
+}
+
+extension TransactionDraft {
+    /// The amount, currency and account a bank charge in the principal currency was recorded for.
+    public struct DebitedFor: Equatable, Sendable {
+        public let amount: Decimal
+        public let currency: String
+        public let accountID: UUID
+
+        public init(amount: Decimal, currency: String, accountID: UUID) {
+            self.amount = amount
+            self.currency = currency
+            self.accountID = accountID
+        }
+    }
+
+    /// The charge in the principal currency the draft saves: none when it is in the principal
+    /// currency, and none when it was carried over from a saved movement (`debitedFor`) whose amount,
+    /// currency or account changed since, since the bank charged it for something else and balances
+    /// would follow it.
+    public func applicableDebit(principal: String, accountID: UUID?) -> Decimal? {
+        guard let actualDebitedPrincipal, currency != principal else { return nil }
+        if let debitedFor,
+           debitedFor.amount != amount || debitedFor.currency != currency || debitedFor.accountID != accountID
+        {
+            return nil
+        }
+        return actualDebitedPrincipal
     }
 }
 

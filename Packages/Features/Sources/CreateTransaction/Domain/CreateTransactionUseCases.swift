@@ -210,7 +210,7 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             accountID: accountID,
             cardID: source.cardID,
             destinationAccountID: draft.kind == .transfer ? draft.destinationAccountID : nil,
-            actualDebitedPrincipal: draft.currency == rate.principal ? nil : draft.actualDebitedPrincipal,
+            actualDebitedPrincipal: draft.applicableDebit(principal: rate.principal, accountID: accountID),
             exchangeRate: rate,
             isShared: existing?.isShared ?? false,
             note: note.isEmpty ? nil : note,

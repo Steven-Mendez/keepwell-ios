@@ -87,8 +87,12 @@ public struct DefaultUpdateTransactionUseCase: UpdateTransactionUseCase {
 }
 
 extension TransactionDraft {
-    /// A draft that edits `transaction`, with every field as it was saved.
+    /// A draft that edits `transaction`, with every field as it was saved. Its charge in the
+    /// principal currency (only a movement in another currency has one) keeps what it was charged
+    /// for, so changing the amount, currency or account drops it instead of leaving a stale charge
+    /// driving balances.
     public init(editing transaction: Transaction) {
+        let charged = transaction.currency == transaction.exchangeRate.principal ? nil : transaction.actualDebitedPrincipal
         self.init(
             id: transaction.id,
             kind: transaction.kind,
@@ -99,7 +103,10 @@ extension TransactionDraft {
             destinationAccountID: transaction.destinationAccountID,
             description: transaction.description,
             date: transaction.date,
-            actualDebitedPrincipal: transaction.actualDebitedPrincipal,
+            actualDebitedPrincipal: charged,
+            debitedFor: charged.map { _ in
+                DebitedFor(amount: transaction.amount, currency: transaction.currency, accountID: transaction.accountID)
+            },
             note: transaction.note ?? "",
             isDraft: !transaction.isConfirmed,
             tags: transaction.tags,

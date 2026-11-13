@@ -40,7 +40,7 @@ extension TransactionContext {
             currency: draft.currency,
             accountID: sourceID,
             destinationAccountID: destinationAccount?.id,
-            actualDebitedPrincipal: draft.currency == currencies.principal ? nil : draft.actualDebitedPrincipal,
+            actualDebitedPrincipal: draft.applicableDebit(principal: currencies.principal, accountID: sourceID),
             exchangeRate: currencies.exchangeRate,
         )
         let sourceSide = side(of: sourceAccount, after: movement, calendar: calendar)

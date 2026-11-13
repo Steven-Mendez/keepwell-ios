@@ -194,6 +194,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   movements in USD". The Transactions month total now matches its "Money out" strip, and the
   spending widget, trends, spending pace, the forecast's usual spending and the category total on
   the saved receipt follow the same rule.
+- Editing a movement in the second currency no longer keeps the amount the bank charged once its
+  amount, currency or account changes: that charge was for the old movement and kept driving
+  balances. The field clears when the amount or currency changes; a charge you type stays.
 
 - Settings › Time zone shows the zone in use under its title (with "From this iPhone" while none is
   saved); beside the description it used to be squeezed out of sight. The list opens on that zone,

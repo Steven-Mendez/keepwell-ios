@@ -42,8 +42,14 @@ public final class CreateTransactionViewModel {
     /// The steps pushed on top of `rootStep`.
     public var path: [Step] = []
     public internal(set) var type: MovementType
-    public internal(set) var amountText = "0"
-    public var currency = "USD"
+    public internal(set) var amountText = "0" {
+        didSet { clearStaleDebit(amountChanged: !Self.sameAmount(oldValue, amountText)) }
+    }
+
+    public var currency = "USD" {
+        didSet { clearStaleDebit(amountChanged: false, currencyChanged: oldValue != currency) }
+    }
+
     public internal(set) var context: TransactionContext?
     public internal(set) var categoryID: String?
     public internal(set) var source: PaymentSource?
@@ -64,6 +70,8 @@ public final class CreateTransactionViewModel {
     var prefilledDescription: String?
     public var date: Date
     public var debitedText = ""
+    /// The charge an edit opened with (`debitedText` as loaded), empty otherwise; see `clearStaleDebit`.
+    var carriedDebitText = ""
     public var note = "" {
         didSet { applyRules() }
     }
