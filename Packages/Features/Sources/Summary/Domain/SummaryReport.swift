@@ -2,8 +2,9 @@ import Domain
 import Foundation
 
 /// The last months side by side, each with its totals and categories, in the principal currency.
-/// Every amount comes from `Transaction.principalAmount`, converted with the rate stored on each
-/// movement, so the charts never add two currencies together.
+/// Every amount comes from `Transaction.storedAmount(in:)`, converted with the rate stored on each
+/// movement, so the charts never add two currencies together; a movement that rate can't bring to
+/// `currency` is left out and counted in each month's `excluded`.
 public struct SummaryReport: Hashable, Sendable {
     public let currency: String
     /// Oldest first; the last one is the current month.
@@ -117,10 +118,21 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
         return SummaryReport(
             currency: currency,
             months: months,
-            averageExpense: SpendingHistory.averageMonthlyTotal(of: .expense, transactions: transactions, calendar: calendar),
-            averageIncome: SpendingHistory.averageMonthlyTotal(of: .income, transactions: transactions, calendar: calendar),
+            averageExpense: SpendingHistory.averageMonthlyTotal(
+                of: .expense,
+                transactions: transactions,
+                currency: currency,
+                calendar: calendar,
+            ),
+            averageIncome: SpendingHistory.averageMonthlyTotal(
+                of: .income,
+                transactions: transactions,
+                currency: currency,
+                calendar: calendar,
+            ),
             categories: categories,
-            paces: months.map { SpendingPace(month: $0.month, transactions: transactions, calendar: calendar, now: now) },
+            paces: months
+                .map { SpendingPace(month: $0.month, transactions: transactions, currency: currency, calendar: calendar, now: now) },
             // A currency the settings no longer convert leaves the card out rather than the summary.
             netWorth: currencies.flatMap {
                 try? NetWorthHistory.points(accounts: accounts, transactions: transactions, settings: $0, now: now, calendar: calendar)

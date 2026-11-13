@@ -212,6 +212,15 @@ public final class HomeViewModel {
         return String(localized: "\(percent)% saved", bundle: #bundle)
     }
 
+    /// "Not including 3 movements in USD", one line per currency the month's totals leave out
+    /// because their stored rate doesn't reach the principal currency (recorded before it changed).
+    /// Counts, not amounts, so they show even with amounts hidden.
+    func excludedMovementLines(_ overview: HomeOverview) -> [String] {
+        overview.month.excluded.map { excluded in
+            String(localized: "Not including \(excluded.count) movements in \(excluded.currency)", bundle: #bundle)
+        }
+    }
+
     func money(_ amount: Decimal, _ overview: HomeOverview) -> String {
         formatter.string(from: amount, currencyCode: overview.settings.principal)
     }
