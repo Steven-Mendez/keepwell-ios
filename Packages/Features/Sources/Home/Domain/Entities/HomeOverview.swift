@@ -67,6 +67,8 @@ public struct HomeOverview: Hashable, Sendable {
     public let accounts: [Account]
     public let cards: [Card]
     public let categories: [TransactionCategory]
+    /// The businesses movements and rules name, for their logos.
+    public let merchants: [Merchant]
 
     public init(
         settings: CurrencySettings,
@@ -99,6 +101,7 @@ public struct HomeOverview: Hashable, Sendable {
         accounts: [Account],
         cards: [Card],
         categories: [TransactionCategory],
+        merchants: [Merchant] = [],
     ) {
         self.settings = settings
         self.netWorth = netWorth
@@ -130,5 +133,6 @@ public struct HomeOverview: Hashable, Sendable {
         self.accounts = accounts
         self.cards = cards
         self.categories = categories
+        self.merchants = merchants
     }
 }

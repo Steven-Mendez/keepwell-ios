@@ -61,9 +61,10 @@ struct HomeUpcomingCard: View {
         case let .recurring(rule):
             Button { actions.openRule(rule.id) } label: {
                 UpcomingPaymentRow(viewModel: viewModel, payment: payment) {
-                    // A known brand shows its logo; a transfer is never a merchant.
+                    // The rule's merchant's logo, else a known brand's; a transfer is never a merchant.
                     BrandOrFallbackIcon(
                         text: rule.kind == .transfer ? "" : rule.name,
+                        logo: viewModel.upcomingLogo(payment),
                         tint: CategoryDisplay.color(for: viewModel.upcomingCategory(payment)),
                     ) {
                         KWTransactionIcon(style(of: payment))

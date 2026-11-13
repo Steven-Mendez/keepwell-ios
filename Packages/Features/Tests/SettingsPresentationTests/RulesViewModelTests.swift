@@ -52,8 +52,7 @@ struct RulesViewModelTests {
         #expect(await store.fetchCategorizationRules() == [saved])
     }
 
-    /// The editor has no merchant field: editing the rest keeps the merchant the rule has, also
-    /// one this device hasn't pulled yet.
+    /// Editing the rest keeps the merchant the rule has, also one this device hasn't pulled yet.
     @Test
     func editingARuleKeepsItsMerchant() async throws {
         let live = Merchant(name: "Uber", domain: "uber.com")
@@ -74,6 +73,70 @@ struct RulesViewModelTests {
             #expect(saved.merchantID == merchantID)
             #expect(await store.fetchCategorizationRules().first?.merchantID == merchantID)
         }
+    }
+
+    private func makeWithMerchants(_ store: InMemoryStore) -> RulesViewModel {
+        RulesViewModel(
+            manage: DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: store, merchants: store),
+            getCategories: DefaultGetCategoriesUseCase(categories: store),
+        )
+    }
+
+    /// A new rule can name one of the person's businesses, and an edited one can change or drop it.
+    @Test
+    func theEditorSavesTheBusinessItPicks() async throws {
+        let subway = Merchant(name: "Subway", domain: "subway.com")
+        let corner = Merchant(name: "Pulpería")
+        let store = InMemoryStore(merchants: [subway, corner])
+        let viewModel = makeWithMerchants(store)
+        await viewModel.load()
+        viewModel.startNew()
+        let editor = try #require(viewModel.editor)
+        #expect(editor.merchants.map(\.name) == ["Pulpería", "Subway"])
+        #expect(editor.showsMerchant)
+        #expect(editor.merchantID == nil)
+        #expect(editor.merchantTitle == "None")
+        editor.setMatch("Subway")
+        editor.categoryID = "restaurants"
+        editor.merchantID = subway.id
+        #expect(editor.merchantTitle == "Subway")
+        let created = try #require(await editor.save())
+        #expect(created.merchantID == subway.id)
+        #expect(await store.fetchCategorizationRules().first?.merchantID == subway.id)
+
+        await viewModel.editorFinished()
+        viewModel.edit(created)
+        let changing = try #require(viewModel.editor)
+        #expect(changing.merchantID == subway.id)
+        changing.merchantID = corner.id
+        #expect(try #require(await changing.save()).merchantID == corner.id)
+
+        await viewModel.editorFinished()
+        let changed = try #require(viewModel.rules.first)
+        viewModel.edit(changed)
+        let clearing = try #require(viewModel.editor)
+        clearing.merchantID = nil
+        #expect(try #require(await clearing.save()).merchantID == nil)
+        #expect(await store.fetchCategorizationRules().first?.merchantID == nil)
+    }
+
+    /// Without businesses the field stays hidden, as on the web; a rule naming one this device
+    /// hasn't pulled shows it as such.
+    @Test
+    func theBusinessFieldShowsOnlyWithSomethingToPick() async throws {
+        let empty = makeWithMerchants(InMemoryStore())
+        await empty.load()
+        empty.startNew()
+        #expect(try #require(empty.editor).showsMerchant == false)
+
+        let rule = CategorizationRule(match: "Uber", categoryID: "transport", kind: .expense, merchantID: UUID())
+        let store = InMemoryStore(categorizationRules: [rule])
+        let viewModel = makeWithMerchants(store)
+        await viewModel.load()
+        viewModel.edit(rule)
+        let editor = try #require(viewModel.editor)
+        #expect(editor.showsMerchant)
+        #expect(editor.merchantTitle == "A business not on this device yet")
     }
 
     @Test

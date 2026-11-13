@@ -28,6 +28,7 @@ public enum RecurringPreview {
         return UseCases(
             overview: DefaultGetRecurringOverviewUseCase(
                 rules: store, accounts: store, cards: store, categories: store, transactions: store, settings: store,
+                merchants: store,
             ),
             save: DefaultSaveRecurringRuleUseCase(
                 rules: store, accounts: store, cards: store, categories: store, settings: store, materialize: materialize, now: { now },

@@ -46,6 +46,8 @@ public protocol ManageCategorizationRulesUseCase: Sendable {
     func applyToPast(_ rule: CategorizationRule) async throws(DomainError) -> Int
     /// Every tag used on movements, most used first, for the rule editor's suggestions.
     func tagUsage() async throws(DomainError) -> [String]
+    /// The merchants a rule can name, by name. Empty when merchants aren't available.
+    func merchants() async throws(DomainError) -> [Merchant]
 }
 
 public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRulesUseCase {
@@ -125,5 +127,9 @@ public struct DefaultManageCategorizationRulesUseCase: ManageCategorizationRules
 
     public func tagUsage() async throws(DomainError) -> [String] {
         try await Tags.usage(in: transactions.fetchTransactions(in: nil))
+    }
+
+    public func merchants() async throws(DomainError) -> [Merchant] {
+        try await Merchants.ordered(merchants?.fetchMerchants() ?? [])
     }
 }

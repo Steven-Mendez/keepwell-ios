@@ -2,6 +2,7 @@ import Domain
 import DomainSamples
 import Foundation
 import RecurringDomain
+import SharedPresentation
 import Testing
 @testable import HomeDomain
 @testable import HomePresentation
@@ -15,7 +16,7 @@ struct HomeRecurringTests {
         let viewModel = HomeViewModel(
             getOverview: DefaultGetHomeOverviewUseCase(
                 accounts: store, cards: store, transactions: store, categories: store, settings: store,
-                recurringRules: store, now: { [now] in now },
+                recurringRules: store, merchants: store, now: { [now] in now },
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: store),
             getPreferredName: DefaultGetPreferredNameUseCase(profile: InMemoryPasscodeStore()),
@@ -47,6 +48,29 @@ struct HomeRecurringTests {
         #expect(viewModel.upcomingSubtitle(streaming, now: now).hasPrefix("Tomorrow · "))
         #expect(viewModel.upcomingAmount(streaming, hidden: false) == "−$15.99")
         #expect(viewModel.upcomingAmount(streaming, hidden: true) == "••••")
+    }
+
+    /// A recurring payment shows its rule's merchant's logo before the brand its name suggests.
+    @Test
+    func upcomingLogoComesFromTheRulesMerchantFirst() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let netflix = Merchant(name: "Netflix", domain: "netflix.com")
+        await store.save(netflix)
+        let rule = try #require(SampleData.standard.recurringRules.first { $0.id == SampleData.IDs.streamingRule })
+        let viewModel = await loadedViewModel(store)
+        func streaming(_ viewModel: HomeViewModel) throws -> UpcomingPayment {
+            try #require(viewModel.overview?.upcomingPayments.first {
+                if case let .recurring(rule) = $0.kind {
+                    rule.id == SampleData.IDs.streamingRule
+                } else {
+                    false
+                }
+            })
+        }
+        #expect(try viewModel.upcomingLogo(streaming(viewModel)) == nil)
+        await store.save(rule.with(merchantID: netflix.id, viaMerchantID: nil))
+        await viewModel.load()
+        #expect(try viewModel.upcomingLogo(streaming(viewModel)) == LogoSubject(name: "Netflix", domain: "netflix.com"))
     }
 
     @Test

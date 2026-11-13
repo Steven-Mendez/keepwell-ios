@@ -220,7 +220,7 @@ public struct RecurringView: View {
             KWTransactionIcon(.transfer)
         } else {
             let category = viewModel.category(of: rule)
-            BrandOrFallbackIcon(text: rule.name, tint: CategoryDisplay.color(for: category)) {
+            BrandOrFallbackIcon(text: rule.name, logo: viewModel.logo(of: rule), tint: CategoryDisplay.color(for: category)) {
                 CategorySymbol(category, size: 18)
                     .foregroundStyle(CategoryDisplay.color(for: category))
                     .frame(width: 40, height: 40)

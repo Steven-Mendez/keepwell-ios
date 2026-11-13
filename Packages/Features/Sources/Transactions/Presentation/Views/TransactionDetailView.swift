@@ -186,7 +186,7 @@ private struct TransactionDetailCards: View {
     var body: some View {
         VStack(spacing: KWSpacing.md) {
             if let split = viewModel.splitLines {
-                splitCard(split)
+                SplitShareCard(share: split.share, people: split.people)
             }
             mainCard
             let rateRows = viewModel.rateRows
@@ -236,19 +236,6 @@ private struct TransactionDetailCards: View {
         }
     }
 
-    /// What a split expense cost the person, and who owes the rest.
-    private func splitCard(_ split: (share: String, people: String)) -> some View {
-        KWGroupedCard {
-            VStack(alignment: .leading, spacing: KWSpacing.xxs) {
-                Text(split.share).font(KWTextStyle.body.font.weight(.semibold)).monospacedDigit()
-                Text(split.people).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.muted)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 12)
-            .accessibilityElement(children: .combine)
-        }
-    }
-
     /// Each tag narrows Transactions to it.
     private var tagsCard: some View {
         labeledCard(String(localized: "Tags", bundle: #bundle)) {
@@ -285,5 +272,24 @@ private struct StatusPill: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(color.opacity(0.14), in: Capsule())
+    }
+}
+
+/// What a split expense cost the person ("Your share: C$300.00 of C$900.00"), and who owes the rest.
+/// On its own so a snapshot can draw it without the detail's date, which follows the device's zone.
+struct SplitShareCard: View {
+    let share: String
+    let people: String
+
+    var body: some View {
+        KWGroupedCard {
+            VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+                Text(share).font(KWTextStyle.body.font.weight(.semibold)).monospacedDigit()
+                Text(people).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.muted)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 12)
+            .accessibilityElement(children: .combine)
+        }
     }
 }

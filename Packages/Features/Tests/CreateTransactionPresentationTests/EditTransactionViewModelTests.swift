@@ -28,6 +28,10 @@ private struct FailingRules: ManageCategorizationRulesUseCase {
     func tagUsage() async throws(DomainError) -> [String] {
         []
     }
+
+    func merchants() async throws(DomainError) -> [Merchant] {
+        []
+    }
 }
 
 @Suite("Edit transaction view model")
