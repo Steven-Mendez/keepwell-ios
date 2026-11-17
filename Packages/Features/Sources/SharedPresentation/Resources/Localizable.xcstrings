@@ -61,6 +61,16 @@
         }
       }
     },
+    "Airplane" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avión"
+          }
+        }
+      }
+    },
     "Amber" : {
       "localizations" : {
         "es" : {
@@ -91,12 +101,82 @@
         }
       }
     },
+    "Bank building" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edificio de banco"
+          }
+        }
+      }
+    },
     "Bank transfer" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
+    "Banknote" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billete"
+          }
+        }
+      }
+    },
+    "Basket" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canasta"
+          }
+        }
+      }
+    },
+    "Beach umbrella" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sombrilla de playa"
+          }
+        }
+      }
+    },
+    "Bell" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campana"
+          }
+        }
+      }
+    },
+    "Bicycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bicicleta"
+          }
+        }
+      }
+    },
+    "Birthday cake" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pastel de cumpleaños"
           }
         }
       }
@@ -111,12 +191,52 @@
         }
       }
     },
+    "Book" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libro"
+          }
+        }
+      }
+    },
+    "Briefcase" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maletín"
+          }
+        }
+      }
+    },
+    "Bus" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autobús"
+          }
+        }
+      }
+    },
     "Business" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Negocio"
+          }
+        }
+      }
+    },
+    "Camera" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cámara"
           }
         }
       }
@@ -131,12 +251,32 @@
         }
       }
     },
+    "Car" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        }
+      }
+    },
     "Card color" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Color de la tarjeta"
+          }
+        }
+      }
+    },
+    "Cart with a plus sign" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carrito con signo más"
           }
         }
       }
@@ -231,6 +371,16 @@
         }
       }
     },
+    "Coffee cup" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taza de café"
+          }
+        }
+      }
+    },
     "Color" : {
       "localizations" : {
         "es" : {
@@ -267,6 +417,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crédito"
+          }
+        }
+      }
+    },
+    "Credit card" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de crédito"
           }
         }
       }
@@ -341,6 +501,16 @@
         }
       }
     },
+    "Document" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento"
+          }
+        }
+      }
+    },
     "Donations" : {
       "localizations" : {
         "es" : {
@@ -357,6 +527,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Borradores que se borran: %lld"
+          }
+        }
+      }
+    },
+    "Dumbbell" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesa"
           }
         }
       }
@@ -561,6 +741,16 @@
         }
       }
     },
+    "Family holding hands" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Familia tomada de la mano"
+          }
+        }
+      }
+    },
     "Fees" : {
       "localizations" : {
         "es" : {
@@ -571,12 +761,72 @@
         }
       }
     },
+    "Film" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Película"
+          }
+        }
+      }
+    },
+    "First aid kit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Botiquín"
+          }
+        }
+      }
+    },
+    "Fork and knife" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenedor y cuchillo"
+          }
+        }
+      }
+    },
     "Freelance" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trabajo independiente"
+          }
+        }
+      }
+    },
+    "Fuel pump" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bomba de gasolina"
+          }
+        }
+      }
+    },
+    "Game controller" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control de videojuegos"
+          }
+        }
+      }
+    },
+    "Gift" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regalo"
           }
         }
       }
@@ -611,6 +861,26 @@
         }
       }
     },
+    "Globe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Globo terráqueo"
+          }
+        }
+      }
+    },
+    "Graduation cap" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Birrete"
+          }
+        }
+      }
+    },
     "Gray" : {
       "localizations" : {
         "es" : {
@@ -631,6 +901,16 @@
         }
       }
     },
+    "Grid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuadrícula"
+          }
+        }
+      }
+    },
     "Groceries" : {
       "localizations" : {
         "es" : {
@@ -641,12 +921,42 @@
         }
       }
     },
+    "Hammer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Martillo"
+          }
+        }
+      }
+    },
     "Health" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salud"
+          }
+        }
+      }
+    },
+    "Heart" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corazón"
+          }
+        }
+      }
+    },
+    "Heart in a circle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corazón en un círculo"
           }
         }
       }
@@ -671,6 +981,16 @@
         }
       }
     },
+    "House" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Casa"
+          }
+        }
+      }
+    },
     "Housing" : {
       "localizations" : {
         "es" : {
@@ -687,6 +1007,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ícono"
+          }
+        }
+      }
+    },
+    "Inbox tray" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bandeja de entrada"
           }
         }
       }
@@ -741,12 +1071,52 @@
         }
       }
     },
+    "Key" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llave"
+          }
+        }
+      }
+    },
+    "Laptop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Computadora portátil"
+          }
+        }
+      }
+    },
+    "Leaf" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoja"
+          }
+        }
+      }
+    },
     "Leisure" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocio"
+          }
+        }
+      }
+    },
+    "Lightning bolt" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rayo"
           }
         }
       }
@@ -767,6 +1137,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pagos de préstamos"
+          }
+        }
+      }
+    },
+    "Map" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa"
           }
         }
       }
@@ -817,6 +1197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aquí llegan los movimientos de las categorías eliminadas, así que puedes renombrarla pero no eliminarla."
+          }
+        }
+      }
+    },
+    "Music note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota musical"
           }
         }
       }
@@ -891,6 +1281,56 @@
         }
       }
     },
+    "Paintbrush" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pincel"
+          }
+        }
+      }
+    },
+    "Parking sign" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Señal de estacionamiento"
+          }
+        }
+      }
+    },
+    "Paw print" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Huella de animal"
+          }
+        }
+      }
+    },
+    "Percent sign" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signo de porcentaje"
+          }
+        }
+      }
+    },
+    "Person running" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Persona corriendo"
+          }
+        }
+      }
+    },
     "Personal care" : {
       "localizations" : {
         "es" : {
@@ -911,6 +1351,26 @@
         }
       }
     },
+    "Phone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teléfono"
+          }
+        }
+      }
+    },
+    "Pills" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pastillas"
+          }
+        }
+      }
+    },
     "Pink" : {
       "localizations" : {
         "es" : {
@@ -927,6 +1387,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Planificar"
+          }
+        }
+      }
+    },
+    "Price tag" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etiqueta de precio"
           }
         }
       }
@@ -1051,6 +1521,26 @@
         }
       }
     },
+    "Return arrow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flecha de regreso"
+          }
+        }
+      }
+    },
+    "Rising chart" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gráfica al alza"
+          }
+        }
+      }
+    },
     "Salary" : {
       "localizations" : {
         "es" : {
@@ -1077,6 +1567,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ahorro"
+          }
+        }
+      }
+    },
+    "Scissors" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tijeras"
           }
         }
       }
@@ -1111,12 +1611,72 @@
         }
       }
     },
+    "Shopping bag" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolsa de compras"
+          }
+        }
+      }
+    },
+    "Shopping cart" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carrito de compras"
+          }
+        }
+      }
+    },
     "Show balance" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar saldo"
+          }
+        }
+      }
+    },
+    "Sofa" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sofá"
+          }
+        }
+      }
+    },
+    "Sparkles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destellos"
+          }
+        }
+      }
+    },
+    "Star" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrella"
+          }
+        }
+      }
+    },
+    "Stroller" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cochecito de bebé"
           }
         }
       }
@@ -1131,6 +1691,16 @@
         }
       }
     },
+    "Suitcase" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maleta"
+          }
+        }
+      }
+    },
     "Summary shows how much is left, and Home warns you at 80% and 100%." : {
       "localizations" : {
         "es" : {
@@ -1141,12 +1711,42 @@
         }
       }
     },
+    "T-shirt" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camiseta"
+          }
+        }
+      }
+    },
     "Taxes" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impuestos"
+          }
+        }
+      }
+    },
+    "Tent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienda de campaña"
+          }
+        }
+      }
+    },
+    "Theater masks" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máscaras de teatro"
           }
         }
       }
@@ -1201,6 +1801,16 @@
         }
       }
     },
+    "Tram" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tranvía"
+          }
+        }
+      }
+    },
     "Transaction deleted" : {
       "localizations" : {
         "es" : {
@@ -1251,6 +1861,16 @@
         }
       }
     },
+    "Umbrella" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paraguas"
+          }
+        }
+      }
+    },
     "Undo" : {
       "localizations" : {
         "es" : {
@@ -1291,6 +1911,16 @@
         }
       }
     },
+    "Water drop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gota de agua"
+          }
+        }
+      }
+    },
     "We couldn't close the account. Try again." : {
       "localizations" : {
         "es" : {
@@ -1317,6 +1947,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos guardar la categoría. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Wi-Fi" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wi-Fi"
+          }
+        }
+      }
+    },
+    "Wine glass" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copa de vino"
+          }
+        }
+      }
+    },
+    "Wrench and screwdriver" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llave y destornillador"
           }
         }
       }
