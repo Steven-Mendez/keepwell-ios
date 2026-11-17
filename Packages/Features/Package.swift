@@ -229,6 +229,7 @@ let package = Package(
             dependencies: [
                 "CreateTransactionPresentation",
                 "CreateTransactionDomain",
+                "SharedPresentation",
                 "FeatureTestSupport",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "Domain", package: "Domain"),

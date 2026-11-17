@@ -113,6 +113,43 @@ public protocol InstallmentExpenseRecorder: Sendable {
     func prepare(_ expense: InstallmentExpense) async throws(DomainError) -> Transaction
 }
 
+/// "Deposit into account": a repayment that also enters an account as an income movement.
+public struct RepaymentDeposit: Hashable, Sendable {
+    public var accountID: UUID
+    /// `nil` files it under "Refunds", or "Other income" once that was deleted.
+    public var categoryID: String?
+
+    public init(accountID: UUID, categoryID: String? = nil) {
+        self.accountID = accountID
+        self.categoryID = categoryID
+    }
+}
+
+/// The income a deposited repayment records, as any movement the person types.
+public struct RepaymentIncome: Hashable, Sendable {
+    /// The repayment's amount, in the debt's currency.
+    public let amount: Money
+    public let categoryID: String
+    public let accountID: UUID
+    /// "Ana · Dinner" (`PersonalDebt.repaymentDescription`).
+    public let description: String
+    public let date: Date
+
+    public init(amount: Money, categoryID: String, accountID: UUID, description: String, date: Date) {
+        self.amount = amount
+        self.categoryID = categoryID
+        self.accountID = accountID
+        self.description = description
+        self.date = date
+    }
+}
+
+/// Builds a deposited repayment's income, checked but not stored: the debt repository stores it
+/// with the debt in one write. The app implements it with the same rules as a typed movement.
+public protocol RepaymentIncomeRecorder: Sendable {
+    func prepare(_ income: RepaymentIncome) async throws(DomainError) -> Transaction
+}
+
 /// One person's share of a split expense.
 public struct SplitShare: Hashable, Sendable {
     public var person: String

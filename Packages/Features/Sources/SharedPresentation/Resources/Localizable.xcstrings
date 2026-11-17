@@ -41,6 +41,16 @@
         }
       }
     },
+    "Add “%@”" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar “%@”"
+          }
+        }
+      }
+    },
     "Adds the tag" : {
       "localizations" : {
         "es" : {
@@ -97,6 +107,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Azul"
+          }
+        }
+      }
+    },
+    "Business" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negocio"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
           }
         }
       }
@@ -971,6 +1001,16 @@
         }
       }
     },
+    "Remove" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar"
+          }
+        }
+      }
+    },
     "Remove %@" : {
       "localizations" : {
         "es" : {
@@ -1037,6 +1077,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ahorro"
+          }
+        }
+      }
+    },
+    "Search or add a business" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busca o agrega un negocio"
           }
         }
       }
@@ -1181,6 +1231,26 @@
         }
       }
     },
+    "Type a name to add a business." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe un nombre para agregar un negocio."
+          }
+        }
+      }
+    },
+    "Uber Eats, App Store…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uber Eats, App Store…"
+          }
+        }
+      }
+    },
     "Undo" : {
       "localizations" : {
         "es" : {
@@ -1197,6 +1267,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Servicios"
+          }
+        }
+      }
+    },
+    "Via" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vía"
+          }
+        }
+      }
+    },
+    "via %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vía %@"
           }
         }
       }

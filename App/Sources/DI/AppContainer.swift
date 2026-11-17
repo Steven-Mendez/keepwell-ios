@@ -62,6 +62,8 @@ final class AppContainer {
     let movements: DeferredTransactionDeletions
     /// "Undo" after deleting or confirming a movement, shown over every screen.
     let movementUndo: MovementUndo
+    /// Bumped after every store save, a sync round's included; list screens reload on it.
+    let storeChanges = StoreChanges()
 
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)
@@ -171,6 +173,7 @@ final class AppContainer {
                 categories: store,
                 settings: store,
                 recurringRules: store,
+                merchants: store,
             ),
             confirmPlanned: DefaultConfirmPlannedTransactionUseCase(transactions: movements, accounts: store),
             deleteTransaction: DeferredDeleteTransactionUseCase(deletions: movements),
@@ -179,8 +182,10 @@ final class AppContainer {
     }
 
     func makeSummaryViewModel() -> SummaryViewModel {
-        let report = DefaultGetSummaryReportUseCase(transactions: movements, categories: store, settings: store, accounts: store)
-        let range = DefaultGetRangeSummaryUseCase(transactions: movements, settings: store)
+        let report = DefaultGetSummaryReportUseCase(
+            transactions: movements, categories: store, settings: store, accounts: store, personalDebts: store,
+        )
+        let range = DefaultGetRangeSummaryUseCase(transactions: movements, settings: store, personalDebts: store)
         return SummaryViewModel(getReport: report, getRange: range)
     }
 
@@ -194,7 +199,9 @@ final class AppContainer {
             ),
             updateSettings: DefaultUpdateSettingsUseCase(settings: store),
             changeCurrencies: DefaultChangeCurrenciesUseCase(settings: store, accounts: store, transactions: movements),
-            exportTransactions: DefaultExportTransactionsUseCase(transactions: movements, accounts: store, cards: store, categories: store),
+            exportTransactions: DefaultExportTransactionsUseCase(
+                transactions: movements, accounts: store, cards: store, categories: store, personalDebts: store,
+            ),
             eraseAllData: DefaultEraseAllDataUseCase(eraser: store),
             removePasscode: DefaultRemovePasscodeUseCase(passcodes: passcodes),
             setPreferredName: DefaultSetPreferredNameUseCase(profile: preferences),
@@ -227,7 +234,7 @@ final class AppContainer {
             kind: kind,
             getCategories: DefaultGetCategoriesUseCase(categories: store),
             save: DefaultSaveCategoryUseCase(categories: store),
-            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: movements),
+            delete: DefaultDeleteCategoryUseCase(categories: store, transactions: movements, merchants: store),
             reorder: DefaultReorderCategoriesUseCase(categories: store),
             restoreDefaults: DefaultRestoreDefaultCategoriesUseCase(categories: store),
             getPrincipalCurrency: DefaultGetPrincipalCurrencyUseCase(settings: store),
@@ -326,7 +333,9 @@ final class AppContainer {
             getContext: context,
             save: DefaultSaveTransactionUseCase(
                 context: context, transactions: movements, recurringRules: store, materialize: makeMaterializeRecurring(),
+                merchants: store, personalDebts: store,
             ),
+            brandSearch: Self.makeBrandSearch(),
             saveCategory: DefaultSaveCategoryUseCase(categories: store),
             receiptSaver: PhotoLibraryReceiptSaver(),
             type: type,
@@ -340,6 +349,7 @@ final class AppContainer {
     private func makeGetTransactionContext() -> DefaultGetTransactionContextUseCase {
         DefaultGetTransactionContextUseCase(
             settings: store, categories: store, accounts: store, cards: store, transactions: movements, rules: store,
+            merchants: store, personalDebts: store,
         )
     }
 }
@@ -357,6 +367,7 @@ extension AppContainer {
             cards: store,
             categories: store,
             categorizationRules: store,
+            merchants: store,
         )
     }
 

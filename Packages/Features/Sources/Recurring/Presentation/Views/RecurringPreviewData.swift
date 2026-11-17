@@ -12,6 +12,7 @@ public enum RecurringPreview {
         public let save: any SaveRecurringRuleUseCase
         public let setPaused: any SetRecurringRulePausedUseCase
         public let delete: any DeleteRecurringRuleUseCase
+        public let linkPayment: any LinkRecurringPaymentUseCase
     }
 
     public static func useCases(store: InMemoryStore, now: Date = SampleData.defaultReferenceDate) -> UseCases {
@@ -34,6 +35,7 @@ public enum RecurringPreview {
             ),
             setPaused: DefaultSetRecurringRulePausedUseCase(rules: store, materialize: materialize, now: { now }),
             delete: DefaultDeleteRecurringRuleUseCase(rules: store, transactions: store),
+            linkPayment: DefaultLinkRecurringPaymentUseCase(rules: store, transactions: store),
         )
     }
 
@@ -60,6 +62,28 @@ public enum RecurringPreview {
         )
     }
 
+    public static func detailViewModel(
+        ruleID: UUID,
+        store: InMemoryStore = InMemoryStore(sample: .standard),
+    ) -> RecurringRuleDetailViewModel {
+        let cases = useCases(store: store)
+        return RecurringRuleDetailViewModel(
+            ruleID: ruleID,
+            getOverview: cases.overview,
+            setPaused: cases.setPaused,
+            linkPayment: cases.linkPayment,
+            now: { SampleData.defaultReferenceDate },
+        )
+    }
+
+    public static func pickerViewModel(
+        transaction: Domain.Transaction,
+        store: InMemoryStore = InMemoryStore(sample: .standard),
+    ) -> RecurringRulePickerViewModel {
+        let cases = useCases(store: store)
+        return RecurringRulePickerViewModel(transaction: transaction, getOverview: cases.overview, linkPayment: cases.linkPayment)
+    }
+
     static func list() -> some View {
         RecurringView(viewModel: listViewModel(), onBack: {}, onAdd: {}, onAddSubscription: {}, onOpen: { _ in })
     }
@@ -69,7 +93,6 @@ public enum RecurringPreview {
             viewModel: editorViewModel(ruleID: SampleData.IDs.streamingRule),
             onBack: {},
             onDone: {},
-            onOpenTransaction: { _ in },
         )
     }
 }

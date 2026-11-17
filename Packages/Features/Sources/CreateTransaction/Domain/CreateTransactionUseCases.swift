@@ -12,10 +12,14 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
     private let cards: any CardRepository
     let transactions: any TransactionRepository
     private let rules: (any CategorizationRuleRepository)?
+    private let merchants: (any MerchantRepository)?
+    let personalDebts: (any PersonalDebtRepository)?
     let calendar: Calendar
     private let now: @Sendable () -> Date
 
-    /// Without `rules`, no category comes from a rule.
+    /// Without `rules`, no category comes from a rule; without `merchants`, the context names none
+    /// and a movement's links are kept as they come. With `personalDebts`, a stored movement's
+    /// receipt counts the person's part of split expenses in its category total.
     public init(
         settings: any SettingsRepository,
         categories: any CategoryRepository,
@@ -23,6 +27,8 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
         cards: any CardRepository,
         transactions: any TransactionRepository,
         rules: (any CategorizationRuleRepository)? = nil,
+        merchants: (any MerchantRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -32,6 +38,8 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
         self.cards = cards
         self.transactions = transactions
         self.rules = rules
+        self.merchants = merchants
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.now = now
     }
@@ -79,6 +87,7 @@ public struct DefaultGetTransactionContextUseCase: GetTransactionContextUseCase 
             categoryUsage: categoryUsage,
             tagUsage: Tags.usage(in: movements),
             rules: usesRules ? rules?.fetchCategorizationRules() ?? [] : [],
+            merchants: merchants?.fetchMerchants(),
         )
     }
 
@@ -97,36 +106,60 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
     private let transactions: any TransactionRepository
     private let recurringRules: (any RecurringRuleRepository)?
     private let materialize: (any MaterializeRecurringUseCase)?
+    private let merchants: (any MerchantRepository)?
+    private let personalDebts: (any PersonalDebtRepository)?
     private let calendar: Calendar
+    private let makeID: @Sendable () -> UUID
 
-    /// Without `recurringRules`, "Repeat" is ignored and only the movement is saved.
+    /// Without `recurringRules`, "Repeat" is ignored and only the movement is saved. Without
+    /// `merchants`, a merchant the draft picked new (`MerchantLink.new`) isn't created. With
+    /// `personalDebts`, the receipt's category total counts the person's part of split expenses.
     public init(
         context: any GetTransactionContextUseCase,
         transactions: any TransactionRepository,
         recurringRules: (any RecurringRuleRepository)? = nil,
         materialize: (any MaterializeRecurringUseCase)? = nil,
+        merchants: (any MerchantRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
+        makeID: @escaping @Sendable () -> UUID = { UUID() },
     ) {
         self.context = context
         self.transactions = transactions
         self.recurringRules = recurringRules
         self.materialize = materialize
+        self.merchants = merchants
+        self.personalDebts = personalDebts
         self.calendar = calendar
+        self.makeID = makeID
     }
 
     public func execute(_ draft: TransactionDraft) async throws(DomainError) -> SavedTransaction {
-        let current = try await context.execute()
+        var current = try await context.execute()
         var draft = draft
         if recurringRules == nil {
             draft.repeatFrequency = nil
         }
+        let created = try Self.creatingMerchants(&draft, context: &current, canCreate: merchants != nil, makeID: makeID)
         let transaction = try Self.validated(draft, context: current)
         let rule = try draft.repeatFrequency.map { frequency throws(DomainError) in
             try Self.rule(repeating: transaction, every: frequency, id: draft.recurringRuleID, calendar: calendar)
         }
-        try await transactions.save(transaction)
-        if let rule, let recurringRules {
-            try await recurringRules.save(rule)
+        if let merchants, !created.isEmpty {
+            // The new merchants, the movement and its rule in one save: a save that fails leaves no
+            // merchant behind.
+            try await merchants.commit(MerchantChanges(
+                transactions: [transaction],
+                recurringRules: recurringRules == nil ? [] : rule.map { [$0] } ?? [],
+                savedMerchants: created,
+            ))
+        } else {
+            try await transactions.save(transaction)
+            if let rule, let recurringRules {
+                try await recurringRules.save(rule)
+            }
+        }
+        if rule != nil, recurringRules != nil {
             try await materialize?.execute()
         }
 
@@ -136,24 +169,62 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             movements: transactions.fetchTransactions(in: nil),
             principal: current.currencies.principal,
             calendar: calendar,
+            debts: personalDebts?.fetchPersonalDebts() ?? [],
         )
     }
 
+    /// Resolves the draft's `new` merchant links: the equivalent merchant already saved, else a new
+    /// one returned for saving with the movement. A transfer names none, so it creates none; without
+    /// a merchant store (`canCreate` off) a new one is left out.
+    static func creatingMerchants(
+        _ draft: inout TransactionDraft,
+        context: inout TransactionContext,
+        canCreate: Bool,
+        makeID: () -> UUID,
+    ) throws(DomainError) -> [Merchant] {
+        func isNew(_ link: MerchantLink) -> Bool {
+            if case .new = link {
+                return true
+            }
+            return false
+        }
+        guard isNew(draft.merchant) || isNew(draft.via) else { return [] }
+        guard draft.kind != .transfer, canCreate else {
+            draft.merchant = isNew(draft.merchant) ? .unlinked : draft.merchant
+            draft.via = isNew(draft.via) ? .unlinked : draft.via
+            return []
+        }
+        let resolved = try Merchants.creatingNew(
+            [draft.merchant, draft.via],
+            in: context.merchants ?? [],
+            categories: context.categories,
+            makeID: makeID,
+        )
+        draft.merchant = resolved.links[0]
+        draft.via = resolved.links[1]
+        context = context.adding(merchants: resolved.created)
+        return resolved.created
+    }
+
     /// What the receipt states about a stored movement: its account's balances with every movement
-    /// and, for an expense, its category's spending that month. Also rebuilds a receipt from history.
+    /// and, for an expense, its category's spending that month (the person's part of split expenses,
+    /// as the summary counts it with `debts`). Also rebuilds a receipt from history.
     static func receipt(
         of transaction: Transaction,
         accounts: [Account],
         movements: [Transaction],
         principal: String,
         calendar: Calendar,
+        debts: [PersonalDebt] = [],
     ) throws(DomainError) -> SavedTransaction {
         guard let account = accounts.first(where: { $0.id == transaction.accountID }) else { throw .notFound(transaction.accountID) }
         let newBalances = Balances.balance(of: account, transactions: movements, calendar: calendar)
         var categoryTotal: Money?
         if transaction.kind == .expense {
             let month = YearMonth(containing: transaction.date, calendar: calendar)
-            let summary = MonthlySummary(month: month, transactions: movements, currency: principal, calendar: calendar)
+            let summary = MonthlySummary(
+                month: month, transactions: movements, currency: principal, calendar: calendar, debts: DebtLinks(debts),
+            )
             let total = summary.categories.first { $0.categoryID == transaction.categoryID }?.amount ?? 0
             categoryTotal = Money(total, principal)
         }
@@ -178,7 +249,8 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             throw .notFound(UUID(uuid: UUID_NULL))
         }
 
-        // A new expense or income without a category goes through the rules, then to "Other".
+        // A new expense or income without a category goes through the rules first; when none
+        // matches it takes its merchant's default category, else goes to "Other".
         let chosen = draft.kind == .transfer || draft.categoryID != nil || existing != nil
             ? draft.categoryID : TransactionCategory.otherID(for: draft.kind)
         if draft.kind == .transfer {
@@ -195,7 +267,8 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
                 kind: draft.kind, categoryID: chosen, description: description, note: note, in: context.rules,
             )
             : nil
-        let categoryID = draft.kind == .transfer ? nil : rule?.categoryID ?? chosen
+        let merchant = merchantFields(of: draft, context: context, existing: existing, rule: rule)
+        let categoryID = draft.kind == .transfer ? nil : rule?.categoryID ?? merchant.defaultCategoryID ?? chosen
         let category = context.categories.first { $0.id == categoryID }
         let transaction = Transaction(
             id: draft.id,
@@ -210,15 +283,45 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             accountID: accountID,
             cardID: source.cardID,
             destinationAccountID: draft.kind == .transfer ? draft.destinationAccountID : nil,
-            actualDebitedPrincipal: draft.currency == rate.principal ? nil : draft.actualDebitedPrincipal,
+            actualDebitedPrincipal: draft.applicableDebit(principal: rate.principal, accountID: accountID),
             exchangeRate: rate,
             isShared: existing?.isShared ?? false,
             note: note.isEmpty ? nil : note,
             recurringID: existing?.recurringID ?? (draft.repeatFrequency == nil ? nil : draft.recurringRuleID),
             tags: rule.map { Tags.merging(draft.tags, with: $0.tags) } ?? draft.tags,
+            merchantID: merchant.merchantID,
+            viaMerchantID: merchant.viaMerchantID,
         )
         try Transaction.checkClosedAccounts(transaction, existing: existing, accounts: context.accounts)
         return transaction
+    }
+
+    /// The merchant links a movement saves and the default category its merchant brings. A transfer
+    /// is between the person's own accounts: it names no business or platform, and turning an
+    /// expense or income into one drops the links it had. A rule's merchant applies only when the
+    /// movement names none, the person didn't clear the business on purpose and it is a live one;
+    /// the merchant's default category only for a new movement without a category no rule matched.
+    private static func merchantFields(
+        of draft: TransactionDraft,
+        context: TransactionContext,
+        existing: Transaction?,
+        rule: CategorizationRule?,
+    ) -> (merchantID: UUID?, viaMerchantID: UUID?, defaultCategoryID: String?) {
+        guard draft.kind != .transfer else { return (nil, nil, nil) }
+        let links = Merchants.links(
+            merchant: draft.merchant,
+            via: draft.via,
+            known: context.merchants,
+            existing: existing.map { ($0.merchantID, $0.viaMerchantID) },
+        )
+        let ruleMerchant = rule?.merchantID.flatMap { id in
+            draft.merchant != .unlinked && context.merchants?.contains { $0.id == id } == true ? id : nil
+        }
+        let merchantID = links.merchantID ?? ruleMerchant
+        let defaultCategory = existing == nil && draft.categoryID == nil && rule == nil
+            ? Merchants.category(of: context.merchant(links.merchantID), kind: draft.kind, categories: context.categories)
+            : nil
+        return (merchantID, links.viaMerchantID == merchantID ? nil : links.viaMerchantID, defaultCategory)
     }
 
     /// The rule "Repeat" saves: the movement as its first occurrence, the next one still ahead,
@@ -245,6 +348,8 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             autoConfirm: false,
             note: transaction.note,
             tags: transaction.tags,
+            merchantID: transaction.merchantID,
+            viaMerchantID: transaction.viaMerchantID,
         )
         try first.checkSchedule(calendar: calendar)
         let next = RecurringSchedule.firstOccurrence(of: first, after: transaction.date, calendar: calendar) ?? transaction.date

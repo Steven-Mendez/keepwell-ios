@@ -13,6 +13,8 @@ public final class CategorizationRuleRecord: AuditedRecord {
     /// One tag per line, like a movement's.
     var tagsText = ""
     var sortIndex = 0
+    /// Added in V15: the merchant it sets on the movements it matches.
+    var merchantID: UUID?
     var createdAt = Date.now
     var updatedAt = Date.now
     var deletedAt: Date?
@@ -26,6 +28,7 @@ public final class CategorizationRuleRecord: AuditedRecord {
         categoryID = rule.categoryID
         kindRaw = rule.kind.rawValue
         tagsText = TagsText.encode(rule.tags)
+        merchantID = rule.merchantID
         self.sortIndex = sortIndex
     }
 
@@ -33,7 +36,9 @@ public final class CategorizationRuleRecord: AuditedRecord {
         guard let kind = TransactionKind(rawValue: kindRaw) else {
             throw DomainCorruption("Categorization rule kind '\(kindRaw)'")
         }
-        return CategorizationRule(id: id, match: match, categoryID: categoryID, kind: kind, tags: TagsText.decode(tagsText))
+        return CategorizationRule(
+            id: id, match: match, categoryID: categoryID, kind: kind, tags: TagsText.decode(tagsText), merchantID: merchantID,
+        )
     }
 }
 

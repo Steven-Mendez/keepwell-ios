@@ -6,7 +6,7 @@ import SwiftUI
 /// paints at once, and Brandfetch's logo covers it once loaded. If the logo fails the monogram
 /// stays: no gap, no broken image, and no jump, since both share one neutral circle.
 public struct BrandMark: View {
-    private let brand: Brand
+    private let brand: LogoSubject
     private let tint: Color
     private let diameter: CGFloat
     @Environment(\.brandLogos) private var logos
@@ -14,7 +14,12 @@ public struct BrandMark: View {
     @State private var logo: (key: String, image: UIImage)?
 
     public init(_ brand: Brand, tint: Color, diameter: CGFloat = 40) {
-        self.brand = brand
+        self.init(LogoSubject(brand), tint: tint, diameter: diameter)
+    }
+
+    /// A brand of the table or a merchant: the name its monogram comes from and the domain of its logo.
+    public init(_ subject: LogoSubject, tint: Color, diameter: CGFloat = 40) {
+        brand = subject
         self.tint = tint
         self.diameter = diameter
     }
@@ -50,16 +55,23 @@ public struct BrandMark: View {
     }
 }
 
-/// A rule's or movement's leading badge: the brand its text names, when the table knows one, or
-/// the given fallback. Only a table brand's domain is ever requested; the text never leaves.
+/// A rule's or movement's leading badge: its merchant's logo when given (`logo`), else the brand its
+/// text names, when the table knows one, else the given fallback. Only a domain is ever requested;
+/// the text never leaves.
 public struct BrandOrFallbackIcon<Fallback: View>: View {
-    private let brand: Brand?
+    private let brand: LogoSubject?
     private let tint: Color
     private let diameter: CGFloat
     private let fallback: Fallback
 
-    public init(text: String, tint: Color, diameter: CGFloat = 40, @ViewBuilder fallback: () -> Fallback) {
-        brand = BrandCatalog.brand(for: text)
+    public init(
+        text: String,
+        logo: LogoSubject? = nil,
+        tint: Color,
+        diameter: CGFloat = 40,
+        @ViewBuilder fallback: () -> Fallback,
+    ) {
+        brand = logo ?? BrandCatalog.brand(for: text).map(LogoSubject.init)
         self.tint = tint
         self.diameter = diameter
         self.fallback = fallback()
