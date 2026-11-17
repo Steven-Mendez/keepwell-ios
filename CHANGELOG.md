@@ -222,6 +222,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- VoiceOver reads the icons of the category and savings-goal icon picker by what they show, in
+  English or Spanish ("Coffee cup", "Taza de café"), instead of their internal names
+  ("cup.and.saucer").
 - After the main currency changes (swapping your two currencies, or a change from another device),
   month totals no longer add up old amounts in the previous currency and label them with the new
   one. Each movement converts with the rate it was recorded with; one whose rate doesn't include
