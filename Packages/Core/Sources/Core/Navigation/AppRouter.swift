@@ -26,6 +26,8 @@ public enum AppRoute: Hashable, Sendable {
     case transaction(id: UUID)
     /// Recurring movements and subscriptions.
     case recurring
+    /// A recurring rule's detail: whether it's paid, its next payment and what paid it.
+    case recurringRuleDetail(id: UUID)
     /// A recurring rule's editor; `nil` creates one.
     case recurringRule(id: UUID?)
     /// A new recurring rule from the short subscription form.

@@ -109,6 +109,17 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         )
     }
 
+    /// The same movement as a payment of `recurringID`'s rule, or of none.
+    public func with(recurringID: UUID?) -> Self {
+        Self(
+            id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
+            amount: amount, currency: currency, accountID: accountID, cardID: cardID,
+            destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
+        )
+    }
+
     /// The same movement with other merchant links (a merchant merged, deleted or set by a rule).
     public func with(merchantID: UUID?, viaMerchantID: UUID?) -> Self {
         Self(

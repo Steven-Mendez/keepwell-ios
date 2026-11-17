@@ -34,15 +34,45 @@ public struct DefaultGetRecurringOverviewUseCase: GetRecurringOverviewUseCase {
 
     public func execute() async throws(DomainError) -> RecurringOverview {
         let currencies = try await settings.load()?.currencies ?? .initial
+        let movements = try await transactions.fetchTransactions(in: nil)
         return try await RecurringOverview(
             settings: currencies,
             rules: rules.fetchRecurringRules(),
             accounts: accounts.fetchAccounts(),
             cards: cards.fetchCards(),
             categories: categories.fetchCategories(),
-            recorded: transactions.fetchTransactions(in: nil).filter { $0.recurringID != nil },
+            recorded: movements.filter { $0.recurringID != nil },
+            unlinked: movements.filter { $0.recurringID == nil && $0.isConfirmed },
             calendar: calendar,
         )
+    }
+}
+
+/// Says which rule a movement paid, or (`ruleID` nil) takes it out of its rule's payments. The
+/// rule's schedule doesn't move: linking tells what paid it, it records or skips nothing.
+public protocol LinkRecurringPaymentUseCase: Sendable {
+    func execute(transactionID: UUID, ruleID: UUID?) async throws(DomainError)
+}
+
+public struct DefaultLinkRecurringPaymentUseCase: LinkRecurringPaymentUseCase {
+    private let rules: any RecurringRuleRepository
+    private let transactions: any TransactionRepository
+
+    public init(rules: any RecurringRuleRepository, transactions: any TransactionRepository) {
+        self.rules = rules
+        self.transactions = transactions
+    }
+
+    public func execute(transactionID: UUID, ruleID: UUID?) async throws(DomainError) {
+        guard let transaction = try await transactions.fetchTransactions(in: nil).first(where: { $0.id == transactionID }) else {
+            throw .notFound(transactionID)
+        }
+        guard transaction.recurringID != ruleID else { return }
+        if let ruleID {
+            guard let rule = try await rules.fetchRecurringRules().first(where: { $0.id == ruleID }) else { throw .notFound(ruleID) }
+            guard transaction.kind == rule.kind else { throw .unsupportedTransactionKind(transaction.kind) }
+        }
+        try await transactions.save(transaction.with(recurringID: ruleID))
     }
 }
 

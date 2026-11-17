@@ -818,6 +818,26 @@
           }
         }
       }
+    },
+    "Recurring payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pago recurrente"
+          }
+        }
+      }
+    },
+    "Link ›" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asociar ›"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -62,6 +62,8 @@ final class AppContainer {
     let movements: DeferredTransactionDeletions
     /// "Undo" after deleting or confirming a movement, shown over every screen.
     let movementUndo: MovementUndo
+    /// Bumped after every store save, a sync round's included; list screens reload on it.
+    let storeChanges = StoreChanges()
 
     init(modelContainer: ModelContainer) {
         store = SwiftDataStore(modelContainer: modelContainer)

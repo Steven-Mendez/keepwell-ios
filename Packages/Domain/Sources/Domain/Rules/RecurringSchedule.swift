@@ -26,9 +26,18 @@ public enum RecurringSchedule {
         public let transactions: [Transaction]
         /// Only the rules whose `nextDate` changed.
         public let rules: [RecurringRule]
+        /// Movements typed by hand that paid an occurrence, now linked to its rule so the rule's
+        /// history shows them and the rule reads as paid.
+        public let linked: [Transaction]
+
+        public init(transactions: [Transaction], rules: [RecurringRule], linked: [Transaction] = []) {
+            self.transactions = transactions
+            self.rules = rules
+            self.linked = linked
+        }
 
         public var isEmpty: Bool {
-            transactions.isEmpty && rules.isEmpty
+            transactions.isEmpty && rules.isEmpty && linked.isEmpty
         }
     }
 
@@ -142,7 +151,8 @@ public enum RecurringSchedule {
     /// rule (the latest ones). An occurrence is skipped when a movement of the same rule already
     /// sits on that day, so two devices, or a restore, never record it twice, and when a movement
     /// typed by hand already pays it (`manualPayment(for:on:in:taken:calendar:)`; rules claim
-    /// payments in id order). Each rule then moves to its first occurrence after the last one due.
+    /// payments in id order; the payment comes back in `linked`, tied to the rule). Each rule then
+    /// moves to its first occurrence after the last one due.
     /// An occurrence in "Other" takes the first categorization rule in `categorizationRules` that
     /// matches, like any new movement (its merchant only when it is one of the live `merchants`).
     public static func materialize(
@@ -162,6 +172,7 @@ public enum RecurringSchedule {
         let knownIDs = Set(transactions.map(\.id))
         var paid: Set<UUID> = []
         var created: [Transaction] = []
+        var linked: [Transaction] = []
         var advanced: [RecurringRule] = []
         for rule in rules.sorted(by: { $0.id.uuidString < $1.id.uuidString }) {
             let dates = due(rule, today: today, calendar: calendar).suffix(catchUpLimit)
@@ -171,6 +182,9 @@ public enum RecurringSchedule {
                 guard !knownIDs.contains(id) else { continue }
                 if let payment = manualPayment(for: rule, on: date, in: transactions, taken: paid, calendar: calendar) {
                     paid.insert(payment.id)
+                    if payment.recurringID != rule.id {
+                        linked.append(payment.with(recurringID: rule.id))
+                    }
                     continue
                 }
                 let occurrence = movement(from: rule, on: date, exchangeRate: exchangeRate, id: id)
@@ -184,7 +198,17 @@ public enum RecurringSchedule {
                 advanced.append(rule.with(nextDate: next))
             }
         }
-        return Materialization(transactions: created, rules: advanced)
+        return Materialization(transactions: created, rules: advanced, linked: linked)
+    }
+
+    /// The cycle that ends at the first occurrence on or after `date`: that occurrence and the one
+    /// before it. Before the rule's start the earlier one is a step behind the anchor, so a rule
+    /// that hasn't started yet still has a cycle a payment can fall in (web `cycleEndingAt`).
+    public static func cycle(of rule: RecurringRule, endingAt date: Date, calendar: Calendar) -> (start: Date, end: Date)? {
+        guard let end = firstOccurrence(of: rule, onOrAfter: date, calendar: calendar),
+              let index = occurrenceIndex(of: rule, on: end, calendar: calendar),
+              let start = occurrence(of: rule, index - 1, calendar: calendar) else { return nil }
+        return (start, end)
     }
 
     /// The id of the movement for the occurrence on `date`'s day, derived from the rule, its
