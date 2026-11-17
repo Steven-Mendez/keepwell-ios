@@ -184,17 +184,7 @@ extension RecurringRuleEditorViewModel {
         }
     }
 
-    /// The latest movements it recorded, newest first.
-    public var recorded: [Transaction] {
-        guard let ruleID, let overview else { return [] }
-        return Array(overview.recorded.filter { $0.recurringID == ruleID }.sorted { $0.date > $1.date }.prefix(5))
-    }
-
     public var display: TransactionDisplay? {
         overview.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories) }
-    }
-
-    public func recordedDay(_ transaction: Transaction) -> String {
-        RecurringDisplay.day(transaction.date, today: now(), calendar: calendar)
     }
 }

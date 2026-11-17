@@ -205,25 +205,83 @@ public struct DefaultSavePersonalDebtUseCase: SavePersonalDebtUseCase {
     }
 }
 
-/// Repayments, settling and reopening. Only the debt changes: no movement is recorded.
+/// Repayments, settling and reopening. Only the debt changes, except a repayment deposited into an
+/// account, which also records an income movement (that no total counts as income).
 public protocol UpdatePersonalDebtUseCase: Sendable {
+    /// "Record repayment". With `deposit` (only on a "they owe me" debt in the principal or second
+    /// currency, `PersonalDebt.canDepositRepayment`: otherwise `.unsupportedTransactionKind(.income)`
+    /// or `.invalidCurrency`, nothing written), it also records a confirmed income of the
+    /// repayment's amount and currency into that account and links it, in one write: a failure
+    /// records neither.
     @discardableResult
-    func repay(id: UUID, amount: Decimal, on day: Date) async throws(DomainError) -> PersonalDebt
+    func repay(id: UUID, amount: Decimal, on day: Date, deposit: RepaymentDeposit?) async throws(DomainError) -> PersonalDebt
+    /// Deletes one repayment and the movement it deposited, in one write, as "Mark unpaid" does for
+    /// a loan. A debt that repayment settled opens again; one settled by hand stays settled.
+    @discardableResult
+    func deleteRepayment(debtID: UUID, repaymentID: UUID) async throws(DomainError) -> PersonalDebt
     @discardableResult
     func settle(id: UUID, on day: Date) async throws(DomainError) -> PersonalDebt
     @discardableResult
     func reopen(id: UUID) async throws(DomainError) -> PersonalDebt
 }
 
+extension UpdatePersonalDebtUseCase {
+    /// Records the repayment only.
+    @discardableResult
+    public func repay(id: UUID, amount: Decimal, on day: Date) async throws(DomainError) -> PersonalDebt {
+        try await repay(id: id, amount: amount, on: day, deposit: nil)
+    }
+}
+
 public struct DefaultUpdatePersonalDebtUseCase: UpdatePersonalDebtUseCase {
     private let debts: any PersonalDebtRepository
+    private let categories: (any CategoryRepository)?
+    private let settings: (any SettingsRepository)?
+    private let recorder: (any RepaymentIncomeRecorder)?
 
-    public init(debts: any PersonalDebtRepository) {
+    /// Without `recorder`, a deposit can't be recorded and throws `.unsupportedTransactionKind`;
+    /// without `settings`, the ledger's currencies are unknown and it throws `.invalidCurrency`.
+    public init(
+        debts: any PersonalDebtRepository,
+        categories: (any CategoryRepository)? = nil,
+        settings: (any SettingsRepository)? = nil,
+        recorder: (any RepaymentIncomeRecorder)? = nil,
+    ) {
         self.debts = debts
+        self.categories = categories
+        self.settings = settings
+        self.recorder = recorder
     }
 
-    public func repay(id: UUID, amount: Decimal, on day: Date) async throws(DomainError) -> PersonalDebt {
-        try await store(find(id).repaying(amount, on: day))
+    public func repay(id: UUID, amount: Decimal, on day: Date, deposit: RepaymentDeposit?) async throws(DomainError) -> PersonalDebt {
+        let debt = try await find(id)
+        guard let deposit else { return try await store(debt.repaying(amount, on: day)) }
+        guard debt.direction == .theyOweMe, let recorder else { throw .unsupportedTransactionKind(.income) }
+        guard let currencies = try await settings?.load()?.currencies, debt.canDepositRepayment(currencies: currencies) else {
+            throw .invalidCurrency(debt.amount.currency)
+        }
+        // Checked before the movement is built, so a repayment too large records nothing.
+        _ = try debt.repaying(amount, on: day)
+        var categoryID = deposit.categoryID
+        if categoryID == nil {
+            categoryID = try await PersonalDebt.repaymentCategoryID(in: categories?.fetchCategories() ?? [])
+        }
+        let income = try await recorder.prepare(RepaymentIncome(
+            amount: Money(amount, debt.amount.currency),
+            categoryID: categoryID ?? TransactionCategory.otherIncomeID,
+            accountID: deposit.accountID,
+            description: debt.repaymentDescription,
+            date: day,
+        ))
+        let repaid = try debt.repaying(amount, on: day, transactionID: income.id)
+        try await debts.save(repaid, recording: income)
+        return repaid
+    }
+
+    public func deleteRepayment(debtID: UUID, repaymentID: UUID) async throws(DomainError) -> PersonalDebt {
+        let (debt, repayment) = try await find(debtID).removingRepayment(id: repaymentID)
+        try await debts.save(debt, deletingTransaction: repayment.transactionID)
+        return debt
     }
 
     public func settle(id: UUID, on day: Date) async throws(DomainError) -> PersonalDebt {
@@ -246,7 +304,7 @@ public struct DefaultUpdatePersonalDebtUseCase: UpdatePersonalDebtUseCase {
 }
 
 /// Deletes a loan or a personal debt, leaving a tombstone like every other record. A loan's paid
-/// installments stay as movements: they really happened.
+/// installments and a debt's deposited repayments stay as movements: they really happened.
 public protocol DeleteDebtUseCase: Sendable {
     func deleteLoan(id: UUID) async throws(DomainError)
     func deletePersonalDebt(id: UUID) async throws(DomainError)
@@ -271,10 +329,13 @@ public struct DefaultDeleteDebtUseCase: DeleteDebtUseCase {
 }
 
 /// "Split": one "they owe me" debt per person for their share of an expense the person paid,
-/// each linked to the movement. The movement itself doesn't change.
+/// each linked to the movement. The movement itself doesn't change. The shares together can't
+/// exceed what earlier splits left of it (`Transaction.splitRemaining`).
 public protocol SplitTransactionUseCase: Sendable {
     @discardableResult
     func execute(transactionID: UUID, shares: [SplitShare]) async throws(DomainError) -> [PersonalDebt]
+    /// What is left of the expense to split, in its currency.
+    func remaining(of transaction: Transaction) async throws(DomainError) -> Decimal
 }
 
 public struct DefaultSplitTransactionUseCase: SplitTransactionUseCase {
@@ -299,7 +360,9 @@ public struct DefaultSplitTransactionUseCase: SplitTransactionUseCase {
         guard expense.kind == .expense else { throw .unsupportedTransactionKind(expense.kind) }
         let people = shares.map { DebtNames.cleaned($0.person, limit: PersonalDebt.maxNameLength) }
         guard !people.contains(where: \.isEmpty) else { throw .missingName }
-        try BillSplit.check(shares.map(\.amount), total: expense.amount)
+        // A second split shares only what the first left, so the shares never add up to more than
+        // the expense.
+        try await BillSplit.check(shares.map(\.amount), total: remaining(of: expense))
         let created = zip(people, shares).map { person, share in
             PersonalDebt(
                 id: makeID(),
@@ -315,5 +378,9 @@ public struct DefaultSplitTransactionUseCase: SplitTransactionUseCase {
             try await debts.save(debt)
         }
         return created
+    }
+
+    public func remaining(of transaction: Transaction) async throws(DomainError) -> Decimal {
+        try await transaction.splitRemaining(debts: debts.fetchPersonalDebts())
     }
 }

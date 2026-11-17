@@ -16,6 +16,8 @@ public struct SampleData: Sendable {
     public let loans: [Loan]
     public let personalDebts: [PersonalDebt]
     public let categorizationRules: [CategorizationRule]
+    /// None: rows keep the logos their descriptions name, so the snapshots don't move.
+    public let merchants: [Merchant] = []
 
     public enum IDs {
         public static let savings = UUID(uuidString: "00000000-0000-0000-0000-00000000A001") ?? UUID()

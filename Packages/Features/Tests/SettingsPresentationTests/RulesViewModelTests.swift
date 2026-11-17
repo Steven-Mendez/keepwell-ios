@@ -52,6 +52,30 @@ struct RulesViewModelTests {
         #expect(await store.fetchCategorizationRules() == [saved])
     }
 
+    /// The editor has no merchant field: editing the rest keeps the merchant the rule has, also
+    /// one this device hasn't pulled yet.
+    @Test
+    func editingARuleKeepsItsMerchant() async throws {
+        let live = Merchant(name: "Uber", domain: "uber.com")
+        let notPulled = UUID()
+        for merchantID in [live.id, notPulled] {
+            let rule = CategorizationRule(match: "Uber", categoryID: "transport", kind: .expense, merchantID: merchantID)
+            let store = InMemoryStore(categorizationRules: [rule], merchants: [live])
+            let viewModel = RulesViewModel(
+                manage: DefaultManageCategorizationRulesUseCase(rules: store, categories: store, transactions: store, merchants: store),
+                getCategories: DefaultGetCategoriesUseCase(categories: store),
+            )
+            await viewModel.load()
+            viewModel.edit(rule)
+            let editor = try #require(viewModel.editor)
+            editor.setMatch("Uber trip")
+            let saved = try #require(await editor.save())
+            #expect(saved.match == "Uber trip")
+            #expect(saved.merchantID == merchantID)
+            #expect(await store.fetchCategorizationRules().first?.merchantID == merchantID)
+        }
+    }
+
     @Test
     func applyingToPastAsksWithTheCountThenRecategorizes() async throws {
         let rate = try ExchangeRate(principal: "USD", second: "NIO", rate: 36)

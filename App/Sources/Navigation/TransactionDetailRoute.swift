@@ -2,6 +2,7 @@ import CreateTransactionPresentation
 import DebtsPresentation
 import DesignSystem
 import Domain
+import RecurringPresentation
 import SwiftUI
 import TransactionsPresentation
 
@@ -12,6 +13,7 @@ struct TransactionDetailRoute: View {
     @State private var editing: PresentedFlow<CreateTransactionViewModel>?
     @State private var receipt: PresentedFlow<CreateTransactionViewModel>?
     @State private var splitBill: SplitBillViewModel?
+    @State private var linking: RecurringRulePickerViewModel?
     private let container: AppContainer
     let onBack: () -> Void
     let onOpenRecurringRule: (UUID) -> Void
@@ -41,6 +43,7 @@ struct TransactionDetailRoute: View {
                 split: { splitBill = container.makeSplitBillViewModel($0) },
                 openRecurringRule: onOpenRecurringRule,
                 showTag: onShowTag,
+                linkRecurringRule: { linking = container.makeRecurringRulePickerViewModel(transaction: $0) },
             ),
         )
         .navigationBarBackButtonHidden()
@@ -55,6 +58,12 @@ struct TransactionDetailRoute: View {
                 .presentationBackground(KWColor.Surface.bg)
         }
         .splitBillSheet($splitBill, onDismiss: reload)
+        .sheet(item: $linking, onDismiss: reload) { picker in
+            RecurringRulePickerSheet(viewModel: picker) { linking = nil }
+                .presentationDetents([.medium, .large])
+                .presentationBackground(KWColor.Surface.bg)
+        }
+        .reloadsOnStoreChange { await viewModel.load() }
     }
 
     private func reload() {

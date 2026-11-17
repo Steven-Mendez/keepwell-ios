@@ -19,8 +19,15 @@ public struct SpendingPace: Hashable, Sendable {
     public let previous: [Point]
 
     /// Amounts in `currency`, each converted with its stored rate; what that rate can't convert is
-    /// left out, as in `MonthlySummary`.
-    public init(month: YearMonth, transactions: [Transaction], currency: String, calendar: Calendar, now: Date) {
+    /// left out, as in `MonthlySummary`. With `debts`, an expense counts only the person's part.
+    public init(
+        month: YearMonth,
+        transactions: [Transaction],
+        currency: String,
+        calendar: Calendar,
+        now: Date,
+        debts: DebtLinks = .empty,
+    ) {
         let previousMonth = month.adding(months: -1)
         let daysInMonth = Self.dayCount(of: month, calendar: calendar)
         let lastDay = YearMonth(containing: now, calendar: calendar) == month
@@ -28,13 +35,14 @@ public struct SpendingPace: Hashable, Sendable {
             : daysInMonth
         self.month = month
         self.previousMonth = previousMonth
-        current = Self.points(month, through: lastDay, transactions: transactions, currency: currency, calendar: calendar)
+        current = Self.points(month, through: lastDay, transactions: transactions, currency: currency, calendar: calendar, debts: debts)
         previous = Self.points(
             previousMonth,
             through: Self.dayCount(of: previousMonth, calendar: calendar),
             transactions: transactions,
             currency: currency,
             calendar: calendar,
+            debts: debts,
         )
     }
 
@@ -66,19 +74,20 @@ public struct SpendingPace: Hashable, Sendable {
         return calendar.range(of: .day, in: .month, for: start)?.count ?? 30
     }
 
-    private static func points(
+    private static func points( // swiftlint:disable:this function_parameter_count
         _ month: YearMonth,
         through lastDay: Int,
         transactions: [Transaction],
         currency: String,
         calendar: Calendar,
+        debts: DebtLinks,
     ) -> [Point] {
         var perDay: [Int: Decimal] = [:]
         for transaction in transactions
             where transaction.isConfirmed && transaction.kind == .expense
             && YearMonth(containing: transaction.date, calendar: calendar) == month
         {
-            guard let amount = transaction.storedAmount(in: currency) else { continue }
+            guard let amount = transaction.spendingAmount(in: currency, debts: debts) else { continue }
             perDay[calendar.component(.day, from: transaction.date), default: 0] += amount
         }
         var running = Decimal(0)

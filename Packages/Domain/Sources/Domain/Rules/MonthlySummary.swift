@@ -33,7 +33,9 @@ public struct MonthlySummary: Hashable, Sendable {
         income > 0 ? savings / income : nil
     }
 
-    public init(month: YearMonth, transactions: [Transaction], currency: String, calendar: Calendar) {
+    /// With `debts`, an expense counts only the person's part (`Transaction.spendingAmount(in:debts:)`)
+    /// and an income that deposited a debt repayment doesn't count at all.
+    public init(month: YearMonth, transactions: [Transaction], currency: String, calendar: Calendar, debts: DebtLinks = .empty) {
         var income = Decimal(0)
         var expense = Decimal(0)
         var perCategory: [String: Decimal] = [:]
@@ -43,8 +45,15 @@ public struct MonthlySummary: Hashable, Sendable {
             where transaction.isConfirmed && transaction.kind != .transfer
             && YearMonth(containing: transaction.date, calendar: calendar) == month
         {
-            guard let amount = transaction.storedAmount(in: currency) else {
+            if transaction.isReimbursement(debts) {
+                continue
+            }
+            guard let amount = transaction.summaryAmount(in: currency, debts: debts) else {
                 excluded.add(transaction)
+                continue
+            }
+            // A movement entirely paid for by others adds nothing, not even an empty category.
+            if amount == 0 {
                 continue
             }
             switch transaction.kind {
@@ -110,9 +119,12 @@ public enum SpendingHistory {
         transactions: [Transaction],
         currency: String,
         calendar: Calendar,
+        debts: DebtLinks = .empty,
     ) -> [(month: YearMonth, expense: Decimal)] {
-        monthlyTotals(of: .expense, endingAt: last, count: count, transactions: transactions, currency: currency, calendar: calendar)
-            .map { (month: $0.month, expense: $0.total) }
+        monthlyTotals(
+            of: .expense, endingAt: last, count: count, transactions: transactions, currency: currency, calendar: calendar, debts: debts,
+        )
+        .map { (month: $0.month, expense: $0.total) }
     }
 
     /// Monthly totals of one kind (expense or income) in `currency` for `count` months ending at
@@ -124,8 +136,9 @@ public enum SpendingHistory {
         transactions: [Transaction],
         currency: String,
         calendar: Calendar,
+        debts: DebtLinks = .empty,
     ) -> [(month: YearMonth, total: Decimal)] {
-        let totals = totalsByMonth(of: kind, transactions, currency: currency, calendar: calendar)
+        let totals = totalsByMonth(of: kind, transactions, currency: currency, calendar: calendar, debts: debts)
         return (0 ..< count).reversed().map { offset in
             let month = last.adding(months: -offset)
             return (month, totals[month] ?? 0)
@@ -134,8 +147,13 @@ public enum SpendingHistory {
 
     /// Average monthly spending over the months that have any spending, so months before the
     /// person started using the app don't drag it down. `nil` when nothing was spent yet.
-    public static func averageMonthlyExpense(transactions: [Transaction], currency: String, calendar: Calendar) -> Decimal? {
-        averageMonthlyTotal(of: .expense, transactions: transactions, currency: currency, calendar: calendar)
+    public static func averageMonthlyExpense(
+        transactions: [Transaction],
+        currency: String,
+        calendar: Calendar,
+        debts: DebtLinks = .empty,
+    ) -> Decimal? {
+        averageMonthlyTotal(of: .expense, transactions: transactions, currency: currency, calendar: calendar, debts: debts)
     }
 
     /// Same rule as `averageMonthlyExpense`, for either direction.
@@ -144,23 +162,29 @@ public enum SpendingHistory {
         transactions: [Transaction],
         currency: String,
         calendar: Calendar,
+        debts: DebtLinks = .empty,
     ) -> Decimal? {
-        let totals = totalsByMonth(of: kind, transactions, currency: currency, calendar: calendar).values.filter { $0 > 0 }
+        let totals = totalsByMonth(of: kind, transactions, currency: currency, calendar: calendar, debts: debts).values.filter { $0 > 0 }
         guard !totals.isEmpty else { return nil }
         return totals.reduce(0, +) / Decimal(totals.count)
     }
 
-    /// Totals in `currency`, leaving out what `storedAmount(in:)` can't convert, as `MonthlySummary` does.
+    /// Totals in `currency`, read as `MonthlySummary` does (`summaryAmount`), leaving out what can't
+    /// be converted.
     private static func totalsByMonth(
         of kind: TransactionKind,
         _ transactions: [Transaction],
         currency: String,
         calendar: Calendar,
+        debts: DebtLinks,
     ) -> [YearMonth: Decimal] {
         transactions
-            .filter { $0.isConfirmed && $0.kind == kind }
+            .filter { $0.isConfirmed && $0.kind == kind && !$0.isReimbursement(debts) }
             .reduce(into: [:]) { totals, transaction in
-                guard let amount = transaction.storedAmount(in: currency) else { return }
+                let amount = kind == .transfer
+                    ? transaction.storedAmount(in: currency)
+                    : transaction.summaryAmount(in: currency, debts: debts)
+                guard let amount, amount != 0 else { return }
                 totals[YearMonth(containing: transaction.date, calendar: calendar), default: 0] += amount
             }
     }

@@ -11,6 +11,8 @@ public enum AppRoute: Hashable, Sendable {
     case paymentMethods
     /// Settings › Rules: categorization rules ("if it says Uber → Transport").
     case categorizationRules
+    /// Settings › Businesses: the person's merchants and platforms.
+    case merchants
     /// A credit card's detail, by its account.
     case creditCard(accountID: UUID)
     /// A bank account and its one debit card, which share a screen.
@@ -24,6 +26,8 @@ public enum AppRoute: Hashable, Sendable {
     case transaction(id: UUID)
     /// Recurring movements and subscriptions.
     case recurring
+    /// A recurring rule's detail: whether it's paid, its next payment and what paid it.
+    case recurringRuleDetail(id: UUID)
     /// A recurring rule's editor; `nil` creates one.
     case recurringRule(id: UUID?)
     /// A new recurring rule from the short subscription form.

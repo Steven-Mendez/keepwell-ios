@@ -363,14 +363,14 @@ public enum KeepwellSchemaV9: VersionedSchema {
         [
             KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
-            Persistence.TransactionRecord.self,
+            KeepwellSchemaV14.TransactionRecord.self,
             Persistence.CategoryRecord.self,
             KeepwellSchemaV11.SettingsRecord.self,
-            Persistence.RecurringRuleRecord.self,
+            KeepwellSchemaV14.RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
             KeepwellSchemaV12.PersonalDebtRecord.self,
-            CategorizationRuleRecord.self,
+            KeepwellSchemaV14.CategorizationRuleRecord.self,
         ]
     }
 }
@@ -382,14 +382,14 @@ public enum KeepwellSchemaV10: VersionedSchema {
         [
             KeepwellSchemaV13.AccountRecord.self,
             Persistence.CardRecord.self,
-            Persistence.TransactionRecord.self,
+            KeepwellSchemaV14.TransactionRecord.self,
             Persistence.CategoryRecord.self,
             KeepwellSchemaV11.SettingsRecord.self,
-            Persistence.RecurringRuleRecord.self,
+            KeepwellSchemaV14.RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
             KeepwellSchemaV12.PersonalDebtRecord.self,
-            CategorizationRuleRecord.self,
+            KeepwellSchemaV14.CategorizationRuleRecord.self,
             OutboxRecord.self,
         ]
     }
@@ -403,30 +403,8 @@ public enum KeepwellSchemaV11: VersionedSchema {
     }
 }
 
-/// The settings row carries the person's home time zone (`timeZone`), synced as `time_zone`.
-public enum KeepwellSchemaV12: VersionedSchema {
-    public static var versionIdentifier: Schema.Version { Schema.Version(12, 0, 0) }
-    public static var models: [any PersistentModel.Type] {
-        [
-            KeepwellSchemaV13.AccountRecord.self,
-            Persistence.CardRecord.self,
-            Persistence.TransactionRecord.self,
-            Persistence.CategoryRecord.self,
-            Persistence.SettingsRecord.self,
-            Persistence.RecurringRuleRecord.self,
-            SavingsGoalRecord.self,
-            LoanRecord.self,
-            // V12's own frozen record (`KeepwellSchemaV12+Records.swift`), not today's.
-            PersonalDebtRecord.self,
-            CategorizationRuleRecord.self,
-            OutboxRecord.self,
-            NotificationStateRecord.self,
-        ]
-    }
-}
-
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV14
+public typealias KeepwellCurrentSchema = KeepwellSchemaV15
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -445,6 +423,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV12.self,
             KeepwellSchemaV13.self,
             KeepwellSchemaV14.self,
+            KeepwellSchemaV15.self,
         ]
     }
 
@@ -459,7 +438,8 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// movement and rule made in the app (`sourceRaw` nil reads as `app`). V11 adds notification
     /// states, none yet. Settings from V11 start without a home time zone; the app sets it from the
     /// device after its next sync. Personal debts from V12 start without a due date, and accounts
-    /// from V13 start open (`closedAt` nil).
+    /// from V13 start open (`closedAt` nil). V15 adds merchants, none yet, and movements, recurring rules and
+    /// categorization rules from V14 start naming none.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -475,6 +455,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV11.self, toVersion: KeepwellSchemaV12.self),
             .lightweight(fromVersion: KeepwellSchemaV12.self, toVersion: KeepwellSchemaV13.self),
             .lightweight(fromVersion: KeepwellSchemaV13.self, toVersion: KeepwellSchemaV14.self),
+            .lightweight(fromVersion: KeepwellSchemaV14.self, toVersion: KeepwellSchemaV15.self),
         ]
     }
 }

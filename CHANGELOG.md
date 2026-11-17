@@ -9,6 +9,41 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Recurring: each rule now says where it stands. Its row reads "Paid · Nov 1" once the cycle that
+  ends at its next date has a confirmed payment, and the totals add "3 of 8 paid this month" with
+  what is left to pay. Tapping a rule opens its detail (the form is one "Edit" away): the state,
+  the next payment and the days left, every payment linked to it, what was paid this year and a
+  price change. "Link a payment" ties a movement you recorded by hand to the rule, also one from
+  before the rule started; swiping a payment takes it out. A manual payment that covers an
+  occurrence is now linked to its rule automatically. A movement's detail offers "Recurring
+  payment · Link" to do the same from the movement, and the rule's form no longer lists what it
+  recorded (its detail does).
+- Changes made on another device, on the web or by an assistant now appear without leaving the
+  screen: every list and detail reloads when a sync round brings them (before, only Home did), and
+  pulling down on a list syncs right away.
+
+- Shared expenses: an expense split with others counts only your share as spending in the
+  summary (months, averages, pace, trends and years), budgets and their notifications, Home's
+  month, the forecast's usual spending and the receipt's category total; balances and net worth
+  still move by the whole amount. The movement's detail reads "Your share: C$300 of C$900 · Split
+  with Ana, Luis", and the CSV marks it shared. "Record repayment" on a "they owe me" debt in your
+  currencies can "Deposit into account": it records an income in that bank or cash account (under
+  "Refunds", or "Other income" without it) that changes the balance but doesn't count as income,
+  also after the debt is deleted. Deposited repayments read "· deposited"; touch and hold a
+  repayment to delete it, which deletes its income too and reopens a debt it settled. Splitting
+  an expense again shares only what is left ("Already split: C$100 left to share"). Syncs with
+  the web app; the JSON backup (version 3) carries the deposit link.
+
+- Businesses and platforms: a movement's review has "Business" and "Via (optional)" ("Subway",
+  via "Uber Eats"). The pickers offer your businesses first (platforms first for "Via"), then the
+  brands Keepwell knows and, when nothing matches, Brandfetch's brand search (with brand logos on);
+  a business is created when the movement is saved. The description suggests the business, which
+  can bring its default category when no rule picks one; a rule can set a business too. Rows and
+  the movement's detail read "Subway · via Uber Eats", search finds it, and the logo comes from the
+  business's own web address first. "Repeat" and recurring movements keep both. Settings ›
+  Businesses renames them, sets a default category, marks platforms, merges two and deletes one.
+  Syncs with the web app; the JSON backup is now version 3 and versions 1 and 2 still restore.
+
 - Categorization rules now apply to every new movement, not only the ones typed in the editor:
   Siri's "Log an expense" without a category and recurring movements recorded in "Other" take the
   first matching rule (then "Other"). A category you choose is kept, and edits never apply rules.
@@ -194,6 +229,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   movements in USD". The Transactions month total now matches its "Money out" strip, and the
   spending widget, trends, spending pace, the forecast's usual spending and the category total on
   the saved receipt follow the same rule.
+- Editing a movement in the second currency no longer keeps the amount the bank charged once its
+  amount, currency or account changes: that charge was for the old movement and kept driving
+  balances. The field clears when the amount or currency changes; a charge you type stays.
 
 - Settings › Time zone shows the zone in use under its title (with "From this iPhone" while none is
   saved); beside the description it used to be squeezed out of sight. The list opens on that zone,

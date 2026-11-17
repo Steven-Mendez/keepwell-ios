@@ -118,4 +118,47 @@ struct DebtsViewModelTests {
         #expect(await split.save())
         #expect(await store.fetchPersonalDebts().count { $0.transactionID == expense.id } == 3)
     }
+
+    @Test
+    func aSecondSplitStartsFromWhatIsLeft() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let expense = Transaction(
+            date: now, description: "Dinner", kind: .expense, categoryID: "restaurants", amount: 900, currency: "NIO",
+            accountID: SampleData.IDs.cash, exchangeRate: .single("NIO"),
+        )
+        try await store.save(expense)
+        let useCase = DefaultSplitTransactionUseCase(transactions: store, debts: store)
+        try await useCase.execute(transactionID: expense.id, shares: [SplitShare(person: "Ana", amount: 300)])
+        let split = SplitBillViewModel(transaction: expense, split: useCase)
+        #expect(split.alreadySplit == nil)
+        await split.load()
+        #expect(split.alreadySplit == "Already split: C$600.00 left to share")
+        #expect(split.shares.map(\.amountText) == ["300.00"])
+    }
+
+    @Test
+    func theRepaymentFormOffersTheBankAndCashAccountsOnlyForWhatTheyOweMe() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let useCases = DebtsPreview.useCases(store: store, now: now)
+        let juan = try #require(await store.fetchPersonalDebts().first { $0.id == SampleData.IDs.juanDebt })
+        let detail = DebtDetailViewModel(debt: juan, useCases: useCases, calendar: calendar, now: { [now] in now })
+        await detail.load()
+        #expect(detail.canDeposit)
+        #expect(detail.depositOptions.first?.title == "Don't deposit")
+        #expect(detail.depositAccountID == nil)
+        detail.depositAccountID = SampleData.IDs.cash
+        #expect(detail.depositNote?.hasPrefix("Records an income in") == true)
+        detail.repaymentText = "50"
+        await detail.repay()
+        let repayment = try #require(detail.debt.repayments.last)
+        #expect(repayment.transactionID != nil)
+        #expect(detail.repaymentTitle(repayment).hasSuffix(" · deposited"))
+        await detail.deleteRepayment(repayment)
+        #expect(!detail.debt.repayments.contains { $0.id == repayment.id })
+
+        let ana = try #require(await store.fetchPersonalDebts().first { $0.id == SampleData.IDs.anaDebt })
+        let owed = DebtDetailViewModel(debt: ana, useCases: useCases, calendar: calendar, now: { [now] in now })
+        await owed.load()
+        #expect(!owed.canDeposit)
+    }
 }

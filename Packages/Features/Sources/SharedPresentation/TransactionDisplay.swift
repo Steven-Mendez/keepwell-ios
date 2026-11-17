@@ -9,12 +9,38 @@ public struct TransactionDisplay: Sendable {
     private let accounts: [UUID: Account]
     private let cards: [UUID: Card]
     private let categories: [String: TransactionCategory]
+    private let merchants: [UUID: Merchant]
     private let formatter = CurrencyFormatter()
 
-    public init(accounts: [Account], cards: [Card], categories: [TransactionCategory]) {
+    /// `merchants` is empty where nothing names a business.
+    public init(accounts: [Account], cards: [Card], categories: [TransactionCategory], merchants: [Merchant] = []) {
         self.accounts = Dictionary(accounts.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         self.cards = Dictionary(cards.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         self.categories = Dictionary(categories.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        self.merchants = Dictionary(merchants.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    /// The business it was with, if it names one that still exists.
+    public func merchant(of transaction: Transaction) -> Merchant? {
+        transaction.merchantID.flatMap { merchants[$0] }
+    }
+
+    /// The platform it went through, likewise.
+    public func viaMerchant(of transaction: Transaction) -> Merchant? {
+        transaction.viaMerchantID.flatMap { merchants[$0] }
+    }
+
+    /// "Subway · via Uber Eats", "Subway", "via Apple", or `nil` when it names neither.
+    public func merchantLine(of transaction: Transaction) -> String? {
+        let via = viaMerchant(of: transaction).map { String(localized: "via \($0.name)", bundle: #bundle) }
+        let parts = [merchant(of: transaction)?.name, via].compactMap(\.self)
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    /// The row's logo: its merchant's, else the brand its description names. A transfer has none.
+    public func logo(of transaction: Transaction) -> LogoSubject? {
+        guard transaction.kind != .transfer else { return nil }
+        return MerchantLogos.logo(description: transaction.description, merchant: merchant(of: transaction))
     }
 
     public func style(of transaction: Transaction) -> KWTransactionStyle {
@@ -48,7 +74,8 @@ public struct TransactionDisplay: Sendable {
     }
 
     /// "Groceries · Debit •••• 3922"; transfers read "Savings → Cash". A movement an assistant
-    /// recorded through MCP says so first, confirmed or not.
+    /// recorded through MCP says so first, confirmed or not, and the business it was with follows
+    /// ("Subway · via Uber Eats").
     public func subtitle(of transaction: Transaction) -> String {
         let recordedBy = transaction.source == .mcp ? String(localized: "Recorded by Claude", bundle: #bundle) : nil
         if transaction.kind == .transfer {
@@ -56,7 +83,7 @@ public struct TransactionDisplay: Sendable {
                 .compactMap(\.self)
                 .joined(separator: " · ")
         }
-        return [recordedBy, categoryName(of: transaction), methodName(of: transaction)]
+        return [recordedBy, merchantLine(of: transaction), categoryName(of: transaction), methodName(of: transaction)]
             .compactMap(\.self)
             .filter { !$0.isEmpty }
             .joined(separator: " · ")
@@ -83,7 +110,7 @@ public struct TransactionDisplay: Sendable {
         return transaction.isConfirmed ? converted : "≈ \(converted)"
     }
 
-    /// Lowercased text a search matches against: description, note, category and method.
+    /// Lowercased text a search matches against: description, note, merchant, category and method.
     public func searchableText(of transaction: Transaction) -> String {
         [
             transaction.description,

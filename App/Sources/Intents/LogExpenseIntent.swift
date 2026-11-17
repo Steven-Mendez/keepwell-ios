@@ -49,6 +49,8 @@ struct LogExpenseIntent: AppIntent {
             cards: store,
             transactions: store,
             rules: store,
+            // Without it a matching rule still categorizes but never sets its merchant.
+            merchants: store,
         )
         let current = try await context.execute()
         guard let amount, amount.amount > 0 else {
@@ -74,7 +76,7 @@ struct LogExpenseIntent: AppIntent {
             description: Self.description(detail) ?? category?.name ?? categoryName,
         )
         do {
-            let saved = try await DefaultSaveTransactionUseCase(context: context, transactions: store).execute(draft)
+            let saved = try await DefaultSaveTransactionUseCase(context: context, transactions: store, merchants: store).execute(draft)
             let spent = CurrencyFormatter().string(from: -saved.transaction.amount, currencyCode: saved.transaction.currency)
             // Without a category a rule may have chosen one; say the one it was saved in.
             let savedCategory = current.categories.first { $0.id == saved.transaction.categoryID }

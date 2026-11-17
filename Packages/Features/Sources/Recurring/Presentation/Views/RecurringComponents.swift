@@ -85,12 +85,9 @@ struct SelectedMark: View {
     }
 }
 
-/// A rule's next dates and the movements it recorded, under the editor's fields.
+/// A rule's next dates, under the editor's fields. Its payments live in the rule's detail.
 struct RecurringRuleDetail: View {
     let viewModel: RecurringRuleEditorViewModel
-    let onOpenTransaction: (UUID) -> Void
-    /// Every movement the rule recorded, in the movement list; `nil` hides "See all".
-    var onSeeAllRecorded: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: KWSpacing.xs) {
@@ -108,40 +105,6 @@ struct RecurringRuleDetail: View {
                         .opacity(viewModel.isPaused ? 0.55 : 1)
                 }
             }
-            if let display = viewModel.display, !viewModel.recorded.isEmpty {
-                KWSectionHeader(String(localized: "Recorded", bundle: #bundle)) { seeAllRecorded }
-                    .padding(.top, KWSpacing.xs)
-                KWGroupedCard(verticalPadding: KWSpacing.xxs) {
-                    ForEach(viewModel.recorded) { transaction in
-                        Button { onOpenTransaction(transaction.id) } label: {
-                            KWTransactionRow(
-                                display.style(of: transaction),
-                                title: viewModel.recordedDay(transaction),
-                                subtitle: transaction.isConfirmed
-                                    ? display.methodName(of: transaction)
-                                    : String(localized: "Draft", bundle: #bundle),
-                                amount: display.amount(of: transaction),
-                            )
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var seeAllRecorded: some View {
-        if let onSeeAllRecorded {
-            Button(action: onSeeAllRecorded) {
-                Text("See all", bundle: #bundle)
-                    .font(KWTextStyle.label.font)
-                    .foregroundStyle(KWColor.Brand.link)
-                    .frame(minHeight: KWLayout.minTouch)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
         }
     }
 }

@@ -8,10 +8,11 @@ public enum KeepwellSchemaV14: VersionedSchema {
         [
             Persistence.AccountRecord.self,
             Persistence.CardRecord.self,
-            Persistence.TransactionRecord.self,
+            // V14's own frozen records (`KeepwellSchemaV14+Records.swift`), not today's.
+            TransactionRecord.self,
             Persistence.CategoryRecord.self,
             Persistence.SettingsRecord.self,
-            Persistence.RecurringRuleRecord.self,
+            RecurringRuleRecord.self,
             SavingsGoalRecord.self,
             LoanRecord.self,
             Persistence.PersonalDebtRecord.self,

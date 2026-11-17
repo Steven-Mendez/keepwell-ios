@@ -175,11 +175,12 @@ extension TrendReport {
         let buckets: [YearMonth: [Transaction]]
         let currency: String
         let calendar: Calendar
+        let debts: DebtLinks
 
         func summaries(of range: MonthRange, lastMonthBuckets: [YearMonth: [Transaction]]? = nil) -> [MonthlySummary] {
             range.months.enumerated().map { index, month in
                 let source = index == range.length - 1 ? lastMonthBuckets ?? buckets : buckets
-                return MonthlySummary(month: month, transactions: source[month] ?? [], currency: currency, calendar: calendar)
+                return MonthlySummary(month: month, transactions: source[month] ?? [], currency: currency, calendar: calendar, debts: debts)
             }
         }
     }
@@ -187,14 +188,23 @@ extension TrendReport {
     /// Months after the running one are dropped, since they can't have confirmed movements yet.
     /// When the running month is in the range, its counterpart in the comparison is cut at the
     /// same day, so a half-finished November isn't measured against a whole one.
-    public init(transactions: [Transaction], currency: String, requested: MonthRange, now: Date, calendar: Calendar) {
+    /// With `debts`, spending is the person's part of split expenses and repayment deposits aren't
+    /// income.
+    public init(
+        transactions: [Transaction],
+        currency: String,
+        requested: MonthRange,
+        now: Date,
+        calendar: Calendar,
+        debts: DebtLinks = .empty,
+    ) {
         let current = YearMonth(containing: now, calendar: calendar)
         let range = MonthRange(requested.start, min(requested.end, current))
         let isRunning = range.end == current
         let shift = range.comparisonShift
         let comparison = range.shifted(by: -shift)
 
-        let ledger = Ledger(buckets: Self.byMonth(transactions, calendar: calendar), currency: currency, calendar: calendar)
+        let ledger = Ledger(buckets: Self.byMonth(transactions, calendar: calendar), currency: currency, calendar: calendar, debts: debts)
         let months = ledger.summaries(of: range)
         // Only the running month's counterpart is cut; the rest of the comparison is whole months.
         let cut = isRunning
@@ -249,13 +259,19 @@ extension TrendReport {
     }
 
     /// Every year from the first movement through the running one, oldest first.
-    static func yearTotals(of transactions: [Transaction], currency: String, now: Date, calendar: Calendar) -> [YearTotals] {
+    static func yearTotals(
+        of transactions: [Transaction],
+        currency: String,
+        now: Date,
+        calendar: Calendar,
+        debts: DebtLinks = .empty,
+    ) -> [YearTotals] {
         guard let activity = activityRange(of: transactions, now: now, calendar: calendar) else { return [] }
         let buckets = byMonth(transactions, calendar: calendar)
         return (activity.start.year ... activity.end.year).map { year in
             let first = activity.start.adding(months: -(activity.start.month - 1) + 12 * (year - activity.start.year))
             let months = MonthRange(first, first.adding(months: 11)).months.map {
-                MonthlySummary(month: $0, transactions: buckets[$0] ?? [], currency: currency, calendar: calendar)
+                MonthlySummary(month: $0, transactions: buckets[$0] ?? [], currency: currency, calendar: calendar, debts: debts)
             }
             return YearTotals(year: year, cashFlow: CashFlowTrend(months: months), isRunning: year == activity.end.year)
         }
@@ -270,17 +286,21 @@ public protocol GetRangeSummaryUseCase: Sendable {
 public struct DefaultGetRangeSummaryUseCase: GetRangeSummaryUseCase {
     private let transactions: any TransactionRepository
     private let settings: any SettingsRepository
+    private let personalDebts: (any PersonalDebtRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
+    /// With `personalDebts`, split expenses count only the person's part.
     public init(
         transactions: any TransactionRepository,
         settings: any SettingsRepository,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
         self.transactions = transactions
         self.settings = settings
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.now = now
     }
@@ -290,12 +310,16 @@ public struct DefaultGetRangeSummaryUseCase: GetRangeSummaryUseCase {
         guard let requested = period.range(custom: custom, now: now, calendar: calendar) else { return nil }
         let currency = try await settings.load()?.currencies.principal ?? CurrencySettings.initial.principal
         let all = try await transactions.fetchTransactions(in: nil)
-        let report = TrendReport(transactions: all, currency: currency, requested: requested, now: now, calendar: calendar)
+        let debts = try await DebtLinks(
+            personalDebts?.fetchPersonalDebts() ?? [],
+            deposits: personalDebts?.fetchRepaymentDepositIDs() ?? [],
+        )
+        let report = TrendReport(transactions: all, currency: currency, requested: requested, now: now, calendar: calendar, debts: debts)
         return RangeSummary(
             report: report,
             // Reaches back to the first movement for the pickers; a ledger without any shows a year.
             activity: TrendReport.activityRange(of: all, now: now, calendar: calendar) ?? .lastMonths(12, now: now, calendar: calendar),
-            years: TrendReport.yearTotals(of: all, currency: currency, now: now, calendar: calendar),
+            years: TrendReport.yearTotals(of: all, currency: currency, now: now, calendar: calendar, debts: debts),
         )
     }
 }

@@ -49,8 +49,14 @@ public final class RecurringViewModel {
     }
 
     public private(set) var state = State.loading {
-        didSet { pendingDrafts = Self.pendingDrafts(in: overview, now: now(), calendar: calendar) }
+        didSet {
+            pendingDrafts = Self.pendingDrafts(in: overview, now: now(), calendar: calendar)
+            statuses = Self.statuses(in: overview, now: now(), calendar: calendar)
+        }
     }
+
+    /// Where each rule stands (paid, a draft waiting, its next date), by rule: once per load.
+    private var statuses: [UUID: RecurringStatus] = [:]
 
     /// The draft each rule left waiting from today or before, by rule: derived once per load from
     /// the same list home reads (`UpcomingPayments`), not per row.
@@ -146,13 +152,16 @@ public final class RecurringViewModel {
     }
 
     /// "Every month · Tomorrow · Debit •••• 3922", or "Paused" in place of the date. While a draft
-    /// waits (`pendingDraft(of:)`), the date gives way to its state, which the row shows apart.
+    /// waits (`pendingDraft(of:)`), the date gives way to its state, which the row shows apart;
+    /// once paid, the row says so apart too and the date reads "Next Dec 1".
     public func subtitle(of rule: RecurringRule) -> String {
         // A rule an assistant proposed waits paused until the person resumes (confirms) or deletes it.
         let when = rule.source == .mcp && rule.isPaused
             ? String(localized: "Proposed by Claude · resume to confirm", bundle: #bundle)
             : pendingDraft(of: rule) != nil ? ""
-            : rule.isPaused ? String(localized: "Paused", bundle: #bundle) : nextLabel(of: rule)
+            : rule.isPaused ? String(localized: "Paused", bundle: #bundle)
+            : paidLabel(of: rule) != nil ? String(localized: "Next \(nextLabel(of: rule))", bundle: #bundle)
+            : nextLabel(of: rule)
         return [RecurringDisplay.frequency(of: rule), when, methodName(of: rule)]
             .filter { !$0.isEmpty }
             .joined(separator: " · ")
@@ -164,6 +173,40 @@ public final class RecurringViewModel {
             return String(localized: "Ended", bundle: #bundle)
         }
         return RecurringDisplay.day(rule.nextDate, today: now(), calendar: calendar)
+    }
+
+    /// "Paid · Nov 1" while the cycle that ends at the rule's next date has a confirmed payment.
+    public func paidLabel(of rule: RecurringRule) -> String? {
+        guard let status = statuses[rule.id], status.state == .paid, let payment = status.payment else { return nil }
+        return String(localized: "Paid · \(shortDay(payment.date))", bundle: #bundle)
+    }
+
+    /// "3 of 8 paid this month · $41.97 left to pay": the expense rules due this month. `nil` when
+    /// none is. Each currency's remainder stands alone, never summed with another's.
+    public func monthProgress(hidden: Bool) -> String? {
+        guard let overview else { return nil }
+        let progress = RecurringMonthProgress.of(overview.rules, transactions: overview.recorded, today: now(), calendar: calendar)
+        guard progress.total > 0 else { return nil }
+        let paid = String(localized: "\(progress.paid) of \(progress.total) paid this month", bundle: #bundle)
+        guard !progress.remaining.isEmpty else { return paid }
+        let amounts = hidden ? Self.maskedAmount : progress.remaining.map { formatter.string($0) }.joined(separator: " + ")
+        return paid + " · " + String(localized: "\(amounts) left to pay", bundle: #bundle)
+    }
+
+    private static func statuses(in overview: RecurringOverview?, now: Date, calendar: Calendar) -> [UUID: RecurringStatus] {
+        guard let overview else { return [:] }
+        return Dictionary(uniqueKeysWithValues: overview.rules.map { rule in
+            (rule.id, RecurringStatus.of(rule, transactions: overview.recorded, today: now, calendar: calendar))
+        })
+    }
+
+    /// "Nov 12", with the year when it isn't this one.
+    private func shortDay(_ date: Date) -> String {
+        let sameYear = calendar.component(.year, from: date) == calendar.component(.year, from: now())
+        var style: Date.FormatStyle = sameYear ? .dateTime.day().month(.abbreviated) : .dateTime.day().month(.abbreviated).year()
+        style.timeZone = calendar.timeZone
+        // Spanish abbreviates months with a trailing dot ("nov."), which reads badly mid-sentence.
+        return date.formatted(style).replacingOccurrences(of: ".", with: "")
     }
 
     /// The draft the rule left waiting from today or before, if any.
@@ -183,12 +226,7 @@ public final class RecurringViewModel {
         if pending.daysOverdue > 0 {
             return String(localized: "Overdue · \(pending.daysOverdue) days", bundle: #bundle)
         }
-        let date = pending.transaction.date
-        let sameYear = calendar.component(.year, from: date) == calendar.component(.year, from: now())
-        var style: Date.FormatStyle = sameYear ? .dateTime.day().month(.abbreviated) : .dateTime.day().month(.abbreviated).year()
-        style.timeZone = calendar.timeZone
-        // Spanish abbreviates months with a trailing dot ("nov."), which reads badly mid-sentence.
-        let day = date.formatted(style).replacingOccurrences(of: ".", with: "")
+        let day = shortDay(pending.transaction.date)
         return String(localized: "To confirm · \(day)", bundle: #bundle)
     }
 

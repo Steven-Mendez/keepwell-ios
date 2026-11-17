@@ -109,7 +109,9 @@ public final class TransactionsViewModel {
     // MARK: - Display
 
     var display: TransactionDisplay? {
-        list.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories) }
+        list.map {
+            TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories, merchants: $0.merchants)
+        }
     }
 
     public var hasTransactions: Bool {

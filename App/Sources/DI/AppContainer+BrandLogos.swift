@@ -10,4 +10,13 @@ extension AppContainer {
             try await URLSession.shared.data(for: request)
         }
     }
+
+    /// Brandfetch's brand search for the "Business" and "Via" pickers, on the same switch and client id
+    /// as the logos; UI tests never reach it.
+    static func makeBrandSearch(environment: AppEnvironment = .current) -> (any BrandSearching)? {
+        guard environment.brandLogos.isActive, !environment.isUITesting else { return nil }
+        return BrandfetchSearch(configuration: environment.brandLogos) { request in
+            try await URLSession.shared.data(for: request)
+        }
+    }
 }

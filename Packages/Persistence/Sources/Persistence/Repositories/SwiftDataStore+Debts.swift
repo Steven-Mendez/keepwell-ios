@@ -112,31 +112,81 @@ extension SwiftDataStore: PersonalDebtRepository {
 
     public func save(_ debt: PersonalDebt) throws(DomainError) {
         try perform { context in
-            let id = debt.id
-            let existing = try context.fetch(FetchDescriptor<PersonalDebtRecord>(predicate: #Predicate { $0.id == id })).first
-            let before = try existing?.toDomain().repayments ?? []
-            let record = existing ?? PersonalDebtRecord(id: id).inserted(into: context)
-            record.update(from: debt)
-            record.stampSaved()
-            let previous = Set(before.map(\.id))
-            let current = Set(debt.repayments.map(\.id))
-            for repayment in debt.repayments where !previous.contains(repayment.id) {
-                context.enqueueChild(
-                    entity: "personalDebtRepayment",
-                    id: repayment.id.uuidString.lowercased(),
-                    operation: "create",
-                    row: record.repaymentRow(repayment),
-                )
-            }
-            for repayment in before where !current.contains(repayment.id) {
-                context.enqueueChild(
-                    entity: "personalDebtRepayment",
-                    id: repayment.id.uuidString.lowercased(),
-                    operation: "delete",
-                    row: record.repaymentRow(repayment, deletedAt: record.updatedAt),
-                )
-            }
+            try upsert(debt, in: context)
             try context.saveWithOutbox()
+        }
+    }
+
+    public func fetchRepaymentDepositIDs() throws(DomainError) -> [UUID] {
+        try perform { context in
+            // Tombstoned debts too: their repayments stay in the record.
+            var seen = Set<UUID>()
+            return try context.fetch(FetchDescriptor<PersonalDebtRecord>(sortBy: [SortDescriptor(\.createdAt)]))
+                .flatMap(\.depositIDs)
+                .filter { seen.insert($0).inserted }
+        }
+    }
+
+    public func save(_ debt: PersonalDebt, recording transaction: Transaction) throws(DomainError) {
+        try perform { context in
+            do {
+                let transactionID = transaction.id
+                let movement = try context.fetch(FetchDescriptor<TransactionRecord>(predicate: #Predicate { $0.id == transactionID })).first
+                    ?? TransactionRecord(id: transactionID).inserted(into: context)
+                movement.update(from: transaction)
+                movement.stampSaved()
+                try upsert(debt, in: context)
+                try context.saveWithOutbox()
+            } catch {
+                context.rollback()
+                throw error
+            }
+        }
+    }
+
+    public func save(_ debt: PersonalDebt, deletingTransaction transactionID: UUID?) throws(DomainError) {
+        try perform { context in
+            do {
+                if let transactionID {
+                    let alive = #Predicate<TransactionRecord> { $0.id == transactionID && $0.deletedAt == nil }
+                    try context.fetch(FetchDescriptor(predicate: alive)).first?.stampDeleted()
+                }
+                try upsert(debt, in: context)
+                try context.saveWithOutbox()
+            } catch {
+                context.rollback()
+                throw error
+            }
+        }
+    }
+
+    /// Each repayment syncs as its own row (ADR 0005 in keepwell-api). Only repayments added or
+    /// removed here are queued: a repayment never changes once recorded, so the ones already stored
+    /// (also those written before `transaction_id` existed) aren't sent again with every save.
+    private func upsert(_ debt: PersonalDebt, in context: ModelContext) throws {
+        let id = debt.id
+        let existing = try context.fetch(FetchDescriptor<PersonalDebtRecord>(predicate: #Predicate { $0.id == id })).first
+        let before = try existing?.toDomain().repayments ?? []
+        let record = existing ?? PersonalDebtRecord(id: id).inserted(into: context)
+        record.update(from: debt)
+        record.stampSaved()
+        let previous = Set(before.map(\.id))
+        let current = Set(debt.repayments.map(\.id))
+        for repayment in debt.repayments where !previous.contains(repayment.id) {
+            context.enqueueChild(
+                entity: "personalDebtRepayment",
+                id: repayment.id.uuidString.lowercased(),
+                operation: "create",
+                row: record.repaymentRow(repayment),
+            )
+        }
+        for repayment in before where !current.contains(repayment.id) {
+            context.enqueueChild(
+                entity: "personalDebtRepayment",
+                id: repayment.id.uuidString.lowercased(),
+                operation: "delete",
+                row: record.repaymentRow(repayment, deletedAt: record.updatedAt),
+            )
         }
     }
 

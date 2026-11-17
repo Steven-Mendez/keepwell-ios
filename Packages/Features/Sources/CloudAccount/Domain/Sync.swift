@@ -46,11 +46,11 @@ public struct SyncDataSummary: Equatable, Sendable {
         self.rules = rules
     }
 
-    /// The sync entities that hold user data, and what each adds to the summary. Loan payments and
-    /// debt repayments count as data but have no line of their own.
+    /// The sync entities that hold user data, and what each adds to the summary. Loan payments, debt
+    /// repayments and merchants count as data but have no line of their own.
     public static let userDataEntities: Set<String> = [
         "account", "card", "transaction", "recurringRule", "loan", "loanPayment", "personalDebt",
-        "personalDebtRepayment", "savingsGoal", "categorizationRule",
+        "personalDebtRepayment", "savingsGoal", "categorizationRule", "merchant",
     ]
 
     /// From live row counts per sync entity.
@@ -65,10 +65,10 @@ public struct SyncDataSummary: Equatable, Sendable {
             debts: counts["personalDebt"] ?? 0,
             rules: counts["categorizationRule"] ?? 0,
         )
-        hasOrphans = (counts["loanPayment"] ?? 0) + (counts["personalDebtRepayment"] ?? 0) > 0
+        hasOrphans = (counts["loanPayment"] ?? 0) + (counts["personalDebtRepayment"] ?? 0) + (counts["merchant"] ?? 0) > 0
     }
 
-    /// Payments or repayments without a live parent still make it user data.
+    /// Payments or repayments without a live parent, or merchants, still make it user data.
     private var hasOrphans = false
 
     public var hasUserData: Bool {

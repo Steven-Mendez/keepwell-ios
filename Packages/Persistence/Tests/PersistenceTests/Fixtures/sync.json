@@ -1,0 +1,1202 @@
+{
+  "$comment": "Sync events (ADR 0005). Every suite must accept each valid event and reject each invalid one, per event.",
+  "version": 1,
+  "valid": [
+    {
+      "name": "expense from the app",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "create",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "expense recorded by Claude, pending",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "create",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "planned",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "mcp",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "app older than source",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "expense imported from a statement",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "create",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "imported_id": "FITID-2026110100042",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "expense that wasn't imported",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "imported_id": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "tombstone",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "delete",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-02T00:00:00.000Z",
+          "deleted_at": "2026-11-02T00:00:00.000Z"
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "loan payment row",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "loanPayment",
+        "entity_id": "294c7ac8-6151-5b2c-9fb1-3c33399ac566",
+        "operation": "create",
+        "payload": {
+          "id": "294c7ac8-6151-5b2c-9fb1-3c33399ac566",
+          "loan_id": "11111111-1111-4111-8111-111111111111",
+          "number": 3,
+          "paid_at": "2026-11-01T18:00:00.000Z",
+          "transaction_id": "44444444-4444-4444-8444-444444444444",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "synced settings",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "settings",
+        "entity_id": "settings",
+        "operation": "update",
+        "payload": {
+          "id": "settings",
+          "principal": "USD",
+          "second": "NIO",
+          "rate": "36.6243",
+          "payment_reminder_days_before": 3,
+          "has_completed_onboarding": true,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "synced settings with a home time zone",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "settings",
+        "entity_id": "settings",
+        "operation": "update",
+        "payload": {
+          "id": "settings",
+          "principal": "USD",
+          "second": "NIO",
+          "rate": "36.6243",
+          "payment_reminder_days_before": 3,
+          "has_completed_onboarding": true,
+          "time_zone": "Europe/Madrid",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "synced settings with no time zone yet",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "settings",
+        "entity_id": "settings",
+        "operation": "update",
+        "payload": {
+          "id": "settings",
+          "principal": "USD",
+          "second": "NIO",
+          "rate": "36.6243",
+          "payment_reminder_days_before": 3,
+          "has_completed_onboarding": true,
+          "time_zone": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "personal debt with a due date",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "personalDebt",
+        "entity_id": "55555555-5555-4555-8555-555555555555",
+        "operation": "update",
+        "payload": {
+          "id": "55555555-5555-4555-8555-555555555555",
+          "person": "Ana",
+          "direction": "theyOweMe",
+          "amount": "12",
+          "currency": "USD",
+          "date": "2026-09-01T12:00:00.000Z",
+          "note": null,
+          "settled_at": null,
+          "transaction_id": null,
+          "due_date": "2026-11-15T06:00:00.000Z",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "personal debt from an app older than its due date",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "personalDebt",
+        "entity_id": "55555555-5555-4555-8555-555555555555",
+        "operation": "update",
+        "payload": {
+          "id": "55555555-5555-4555-8555-555555555555",
+          "person": "Ana",
+          "direction": "theyOweMe",
+          "amount": "12",
+          "currency": "USD",
+          "date": "2026-09-01T12:00:00.000Z",
+          "note": null,
+          "settled_at": null,
+          "transaction_id": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "closed account",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "account",
+        "entity_id": "11111111-1111-4111-8111-111111111111",
+        "operation": "update",
+        "payload": {
+          "id": "11111111-1111-4111-8111-111111111111",
+          "name": "Ahorro",
+          "bank": "BAC",
+          "kind": "deposit",
+          "opening_balances": [
+            {
+              "amount": "0",
+              "currency": "USD"
+            }
+          ],
+          "opening_date": "2026-01-01T12:00:00.000Z",
+          "debt_mode": null,
+          "limit_amount": null,
+          "limit_currency": null,
+          "cutoff_day": null,
+          "due_day": null,
+          "closed_at": "2026-11-01T18:00:00.000Z",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "reopened account",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "account",
+        "entity_id": "11111111-1111-4111-8111-111111111111",
+        "operation": "update",
+        "payload": {
+          "id": "11111111-1111-4111-8111-111111111111",
+          "name": "Ahorro",
+          "bank": "BAC",
+          "kind": "deposit",
+          "opening_balances": [
+            {
+              "amount": "0",
+              "currency": "USD"
+            }
+          ],
+          "opening_date": "2026-01-01T12:00:00.000Z",
+          "debt_mode": null,
+          "limit_amount": null,
+          "limit_currency": null,
+          "cutoff_day": null,
+          "due_day": null,
+          "closed_at": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "account from an app older than closing",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "account",
+        "entity_id": "11111111-1111-4111-8111-111111111111",
+        "operation": "update",
+        "payload": {
+          "id": "11111111-1111-4111-8111-111111111111",
+          "name": "Ahorro",
+          "bank": "BAC",
+          "kind": "deposit",
+          "opening_balances": [
+            {
+              "amount": "0",
+              "currency": "USD"
+            }
+          ],
+          "opening_date": "2026-01-01T12:00:00.000Z",
+          "debt_mode": null,
+          "limit_amount": null,
+          "limit_currency": null,
+          "cutoff_day": null,
+          "due_day": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "server columns are dropped, not trusted",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null,
+          "user_id": "someone-else",
+          "server_seq": 1
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "merchant",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "merchant",
+        "entity_id": "66666666-6666-4666-8666-666666666666",
+        "operation": "create",
+        "payload": {
+          "id": "66666666-6666-4666-8666-666666666666",
+          "name": "Subway",
+          "domain": "subway.com",
+          "brand_id": "subway",
+          "default_category_id": "restaurants",
+          "is_platform": false,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "platform merchant without a brand",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "merchant",
+        "entity_id": "77777777-7777-4777-8777-777777777777",
+        "operation": "create",
+        "payload": {
+          "id": "77777777-7777-4777-8777-777777777777",
+          "name": "Uber Eats",
+          "domain": "ubereats.com",
+          "brand_id": null,
+          "default_category_id": null,
+          "is_platform": true,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "expense at a business through a platform",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Subway",
+          "kind": "expense",
+          "category_id": "restaurants",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "imported_id": null,
+          "merchant_id": "66666666-6666-4666-8666-666666666666",
+          "via_merchant_id": "77777777-7777-4777-8777-777777777777",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "expense with no business",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "imported_id": null,
+          "merchant_id": null,
+          "via_merchant_id": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "categorization rule that sets the business",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "categorizationRule",
+        "entity_id": "55555555-5555-4555-8555-555555555555",
+        "operation": "create",
+        "payload": {
+          "id": "55555555-5555-4555-8555-555555555555",
+          "match": "Subway",
+          "category_id": "restaurants",
+          "kind": "expense",
+          "tags": [],
+          "sort_index": 0,
+          "merchant_id": "66666666-6666-4666-8666-666666666666",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "debt repayment deposited into an account",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "personalDebtRepayment",
+        "entity_id": "77777777-7777-4777-8777-777777777777",
+        "operation": "create",
+        "payload": {
+          "id": "77777777-7777-4777-8777-777777777777",
+          "debt_id": "55555555-5555-4555-8555-555555555555",
+          "amount": "300",
+          "date": "2026-11-05T18:00:00.000Z",
+          "transaction_id": "44444444-4444-4444-8444-444444444444",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "debt repayment only recorded",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "personalDebtRepayment",
+        "entity_id": "77777777-7777-4777-8777-777777777777",
+        "operation": "create",
+        "payload": {
+          "id": "77777777-7777-4777-8777-777777777777",
+          "debt_id": "55555555-5555-4555-8555-555555555555",
+          "amount": "300",
+          "date": "2026-11-05T18:00:00.000Z",
+          "transaction_id": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "debt repayment from an app older than deposits",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "personalDebtRepayment",
+        "entity_id": "77777777-7777-4777-8777-777777777777",
+        "operation": "create",
+        "payload": {
+          "id": "77777777-7777-4777-8777-777777777777",
+          "debt_id": "55555555-5555-4555-8555-555555555555",
+          "amount": "300",
+          "date": "2026-11-05T18:00:00.000Z",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "amount as a float",
+      "reason": "amounts are exact decimal text",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "create",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": 1520.75,
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "payload id differs from entity_id",
+      "reason": "an event changes the row it names",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "11111111-1111-4111-8111-111111111111",
+        "operation": "create",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "delete without deleted_at",
+      "reason": "delete events carry the tombstone",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "delete",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "update with deleted_at",
+      "reason": "only delete events carry a tombstone",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": "2026-11-01T18:00:00.000Z"
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "unknown source",
+      "reason": "source is app or mcp",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "create",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "import",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "unknown entity",
+      "reason": "entities are a closed list",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "budget",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "create",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "loan payment number 0",
+      "reason": "installments start at 1",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "loanPayment",
+        "entity_id": "b643cf11-5863-5796-929d-78555751e235",
+        "operation": "create",
+        "payload": {
+          "id": "b643cf11-5863-5796-929d-78555751e235",
+          "loan_id": "11111111-1111-4111-8111-111111111111",
+          "number": 0,
+          "paid_at": "2026-11-01T18:00:00.000Z",
+          "transaction_id": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "settings with a time zone that isn't a name",
+      "reason": "a time zone is an IANA name",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "settings",
+        "entity_id": "settings",
+        "operation": "update",
+        "payload": {
+          "id": "settings",
+          "principal": "USD",
+          "second": "NIO",
+          "rate": "36.6243",
+          "payment_reminder_days_before": 3,
+          "has_completed_onboarding": true,
+          "time_zone": "../etc/passwd",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "personal debt with a due date that isn't a date",
+      "reason": "a due date is an ISO date-time",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "personalDebt",
+        "entity_id": "55555555-5555-4555-8555-555555555555",
+        "operation": "update",
+        "payload": {
+          "id": "55555555-5555-4555-8555-555555555555",
+          "person": "Ana",
+          "direction": "theyOweMe",
+          "amount": "12",
+          "currency": "USD",
+          "date": "2026-09-01T12:00:00.000Z",
+          "note": null,
+          "settled_at": null,
+          "transaction_id": null,
+          "due_date": "next month",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "account closed at a time that isn't a date",
+      "reason": "a closing is an ISO date-time",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "account",
+        "entity_id": "11111111-1111-4111-8111-111111111111",
+        "operation": "update",
+        "payload": {
+          "id": "11111111-1111-4111-8111-111111111111",
+          "name": "Ahorro",
+          "bank": "BAC",
+          "kind": "deposit",
+          "opening_balances": [
+            {
+              "amount": "0",
+              "currency": "USD"
+            }
+          ],
+          "opening_date": "2026-01-01T12:00:00.000Z",
+          "debt_mode": null,
+          "limit_amount": null,
+          "limit_currency": null,
+          "cutoff_day": null,
+          "due_day": null,
+          "closed_at": "last week",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "imported id that is empty",
+      "reason": "an imported id has 1 to 128 characters",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "imported_id": "",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "imported id longer than 128 characters",
+      "reason": "an imported id has 1 to 128 characters",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "imported_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "merchant with a domain that has a scheme",
+      "reason": "a domain is a bare lowercase host name",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "merchant",
+        "entity_id": "66666666-6666-4666-8666-666666666666",
+        "operation": "create",
+        "payload": {
+          "id": "66666666-6666-4666-8666-666666666666",
+          "name": "Subway",
+          "domain": "https://subway.com",
+          "brand_id": "subway",
+          "default_category_id": "restaurants",
+          "is_platform": false,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "merchant with a blank name",
+      "reason": "a merchant has a name",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "merchant",
+        "entity_id": "66666666-6666-4666-8666-666666666666",
+        "operation": "create",
+        "payload": {
+          "id": "66666666-6666-4666-8666-666666666666",
+          "name": " ",
+          "domain": "subway.com",
+          "brand_id": "subway",
+          "default_category_id": "restaurants",
+          "is_platform": false,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "merchant without is_platform",
+      "reason": "is_platform is required",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "merchant",
+        "entity_id": "66666666-6666-4666-8666-666666666666",
+        "operation": "create",
+        "payload": {
+          "id": "66666666-6666-4666-8666-666666666666",
+          "name": "Subway",
+          "domain": "subway.com",
+          "brand_id": "subway",
+          "default_category_id": "restaurants",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "movement with a merchant id that isn't an id",
+      "reason": "merchant_id is a UUID",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "transaction",
+        "entity_id": "44444444-4444-4444-8444-444444444444",
+        "operation": "update",
+        "payload": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "date": "2026-11-01T18:00:00.000Z",
+          "status": "confirmed",
+          "description": "Supermercado",
+          "kind": "expense",
+          "category_id": "groceries",
+          "amount": "1520.75",
+          "currency": "NIO",
+          "account_id": "11111111-1111-4111-8111-111111111111",
+          "card_id": null,
+          "destination_account_id": null,
+          "actual_debited_principal": null,
+          "rate_principal": "USD",
+          "rate_second": "NIO",
+          "rate": "36.6243",
+          "is_shared": false,
+          "note": null,
+          "recurring_id": null,
+          "tags": [],
+          "source": "app",
+          "imported_id": null,
+          "merchant_id": "subway",
+          "via_merchant_id": null,
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    },
+    {
+      "name": "debt repayment with a transaction id that isn't an id",
+      "reason": "transaction_id must be an id",
+      "event": {
+        "event_id": "99999999-9999-4999-8999-999999999999",
+        "entity": "personalDebtRepayment",
+        "entity_id": "77777777-7777-4777-8777-777777777777",
+        "operation": "create",
+        "payload": {
+          "id": "77777777-7777-4777-8777-777777777777",
+          "debt_id": "55555555-5555-4555-8555-555555555555",
+          "amount": "300",
+          "date": "2026-11-05T18:00:00.000Z",
+          "transaction_id": "deposit",
+          "created_at": "2026-11-01T18:00:00.000Z",
+          "updated_at": "2026-11-01T18:00:00.000Z",
+          "deleted_at": null
+        },
+        "created_at": "2026-11-01T18:00:00.000Z"
+      }
+    }
+  ]
+}

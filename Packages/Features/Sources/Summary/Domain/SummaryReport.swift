@@ -70,14 +70,18 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
     private let categories: any CategoryRepository
     private let settings: any SettingsRepository
     private let accounts: (any AccountRepository)?
+    private let personalDebts: (any PersonalDebtRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
+    /// With `personalDebts`, spending is the person's part of split expenses and repayment deposits
+    /// aren't income.
     public init(
         transactions: any TransactionRepository,
         categories: any CategoryRepository,
         settings: any SettingsRepository,
         accounts: (any AccountRepository)? = nil,
+        personalDebts: (any PersonalDebtRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -85,6 +89,7 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
         self.categories = categories
         self.settings = settings
         self.accounts = accounts
+        self.personalDebts = personalDebts
         self.calendar = calendar
         self.now = now
     }
@@ -97,6 +102,10 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
             currency: currencies.principal,
             accounts: accounts?.fetchAccounts() ?? [],
             currencies: currencies,
+            debts: DebtLinks(
+                personalDebts?.fetchPersonalDebts() ?? [],
+                deposits: personalDebts?.fetchRepaymentDepositIDs() ?? [],
+            ),
             calendar: calendar,
             now: now(),
         )
@@ -108,12 +117,15 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
         currency: String,
         accounts: [Account] = [],
         currencies: CurrencySettings? = nil,
+        debts: DebtLinks = .empty,
         calendar: Calendar,
         now: Date,
     ) -> SummaryReport {
         let current = YearMonth(containing: now, calendar: calendar)
         let months = (0 ..< monthCount).reversed().map { offset in
-            MonthlySummary(month: current.adding(months: -offset), transactions: transactions, currency: currency, calendar: calendar)
+            MonthlySummary(
+                month: current.adding(months: -offset), transactions: transactions, currency: currency, calendar: calendar, debts: debts,
+            )
         }
         return SummaryReport(
             currency: currency,
@@ -123,16 +135,25 @@ public struct DefaultGetSummaryReportUseCase: GetSummaryReportUseCase {
                 transactions: transactions,
                 currency: currency,
                 calendar: calendar,
+                debts: debts,
             ),
             averageIncome: SpendingHistory.averageMonthlyTotal(
                 of: .income,
                 transactions: transactions,
                 currency: currency,
                 calendar: calendar,
+                debts: debts,
             ),
             categories: categories,
             paces: months
-                .map { SpendingPace(month: $0.month, transactions: transactions, currency: currency, calendar: calendar, now: now) },
+                .map { SpendingPace(
+                    month: $0.month,
+                    transactions: transactions,
+                    currency: currency,
+                    calendar: calendar,
+                    now: now,
+                    debts: debts,
+                ) },
             // A currency the settings no longer convert leaves the card out rather than the summary.
             netWorth: currencies.flatMap {
                 try? NetWorthHistory.points(accounts: accounts, transactions: transactions, settings: $0, now: now, calendar: calendar)
