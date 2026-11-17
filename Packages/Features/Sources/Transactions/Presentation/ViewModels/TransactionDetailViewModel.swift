@@ -127,6 +127,12 @@ public final class TransactionDetailViewModel {
         return list.recurringRule(of: transaction)
     }
 
+    /// A confirmed movement no rule recorded, when some rule of its kind could take it as a payment.
+    var canLinkRecurringRule: Bool {
+        guard let list, let transaction, transaction.isConfirmed, recurringRule == nil else { return false }
+        return list.recurringRules.contains { RecurringStatus.canLink(transaction, to: $0) }
+    }
+
     /// "Every month" next to "Repeats".
     var recurringText: String? {
         recurringRule.map(RecurringDisplay.frequency(of:))

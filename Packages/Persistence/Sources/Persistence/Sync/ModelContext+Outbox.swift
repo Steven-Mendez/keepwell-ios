@@ -67,4 +67,6 @@ private struct PendingEvent {
 extension Notification.Name {
     /// Posted after a local change reaches the outbox, so the sync engine can run soon.
     public static let keepwellOutboxChanged = Notification.Name("keepwell.outboxChanged")
+    /// A sync round stored changes made elsewhere (another device, the web, an assistant).
+    public static let keepwellRemoteChangesApplied = Notification.Name("keepwell.remoteChangesApplied")
 }

@@ -14,6 +14,8 @@ public struct TransactionDetailView: View {
         public var receipt: (Domain.Transaction) -> Void
         public var split: (Domain.Transaction) -> Void
         public var openRecurringRule: (UUID) -> Void
+        /// Links a confirmed movement no rule recorded to one, as one of its payments.
+        public var linkRecurringRule: ((Domain.Transaction) -> Void)?
         /// Narrows Transactions to a tag.
         public var showTag: (String) -> Void
 
@@ -24,7 +26,9 @@ public struct TransactionDetailView: View {
             split: @escaping (Domain.Transaction) -> Void,
             openRecurringRule: @escaping (UUID) -> Void,
             showTag: @escaping (String) -> Void,
+            linkRecurringRule: ((Domain.Transaction) -> Void)? = nil,
         ) {
+            self.linkRecurringRule = linkRecurringRule
             self.back = back
             self.edit = edit
             self.receipt = receipt
@@ -230,6 +234,15 @@ private struct TransactionDetailCards: View {
                 Button { actions.openRecurringRule(rule.id) } label: {
                     KWValueRow(String(localized: "Repeats", bundle: #bundle), value: "\(text) ›")
                         .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            } else if let link = actions.linkRecurringRule, viewModel.canLinkRecurringRule {
+                Button { link(transaction) } label: {
+                    KWValueRow(
+                        String(localized: "Recurring payment", bundle: #bundle),
+                        value: String(localized: "Link ›", bundle: #bundle),
+                    )
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

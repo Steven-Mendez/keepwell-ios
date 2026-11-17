@@ -11,6 +11,7 @@ import Domain
 import HomePresentation
 import LockPresentation
 import OnboardingPresentation
+import Persistence
 import SettingsDomain
 import SharedPresentation
 import SummaryPresentation
@@ -51,7 +52,7 @@ struct RootView: View {
     @State var showsShortcuts = false
     @FocusState var hasKeyboardFocus: Bool
     // swiftlint:enable private_swiftui_state
-    /// Bumped on every store save so home, and with it the widgets, reload.
+    /// Bumped on every store save so the tabs, the pushed lists and the widgets reload.
     @State private var storeRevision = 0
 
     init(container: AppContainer, notifications: NotificationResponder) {
@@ -90,8 +91,13 @@ struct RootView: View {
                 }
             }
             // Any write (a movement logged, edited or deleted from any screen, an import, a widget
-            // quick log) changes what home and the widgets show, even when home isn't on screen.
+            // quick log, a sync round bringing what another device or an assistant changed) changes
+            // what the tabs, the pushed lists and the widgets show, whichever screen is in front.
             .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: RunLoop.main)) { _ in
+                storeRevision += 1
+            }
+            // The sync round says so too, so a change from elsewhere never depends on one signal.
+            .onReceive(NotificationCenter.default.publisher(for: .keepwellRemoteChangesApplied).receive(on: RunLoop.main)) { _ in
                 storeRevision += 1
             }
             .task(id: storeRevision) {
@@ -99,8 +105,10 @@ struct RootView: View {
                 // Saves come in bursts (a transfer writes both sides), so wait for the last one.
                 try? await Task.sleep(for: .milliseconds(300))
                 guard !Task.isCancelled else { return }
-                await screens?.home.load()
+                container.storeChanges.changed()
+                await screens?.reload()
             }
+            .environment(container.storeChanges)
     }
 
     @ViewBuilder
@@ -127,6 +135,10 @@ struct RootView: View {
             MainTabView(selection: $tab) { tab in
                 if let screens {
                     tabContent(tab, screens: screens)
+                        .refreshable {
+                            await container.refreshFromCloud()
+                            await screens.reload()
+                        }
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -190,7 +202,7 @@ struct RootView: View {
             TransactionsView(
                 viewModel: screens.transactions,
                 onOpenTransaction: { router.push(.transaction(id: $0)) },
-                onOpenRecurringRule: { router.push(.recurringRule(id: $0)) },
+                onOpenRecurringRule: { router.push(.recurringRuleDetail(id: $0)) },
                 onSplit: { splitBill = container.makeSplitBillViewModel($0) },
                 onCommand: perform,
                 onNewMovement: { presentMovementMenu() },
@@ -242,7 +254,7 @@ struct RootView: View {
             goals: { router.push(.goals) },
             debts: { router.push(.debts) },
             openTransaction: { router.push(.transaction(id: $0)) },
-            openRecurringRule: { router.push(.recurringRule(id: $0)) },
+            openRecurringRule: { router.push(.recurringRuleDetail(id: $0)) },
             openCreditCard: { router.push(.creditCard(accountID: $0)) },
         )
     }
@@ -391,6 +403,8 @@ extension RootView {
             }
             // A day may have turned while the app was away; what came due is recorded now.
             await container.materializeRecurring()
+            // "In 3 days" and "Overdue" follow the day even when nothing was saved.
+            container.storeChanges.changed()
             await refreshLockSettings()
             if lock.shouldRelock(now: .now) {
                 lock.isLocked = true

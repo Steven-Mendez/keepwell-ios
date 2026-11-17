@@ -50,12 +50,32 @@ extension AppContainer {
         return registration
     }
 
+    /// Pull to refresh: a sync round now, and its end (or a few seconds, when the network is slow;
+    /// what it brings later reloads the screens on its own). Nothing to wait for without an account.
+    func refreshFromCloud() async {
+        guard let sync = cloudAccount?.sync, sync.accountID != nil else { return }
+        let rounds = sync.completedRounds
+        sync.trigger(after: 0)
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await sync.waitForRoundEnd(after: rounds) }
+            group.addTask { try? await Task.sleep(for: .seconds(8)) }
+            await group.next()
+            group.cancelAll()
+        }
+    }
+
     func makeCloudAccountViewModel() -> CloudAccountViewModel? {
         guard let client = apiClient, let engine = syncEngine else { return nil }
         let repository = HTTPCloudAccountRepository(client: client)
         let store = store
         let coordinator = SyncCoordinator(
-            run: { account throws(CloudAccountError) in try await engine.syncOnce(account: account) },
+            run: { account throws(CloudAccountError) in
+                let outcome = try await engine.syncOnce(account: account)
+                if await engine.lastRoundBroughtChanges {
+                    await MainActor.run { NotificationCenter.default.post(name: .keepwellRemoteChangesApplied, object: nil) }
+                }
+                return outcome
+            },
             resolve: { choice, account throws(CloudAccountError) in try await engine.resolve(choice, account: account) },
             status: { await (engine.lastSync, store.pendingCount()) },
         )

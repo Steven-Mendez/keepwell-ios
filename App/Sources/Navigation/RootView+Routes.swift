@@ -31,20 +31,42 @@ extension RootView {
             transactionsRoute(accountID: accountID, ruleID: ruleID)
         case let .transaction(id):
             transactionDetailRoute(id: id)
+        case .recurring, .recurringRuleDetail, .recurringRule, .newSubscription:
+            recurringRoute(route)
+        case .goals:
+            GoalsRoute(container: container, onBack: navigator.pop)
+        case .debts:
+            DebtsRoute(container: container, onBack: navigator.pop)
+        case .notifications:
+            notificationsRoute
+        }
+    }
+
+    /// Recurring movements, a rule's detail and its editor, split out of `destination` to keep each
+    /// switch short.
+    @ViewBuilder
+    private func recurringRoute(_ route: AppRoute) -> some View {
+        switch route {
         case .recurring:
             RecurringRoute(
                 container: container,
                 onBack: navigator.pop,
                 onAdd: { navigator.push($0 ? .newSubscription : .recurringRule(id: nil)) },
-                onOpen: { navigator.push(.recurringRule(id: $0)) },
+                onOpen: { navigator.push(.recurringRuleDetail(id: $0)) },
+            )
+        case let .recurringRuleDetail(id):
+            RecurringRuleDetailRoute(
+                container: container,
+                ruleID: id,
+                onBack: navigator.pop,
+                onEdit: { navigator.push(.recurringRule(id: id)) },
+                onOpenTransaction: { navigator.push(.transaction(id: $0)) },
             )
         case let .recurringRule(id):
             RecurringRuleRoute(
                 container: container,
                 ruleID: id,
                 onBack: navigator.pop,
-                onOpenTransaction: { navigator.push(.transaction(id: $0)) },
-                onSeeAllRecorded: { navigator.push(.transactions(ruleID: $0)) },
             )
         case .newSubscription:
             RecurringRuleRoute(
@@ -52,14 +74,9 @@ extension RootView {
                 ruleID: nil,
                 isNewSubscription: true,
                 onBack: navigator.pop,
-                onOpenTransaction: { navigator.push(.transaction(id: $0)) },
             )
-        case .goals:
-            GoalsRoute(container: container, onBack: navigator.pop)
-        case .debts:
-            DebtsRoute(container: container, onBack: navigator.pop)
-        case .notifications:
-            notificationsRoute
+        default:
+            EmptyView()
         }
     }
 
@@ -109,7 +126,7 @@ extension RootView {
             origin: ruleID.map(TransactionOrigin.rule) ?? .any,
             onBack: navigator.pop,
             onOpenTransaction: { navigator.push(.transaction(id: $0)) },
-            onOpenRecurringRule: { navigator.push(.recurringRule(id: $0)) },
+            onOpenRecurringRule: { navigator.push(.recurringRuleDetail(id: $0)) },
             onNewMovement: { presentMovementMenu() },
         )
     }
@@ -119,7 +136,7 @@ extension RootView {
             container: container,
             id: id,
             onBack: navigator.pop,
-            onOpenRecurringRule: { navigator.push(.recurringRule(id: $0)) },
+            onOpenRecurringRule: { navigator.push(.recurringRuleDetail(id: $0)) },
             onShowTag: showTag,
         )
     }

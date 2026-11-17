@@ -13,8 +13,6 @@ public struct RecurringRuleEditorView: View {
     @Bindable private var viewModel: RecurringRuleEditorViewModel
     private let onBack: () -> Void
     private let onDone: () -> Void
-    private let onOpenTransaction: (UUID) -> Void
-    private let onSeeAllRecorded: ((UUID) -> Void)?
     @State private var choice: Choice?
     @State private var isConfirmingDelete = false
 
@@ -26,20 +24,15 @@ public struct RecurringRuleEditorView: View {
         var id: String { rawValue }
     }
 
-    /// `onDone` runs after saving or deleting; `onOpenTransaction` opens a movement the rule recorded;
-    /// `onSeeAllRecorded` opens the movement list narrowed to everything it recorded.
+    /// `onDone` runs after saving or deleting.
     public init(
         viewModel: RecurringRuleEditorViewModel,
         onBack: @escaping () -> Void,
         onDone: @escaping () -> Void,
-        onOpenTransaction: @escaping (UUID) -> Void,
-        onSeeAllRecorded: ((UUID) -> Void)? = nil,
     ) {
         self.viewModel = viewModel
         self.onBack = onBack
         self.onDone = onDone
-        self.onOpenTransaction = onOpenTransaction
-        self.onSeeAllRecorded = onSeeAllRecorded
     }
 
     public var body: some View {
@@ -120,11 +113,7 @@ public struct RecurringRuleEditorView: View {
                 text: $viewModel.note,
             )
         }
-        RecurringRuleDetail(
-            viewModel: viewModel,
-            onOpenTransaction: onOpenTransaction,
-            onSeeAllRecorded: viewModel.ruleID.flatMap { id in onSeeAllRecorded.map { open in { open(id) } } },
-        )
+        RecurringRuleDetail(viewModel: viewModel)
         if viewModel.isEditing {
             manage
         }

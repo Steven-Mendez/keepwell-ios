@@ -70,7 +70,7 @@ public struct DefaultMaterializeRecurringUseCase: MaterializeRecurringUseCase {
             merchants: merchants?.fetchMerchants() ?? [],
         )
         guard !result.isEmpty else { return 0 }
-        try await rules.saveMaterialized(transactions: result.transactions, rules: result.rules)
+        try await rules.saveMaterialized(transactions: result.transactions + result.linked, rules: result.rules)
         return result.transactions.count
     }
 

@@ -73,6 +73,9 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
     }
 
     public var lastSync: Date? { defaults.object(forKey: "sync.lastAt") as? Date }
+    /// Whether the last round stored something another device, the web or an assistant changed.
+    /// The app reloads the screen in front on it, alongside the store's own save notification.
+    public private(set) var lastRoundBroughtChanges = false
 
     public var rejected: [RejectedChange] {
         (defaults.data(forKey: "sync.rejected")).flatMap { try? JSONDecoder().decode([RejectedChange].self, from: $0) } ?? []
@@ -101,6 +104,7 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
     @discardableResult
     public func syncOnce(account: String? = nil) async throws(CloudAccountError) -> SyncRoundOutcome {
         bind(to: account)
+        lastRoundBroughtChanges = false
         if cursor == nil {
             // Older versions recorded a choice under way and finished it on the next round, which
             // could clear data entered since. Nothing resumes now: a first sync cut short finds
@@ -119,6 +123,7 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
                 // recorded: the snapshot is in hand and the replace is one save, so a failure
                 // changes nothing and the next round looks at both sides again.
                 try await replaceLocal(with: snapshot.rows)
+                lastRoundBroughtChanges = true
             case (true, false):
                 // The account has nothing (a new one, or switched to from another whose outbox was
                 // already sent): this device's rows would never go up, as nothing is queued for
@@ -298,7 +303,9 @@ public actor SyncEngine { // swiftlint:disable:this type_body_length
             return false
         }
         do {
-            try await store.applyRemote(entity: entity, row: data)
+            if try await store.applyRemote(entity: entity, row: data) {
+                lastRoundBroughtChanges = true
+            }
             return false
         } catch {
             // The store itself couldn't write: nothing says this row is the problem, so the page
