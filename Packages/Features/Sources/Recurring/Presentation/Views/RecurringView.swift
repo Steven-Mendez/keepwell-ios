@@ -111,6 +111,12 @@ public struct RecurringView: View {
                     .foregroundStyle(KWColor.Text.secondary)
                     .monospacedDigit()
             }
+            if let progress = viewModel.monthProgress(hidden: hidesBalances) {
+                KWDivider().padding(.vertical, KWSpacing.xs)
+                Text(progress)
+                    .font(KWTextStyle.caption.font.weight(.semibold))
+                    .monospacedDigit()
+            }
         }
         .padding(KWSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -192,6 +198,12 @@ public struct RecurringView: View {
                 if let pending {
                     pendingState(pending)
                         .lineLimit(2)
+                } else if let paid = viewModel.paidLabel(of: rule) {
+                    // Green and in words: paid for this cycle, with the day it was.
+                    Text(paid)
+                        .font(KWTextStyle.caption.font.weight(.semibold))
+                        .foregroundStyle(KWColor.State.positive)
+                        .lineLimit(1)
                 }
                 let subtitle = viewModel.subtitle(of: rule)
                 if !subtitle.isEmpty {

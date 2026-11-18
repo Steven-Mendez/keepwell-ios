@@ -1,6 +1,106 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ left to pay" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan %@ por pagar"
+          }
+        }
+      }
+    },
+    "%@ · in %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ · in %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ · in %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ · en %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ · en %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld paid this month" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld de %lld pagados este mes"
+          }
+        }
+      }
+    },
+    "%lld payments" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld payment"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld payments"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pago"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pagos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Add recurring" : {
       "localizations" : {
         "es" : {
@@ -151,6 +251,16 @@
         }
       }
     },
+    "Edit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        }
+      }
+    },
     "Edit recurring" : {
       "localizations" : {
         "es" : {
@@ -241,6 +351,46 @@
         }
       }
     },
+    "in %lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "en %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "en %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Income" : {
       "localizations" : {
         "es" : {
@@ -287,6 +437,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Último día"
+          }
+        }
+      }
+    },
+    "Last payment %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Último pago %@"
+          }
+        }
+      }
+    },
+    "Link a movement you already recorded and it counts as a payment of this one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asocia un movimiento que ya registraste y cuenta como un pago de este."
+          }
+        }
+      }
+    },
+    "Link a payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asociar un pago"
           }
         }
       }
@@ -341,6 +521,16 @@
         }
       }
     },
+    "Next %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximo %@"
+          }
+        }
+      }
+    },
     "Next charge" : {
       "localizations" : {
         "es" : {
@@ -357,6 +547,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Próximas fechas"
+          }
+        }
+      }
+    },
+    "Next payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente pago"
+          }
+        }
+      }
+    },
+    "No movements to link" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay movimientos para asociar"
+          }
+        }
+      }
+    },
+    "No payments yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay pagos"
           }
         }
       }
@@ -441,6 +661,26 @@
         }
       }
     },
+    "Other movements" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otros movimientos"
+          }
+        }
+      }
+    },
+    "Overdue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atrasado"
+          }
+        }
+      }
+    },
     "Overdue · %lld days" : {
       "localizations" : {
         "en" : {
@@ -481,6 +721,36 @@
         }
       }
     },
+    "Paid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagado"
+          }
+        }
+      }
+    },
+    "Paid this year" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagado este año"
+          }
+        }
+      }
+    },
+    "Paid · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagado · %@"
+          }
+        }
+      }
+    },
     "Pause" : {
       "localizations" : {
         "es" : {
@@ -511,6 +781,26 @@
         }
       }
     },
+    "Payments" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagos"
+          }
+        }
+      }
+    },
+    "Price changed from %@ to %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El precio cambió de %@ a %@"
+          }
+        }
+      }
+    },
     "Proposed by Claude · resume to confirm" : {
       "localizations" : {
         "es" : {
@@ -537,16 +827,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrar automáticamente"
-          }
-        }
-      }
-    },
-    "Recorded" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registrados"
           }
         }
       }
@@ -601,12 +881,12 @@
         }
       }
     },
-    "See all" : {
+    "Search movements" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ver todos"
+            "value" : "Buscar movimientos"
           }
         }
       }
@@ -661,12 +941,32 @@
         }
       }
     },
+    "Suggested" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugeridos"
+          }
+        }
+      }
+    },
     "To" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hacia"
+          }
+        }
+      }
+    },
+    "To confirm" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por confirmar"
           }
         }
       }
@@ -701,6 +1001,26 @@
         }
       }
     },
+    "Unlink payment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desasociar pago"
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximo"
+          }
+        }
+      }
+    },
     "We couldn't confirm it. Try again." : {
       "localizations" : {
         "es" : {
@@ -717,6 +1037,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos eliminarlo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "We couldn't link it. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos asociarlo. Inténtalo de nuevo."
           }
         }
       }
@@ -767,6 +1097,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "≈ %@ al año"
+          }
+        }
+      }
+    },
+    "Link to a recurring" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asociar a un recurrente"
+          }
+        }
+      }
+    },
+    "It counts as a payment of the one you choose." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta como un pago del que elijas."
+          }
+        }
+      }
+    },
+    "We couldn't load your recurring payments." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pudimos cargar tus pagos recurrentes."
+          }
+        }
+      }
+    },
+    "No recurring payments of this kind" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay pagos recurrentes de este tipo"
           }
         }
       }

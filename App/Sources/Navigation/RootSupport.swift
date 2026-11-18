@@ -296,6 +296,7 @@ struct CreditCardRoute: View {
     var body: some View {
         CreditCardView(viewModel: viewModel, onBack: onBack, onPay: onPay, onSeeAllMovements: onSeeAllMovements)
             .navigationBarBackButtonHidden()
+            .reloadsOnStoreChange { await viewModel.load() }
     }
 }
 
@@ -318,6 +319,7 @@ struct DebitCardRoute: View {
     var body: some View {
         DebitCardView(viewModel: viewModel, onBack: onBack, onSeeAllMovements: onSeeAllMovements)
             .navigationBarBackButtonHidden()
+            .reloadsOnStoreChange { await viewModel.load() }
     }
 }
 
@@ -340,6 +342,7 @@ struct CashRoute: View {
     var body: some View {
         CashView(viewModel: viewModel, onBack: onBack, onSeeAllMovements: onSeeAllMovements)
             .navigationBarBackButtonHidden()
+            .reloadsOnStoreChange { await viewModel.load() }
     }
 }
 
@@ -347,6 +350,7 @@ struct CashRoute: View {
 /// filtering it leaves the Transactions tab as the person left it.
 struct TransactionsRoute: View {
     @State private var viewModel: TransactionsViewModel
+    private let container: AppContainer
     let onBack: () -> Void
     let onOpenTransaction: (UUID) -> Void
     let onOpenRecurringRule: (UUID) -> Void
@@ -365,6 +369,7 @@ struct TransactionsRoute: View {
         viewModel.scope = scope
         viewModel.origin = origin
         _viewModel = State(initialValue: viewModel)
+        self.container = container
         self.onBack = onBack
         self.onOpenTransaction = onOpenTransaction
         self.onOpenRecurringRule = onOpenRecurringRule
@@ -382,31 +387,7 @@ struct TransactionsRoute: View {
         .navigationBarBackButtonHidden()
         // Back from a movement's detail, where it may have been edited or deleted.
         .onAppear { Task { await viewModel.load() } }
-    }
-}
-
-/// Recurring movements and subscriptions. The screen reloads itself when it reappears after a rule
-/// closes, and after "Undo" turns a draft it confirmed back into one.
-struct RecurringRoute: View {
-    @State private var viewModel: RecurringViewModel
-    private let undo: MovementUndo
-    let onBack: () -> Void
-    /// `true` for "New subscription", the short form.
-    let onAdd: (_ isSubscription: Bool) -> Void
-    let onOpen: (UUID) -> Void
-
-    init(container: AppContainer, onBack: @escaping () -> Void, onAdd: @escaping (Bool) -> Void, onOpen: @escaping (UUID) -> Void) {
-        _viewModel = State(initialValue: container.makeRecurringViewModel())
-        undo = container.movementUndo
-        self.onBack = onBack
-        self.onAdd = onAdd
-        self.onOpen = onOpen
-    }
-
-    var body: some View {
-        RecurringView(viewModel: viewModel, onBack: onBack, onAdd: { onAdd(false) }, onAddSubscription: { onAdd(true) }, onOpen: onOpen)
-            .navigationBarBackButtonHidden()
-            .onChange(of: undo.undoneCount) { Task { await viewModel.load() } }
+        .reloadsOnStoreChange(refreshingWith: container) { await viewModel.load() }
     }
 }
 
@@ -423,6 +404,7 @@ struct GoalsRoute: View {
     var body: some View {
         GoalsView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
+            .reloadsOnStoreChange { await viewModel.load() }
     }
 }
 
@@ -452,6 +434,7 @@ struct DebtsRoute: View {
     var body: some View {
         DebtsView(viewModel: viewModel, onBack: onBack)
             .navigationBarBackButtonHidden()
+            .reloadsOnStoreChange { await viewModel.load() }
     }
 }
 

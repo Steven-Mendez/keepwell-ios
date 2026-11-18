@@ -9,6 +9,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Recurring: each rule now says where it stands. Its row reads "Paid · Nov 1" once the cycle that
+  ends at its next date has a confirmed payment, and the totals add "3 of 8 paid this month" with
+  what is left to pay. Tapping a rule opens its detail (the form is one "Edit" away): the state,
+  the next payment and the days left, every payment linked to it, what was paid this year and a
+  price change. "Link a payment" ties a movement you recorded by hand to the rule, also one from
+  before the rule started; swiping a payment takes it out. A manual payment that covers an
+  occurrence is now linked to its rule automatically. A movement's detail offers "Recurring
+  payment · Link" to do the same from the movement, and the rule's form no longer lists what it
+  recorded (its detail does).
+- Changes made on another device, on the web or by an assistant now appear without leaving the
+  screen: every list and detail reloads when a sync round brings them (before, only Home did), and
+  pulling down on a list syncs right away.
+
 - Shared expenses: an expense split with others counts only your share as spending in the
   summary (months, averages, pace, trends and years), budgets and their notifications, Home's
   month, the forecast's usual spending and the receipt's category total; balances and net worth
@@ -214,7 +227,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - A personal debt owed to you no longer says it only records here without mentioning that a
   repayment deposited into an account changes that balance.
-
+- VoiceOver reads the icons of the category and savings-goal icon picker by what they show, in
+  English or Spanish ("Coffee cup", "Taza de café"), instead of their internal names
+  ("cup.and.saucer").
 - After the main currency changes (swapping your two currencies, or a change from another device),
   month totals no longer add up old amounts in the previous currency and label them with the new
   one. Each movement converts with the rate it was recorded with; one whose rate doesn't include

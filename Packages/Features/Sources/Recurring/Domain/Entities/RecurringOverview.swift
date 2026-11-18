@@ -12,8 +12,10 @@ public struct RecurringOverview: Hashable, Sendable {
     public let categories: [TransactionCategory]
     /// The businesses rules name, for their logos. Empty where the caller didn't load them.
     public let merchants: [Merchant]
-    /// Movements recorded by a rule, newest first.
+    /// Movements recorded by a rule or linked to one as its payment, newest first.
     public let recorded: [Transaction]
+    /// Confirmed movements linked to no rule, newest first: what "Link a payment" offers.
+    public let unlinked: [Transaction]
     /// Live expense subscriptions per month, in the principal currency, unrounded.
     public let subscriptionsPerMonth: Money
     /// Live expense subscriptions the total leaves out because their currency can't be converted,
@@ -27,6 +29,7 @@ public struct RecurringOverview: Hashable, Sendable {
         cards: [Card],
         categories: [TransactionCategory],
         recorded: [Transaction],
+        unlinked: [Transaction] = [],
         merchants: [Merchant] = [],
         calendar: Calendar = .current,
     ) {
@@ -36,6 +39,7 @@ public struct RecurringOverview: Hashable, Sendable {
         self.cards = cards
         self.categories = categories
         self.recorded = recorded
+        self.unlinked = unlinked
         self.merchants = merchants
         let total = Self.monthlyTotal(
             of: rules.filter { $0.isSubscription && $0.kind == .expense },
