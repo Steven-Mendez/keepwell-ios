@@ -37,8 +37,10 @@ env:
   XCODE_PATH: /Applications/Xcode_27.1.app
   SIMULATOR_NAME: iPhone 17e
   # CI-only xcodebuild settings (local builds keep Xcode's defaults): no index store (nothing reads
-  # it on a runner) and no dSYM generation.
-  XCODEBUILD_FLAGS: COMPILER_INDEX_STORE_ENABLE=NO DEBUG_INFORMATION_FORMAT=dwarf
+  # it on a runner), no dSYM generation, and Xcode's compilation cache, which is keyed by content
+  # (not by file dates) so it survives a fresh checkout. It lives in COMPILATION_CACHE_PATH.
+  XCODEBUILD_FLAGS: COMPILER_INDEX_STORE_ENABLE=NO DEBUG_INFORMATION_FORMAT=dwarf COMPILATION_CACHE_ENABLE_CACHING=YES
+  COMPILATION_CACHE_PATH: build/DerivedData/CompilationCache.noindex
 
 jobs:
   gate:
@@ -99,6 +101,20 @@ jobs:
           key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved', 'Packages/*/Package.swift') }}
           restore-keys: spm-${{ runner.os }}-
 
+      # Every run compiled everything from scratch (~13 minutes). The cache is saved only by pushes to
+      # develop (the default branch, so every pull request can read it) and starts over each month so
+      # it cannot grow without bound.
+      - name: Compilation cache key
+        id: xcc
+        run: echo "prefix=xcc-${RUNNER_OS}-${XCODE_PATH##*/}-$(date -u +%Y-%m)-" >>"$GITHUB_OUTPUT"
+
+      - name: Restore compilation cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.COMPILATION_CACHE_PATH }}
+          key: ${{ steps.xcc.outputs.prefix }}${{ github.run_id }}
+          restore-keys: ${{ steps.xcc.outputs.prefix }}
+
       - name: Boot simulator
         # Starts booting now (returns immediately) so it is ready by the time the unit tests have compiled.
         # The destination is resolved once, here, and handed to make through the environment: asking
@@ -140,6 +156,14 @@ jobs:
           xcrun simctl boot "$SIMULATOR_UDID" || true
           xcrun simctl bootstatus "$SIMULATOR_UDID" -b >/dev/null
           make test-ui
+
+      # Compiled objects are valid whatever the tests said, so a red run still refreshes the cache.
+      - name: Save compilation cache
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.COMPILATION_CACHE_PATH }}
+          key: ${{ steps.xcc.outputs.prefix }}${{ github.run_id }}
 
       - name: Check Package.resolved
         if: always()
