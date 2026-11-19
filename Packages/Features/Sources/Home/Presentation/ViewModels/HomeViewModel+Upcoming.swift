@@ -74,6 +74,12 @@ extension HomeViewModel {
     }
 
     /// A rule's category, whose color tints a brand's monogram.
+    /// A recurring payment's logo: its rule's merchant's first, then the brand the rule's name names.
+    func upcomingLogo(_ payment: UpcomingPayment) -> LogoSubject? {
+        guard case let .recurring(rule) = payment.kind else { return nil }
+        return MerchantLogos.logo(of: rule, merchants: overview?.merchants ?? [])
+    }
+
     func upcomingCategory(_ payment: UpcomingPayment) -> TransactionCategory? {
         guard case let .recurring(rule) = payment.kind else { return nil }
         return rule.categoryID.flatMap { id in overview?.categories.first { $0.id == id } }

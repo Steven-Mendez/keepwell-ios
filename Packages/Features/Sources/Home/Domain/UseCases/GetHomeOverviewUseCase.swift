@@ -22,6 +22,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
     private let savingsGoals: (any SavingsGoalRepository)?
     private let loans: (any LoanRepository)?
     private let personalDebts: (any PersonalDebtRepository)?
+    private let merchants: (any MerchantRepository)?
     private let calendar: Calendar
     private let now: @Sendable () -> Date
 
@@ -35,6 +36,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         savingsGoals: (any SavingsGoalRepository)? = nil,
         loans: (any LoanRepository)? = nil,
         personalDebts: (any PersonalDebtRepository)? = nil,
+        merchants: (any MerchantRepository)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { .now },
     ) {
@@ -47,6 +49,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         self.savingsGoals = savingsGoals
         self.loans = loans
         self.personalDebts = personalDebts
+        self.merchants = merchants
         self.calendar = calendar
         self.now = now
     }
@@ -60,7 +63,10 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         let personalRows = try await personalDebts?.fetchPersonalDebts() ?? []
         let deposits = try await personalDebts?.fetchRepaymentDepositIDs() ?? []
         let debts = DebtRecords(loans: loanRows, personal: personalRows, deposits: deposits)
-        return try Self.overview(records, rules: rules, goals: goals, debts: debts, settings: stored, calendar: calendar, now: now())
+        let merchantRows = try await merchants?.fetchMerchants() ?? []
+        return try Self.overview(
+            records, rules: rules, goals: goals, debts: debts, merchants: merchantRows, settings: stored, calendar: calendar, now: now(),
+        )
     }
 
     static func overview(
@@ -68,6 +74,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
         rules: [RecurringRule] = [],
         goals: [SavingsGoal] = [],
         debts: DebtRecords = DebtRecords(),
+        merchants: [Merchant] = [],
         settings: Settings,
         calendar: Calendar,
         now: Date,
@@ -124,6 +131,7 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             accounts: accounts,
             cards: cards,
             categories: records.categories,
+            merchants: merchants,
         )
     }
 
