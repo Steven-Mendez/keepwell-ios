@@ -3,9 +3,10 @@ import Foundation
 import Observation
 import SharedPresentation
 
-/// Creates or edits one categorization rule: the text to look for, expense or income, the category
-/// and optional tags. An existing rule can also be applied to past movements that are still
-/// uncategorized or in "Other", after a confirmation that says how many.
+/// Creates or edits one categorization rule: the text to look for, expense or income, the category,
+/// optional tags and the business a matching movement is linked to. An existing rule can also be
+/// applied to past movements that are still uncategorized or in "Other", after a confirmation that
+/// says how many.
 @MainActor
 @Observable
 public final class RuleEditorViewModel: Identifiable {
@@ -22,6 +23,10 @@ public final class RuleEditorViewModel: Identifiable {
     public var categoryID: String?
     public var tags: [String]
     public let tagUsage: [String]
+    /// The business a matching movement gets when it names none; `nil` for none.
+    public var merchantID: UUID?
+    /// The person's merchants, by name.
+    public let merchants: [Merchant]
     public private(set) var errorMessage: String?
     public private(set) var isSaving = false
     /// How many movements "Apply to past movements" would change, while its confirmation is up.
@@ -38,6 +43,7 @@ public final class RuleEditorViewModel: Identifiable {
         match: String = "",
         categories: [TransactionCategory],
         tagUsage: [String] = [],
+        merchants: [Merchant] = [],
         manage: any ManageCategorizationRulesUseCase,
     ) {
         editing = nil
@@ -46,6 +52,7 @@ public final class RuleEditorViewModel: Identifiable {
         tags = []
         allCategories = categories
         self.tagUsage = tagUsage
+        self.merchants = merchants
         self.manage = manage
     }
 
@@ -53,6 +60,7 @@ public final class RuleEditorViewModel: Identifiable {
         editing rule: CategorizationRule,
         categories: [TransactionCategory],
         tagUsage: [String] = [],
+        merchants: [Merchant] = [],
         manage: any ManageCategorizationRulesUseCase,
     ) {
         editing = rule
@@ -60,8 +68,10 @@ public final class RuleEditorViewModel: Identifiable {
         kind = rule.kind
         categoryID = rule.categoryID
         tags = rule.tags
+        merchantID = rule.merchantID
         allCategories = categories
         self.tagUsage = tagUsage
+        self.merchants = merchants
         self.manage = manage
     }
 
@@ -75,6 +85,25 @@ public final class RuleEditorViewModel: Identifiable {
 
     public var categoryTitle: String {
         categories.first { $0.id == categoryID }.map(CategoryDisplay.name(of:)) ?? String(localized: "Choose", bundle: #bundle)
+    }
+
+    /// Like the web, the field shows only when there is a business to pick, or the rule names one.
+    public var showsMerchant: Bool {
+        !merchants.isEmpty || merchantID != nil
+    }
+
+    /// "Subway", "None", or the stand-in for a business this device hasn't pulled yet (set
+    /// elsewhere), which saving keeps.
+    public var merchantTitle: String {
+        guard let merchantID else { return Self.noMerchantTitle }
+        return merchants.first { $0.id == merchantID }?.name
+            ?? String(localized: "A business not on this device yet", bundle: #bundle)
+    }
+
+    /// Its own key: "None" elsewhere in Settings is a category or a currency (feminine in Spanish),
+    /// while a business is masculine ("Ninguno"). The web uses the same key.
+    public static var noMerchantTitle: String {
+        String(localized: "business.none", defaultValue: "None", bundle: #bundle)
     }
 
     public var canSave: Bool {
@@ -94,8 +123,7 @@ public final class RuleEditorViewModel: Identifiable {
         do {
             let rule = try await manage.save(CategorizationRuleDraft(
                 id: editing?.id, match: match, categoryID: categoryID, kind: kind, tags: tags,
-                // The editor has no merchant field: the rule keeps the one it has.
-                merchantID: editing?.merchantID,
+                merchantID: merchantID,
             ))
             errorMessage = nil
             return rule

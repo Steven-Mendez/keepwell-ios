@@ -52,7 +52,7 @@ public struct CategorySymbolPicker: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(Text(verbatim: symbol))
+                .accessibilityLabel(CategoryDisplay.symbolName(symbol) ?? String(localized: "Icon", bundle: #bundle))
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }

@@ -88,6 +88,16 @@ struct DisplayTests {
     }
 
     @Test
+    func everyPickerIconHasItsOwnSpokenName() {
+        let names = CategoryDisplay.symbolChoices.map(CategoryDisplay.symbolName)
+        let unnamed = zip(CategoryDisplay.symbolChoices, names).filter { $0.1?.isEmpty ?? true }.map(\.0)
+        #expect(unnamed.isEmpty)
+        // Two icons that read the same can't be told apart without seeing them.
+        #expect(Set(names.compactMap(\.self)).count == CategoryDisplay.symbolChoices.count)
+        #expect(CategoryDisplay.symbolName("sailboat") == nil)
+    }
+
+    @Test
     func createdCategoriesUseTheirOwnIconAndColor() {
         let boat = TransactionCategory(id: "custom-boat", name: "Boat", kind: .expense, icon: "sailboat", color: "blue")
         #expect(CategoryDisplay.symbol(for: boat) == "sailboat")

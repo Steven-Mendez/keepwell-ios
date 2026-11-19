@@ -51,6 +51,14 @@ public enum MerchantLogos {
         return BrandCatalog.brand(for: description, in: brands).map(LogoSubject.init)
     }
 
+    /// A recurring rule's logo: its own merchant's, else the brand its name names. A transfer is
+    /// never a merchant, so it has none.
+    public static func logo(of rule: RecurringRule, merchants: [Merchant], brands: [Brand] = BrandCatalog.brands) -> LogoSubject? {
+        guard rule.kind != .transfer else { return nil }
+        let merchant = rule.merchantID.flatMap { id in merchants.first { $0.id == id } }
+        return logo(description: rule.name, merchant: merchant, brands: brands)
+    }
+
     /// The merchant to create when the person picks a brand of the table.
     public static func draft(from brand: Brand) -> MerchantDraft {
         MerchantDraft(name: brand.name, domain: brand.domain, brandID: brand.id)

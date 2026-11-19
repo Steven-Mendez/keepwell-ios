@@ -14,6 +14,7 @@ public final class RulesViewModel {
     public var editor: RuleEditorViewModel?
     public var isReordering = false
     private var tagUsage: [String] = []
+    private var merchants: [Merchant] = []
 
     private let manage: any ManageCategorizationRulesUseCase
     private let getCategories: any GetCategoriesUseCase
@@ -28,6 +29,7 @@ public final class RulesViewModel {
             rules = try await manage.rules()
             categories = try await getCategories.execute()
             tagUsage = try await manage.tagUsage()
+            merchants = try await manage.merchants()
             errorMessage = nil
         } catch {
             errorMessage = String(localized: "We couldn't load your rules.", bundle: #bundle)
@@ -50,11 +52,11 @@ public final class RulesViewModel {
     }
 
     public func startNew() {
-        editor = RuleEditorViewModel(categories: categories, tagUsage: tagUsage, manage: manage)
+        editor = RuleEditorViewModel(categories: categories, tagUsage: tagUsage, merchants: merchants, manage: manage)
     }
 
     public func edit(_ rule: CategorizationRule) {
-        editor = RuleEditorViewModel(editing: rule, categories: categories, tagUsage: tagUsage, manage: manage)
+        editor = RuleEditorViewModel(editing: rule, categories: categories, tagUsage: tagUsage, merchants: merchants, manage: manage)
     }
 
     /// Called after the editor saved or deleted, so the list shows the stored result.

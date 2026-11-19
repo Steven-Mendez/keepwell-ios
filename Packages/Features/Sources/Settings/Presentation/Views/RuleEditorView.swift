@@ -4,7 +4,8 @@ import SharedPresentation
 import SwiftUI
 
 /// The sheet to create or edit a rule: what the description or note contains, expense or income,
-/// the category it gets and tags to add. An existing rule can be applied to past movements.
+/// the category it gets, the business it links and tags to add. An existing rule can be applied to
+/// past movements.
 struct RuleEditorView: View {
     @Bindable var viewModel: RuleEditorViewModel
     let onDone: () -> Void
@@ -91,7 +92,12 @@ struct RuleEditorView: View {
                 selection: $viewModel.kind,
             )
             matchField
-            KWGroupedCard { categoryMenu }
+            KWGroupedCard {
+                categoryMenu
+                if viewModel.showsMerchant {
+                    merchantMenu
+                }
+            }
             VStack(alignment: .leading, spacing: KWSpacing.xxs) {
                 KWSectionHeader(String(localized: "Tags to add", bundle: #bundle))
                 KWGroupedCard {
@@ -144,6 +150,26 @@ struct RuleEditorView: View {
                 String(localized: "Category", bundle: #bundle),
                 value: "\(viewModel.categoryTitle) ›",
                 style: viewModel.categoryID == nil ? .placeholder : .detail,
+                verticalPadding: 14,
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Only the person's own businesses, like the web's: a rule links to one that exists, so the
+    /// brand search of `MerchantPickerView` (which creates new ones) doesn't fit here.
+    private var merchantMenu: some View {
+        Menu {
+            Button(RuleEditorViewModel.noMerchantTitle) { viewModel.merchantID = nil }
+            ForEach(viewModel.merchants) { merchant in
+                Button(merchant.name) { viewModel.merchantID = merchant.id }
+            }
+        } label: {
+            KWValueRow(
+                String(localized: "Business", bundle: #bundle),
+                value: "\(viewModel.merchantTitle) ›",
+                style: viewModel.merchantID == nil ? .placeholder : .detail,
                 verticalPadding: 14,
             )
             .contentShape(Rectangle())
