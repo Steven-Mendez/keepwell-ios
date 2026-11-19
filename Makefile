@@ -8,7 +8,7 @@ CONFIG       ?= Debug
 DERIVED_DATA := build/DerivedData
 RESULTS      := build/Results
 MISE         := mise exec --
-# CI sets DESTINATION in the environment (resolved once, before the simulator starts booting), and
+# CI sets DESTINATION in the environment (resolved once per job), and
 # SKIP_GENERATE once it has generated the project, so later targets do not generate it again.
 DESTINATION  ?= $(shell scripts/simulator-destination.sh)
 # Package.resolved is committed at the root because the .xcodeproj is not.

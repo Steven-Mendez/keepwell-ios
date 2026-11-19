@@ -75,7 +75,7 @@ jobs:
     if: needs.gate.outputs.run_tests == 'true'
     # GitHub-hosted arm64 image with Xcode 27.x (preview label). Xcode is selected explicitly below.
     runs-on: xcode-27
-    timeout-minutes: 40
+    timeout-minutes: 50
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -94,8 +94,7 @@ jobs:
       - name: Lint
         run: make lint
 
-      # Generated here, before the simulator starts booting: next to a booting simulator the same
-      # command took 1.5-2 minutes on the runner instead of seconds. The make targets below skip it.
+      # Generated once; the make targets below skip it (SKIP_GENERATE).
       - name: Generate project
         run: |
           make generate
@@ -122,15 +121,15 @@ jobs:
           key: ${{ steps.xcc.outputs.prefix }}${{ github.run_id }}
           restore-keys: ${{ steps.xcc.outputs.prefix }}
 
-      - name: Boot simulator
-        # Starts booting now (returns immediately) so it is ready by the time the unit tests have compiled.
-        # The destination is resolved once, here, and handed to make through the environment.
+      - name: Pick simulator
+        # Resolved once and handed to make through the environment. The simulator is deliberately NOT
+        # booted here: a first boot on the 3-core runner starves everything next to it (xcodebuild took
+        # 5 minutes to start instead of 25 seconds, the unit test step 18.6 minutes instead of 11.7).
+        # xcodebuild boots it when the tests start.
         run: |
           destination="$(scripts/simulator-destination.sh)"
-          udid="${destination##*id=}"
           echo "DESTINATION=$destination" >>"$GITHUB_ENV"
-          echo "SIMULATOR_UDID=$udid" >>"$GITHUB_ENV"
-          xcrun simctl boot "$udid" || true
+          echo "SIMULATOR_UDID=${destination##*id=}" >>"$GITHUB_ENV"
 
       # No separate `make build` step: `test` compiles the app and the test bundles itself, so a build
       # step only compiled everything twice. (build-for-testing + test-without-building was tried and
@@ -141,8 +140,10 @@ jobs:
       - name: UI tests (with coverage)
         id: ui
         # A runner that "hung before establishing a connection" never finishes by itself: cap the step
-        # and retry once on a clean simulator. A real failure fails both attempts.
-        timeout-minutes: 12
+        # and retry once on a clean simulator. A real failure fails both attempts. The cap leaves room
+        # for a freshly booted simulator, which runs these tests slower (a 12 minute cap killed an
+        # attempt that was about to finish, and the retry cost 11 more minutes).
+        timeout-minutes: 15
         continue-on-error: true
         env:
           XCODEBUILD_TEST_FLAGS: -test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300
@@ -150,7 +151,7 @@ jobs:
 
       - name: UI tests (retry)
         if: steps.ui.outcome != 'success'
-        timeout-minutes: 12
+        timeout-minutes: 15
         env:
           XCODEBUILD_TEST_FLAGS: -test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300
         run: |
