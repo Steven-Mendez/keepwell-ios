@@ -43,6 +43,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   business's own web address first. "Repeat" and recurring movements keep both. Settings ›
   Businesses renames them, sets a default category, marks platforms, merges two and deletes one.
   Syncs with the web app; the JSON backup is now version 3 and versions 1 and 2 still restore.
+  A categorization rule's editor has a "Business" field, as on the web: a matching movement without
+  one gets it. Home's "Upcoming" and the recurring list show a rule's own business's logo first,
+  then the brand its name suggests.
 
 - Categorization rules now apply to every new movement, not only the ones typed in the editor:
   Siri's "Log an expense" without a category and recurring movements recorded in "Other" take the
@@ -222,6 +225,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- A personal debt owed to you no longer says it only records here without mentioning that a
+  repayment deposited into an account changes that balance.
+- VoiceOver reads the icons of the category and savings-goal icon picker by what they show, in
+  English or Spanish ("Coffee cup", "Taza de café"), instead of their internal names
+  ("cup.and.saucer").
 - After the main currency changes (swapping your two currencies, or a change from another device),
   month totals no longer add up old amounts in the previous currency and label them with the new
   one. Each movement converts with the rate it was recorded with; one whose rate doesn't include

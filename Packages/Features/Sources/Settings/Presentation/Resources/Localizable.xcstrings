@@ -151,6 +151,16 @@
         }
       }
     },
+    "A business not on this device yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un negocio que aún no está en este dispositivo"
+          }
+        }
+      }
+    },
     "A copy of every movement" : {
       "localizations" : {
         "es" : {
@@ -267,6 +277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Transferencia bancaria"
+          }
+        }
+      }
+    },
+    "Business" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negocio"
           }
         }
       }
@@ -1687,6 +1707,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nombre"
+          }
+        }
+      }
+    },
+    "business.none" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguno"
           }
         }
       }

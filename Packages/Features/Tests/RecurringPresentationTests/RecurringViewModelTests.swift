@@ -2,6 +2,7 @@ import Domain
 import DomainSamples
 import Foundation
 import RecurringDomain
+import SharedPresentation
 import Testing
 @testable import RecurringPresentation
 
@@ -40,6 +41,23 @@ struct RecurringViewModelTests {
         #expect(viewModel.subtitle(of: cash).hasPrefix("Every 2 weeks"))
         #expect(viewModel.monthlyTotal(hidden: false) == "$15.99")
         #expect(viewModel.yearlyTotal(hidden: false) == "≈ $191.88 per year")
+    }
+
+    /// The rule's own merchant gives the row its logo before the brand its name suggests.
+    @Test
+    func aRowsLogoComesFromItsMerchantFirst() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let viewModel = RecurringPreview.listViewModel(store: store)
+        await viewModel.load()
+        let streaming = try #require(viewModel.overview?.rule(IDs.streamingRule))
+        #expect(viewModel.logo(of: streaming) == nil)
+
+        let netflix = Merchant(name: "Netflix", brandID: "netflix")
+        await store.save(netflix)
+        await store.save(streaming.with(merchantID: netflix.id, viaMerchantID: nil))
+        await viewModel.load()
+        let linked = try #require(viewModel.overview?.rule(IDs.streamingRule))
+        #expect(viewModel.logo(of: linked) == LogoSubject(name: "Netflix", domain: "netflix.com"))
     }
 
     @Test

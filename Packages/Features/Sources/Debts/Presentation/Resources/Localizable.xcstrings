@@ -581,6 +581,16 @@
         }
       }
     },
+    "Only tracked here: it doesn't change your balances unless you deposit a repayment into an account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo se anota aquí: no cambia tus saldos salvo que deposites un abono en una cuenta."
+          }
+        }
+      }
+    },
     "Only tracked here: it doesn't record a movement or change your balances." : {
       "localizations" : {
         "es" : {

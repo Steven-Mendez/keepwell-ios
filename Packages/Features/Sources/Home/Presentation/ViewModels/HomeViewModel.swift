@@ -177,7 +177,7 @@ public final class HomeViewModel {
     // MARK: - Display
 
     var display: TransactionDisplay? {
-        overview.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories) }
+        overview.map { TransactionDisplay(accounts: $0.accounts, cards: $0.cards, categories: $0.categories, merchants: $0.merchants) }
     }
 
     /// "≈ C$408,634 · rate 36.6243".
