@@ -120,9 +120,16 @@ the app is local-only and onboarding and Settings offer no account.
 
 ## Branches and commits
 
-- `main` — production. `staging` — QA/TestFlight. `develop` — integration (default branch for work).
-- Work branches from `develop`: `feat/*`, `fix/*`, `chore/*`.
-- Flow: `feat/x → develop → staging → main` through pull requests.
+Gitflow, with two long-lived branches and everything else merged through pull requests:
+
+- `main` — production: every commit is a release, tagged with its version (`v1.2.0`).
+- `develop` — integration (default branch): the next release takes shape here.
+- Work branches (`feat/*`, `fix/*`, `chore/*`): from `develop`, merged back into `develop`.
+- `release/<version>`: from `develop` when a release is ready to stabilise. Only fixes, the version
+  bump and the changelog go in; QA/TestFlight builds are cut from here. Merged into `main` (then
+  tagged) and back into `develop`.
+- `hotfix/<version>`: from `main` for an urgent production fix. Merged into `main` (then tagged) and
+  back into `develop`.
 - [Conventional Commits](https://www.conventionalcommits.org) are required (enforced by the
   `commit-msg` hook and by the PR title check in CI):
 
@@ -138,12 +145,14 @@ Conventional Commits validation; `pre-push` → build + unit tests. See [CONTRIB
 
 GitHub Actions ([`.github/workflows/ios-ci.yml`](.github/workflows/ios-ci.yml)) runs lint, build and tests on
 the `xcode-27` runner, explicitly selecting Xcode 27.1 with `xcode-select`, for pull requests and pushes
-to `develop`, `staging` and `main`. [`pr-title.yml`](.github/workflows/pr-title.yml) validates the PR
+to `develop` and `main`. [`pr-title.yml`](.github/workflows/pr-title.yml) validates the PR
 title. Dependabot updates SPM packages and GitHub Actions weekly against `develop`.
 
-To save macOS minutes, docs-only changes do not run CI, and `staging`/`main` do not repeat the tests
-of a commit that already passed on `develop` (they wait for that run on a Linux runner, see
-`scripts/ci-gate.sh`). Push `develop` first, then promote.
+To keep CI short, docs-only changes do not run it, and a tree is only tested once: the macOS job
+records every tree it passes, and merges that bring nothing new (a release or hotfix landing on `main`
+after its pull request passed, the merge back into `develop`) reuse that result from a Linux runner
+instead of repeating the tests (see `scripts/ci-gate.sh`). Pushes to `develop` always run the full
+suite.
 
 ### TestFlight from CI
 
