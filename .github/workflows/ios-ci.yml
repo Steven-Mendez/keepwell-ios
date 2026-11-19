@@ -93,6 +93,13 @@ jobs:
       - name: Lint
         run: make lint
 
+      # Generated here, before the simulator starts booting: next to a booting simulator the same
+      # command took 1.5-2 minutes on the runner instead of seconds. The make targets below skip it.
+      - name: Generate project
+        run: |
+          make generate
+          echo "SKIP_GENERATE=1" >>"$GITHUB_ENV"
+
       - name: Cache SPM packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -102,8 +109,7 @@ jobs:
 
       - name: Boot simulator
         # Starts booting now (returns immediately) so it is ready by the time the unit tests have compiled.
-        # The destination is resolved once, here, and handed to make through the environment: asking
-        # simctl again while the simulator boots stalls for minutes.
+        # The destination is resolved once, here, and handed to make through the environment.
         run: |
           destination="$(scripts/simulator-destination.sh)"
           udid="${destination##*id=}"
@@ -115,11 +121,7 @@ jobs:
       # step only compiled everything twice. (build-for-testing + test-without-building was tried and
       # dropped: the coverage report came out empty.) The UI step reuses the unit step's DerivedData.
       - name: Unit tests (with coverage)
-        # `generate` runs by itself first only so the log timestamps show how long it takes.
-        run: |
-          make generate
-          echo "generate done"
-          make test-unit
+        run: make test-unit
 
       - name: UI tests (with coverage)
         id: ui
