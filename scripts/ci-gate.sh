@@ -1,9 +1,9 @@
 #!/bin/bash
 # Decides whether the macOS test job must run, and writes `run_tests=true|false` to $GITHUB_OUTPUT.
 #
-# The same code is pushed several times on its way to main (feature PR -> develop -> staging -> main),
-# and every merge creates a new commit, so commit SHAs never repeat. The git TREE does: a promotion
-# that brings nothing new has exactly the tree that was already tested. The macOS job records each
+# The same code is pushed several times on its way to main (pull request -> develop -> release ->
+# main), and every merge creates a new commit, so commit SHAs never repeat. The git TREE does: a
+# merge that brings nothing new has exactly the tree that was already tested. The macOS job records each
 # tree it passes as an artifact named `tested-tree-<tree>`; this script (on a cheap Linux runner)
 # looks for that marker instead of repeating ~30 macOS minutes:
 #   - marker found                          -> skip the macOS job (the check stays green)

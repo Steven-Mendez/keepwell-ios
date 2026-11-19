@@ -3,13 +3,14 @@ name: CI
 # Time model: the macOS job is the only slow part (~30 minutes), so everything is built around running
 # it as rarely and as briefly as possible:
 #   - docs-only changes do not trigger CI;
-#   - a tree is tested once: the macOS job records every tree it passes, and promotions
-#     (develop -> staging -> main, pull requests included) that bring nothing new reuse that result
-#     from a Linux runner (see scripts/ci-gate.sh). Pushes to develop always run the full suite;
+#   - a tree is tested once: the macOS job records every tree it passes, and merges that bring
+#     nothing new (a release or hotfix landing on main after its pull request passed, the merge back
+#     into develop) reuse that result from a Linux runner (see scripts/ci-gate.sh). Pushes to develop
+#     always run the full suite;
 #   - the app is compiled once: the separate build step is gone and the test steps share DerivedData.
 on:
   pull_request:
-    branches: [develop, staging, main]
+    branches: [develop, main]
     paths-ignore:
       - "**/*.md"
       - "docs/**"
@@ -17,7 +18,7 @@ on:
       - ".github/dependabot.yml"
       - "LICENSE"
   push:
-    branches: [develop, staging, main]
+    branches: [develop, main]
     paths-ignore:
       - "**/*.md"
       - "docs/**"
