@@ -1,11 +1,11 @@
 name: CI
 
-# Cost model: the macOS runner is the only expensive part (GitHub bills macOS at ~10x a Linux minute and
-# a free private repo only includes a small monthly budget), so everything is built around running it
-# as rarely and as briefly as possible:
+# Time model: the macOS job is the only slow part (~30 minutes), so everything is built around running
+# it as rarely and as briefly as possible:
 #   - docs-only changes do not trigger CI;
-#   - develop/staging/main share one commit (fast-forward promotion): only develop runs the macOS job,
-#     staging/main wait for that result on Linux (see scripts/ci-gate.sh);
+#   - a tree is tested once: the macOS job records every tree it passes, and promotions
+#     (develop -> staging -> main, pull requests included) that bring nothing new reuse that result
+#     from a Linux runner (see scripts/ci-gate.sh). Pushes to develop always run the full suite;
 #   - the app is compiled once: the separate build step is gone and the test steps share DerivedData.
 on:
   pull_request:
@@ -56,14 +56,14 @@ jobs:
         with:
           sparse-checkout: scripts
 
-      - name: Reuse the develop result for promoted commits
+      - name: Reuse the result of an already tested tree
         id: gate
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
+          RUN_ID: ${{ github.run_id }}
           WORKFLOW_FILE: ios-ci.yml
         run: scripts/ci-gate.sh
 
@@ -101,13 +101,24 @@ jobs:
 
       - name: Boot simulator
         # Starts booting now (returns immediately) so it is ready by the time the unit tests have compiled.
-        run: xcrun simctl boot "$(scripts/simulator-destination.sh | sed 's/.*id=//')" || true
+        # The destination is resolved once, here, and handed to make through the environment: asking
+        # simctl again while the simulator boots stalls for minutes.
+        run: |
+          destination="$(scripts/simulator-destination.sh)"
+          udid="${destination##*id=}"
+          echo "DESTINATION=$destination" >>"$GITHUB_ENV"
+          echo "SIMULATOR_UDID=$udid" >>"$GITHUB_ENV"
+          xcrun simctl boot "$udid" || true
 
       # No separate `make build` step: `test` compiles the app and the test bundles itself, so a build
       # step only compiled everything twice. (build-for-testing + test-without-building was tried and
       # dropped: the coverage report came out empty.) The UI step reuses the unit step's DerivedData.
       - name: Unit tests (with coverage)
-        run: make test-unit
+        # `generate` runs by itself first only so the log timestamps show how long it takes.
+        run: |
+          make generate
+          echo "generate done"
+          make test-unit
 
       - name: UI tests (with coverage)
         id: ui
@@ -126,8 +137,8 @@ jobs:
           XCODEBUILD_TEST_FLAGS: -test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300
         run: |
           xcrun simctl shutdown all || true
-          xcrun simctl boot "$(scripts/simulator-destination.sh | sed 's/.*id=//')" || true
-          xcrun simctl bootstatus "$(scripts/simulator-destination.sh | sed 's/.*id=//')" -b >/dev/null
+          xcrun simctl boot "$SIMULATOR_UDID" || true
+          xcrun simctl bootstatus "$SIMULATOR_UDID" -b >/dev/null
           make test-ui
 
       - name: Check Package.resolved
@@ -144,6 +155,22 @@ jobs:
           rm -rf build/Results/All.xcresult
           xcrun xcresulttool merge build/Results/Unit.xcresult build/Results/UI.xcresult --output-path build/Results/All.xcresult
           xcrun xccov view --report --only-targets build/Results/All.xcresult | tee -a "$GITHUB_STEP_SUMMARY"
+
+      # The marker scripts/ci-gate.sh looks for: this exact tree passed lint and every test.
+      - name: Record the tested tree
+        id: tree
+        run: |
+          mkdir -p build/marker
+          echo "$GITHUB_SHA" >build/marker/tested-tree.txt
+          echo "tree=$(git rev-parse 'HEAD^{tree}')" >>"$GITHUB_OUTPUT"
+
+      - name: Upload the tested tree marker
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tested-tree-${{ steps.tree.outputs.tree }}
+          path: build/marker/tested-tree.txt
+          overwrite: true
+          retention-days: 30
 
       - name: Upload test results
         if: failure()

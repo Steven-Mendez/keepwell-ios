@@ -8,7 +8,8 @@ CONFIG       ?= Debug
 DERIVED_DATA := build/DerivedData
 RESULTS      := build/Results
 MISE         := mise exec --
-DESTINATION   = $(shell scripts/simulator-destination.sh)
+# CI sets DESTINATION in the environment (resolved once, before the simulator starts booting).
+DESTINATION  ?= $(shell scripts/simulator-destination.sh)
 # Package.resolved is committed at the root because the .xcodeproj is not.
 RESOLVED      := Package.resolved
 PROJECT_RESOLVED := $(PROJECT)/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

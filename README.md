@@ -141,9 +141,10 @@ the `xcode-27` runner, explicitly selecting Xcode 27.1 with `xcode-select`, for 
 to `develop`, `staging` and `main`. [`pr-title.yml`](.github/workflows/pr-title.yml) validates the PR
 title. Dependabot updates SPM packages and GitHub Actions weekly against `develop`.
 
-To save macOS minutes, docs-only changes do not run CI, and `staging`/`main` do not repeat the tests
-of a commit that already passed on `develop` (they wait for that run on a Linux runner, see
-`scripts/ci-gate.sh`). Push `develop` first, then promote.
+To keep CI short, docs-only changes do not run it, and a tree is only tested once: the macOS job
+records every tree it passes, and promotions (`develop` → `staging` → `main`, pull requests included)
+that bring nothing new reuse that result from a Linux runner instead of repeating the tests (see
+`scripts/ci-gate.sh`). Pushes to `develop` always run the full suite.
 
 ### TestFlight from CI
 
