@@ -8,7 +8,9 @@ CONFIG       ?= Debug
 DERIVED_DATA := build/DerivedData
 RESULTS      := build/Results
 MISE         := mise exec --
-DESTINATION   = $(shell scripts/simulator-destination.sh)
+# CI sets DESTINATION in the environment (resolved once per job), and
+# SKIP_GENERATE once it has generated the project, so later targets do not generate it again.
+DESTINATION  ?= $(shell scripts/simulator-destination.sh)
 # Package.resolved is committed at the root because the .xcodeproj is not.
 RESOLVED      := Package.resolved
 PROJECT_RESOLVED := $(PROJECT)/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
@@ -46,8 +48,12 @@ tools: ## Install the versions pinned in .mise.toml
 	mise install
 
 generate: ## Generate Keepwell.xcodeproj with XcodeGen (uses the committed Package.resolved)
+ifeq ($(SKIP_GENERATE),)
 	$(MISE) xcodegen generate --quiet
 	@if [ -f $(RESOLVED) ]; then mkdir -p $(dir $(PROJECT_RESOLVED)) && cp $(RESOLVED) $(PROJECT_RESOLVED); fi
+else
+	@echo "Project already generated (SKIP_GENERATE)."
+endif
 
 resolve: generate ## Resolve SPM packages and update the committed Package.resolved
 	xcodebuild -project $(PROJECT) -scheme "$(SCHEME)" -resolvePackageDependencies -skipMacroValidation -skipPackagePluginValidation -quiet
