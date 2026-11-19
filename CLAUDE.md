@@ -41,7 +41,8 @@ Each feature lives in `Packages/Features/Sources/<Feature>/` as three SwiftPM ta
 
 ## Git
 
-- Branches: `main` (production), `staging` (QA), `develop` (integration). Work in `feat/*`, `fix/*`,
-  `chore/*` from `develop`.
+- Gitflow: `main` (production, tagged releases) and `develop` (integration) are the only long-lived
+  branches. Work in `feat/*`, `fix/*`, `chore/*` from `develop`. `release/<version>` branches from
+  `develop` and `hotfix/<version>` from `main`; both merge into `main` and back into `develop`.
 - Conventional Commits (`feat(scope): description`), enforced by the `commit-msg` hook.
 - Update `CHANGELOG.md` under `[Unreleased]` with every user-visible change.
