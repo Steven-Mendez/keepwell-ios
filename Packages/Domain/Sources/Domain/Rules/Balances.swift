@@ -17,6 +17,25 @@ public enum Balances {
         return account.currencies.map { Money(totals[$0] ?? 0, $0) }
     }
 
+    /// What the account held just before `instant`. From the opening day on that's `balance(of:)`
+    /// up to there. Before it, the opening balances are walked back: movements dated from `instant`
+    /// up to the opening day are already part of `openingBalances`, so undoing them leaves what the
+    /// account held before they happened. With no such history it's the opening balances as given.
+    public static func balance(of account: Account, before instant: Date, transactions: [Transaction], calendar: Calendar) -> [Money] {
+        let openingDay = calendar.startOfDay(for: account.openingDate)
+        guard instant < openingDay else {
+            return balance(of: account, transactions: transactions.filter { $0.date < instant }, calendar: calendar)
+        }
+        var totals = Dictionary(uniqueKeysWithValues: account.openingBalances.map { ($0.currency, $0.amount) })
+        for transaction in transactions where transaction.isConfirmed && transaction.date >= instant && transaction.date < openingDay {
+            let sign = direction(of: transaction, for: account.id)
+            guard sign != 0 else { continue }
+            let (currency, amount) = share(of: transaction, in: account)
+            totals[currency, default: 0] -= Decimal(sign) * amount
+        }
+        return account.currencies.map { Money(totals[$0] ?? 0, $0) }
+    }
+
     /// +1 when money enters the account, −1 when it leaves, 0 when the movement doesn't touch it.
     /// Transfers are neither expense nor income: they leave the source and enter the destination.
     static func direction(of transaction: Transaction, for accountID: UUID) -> Int {

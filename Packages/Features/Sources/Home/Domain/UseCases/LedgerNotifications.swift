@@ -25,6 +25,11 @@ public enum LedgerNotifications {
         id.uuidString.lowercased()
     }
 
+    /// The id of a card's payment reminder: one per due day, so next month's is a new notification.
+    static func paymentID(_ accountID: UUID, due: Date, calendar: Calendar) -> String {
+        "payment:\(lower(accountID)):\(dayKey(due, calendar: calendar))"
+    }
+
     /// Everything that applies on the day of `now`, newest first. Planned drafts are included; the
     /// inbox leaves them out because home lists them.
     public static func applying(on now: Date, in overview: HomeOverview, calendar: Calendar) -> [LedgerNotification] {
@@ -55,8 +60,8 @@ public enum LedgerNotifications {
         }
     }
 
-    /// Credit cards: the payment from the reminder window through its due day, and the statement
-    /// closing today.
+    /// Credit cards: the payment from the reminder window through its due day, while its statement
+    /// still asks for something, and the statement closing today.
     private static func cards(in overview: HomeOverview, now: Date, calendar: Calendar) -> [LedgerNotification] {
         let today = calendar.startOfDay(for: now)
         let window = overview.paymentReminderDaysBefore
@@ -66,10 +71,11 @@ public enum LedgerNotifications {
             if let dueDay = account.creditTerms?.dueDay,
                let due = BillingCycle.nextOccurrence(ofDay: dueDay, onOrAfter: now, calendar: calendar),
                let daysLeft = days(from: today, to: due, calendar: calendar),
-               daysLeft <= window
+               daysLeft <= window,
+               !overview.settledCardPayments.contains(paymentID(account.id, due: due, calendar: calendar))
             {
                 found.append(LedgerNotification(
-                    id: "payment:\(lower(account.id)):\(dayKey(due, calendar: calendar))",
+                    id: paymentID(account.id, due: due, calendar: calendar),
                     subject: .payment(accountID: account.id, dueDay: dueDay, due: due, daysLeft: daysLeft),
                     date: calendar.date(byAdding: .day, value: -window, to: due) ?? due,
                     target: .creditCard(accountID: account.id),

@@ -164,6 +164,37 @@ struct BalanceForecastTests {
     }
 
     @Test
+    func aCardOpenedAfterTheCutoffWalksItsOpeningDebtBackToIt() throws {
+        // Cutoff 28, due day 23. Opened on Nov 5 owing 250: 100 from before the Oct 28 cutoff and 150
+        // from the day after it, both recorded as history. Only the 100 is due on Nov 23.
+        let id = UUID()
+        let terms = try CreditTerms(debtMode: .principal, cutoffDay: 28, dueDay: 23)
+        let card = { (opening: Decimal) in
+            Account(
+                id: id, name: "credit", kind: .credit, openingBalances: [Money(opening, "USD")],
+                openingDate: Fixtures.date(2026, 11, 5, hour: 0), creditTerms: terms,
+            )
+        }
+        let history = try [
+            movement(.expense, "100", on: Fixtures.date(2026, 10, 12), from: id),
+            movement(.expense, "150", on: Fixtures.date(2026, 10, 29), from: id),
+        ]
+        let due = Fixtures.date(2026, 11, 23, hour: 0)
+        let amountDue = { (account: Account, transactions: [Transaction]) in
+            try CardStatement.amountDue(on: due, account: account, transactions: transactions, settings: settings, calendar: calendar)
+        }
+        #expect(try amountDue(card(-250), history) == 100)
+        // Paying the statement leaves nothing due, though the card still owes the new cycle's 150.
+        let paid = try history + [movement(.transfer, "100", on: Fixtures.date(2026, 11, 16), to: id)]
+        #expect(try amountDue(card(-250), paid) == 0)
+        // A payment made before the opening day is in the opening debt already: it counts once.
+        let paidEarly = try history + [movement(.transfer, "100", on: Fixtures.date(2026, 11, 2), to: id)]
+        #expect(try amountDue(card(-150), paidEarly) == 0)
+        // With no history before the opening day, the opening debt is all there is to go by.
+        #expect(try amountDue(card(-250), []) == 250)
+    }
+
+    @Test
     func statementCutoffIsTheLastOneBeforeTheDueDay() {
         #expect(BillingCycle.statementCutoff(before: Fixtures.date(2026, 11, 10), cutoffDay: 20, calendar: calendar)
             == calendar.startOfDay(for: Fixtures.date(2026, 10, 20)))

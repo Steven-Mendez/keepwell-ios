@@ -184,7 +184,7 @@ public enum UpcomingPayments {
                 settings: ledger.settings,
                 calendar: window.calendar,
             )
-            // Nothing to pay is nothing pending; the payment reminder still says the day has come.
+            // Nothing to pay is nothing pending, and nothing the payment reminder speaks of either.
             guard owed > 0 else { return nil }
             return window.payment(
                 "card:\(account.id.lowercased):\(window.key(due))",

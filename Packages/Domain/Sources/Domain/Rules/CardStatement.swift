@@ -6,6 +6,10 @@ public enum CardStatement {
     /// In the principal currency at the settings rate, never below zero. With a cutoff day the
     /// statement is the debt through the last cutoff before `due` (`BillingCycle.statementCutoff`),
     /// less payments and refunds that reached the card after it; without one, the whole debt today.
+    ///
+    /// A card opened after that cutoff has its opening debt walked back to it
+    /// (`Balances.balance(of:before:)`): what it bought between the cutoff and the opening day
+    /// belongs to the next statement, not this one.
     public static func amountDue(
         on due: Date,
         account: Account,
@@ -22,7 +26,7 @@ public enum CardStatement {
             let debt = Balances.balance(of: account, transactions: transactions, calendar: calendar).reduce(0) { $0 + principal($1) }
             return max(-debt, 0)
         }
-        let statement = Balances.balance(of: account, transactions: transactions.filter { $0.date < closed }, calendar: calendar)
+        let statement = Balances.balance(of: account, before: closed, transactions: transactions, calendar: calendar)
         let owed = -statement.reduce(0) { $0 + principal($1) }
         var paid = Decimal(0)
         for transaction in transactions
