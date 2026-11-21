@@ -164,6 +164,64 @@ struct BalanceForecastTests {
     }
 
     @Test
+    func aCardOpenedAfterTheCutoffWalksItsOpeningDebtBackToIt() throws {
+        // Cutoff 28, due day 23. Opened on Nov 5 owing 250: 100 from before the Oct 28 cutoff and 150
+        // from the day after it, both recorded as history. Only the 100 is due on Nov 23.
+        let id = UUID()
+        let terms = try CreditTerms(debtMode: .principal, cutoffDay: 28, dueDay: 23)
+        let card = { (opening: Decimal) in
+            Account(
+                id: id, name: "credit", kind: .credit, openingBalances: [Money(opening, "USD")],
+                openingDate: Fixtures.date(2026, 11, 5, hour: 0), creditTerms: terms,
+            )
+        }
+        let history = try [
+            movement(.expense, "100", on: Fixtures.date(2026, 10, 12), from: id),
+            movement(.expense, "150", on: Fixtures.date(2026, 10, 29), from: id),
+        ]
+        let due = Fixtures.date(2026, 11, 23, hour: 0)
+        let amountDue = { (account: Account, transactions: [Transaction]) in
+            try CardStatement.amountDue(on: due, account: account, transactions: transactions, settings: settings, calendar: calendar)
+        }
+        #expect(try amountDue(card(-250), history) == 100)
+        // Paying the statement leaves nothing due, though the card still owes the new cycle's 150.
+        let paid = try history + [movement(.transfer, "100", on: Fixtures.date(2026, 11, 16), to: id)]
+        #expect(try amountDue(card(-250), paid) == 0)
+        // A payment made before the opening day is in the opening debt already: it counts once.
+        let paidEarly = try history + [movement(.transfer, "100", on: Fixtures.date(2026, 11, 2), to: id)]
+        #expect(try amountDue(card(-150), paidEarly) == 0)
+        // With no history before the opening day, the opening debt is all there is to go by.
+        #expect(try amountDue(card(-250), []) == 250)
+    }
+
+    @Test
+    func aStatementPaidInAnotherCurrencysCentsAsksForNothing() throws {
+        // A dual card owing C$941.30 from five charges, paid with C$940.73 and a C$0.57 refund: the same
+        // total, but each amount converts to dollars on its own, and the quotients don't add up exactly.
+        let id = UUID()
+        let card = try Account(
+            id: id, name: "credit", kind: .credit, openingBalances: [Money(0, "USD"), Money(0, "NIO")],
+            openingDate: Fixtures.date(2026, 7, 1, hour: 0), creditTerms: CreditTerms(debtMode: .principal, cutoffDay: 28, dueDay: 23),
+        )
+        let charges = try [("480", 12), ("109.87", 28), ("140.27", 28), ("210.59", 28), ("0.57", 28)].map { amount, day in
+            try movement(.expense, amount, "NIO", on: Fixtures.date(2026, 10, day), from: id)
+        }
+        let settings = try CurrencySettings(principal: "USD", second: "NIO", rate: Fixtures.decimal("36.6243"))
+        let due = Fixtures.date(2026, 11, 23, hour: 0)
+        let amountDue = { (transactions: [Transaction]) in
+            CardStatement.amountDue(on: due, account: card, transactions: transactions, settings: settings, calendar: calendar)
+        }
+        let paid = try charges + [
+            movement(.transfer, "940.73", "NIO", on: Fixtures.date(2026, 11, 16), to: id),
+            movement(.income, "0.57", "NIO", on: Fixtures.date(2026, 11, 16), from: id),
+        ]
+        #expect(amountDue(paid) == 0)
+        // What is left is in cents, like every amount shown: C$100 unpaid is $2.73.
+        let short = try charges + [movement(.transfer, "841.30", "NIO", on: Fixtures.date(2026, 11, 16), to: id)]
+        #expect(amountDue(short) == Fixtures.decimal("2.73"))
+    }
+
+    @Test
     func statementCutoffIsTheLastOneBeforeTheDueDay() {
         #expect(BillingCycle.statementCutoff(before: Fixtures.date(2026, 11, 10), cutoffDay: 20, calendar: calendar)
             == calendar.startOfDay(for: Fixtures.date(2026, 10, 20)))

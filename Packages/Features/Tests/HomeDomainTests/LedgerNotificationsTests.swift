@@ -67,6 +67,20 @@ struct LedgerNotificationsTests {
     }
 
     @Test
+    func aPaidStatementHasNoPaymentReminder() async throws {
+        let store = InMemoryStore(sample: .standard)
+        await store.save(Transaction(
+            date: date(11, 12), status: .confirmed, description: "Payment", kind: .transfer, categoryID: nil, amount: 100_000,
+            currency: "USD", accountID: SampleData.IDs.savings, destinationAccountID: SampleData.IDs.visa, exchangeRate: .single("USD"),
+        ))
+        let overview = try await overview(store, now: date(11, 13))
+        #expect(try !LedgerNotifications.applying(on: date(11, 13), in: overview, calendar: calendar).contains { $0.kind == .payment })
+        // Nothing is planned for the due days ahead either: a card that owes nothing has nothing to pay.
+        let planned = LedgerNotifications.schedule(from: date(11, 13), in: overview, calendar: calendar)
+        #expect(!planned.contains { $0.notification.kind == .payment })
+    }
+
+    @Test
     func aStatementClosingTodayAppliesOnlyThatDay() async throws {
         // The sample's Visa closes on the 28th.
         let overview = try await overview(now: date(10, 27))
