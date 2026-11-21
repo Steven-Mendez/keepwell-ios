@@ -9,17 +9,21 @@
 #   - marker found                          -> skip the macOS job (the check stays green)
 #   - an older push run is testing the tree -> wait for it: marker appears -> skip, it fails -> fail
 #   - no evidence                           -> run the full suite (never skip without proof)
-# Pushes to develop and manual dispatches always run everything: develop is the post-merge signal
-# and the only branch whose caches every other branch can read.
+# Manual dispatches always run everything. A push to develop reuses the marker like any other (the
+# pull request already tested that tree), with one exception: develop is the only branch whose caches
+# every other branch can read, and only its macOS job saves the compilation cache. So when the newest
+# one is older than CACHE_MAX_AGE_DAYS, or this month has none yet, the push runs the full suite to
+# save a fresh one instead of leaving every pull request to compile from scratch.
 #
 # Env: GH_TOKEN, REPO, EVENT, REF, WORKFLOW_FILE, RUN_ID, GATE_MAX_WAIT (seconds, default 2100),
-#      TREE (optional, defaults to the tree of the checked out commit).
+#      TREE (optional, defaults to the tree of the checked out commit), CACHE_PREFIX (key prefix of
+#      the compilation cache; without it the cache is not looked at), CACHE_MAX_AGE_DAYS (default 7).
 set -euo pipefail
 
 out() { echo "run_tests=$1" >>"${GITHUB_OUTPUT:-/dev/stdout}"; }
 summary() { echo "$1" >>"${GITHUB_STEP_SUMMARY:-/dev/null}"; echo "$1"; }
 
-if [ "$EVENT" = workflow_dispatch ] || { [ "$EVENT" = push ] && [ "$REF" = refs/heads/develop ]; }; then
+if [ "$EVENT" = workflow_dispatch ]; then
   out true
   exit 0
 fi
@@ -48,11 +52,26 @@ other_run() {
     | if . == null then \"none\" else \"\(.id) \(.status) \(.conclusion // \"\")\" end"
 }
 
+# Whether this run is the one that must save a fresh compilation cache: a push to develop whose
+# newest cache (saved by develop, for this month's prefix) is missing or too old.
+cache_needs_refresh() {
+  [ "$EVENT" = push ] && [ "$REF" = refs/heads/develop ] && [ -n "${CACHE_PREFIX:-}" ] || return 1
+  local saved
+  saved="$(gh api "repos/$REPO/actions/caches?key=$CACHE_PREFIX&ref=refs/heads/develop&sort=created_at&direction=desc&per_page=1" --jq '
+    .actions_caches[0].created_at // empty | sub("\\.[0-9]+Z$"; "Z") | fromdate')"
+  [ -z "$saved" ] || [ $(($(date +%s) - saved)) -gt $((${CACHE_MAX_AGE_DAYS:-7} * 86400)) ]
+}
+
 deadline=$((SECONDS + ${GATE_MAX_WAIT:-2100}))
 
 while :; do
   tested_by="$(marker_run)"
   if [ -n "$tested_by" ]; then
+    if cache_needs_refresh; then
+      summary "Tree $tree already passed the tests in run $tested_by, but the compilation cache is missing or older than ${CACHE_MAX_AGE_DAYS:-7} days: running the full suite here to save a fresh one."
+      out true
+      exit 0
+    fi
     summary "Tree $tree already passed the tests in run $tested_by: macOS build and tests skipped."
     out false
     exit 0
