@@ -225,6 +225,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Fixed
 
+- Card payments: a card no longer reminds you to pay a statement you already paid, or when it owes
+  nothing; the reminder comes back with the next statement that asks for something. A card added
+  with a debt after its statement closed no longer counts the whole opening debt as due: purchases
+  recorded between the cutoff and the day the card was added wait for the next statement, in
+  "Upcoming", the forecast and the reminder.
 - A personal debt owed to you no longer says it only records here without mentioning that a
   repayment deposited into an account changes that balance.
 - VoiceOver reads the icons of the category and savings-goal icon picker by what they show, in

@@ -112,13 +112,8 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             paymentReminderDaysBefore: settings.paymentReminderDaysBefore,
             cardSubscriptions: cardSubscriptions(records, rules: rules, calendar: calendar),
             upcoming: RecurringSchedule.upcoming(rules, from: now, days: upcomingDays, calendar: calendar),
-            upcomingPayments: upcomingPayments(
-                records,
-                rules: rules,
-                debts: debts,
-                settings: currencies,
-                at: (now, calendar),
-            ),
+            upcomingPayments: upcomingPayments(records, rules: rules, debts: debts, settings: currencies, at: (now, calendar)),
+            settledCardPayments: settledCardPayments(records, settings: settings, at: (now, calendar)),
             proposedRules: rules.filter { $0.source == .mcp && $0.isPaused },
             budgets: CategoryBudgetStatus.statuses(of: month, categories: records.categories),
             latestExpenseDays: latestExpenseDays(transactions, month: month.month, calendar: calendar, now: now),
@@ -152,6 +147,35 @@ public struct DefaultGetHomeOverviewUseCase: GetHomeOverviewUseCase {
             settings: settings,
         )
         return UpcomingPayments.compute(ledger, on: moment.now, days: upcomingPaymentDays, calendar: moment.calendar)
+    }
+
+    /// The card payments whose statement asks for nothing (`CardStatement.amountDue`), by the id of
+    /// their reminder, for every due day local notifications are planned for. A statement that
+    /// hasn't closed yet asks for what the card owes today.
+    private static func settledCardPayments(
+        _ records: LedgerRecords,
+        settings: Settings,
+        at moment: (now: Date, calendar: Calendar),
+    ) -> Set<String> {
+        let (now, calendar) = moment
+        let reach = LedgerNotifications.scheduleDays + settings.paymentReminderDaysBefore
+        guard let last = calendar.date(byAdding: .day, value: reach, to: calendar.startOfDay(for: now)) else { return [] }
+        var settled = Set<String>()
+        for account in records.accounts where account.kind == .credit && account.isOpen {
+            guard let dueDay = account.creditTerms?.dueDay else { continue }
+            var from = now
+            while let due = BillingCycle.nextOccurrence(ofDay: dueDay, onOrAfter: from, calendar: calendar), due <= last {
+                let owed = CardStatement.amountDue(
+                    on: due, account: account, transactions: records.transactions, settings: settings.currencies, calendar: calendar,
+                )
+                if owed <= 0 {
+                    settled.insert(LedgerNotifications.paymentID(account.id, due: due, calendar: calendar))
+                }
+                guard let next = calendar.date(byAdding: .day, value: 1, to: due) else { break }
+                from = next
+            }
+        }
+        return settled
     }
 
     /// When each category was last spent in this month, up to now.
