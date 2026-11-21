@@ -5,8 +5,9 @@ name: CI
 #   - docs-only changes do not trigger CI;
 #   - a tree is tested once: the macOS job records every tree it passes, and merges that bring
 #     nothing new (a release or hotfix landing on main after its pull request passed, the merge back
-#     into develop) reuse that result from a Linux runner (see scripts/ci-gate.sh). Pushes to develop
-#     always run the full suite;
+#     into develop, the push to develop after its pull request passed) reuse that result from a Linux
+#     runner (see scripts/ci-gate.sh). A push to develop still runs the full suite when the
+#     compilation cache needs a fresh save;
 #   - the app is compiled once: the separate build step is gone and the test steps share DerivedData.
 on:
   pull_request:
@@ -53,11 +54,20 @@ jobs:
       contents: read
     outputs:
       run_tests: ${{ steps.gate.outputs.run_tests }}
+      xcc_prefix: ${{ steps.xcc.outputs.prefix }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: scripts
+
+      # Every run compiled everything from scratch (~13 minutes). The cache is saved only by pushes to
+      # develop (the default branch, so every pull request can read it) and starts over each month so
+      # it cannot grow without bound. The key is decided here so the gate can tell how old the newest
+      # one is, and the macOS job restores and saves under the same prefix.
+      - name: Compilation cache key
+        id: xcc
+        run: echo "prefix=xcc-macOS-${XCODE_PATH##*/}-$(date -u +%Y-%m)-" >>"$GITHUB_OUTPUT"
 
       - name: Reuse the result of an already tested tree
         id: gate
@@ -68,6 +78,7 @@ jobs:
           REF: ${{ github.ref }}
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_FILE: ios-ci.yml
+          CACHE_PREFIX: ${{ steps.xcc.outputs.prefix }}
         run: scripts/ci-gate.sh
 
   lint-build-test:
@@ -108,19 +119,13 @@ jobs:
           key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved', 'Packages/*/Package.swift') }}
           restore-keys: spm-${{ runner.os }}-
 
-      # Every run compiled everything from scratch (~13 minutes). The cache is saved only by pushes to
-      # develop (the default branch, so every pull request can read it) and starts over each month so
-      # it cannot grow without bound.
-      - name: Compilation cache key
-        id: xcc
-        run: echo "prefix=xcc-${RUNNER_OS}-${XCODE_PATH##*/}-$(date -u +%Y-%m)-" >>"$GITHUB_OUTPUT"
-
+      # The key prefix comes from the gate job (see "Compilation cache key" there).
       - name: Restore compilation cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.COMPILATION_CACHE_PATH }}
-          key: ${{ steps.xcc.outputs.prefix }}${{ github.run_id }}
-          restore-keys: ${{ steps.xcc.outputs.prefix }}
+          key: ${{ needs.gate.outputs.xcc_prefix }}${{ github.run_id }}
+          restore-keys: ${{ needs.gate.outputs.xcc_prefix }}
 
       - name: Boot simulator
         # The destination is resolved once and handed to make through the environment. The boot starts
@@ -169,7 +174,7 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.COMPILATION_CACHE_PATH }}
-          key: ${{ steps.xcc.outputs.prefix }}${{ github.run_id }}
+          key: ${{ needs.gate.outputs.xcc_prefix }}${{ github.run_id }}
 
       - name: Check Package.resolved
         if: always()

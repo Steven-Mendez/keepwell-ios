@@ -149,10 +149,11 @@ to `develop` and `main`. [`pr-title.yml`](.github/workflows/pr-title.yml) valida
 title. Dependabot updates SPM packages and GitHub Actions weekly against `develop`.
 
 To keep CI short, docs-only changes do not run it, and a tree is only tested once: the macOS job
-records every tree it passes, and merges that bring nothing new (a release or hotfix landing on `main`
-after its pull request passed, the merge back into `develop`) reuse that result from a Linux runner
-instead of repeating the tests (see `scripts/ci-gate.sh`). Pushes to `develop` always run the full
-suite.
+records every tree it passes, and merges that bring nothing new (a pull request landing on `develop`,
+a release or hotfix landing on `main` after its pull request passed, the merge back into `develop`)
+reuse that result from a Linux runner instead of repeating the tests (see `scripts/ci-gate.sh`). A push
+to `develop` still runs the full suite when the compilation cache every pull request reads is more
+than a week old, to save a fresh one.
 
 ### TestFlight from CI
 
