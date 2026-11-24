@@ -38,6 +38,8 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
     /// The platform it went through (Uber Eats delivering from a restaurant, Apple billing an app).
     /// Never the business itself.
     public let viaMerchantID: UUID?
+    /// The secret in a split expense's public link (`SplitSharing`); `nil` while it isn't shared.
+    public let shareToken: String?
 
     public init(
         id: UUID = UUID(),
@@ -60,6 +62,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         source: RecordSource = .app,
         merchantID: UUID? = nil,
         viaMerchantID: UUID? = nil,
+        shareToken: String? = nil,
     ) {
         self.id = id
         self.date = date
@@ -81,6 +84,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
         self.source = source
         self.merchantID = merchantID
         self.viaMerchantID = viaMerchantID == merchantID ? nil : viaMerchantID
+        self.shareToken = shareToken
     }
 
     /// The rule behind "`amount` is always positive", kept here so every path that records a
@@ -105,7 +109,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
-            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID, shareToken: shareToken,
         )
     }
 
@@ -116,7 +120,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
-            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID, shareToken: shareToken,
         )
     }
 
@@ -127,7 +131,18 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
-            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID, shareToken: shareToken,
+        )
+    }
+
+    /// The same movement shared under `shareToken`, or no longer shared.
+    public func with(shareToken: String?) -> Self {
+        Self(
+            id: id, date: date, status: status, description: description, kind: kind, categoryID: categoryID,
+            amount: amount, currency: currency, accountID: accountID, cardID: cardID,
+            destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
+            exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID, shareToken: shareToken,
         )
     }
 
@@ -138,7 +153,7 @@ public struct Transaction: Identifiable, Hashable, Sendable, Codable {
             amount: amount, currency: currency, accountID: accountID, cardID: cardID,
             destinationAccountID: destinationAccountID, actualDebitedPrincipal: actualDebitedPrincipal,
             exchangeRate: exchangeRate, isShared: isShared, note: note, recurringID: recurringID, tags: tags,
-            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID,
+            source: source, merchantID: merchantID, viaMerchantID: viaMerchantID, shareToken: shareToken,
         )
     }
 }
@@ -168,6 +183,7 @@ extension Transaction {
             source: container.decodeIfPresent(RecordSource.self, forKey: .source) ?? .app,
             merchantID: container.decodeIfPresent(UUID.self, forKey: .merchantID),
             viaMerchantID: container.decodeIfPresent(UUID.self, forKey: .viaMerchantID),
+            shareToken: container.decodeIfPresent(String.self, forKey: .shareToken),
         )
     }
 }

@@ -291,6 +291,8 @@ public struct DefaultSaveTransactionUseCase: SaveTransactionUseCase {
             tags: rule.map { Tags.merging(draft.tags, with: $0.tags) } ?? draft.tags,
             merchantID: merchant.merchantID,
             viaMerchantID: merchant.viaMerchantID,
+            // Nobody types it: an edit keeps the split's public link working.
+            shareToken: existing?.shareToken,
         )
         try Transaction.checkClosedAccounts(transaction, existing: existing, accounts: context.accounts)
         return transaction
