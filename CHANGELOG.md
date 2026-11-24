@@ -9,6 +9,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Split expenses: opening "Split" on an expense that is already split now edits it instead of
+  splitting your part again. It lists each person with their share, ready to rename, change or
+  remove, and "Add person" adds an empty row; a share already paid keeps its amount. It reads
+  "Your share: C$247.38 of C$1,156.25", and "Save" writes the whole split at once. Tapping "Split
+  with Mario, Tete and Lía" on the movement's detail shows each share and whether it was paid,
+  with "Mark as paid" (depositing the money into an account or not) and back. With a Keepwell
+  account, "Create link" makes a public page where each person sees what they owe and who already
+  paid, without an account; only you can change it, and "Stop sharing" turns the link off. Without
+  an account, "Share summary" sends the same as text.
 - Recurring: each rule now says where it stands. Its row reads "Paid · Nov 1" once the cycle that
   ends at its next date has a confirmed payment, and the totals add "3 of 8 paid this month" with
   what is left to pay. Tapping a rule opens its detail (the form is one "Edit" away): the state,

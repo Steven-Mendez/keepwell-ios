@@ -334,53 +334,137 @@ public struct DefaultDeleteDebtUseCase: DeleteDebtUseCase {
 public protocol SplitTransactionUseCase: Sendable {
     @discardableResult
     func execute(transactionID: UUID, shares: [SplitShare]) async throws(DomainError) -> [PersonalDebt]
+    /// "Edit split": the expense's shares become exactly `shares`. A share with a `debtID` keeps its
+    /// debt (repayments, settling, due date) with the new name and amount, in the debt's currency; a
+    /// new one becomes a debt as `execute` makes them; a debt left out is deleted (a repayment it
+    /// deposited stays in its account). Together they can't exceed the expense, and none can drop
+    /// below what was already repaid. Everything is checked before anything is written. No shares
+    /// left also stops sharing the expense's link.
+    @discardableResult
+    func save(transactionID: UUID, shares: [SplitShare]) async throws(DomainError) -> [PersonalDebt]
+    /// "Share link": gives a split expense its public link, or keeps the one it has.
+    func share(transactionID: UUID) async throws(DomainError) -> Transaction
+    /// "Stop sharing": the link stops working; sharing again makes a new one.
+    func stopSharing(transactionID: UUID) async throws(DomainError) -> Transaction
     /// What is left of the expense to split, in its currency.
     func remaining(of transaction: Transaction) async throws(DomainError) -> Decimal
+    /// The debts already split from the expense, in the order they were created.
+    func shares(of transaction: Transaction) async throws(DomainError) -> [PersonalDebt]
 }
 
 public struct DefaultSplitTransactionUseCase: SplitTransactionUseCase {
     private let transactions: any TransactionRepository
     private let debts: any PersonalDebtRepository
     private let makeID: @Sendable () -> UUID
+    private let makeToken: @Sendable () -> String
 
     public init(
         transactions: any TransactionRepository,
         debts: any PersonalDebtRepository,
         makeID: @escaping @Sendable () -> UUID = { UUID() },
+        makeToken: @escaping @Sendable () -> String = { SplitSharing.newToken() },
     ) {
         self.transactions = transactions
         self.debts = debts
         self.makeID = makeID
+        self.makeToken = makeToken
     }
 
     public func execute(transactionID: UUID, shares: [SplitShare]) async throws(DomainError) -> [PersonalDebt] {
-        guard let expense = try await transactions.fetchTransactions(in: nil).first(where: { $0.id == transactionID }) else {
-            throw .notFound(transactionID)
-        }
-        guard expense.kind == .expense else { throw .unsupportedTransactionKind(expense.kind) }
-        let people = shares.map { DebtNames.cleaned($0.person, limit: PersonalDebt.maxNameLength) }
-        guard !people.contains(where: \.isEmpty) else { throw .missingName }
+        let expense = try await expense(transactionID)
+        let people = try Self.people(shares)
         // A second split shares only what the first left, so the shares never add up to more than
         // the expense.
         try await BillSplit.check(shares.map(\.amount), total: remaining(of: expense))
-        let created = zip(people, shares).map { person, share in
-            PersonalDebt(
-                id: makeID(),
-                person: person,
-                direction: .theyOweMe,
-                amount: Money(share.amount, expense.currency),
-                date: expense.date,
-                note: expense.description,
-                transactionID: expense.id,
-            )
-        }
+        let created = zip(people, shares).map { person, share in newDebt(person, share.amount, of: expense) }
         for debt in created {
             try await debts.save(debt)
         }
         return created
     }
 
+    public func save(transactionID: UUID, shares: [SplitShare]) async throws(DomainError) -> [PersonalDebt] {
+        let expense = try await expense(transactionID)
+        let people = try Self.people(shares)
+        guard shares.allSatisfy({ $0.amount > 0 }) else { throw .invalidAmount }
+        let current = try await expense.splitDebts(DebtLinks(debts.fetchPersonalDebts()))
+        var saved: [PersonalDebt] = []
+        for (person, share) in zip(people, shares) {
+            guard let id = share.debtID else {
+                saved.append(newDebt(person, share.amount, of: expense))
+                continue
+            }
+            guard let debt = current.first(where: { $0.id == id }) else { throw .notFound(id) }
+            guard debt.repaid <= share.amount else { throw .invalidAmount }
+            saved.append(debt.with(person: person, amount: Money(share.amount, debt.amount.currency)))
+        }
+        let taken = saved.reduce(Decimal(0)) { taken, debt in
+            taken + (debt.amount.currency == expense.currency ? debt.amount.amount : debt.share(of: expense, in: expense.currency) ?? 0)
+        }
+        guard taken <= expense.amount else { throw .invalidAmount }
+        let kept = Set(saved.map(\.id))
+        for debt in current where !kept.contains(debt.id) {
+            try await debts.deletePersonalDebt(id: debt.id)
+        }
+        for debt in saved {
+            try await debts.save(debt)
+        }
+        if saved.isEmpty, expense.shareToken != nil {
+            try await transactions.save(expense.with(shareToken: nil))
+        }
+        return saved
+    }
+
+    public func share(transactionID: UUID) async throws(DomainError) -> Transaction {
+        let expense = try await expense(transactionID)
+        if expense.shareToken != nil {
+            return expense
+        }
+        guard try await expense.isSplit(DebtLinks(debts.fetchPersonalDebts())) else { throw .invalidAmount }
+        let shared = expense.with(shareToken: makeToken())
+        try await transactions.save(shared)
+        return shared
+    }
+
+    public func stopSharing(transactionID: UUID) async throws(DomainError) -> Transaction {
+        let expense = try await expense(transactionID)
+        guard expense.shareToken != nil else { return expense }
+        let unshared = expense.with(shareToken: nil)
+        try await transactions.save(unshared)
+        return unshared
+    }
+
     public func remaining(of transaction: Transaction) async throws(DomainError) -> Decimal {
         try await transaction.splitRemaining(debts: debts.fetchPersonalDebts())
+    }
+
+    public func shares(of transaction: Transaction) async throws(DomainError) -> [PersonalDebt] {
+        try await transaction.splitDebts(DebtLinks(debts.fetchPersonalDebts()))
+    }
+
+    private func expense(_ id: UUID) async throws(DomainError) -> Transaction {
+        guard let expense = try await transactions.fetchTransactions(in: nil).first(where: { $0.id == id }) else {
+            throw .notFound(id)
+        }
+        guard expense.kind == .expense else { throw .unsupportedTransactionKind(expense.kind) }
+        return expense
+    }
+
+    private static func people(_ shares: [SplitShare]) throws(DomainError) -> [String] {
+        let people = shares.map { DebtNames.cleaned($0.person, limit: PersonalDebt.maxNameLength) }
+        guard !people.contains(where: \.isEmpty) else { throw .missingName }
+        return people
+    }
+
+    private func newDebt(_ person: String, _ amount: Decimal, of expense: Transaction) -> PersonalDebt {
+        PersonalDebt(
+            id: makeID(),
+            person: person,
+            direction: .theyOweMe,
+            amount: Money(amount, expense.currency),
+            date: expense.date,
+            note: expense.description,
+            transactionID: expense.id,
+        )
     }
 }

@@ -13,6 +13,8 @@ public struct TransactionDetailView: View {
         public var edit: (Domain.Transaction) -> Void
         public var receipt: (Domain.Transaction) -> Void
         public var split: (Domain.Transaction) -> Void
+        /// Each person's share of a split expense and whether they paid.
+        public var openSplit: ((Domain.Transaction) -> Void)?
         public var openRecurringRule: (UUID) -> Void
         /// Links a confirmed movement no rule recorded to one, as one of its payments.
         public var linkRecurringRule: ((Domain.Transaction) -> Void)?
@@ -27,8 +29,10 @@ public struct TransactionDetailView: View {
             openRecurringRule: @escaping (UUID) -> Void,
             showTag: @escaping (String) -> Void,
             linkRecurringRule: ((Domain.Transaction) -> Void)? = nil,
+            openSplit: ((Domain.Transaction) -> Void)? = nil,
         ) {
             self.linkRecurringRule = linkRecurringRule
+            self.openSplit = openSplit
             self.back = back
             self.edit = edit
             self.receipt = receipt
@@ -190,7 +194,14 @@ private struct TransactionDetailCards: View {
     var body: some View {
         VStack(spacing: KWSpacing.md) {
             if let split = viewModel.splitLines {
-                SplitShareCard(share: split.share, people: split.people)
+                if let openSplit = actions.openSplit {
+                    Button { openSplit(transaction) } label: {
+                        SplitShareCard(share: split.share, people: split.people, isOpenable: true)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    SplitShareCard(share: split.share, people: split.people)
+                }
             }
             mainCard
             let rateRows = viewModel.rateRows
@@ -293,14 +304,23 @@ private struct StatusPill: View {
 struct SplitShareCard: View {
     let share: String
     let people: String
+    /// Tapping it opens each person's share, so it shows a chevron.
+    var isOpenable = false
 
     var body: some View {
         KWGroupedCard {
-            VStack(alignment: .leading, spacing: KWSpacing.xxs) {
-                Text(share).font(KWTextStyle.body.font.weight(.semibold)).monospacedDigit()
-                Text(people).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.muted)
+            HStack {
+                VStack(alignment: .leading, spacing: KWSpacing.xxs) {
+                    Text(share).font(KWTextStyle.body.font.weight(.semibold)).monospacedDigit()
+                    Text(people).font(KWTextStyle.caption.font).foregroundStyle(KWColor.Text.muted)
+                }
+                Spacer(minLength: 0)
+                if isOpenable {
+                    KWIconView(.chevronRight, size: 14).foregroundStyle(KWColor.Text.muted)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
             .padding(.vertical, 12)
             .accessibilityElement(children: .combine)
         }
