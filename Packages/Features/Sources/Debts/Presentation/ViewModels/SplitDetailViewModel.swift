@@ -51,6 +51,35 @@ public final class SplitDetailViewModel: Identifiable {
         "\(transaction.description) · \(formatter.string(from: transaction.amount, currencyCode: transaction.currency))"
     }
 
+    /// What came back of the others' shares, in the expense's currency. Shares in another currency
+    /// are left out of the money: they can't be added up. A share settled by hand counts whole.
+    public struct Progress: Equatable {
+        public let left: String
+        public let collected: String
+        public let total: String
+        public let paid: Int
+        public let people: Int
+        public let fraction: Double
+        public let isDone: Bool
+    }
+
+    public var progress: Progress {
+        let shares = debts.filter { $0.amount.currency == transaction.currency }
+        let total = shares.reduce(Decimal(0)) { $0 + $1.amount.amount }
+        let collected = shares.reduce(Decimal(0)) { $0 + ($1.isSettled ? $1.amount.amount : min($1.repaid, $1.amount.amount)) }
+        let left = max(total - collected, 0)
+        let money = { (value: Decimal) in self.formatter.string(from: value, currencyCode: self.transaction.currency) }
+        return Progress(
+            left: money(left),
+            collected: money(collected),
+            total: money(total),
+            paid: shares.count(where: \.isSettled),
+            people: shares.count,
+            fraction: total > 0 ? NSDecimalNumber(decimal: collected / total).doubleValue : 0,
+            isDone: !shares.isEmpty && left == 0,
+        )
+    }
+
     public func amount(_ debt: PersonalDebt) -> String {
         formatter.string(debt.amount)
     }

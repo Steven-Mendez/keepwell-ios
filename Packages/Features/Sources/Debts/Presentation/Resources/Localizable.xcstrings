@@ -21,6 +21,26 @@
         }
       }
     },
+    "%@ left to collect" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ por cobrar"
+          }
+        }
+      }
+    },
+    "%@ of %@ collected" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ de %2$@ cobrado"
+          }
+        }
+      }
+    },
     "%@ owes you" : {
       "localizations" : {
         "es" : {
@@ -47,6 +67,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@: %2$@, pagado"
+          }
+        }
+      }
+    },
+    "%lld of %lld paid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld pagaron"
           }
         }
       }
@@ -417,6 +447,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escribe entre 1 y 600 cuotas."
+          }
+        }
+      }
+    },
+    "Everyone paid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos pagaron"
           }
         }
       }
@@ -1097,6 +1137,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dejar de compartir"
+          }
+        }
+      }
+    },
+    "Tap a person to mark their share paid." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca a una persona para marcar su parte como pagada."
           }
         }
       }
