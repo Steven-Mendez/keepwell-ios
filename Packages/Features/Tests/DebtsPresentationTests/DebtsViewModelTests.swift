@@ -157,6 +157,34 @@ struct DebtsViewModelTests {
     }
 
     @Test
+    func theSplitDetailSumsWhatCameBackAndWhoPaid() async throws {
+        let store = InMemoryStore(sample: .standard)
+        let expense = Transaction(
+            date: now, description: "Dinner", kind: .expense, categoryID: "restaurants", amount: 900, currency: "NIO",
+            accountID: SampleData.IDs.cash, exchangeRate: .single("NIO"),
+        )
+        try await store.save(expense)
+        let split = DefaultSplitTransactionUseCase(transactions: store, debts: store)
+        let created = try await split.execute(
+            transactionID: expense.id,
+            shares: [SplitShare(person: "Ana", amount: 300), SplitShare(person: "Luis", amount: 200)],
+        )
+        let useCases = DebtsPreview.useCases(store: store, now: now)
+        try await useCases.updateDebt.repay(id: #require(created.first).id, amount: 100, on: now)
+        let detail = SplitDetailViewModel(transaction: expense, split: split, useCases: useCases, web: nil, now: { [now] in now })
+        await detail.load()
+        #expect(detail.progress.left == "C$400.00")
+        #expect(detail.progress.collected == "C$100.00")
+        #expect(detail.progress.paid == 0 && detail.progress.people == 2)
+        #expect(!detail.progress.isDone)
+
+        try await detail.markPaid(#require(detail.debts.first), depositInto: nil)
+        try await detail.markPaid(#require(detail.debts.last), depositInto: nil)
+        #expect(detail.progress.isDone)
+        #expect(detail.progress.fraction == 1)
+    }
+
+    @Test
     func theRepaymentFormOffersTheBankAndCashAccountsOnlyForWhatTheyOweMe() async throws {
         let store = InMemoryStore(sample: .standard)
         let useCases = DebtsPreview.useCases(store: store, now: now)

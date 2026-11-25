@@ -18,6 +18,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   account, "Create link" makes a public page where each person sees what they owe and who already
   paid, without an account; only you can change it, and "Stop sharing" turns the link off. Without
   an account, "Share summary" sends the same as text.
+- Split detail: it now leads with what is left to collect, a bar of what came back and "1 of 3
+  paid", or a green "Everyone paid". Each person shows their initial, green with a check once paid
+  and their amount struck through; tapping a person marks their share paid or unpaid.
 - Recurring: each rule now says where it stands. Its row reads "Paid · Nov 1" once the cycle that
   ends at its next date has a confirmed payment, and the totals add "3 of 8 paid this month" with
   what is left to pay. Tapping a rule opens its detail (the form is one "Edit" away): the state,
