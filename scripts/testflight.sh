@@ -1,6 +1,7 @@
 #!/bin/bash
 # Archives the Release app and uploads it to TestFlight (App Store Connect) with cloud-managed signing.
-# Used by `make testflight` and by .github/workflows/testflight.yml. No certificates or keychains:
+# Used by `make testflight` and by .github/workflows/testflight.yml (which imports a fixed development
+# certificate first, so CI does not create one per run). Otherwise no certificates or keychains:
 # Xcode signs through the App Store Connect API key, or through the Xcode account when no key is set.
 #
 # Optional env:
