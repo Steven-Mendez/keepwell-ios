@@ -226,6 +226,15 @@ struct DebtsUseCaseTests {
     }
 
     @Test
+    func aLinkForOnePersonOpensOnTheirShare() throws {
+        let web = try #require(URL(string: "https://keepwell.app"))
+        #expect(SplitSharing.url(token: "abc", web: web).absoluteString == "https://keepwell.app/s/abc")
+        #expect(SplitSharing.url(token: "abc", web: web, person: "Lía María")
+            .absoluteString == "https://keepwell.app/s/abc?p=L%C3%ADa%20Mar%C3%ADa")
+        #expect(SplitSharing.url(token: "abc", web: web, person: "").absoluteString == "https://keepwell.app/s/abc")
+    }
+
+    @Test
     func aSplitGetsOneLinkThatStopsWithTheSplit() async throws {
         let store = InMemoryStore(sample: sample)
         let expense = try #require(sample.transactions.first { $0.kind == .expense && $0.amount >= 10 })
