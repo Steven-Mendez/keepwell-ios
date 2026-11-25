@@ -108,6 +108,8 @@ extension TransactionRecord: SyncableRecord {
             "tags": TagsText.decode(tagsText), "source": sourceRaw ?? RecordSource.app.rawValue,
             // Always sent, null for none: removing one has to clear it on the other devices.
             "merchant_id": Wire.id(merchantID), "via_merchant_id": Wire.id(viaMerchantID),
+            // Always sent, null when not shared: stopping sharing has to reach the server.
+            "share_token": Wire.value(shareToken),
         ]) { $1 }
     }
 }

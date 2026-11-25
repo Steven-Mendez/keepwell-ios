@@ -404,7 +404,7 @@ public enum KeepwellSchemaV11: VersionedSchema {
 }
 
 /// The schema the app opens today.
-public typealias KeepwellCurrentSchema = KeepwellSchemaV15
+public typealias KeepwellCurrentSchema = KeepwellSchemaV16
 
 public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
@@ -424,6 +424,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             KeepwellSchemaV13.self,
             KeepwellSchemaV14.self,
             KeepwellSchemaV15.self,
+            KeepwellSchemaV16.self,
         ]
     }
 
@@ -439,7 +440,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
     /// states, none yet. Settings from V11 start without a home time zone; the app sets it from the
     /// device after its next sync. Personal debts from V12 start without a due date, and accounts
     /// from V13 start open (`closedAt` nil). V15 adds merchants, none yet, and movements, recurring rules and
-    /// categorization rules from V14 start naming none.
+    /// categorization rules from V14 start naming none. Movements from V15 start not shared.
     public static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: KeepwellSchemaV1.self, toVersion: KeepwellSchemaV2.self),
@@ -456,6 +457,7 @@ public enum KeepwellMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: KeepwellSchemaV12.self, toVersion: KeepwellSchemaV13.self),
             .lightweight(fromVersion: KeepwellSchemaV13.self, toVersion: KeepwellSchemaV14.self),
             .lightweight(fromVersion: KeepwellSchemaV14.self, toVersion: KeepwellSchemaV15.self),
+            .lightweight(fromVersion: KeepwellSchemaV15.self, toVersion: KeepwellSchemaV16.self),
         ]
     }
 }

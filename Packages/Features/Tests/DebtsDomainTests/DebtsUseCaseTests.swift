@@ -177,6 +177,73 @@ struct DebtsUseCaseTests {
             try await split.execute(transactionID: income.id, shares: [SplitShare(person: "X", amount: 1)])
         }
     }
+
+    @Test
+    func editingASplitRenamesChangesAddsAndRemovesSharesInOneSave() async throws {
+        let store = InMemoryStore(sample: sample)
+        let expense = try #require(sample.transactions.first { $0.kind == .expense && $0.amount >= 10 })
+        let split = DefaultSplitTransactionUseCase(transactions: store, debts: store)
+        let created = try await split.execute(
+            transactionID: expense.id,
+            shares: [SplitShare(person: "Ana", amount: 2), SplitShare(person: "Luis", amount: 1)],
+        )
+        let ana = try #require(created.first)
+        let saved = try await split.save(
+            transactionID: expense.id,
+            shares: [SplitShare(debtID: ana.id, person: "Ana María", amount: 3), SplitShare(person: "Eva", amount: 1)],
+        )
+        #expect(saved.map(\.person) == ["Ana María", "Eva"])
+        #expect(saved.first?.id == ana.id && saved.first?.amount == Money(3, expense.currency))
+        let shares = try await split.shares(of: expense)
+        #expect(Set(shares.map(\.person)) == ["Ana María", "Eva"])
+        #expect(try await split.remaining(of: expense) == expense.amount - 4)
+
+        await #expect(throws: DomainError.invalidAmount) {
+            try await split.save(transactionID: expense.id, shares: [SplitShare(debtID: ana.id, person: "Ana", amount: expense.amount + 1)])
+        }
+        await #expect(throws: DomainError.notFound(SampleData.IDs.cash)) {
+            try await split.save(transactionID: expense.id, shares: [SplitShare(debtID: SampleData.IDs.cash, person: "Ana", amount: 1)])
+        }
+        // Nothing was written by the refused saves.
+        #expect(try await split.shares(of: expense).count == 2)
+    }
+
+    @Test
+    func anEditedShareKeepsItsRepaymentsAndCantDropBelowThem() async throws {
+        let store = InMemoryStore(sample: sample)
+        let expense = try #require(sample.transactions.first { $0.kind == .expense && $0.amount >= 10 })
+        let split = DefaultSplitTransactionUseCase(transactions: store, debts: store)
+        let ana = try #require(try await split.execute(transactionID: expense.id, shares: [SplitShare(person: "Ana", amount: 5)]).first)
+        try await DefaultUpdatePersonalDebtUseCase(debts: store).repay(id: ana.id, amount: 4, on: now)
+        await #expect(throws: DomainError.invalidAmount) {
+            try await split.save(transactionID: expense.id, shares: [SplitShare(debtID: ana.id, person: "Ana", amount: 3)])
+        }
+        let kept = try #require(try await split.save(
+            transactionID: expense.id,
+            shares: [SplitShare(debtID: ana.id, person: "Ana", amount: 6)],
+        ).first)
+        #expect(kept.repaid == 4)
+    }
+
+    @Test
+    func aSplitGetsOneLinkThatStopsWithTheSplit() async throws {
+        let store = InMemoryStore(sample: sample)
+        let expense = try #require(sample.transactions.first { $0.kind == .expense && $0.amount >= 10 })
+        let split = DefaultSplitTransactionUseCase(transactions: store, debts: store)
+        await #expect(throws: DomainError.invalidAmount) { try await split.share(transactionID: expense.id) }
+        try await split.execute(transactionID: expense.id, shares: [SplitShare(person: "Ana", amount: 1)])
+        let shared = try await split.share(transactionID: expense.id)
+        let token = try #require(shared.shareToken)
+        #expect(token.count == 22 && token.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" })
+        #expect(try await split.share(transactionID: expense.id).shareToken == token)
+        #expect(try await split.stopSharing(transactionID: expense.id).shareToken == nil)
+        #expect(try await split.share(transactionID: expense.id).shareToken != token)
+        // Removing every share removes the split, and with it the link.
+        try await split.save(transactionID: expense.id, shares: [])
+        let stored = try #require(await store.fetchTransactions(in: nil).first { $0.id == expense.id })
+        #expect(stored.shareToken == nil)
+        #expect(try await split.shares(of: expense).isEmpty)
+    }
 }
 
 /// What the app plugs in: the installment built through the movement-saving rules.

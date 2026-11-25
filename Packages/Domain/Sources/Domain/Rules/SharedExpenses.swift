@@ -112,3 +112,23 @@ extension PersonalDebt {
         return try? transaction.exchangeRate.convert(amount, to: currency).amount
     }
 }
+
+/// A split expense's public link: anyone with it sees each share and whether it was paid, read only
+/// (`GET /shared/:token` in keepwell-api, the `/s/` page in keepwell-web).
+public enum SplitSharing {
+    /// A new link's secret: 128 random bits as base64url, 22 characters, as keepwell-web's
+    /// `newShareToken`.
+    public static func newToken() -> String {
+        var generator = SystemRandomNumberGenerator()
+        let bytes = (0 ..< 16).map { _ in UInt8.random(in: .min ... .max, using: &generator) }
+        return Data(bytes).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    /// The page anyone with the link opens, on the web app (which shares the API's host).
+    public static func url(token: String, web: URL) -> URL {
+        web.appending(path: "s/\(token)")
+    }
+}

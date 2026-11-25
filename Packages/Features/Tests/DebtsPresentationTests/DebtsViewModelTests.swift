@@ -104,7 +104,7 @@ struct DebtsViewModelTests {
         #expect(split.shares.map(\.amountText) == ["450.00"])
         split.addPerson()
         #expect(split.shares.map(\.amountText) == ["300.00", "300.00"])
-        #expect(split.yourShare == "Your share: C$300.00")
+        #expect(split.yourShare == "Your share: C$300.00 of C$900.00")
         let first = try #require(split.shares.first?.id)
         split.setAmount("500", for: first)
         split.addPerson()
@@ -120,7 +120,7 @@ struct DebtsViewModelTests {
     }
 
     @Test
-    func aSecondSplitStartsFromWhatIsLeft() async throws {
+    func anExpenseAlreadySplitOpensItsSharesToEdit() async throws {
         let store = InMemoryStore(sample: .standard)
         let expense = Transaction(
             date: now, description: "Dinner", kind: .expense, categoryID: "restaurants", amount: 900, currency: "NIO",
@@ -128,12 +128,32 @@ struct DebtsViewModelTests {
         )
         try await store.save(expense)
         let useCase = DefaultSplitTransactionUseCase(transactions: store, debts: store)
-        try await useCase.execute(transactionID: expense.id, shares: [SplitShare(person: "Ana", amount: 300)])
+        let created = try await useCase.execute(
+            transactionID: expense.id,
+            shares: [SplitShare(person: "Ana", amount: 300), SplitShare(person: "Luis", amount: 200)],
+        )
+        try await DefaultUpdatePersonalDebtUseCase(debts: store).repay(id: #require(created.last).id, amount: 200, on: now)
         let split = SplitBillViewModel(transaction: expense, split: useCase)
-        #expect(split.alreadySplit == nil)
         await split.load()
-        #expect(split.alreadySplit == "Already split: C$600.00 left to share")
-        #expect(split.shares.map(\.amountText) == ["300.00"])
+        #expect(split.isEditing)
+        #expect(split.shares.map(\.person) == ["Ana", "Luis"])
+        #expect(split.shares.map(\.amountText) == ["300.00", "200.00"])
+        #expect(split.shares.map(\.isPaid) == [false, true])
+        #expect(split.yourShare == "Your share: C$400.00 of C$900.00")
+        // Adding someone doesn't rewrite the shares already chosen, and starts empty.
+        split.addPerson()
+        #expect(split.shares.map(\.amountText) == ["300.00", "200.00", ""])
+        let eva = try #require(split.shares.last?.id)
+        split.setPerson("Eva", for: eva)
+        split.setAmount("100", for: eva)
+        // A paid share keeps its amount.
+        try split.setAmount("50", for: #require(split.shares.dropFirst().first?.id))
+        #expect(split.shares[1].amountText == "200.00")
+        try split.remove(#require(split.shares.first?.id))
+        #expect(await split.save())
+        let shares = try await useCase.shares(of: expense)
+        #expect(shares.map(\.person) == ["Luis", "Eva"])
+        #expect(shares.first?.repaid == 200)
     }
 
     @Test

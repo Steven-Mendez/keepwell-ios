@@ -234,6 +234,10 @@ extension SwiftDataStore {
             transaction.tagsText = TagsText.encode(wire.strings("tags"))
             transaction.sourceRaw = wire.optionalString("source") ?? transaction.sourceRaw
             try wire.merchantLinks(&transaction.merchantID, &transaction.viaMerchantID)
+            // A row without the key comes from an app older than shared links: the link stays.
+            if wire.row.keys.contains("share_token") {
+                transaction.shareToken = wire.optionalString("share_token")
+            }
             try wire.audit(transaction)
         case "recurringRule":
             let id = try wire.uuid("id")

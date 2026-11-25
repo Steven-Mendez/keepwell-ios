@@ -270,6 +270,14 @@ public struct PersonalDebt: Identifiable, Hashable, Sendable, Codable {
         return with(repayments: repayments, settledAt: nil)
     }
 
+    /// The same debt under another name and amount, as an edited split share; the rest stays.
+    public func with(person: String, amount: Money) -> Self {
+        Self(
+            id: id, person: person, direction: direction, amount: amount, date: date, note: note,
+            repayments: repayments, settledAt: settledAt, transactionID: transactionID, dueDate: dueDate,
+        )
+    }
+
     public func with(repayments: [DebtRepayment], settledAt: Date?) -> Self {
         Self(
             id: id, person: person, direction: direction, amount: amount, date: date, note: note,
