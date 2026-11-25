@@ -150,12 +150,15 @@ public protocol RepaymentIncomeRecorder: Sendable {
     func prepare(_ income: RepaymentIncome) async throws(DomainError) -> Transaction
 }
 
-/// One person's share of a split expense.
+/// One person's share of a split expense. When editing a split, `debtID` names the debt the share
+/// already is; without it, it's a new one.
 public struct SplitShare: Hashable, Sendable {
+    public var debtID: UUID?
     public var person: String
     public var amount: Decimal
 
-    public init(person: String, amount: Decimal) {
+    public init(debtID: UUID? = nil, person: String, amount: Decimal) {
+        self.debtID = debtID
         self.person = person
         self.amount = amount
     }

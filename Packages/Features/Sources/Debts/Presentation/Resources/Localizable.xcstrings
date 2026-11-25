@@ -31,12 +31,52 @@
         }
       }
     },
+    "%@ paid you %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ te pagó %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@, paid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@, pagado"
+          }
+        }
+      }
+    },
     "%lld of %lld paid · %@ left" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld de %2$lld pagadas · faltan %3$@"
+          }
+        }
+      }
+    },
+    "A deposit changes the balance but doesn't count as income: the money only came back." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un depósito cambia el saldo pero no cuenta como ingreso: el dinero solo volvió."
+          }
+        }
+      }
+    },
+    "A link that stays up to date needs a Keepwell account. Share a summary instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un enlace que se mantiene al día necesita una cuenta de Keepwell. Comparte un resumen en su lugar."
           }
         }
       }
@@ -121,6 +161,16 @@
         }
       }
     },
+    "Anyone with the link sees what each person owes and who already paid. Only you can change it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quien tenga el enlace ve cuánto debe cada persona y quién ya pagó. Solo tú puedes cambiarlo."
+          }
+        }
+      }
+    },
     "Borrowed %@" : {
       "localizations" : {
         "es" : {
@@ -167,6 +217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elegir"
+          }
+        }
+      }
+    },
+    "Create link" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear enlace"
           }
         }
       }
@@ -251,6 +311,16 @@
         }
       }
     },
+    "Deposit into %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depositar en %@"
+          }
+        }
+      }
+    },
     "Due" : {
       "localizations" : {
         "es" : {
@@ -327,6 +397,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar préstamo"
+          }
+        }
+      }
+    },
+    "Edit split" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar división"
           }
         }
       }
@@ -461,12 +541,42 @@
         }
       }
     },
+    "Mark as paid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar como pagado"
+          }
+        }
+      }
+    },
     "Mark as settled" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Marcar como saldada"
+          }
+        }
+      }
+    },
+    "Mark as unpaid" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar como no pagado"
+          }
+        }
+      }
+    },
+    "Mark as unpaid?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Marcar como no pagado?"
           }
         }
       }
@@ -691,6 +801,16 @@
         }
       }
     },
+    "Paid %@ of %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagó %1$@ de %2$@"
+          }
+        }
+      }
+    },
     "Paid off" : {
       "localizations" : {
         "es" : {
@@ -731,6 +851,16 @@
         }
       }
     },
+    "Pending" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendiente"
+          }
+        }
+      }
+    },
     "People" : {
       "localizations" : {
         "es" : {
@@ -761,6 +891,16 @@
         }
       }
     },
+    "Public link" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enlace público"
+          }
+        }
+      }
+    },
     "Record repayment" : {
       "localizations" : {
         "es" : {
@@ -787,6 +927,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quitar"
+          }
+        }
+      }
+    },
+    "Removing someone deletes their debt. Repayments they deposited stay in their accounts." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar a alguien elimina su deuda. Los abonos que depositó se quedan en sus cuentas."
           }
         }
       }
@@ -831,6 +981,16 @@
         }
       }
     },
+    "Send a link so each person sees how much to pay, without an account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envía un enlace para que cada persona vea cuánto pagar, sin necesidad de cuenta."
+          }
+        }
+      }
+    },
     "Set a due date" : {
       "localizations" : {
         "es" : {
@@ -857,6 +1017,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saldada el %@"
+          }
+        }
+      }
+    },
+    "Share link" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir enlace"
+          }
+        }
+      }
+    },
+    "Share summary" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir resumen"
           }
         }
       }
@@ -897,6 +1077,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dividir el gasto"
+          }
+        }
+      }
+    },
+    "Split with" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dividido con"
+          }
+        }
+      }
+    },
+    "Stop sharing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar de compartir"
           }
         }
       }
@@ -1191,12 +1391,12 @@
         }
       }
     },
-    "Already split: %@ left to share" : {
+    "Your share: %@ of %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ya dividido: quedan %@ por repartir"
+            "value" : "Tu parte: %1$@ de %2$@"
           }
         }
       }

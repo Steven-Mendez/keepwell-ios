@@ -36,6 +36,8 @@ public final class TransactionRecord: AuditedRecord {
     /// Added in V15: the business it was with and the platform it went through (`Merchant`).
     var merchantID: UUID?
     var viaMerchantID: UUID?
+    /// Added in V16: the public link's secret while the split expense is shared.
+    var shareToken: String?
 
     #Index<TransactionRecord>([\.date])
 
@@ -64,6 +66,7 @@ public final class TransactionRecord: AuditedRecord {
         tagsText = TagsText.encode(transaction.tags)
         merchantID = transaction.merchantID
         viaMerchantID = transaction.viaMerchantID
+        shareToken = transaction.shareToken
         // Set when created, never changed afterwards (an edit of Claude's movement stays Claude's).
         if sourceRaw == nil {
             sourceRaw = transaction.source.rawValue
@@ -103,6 +106,7 @@ public final class TransactionRecord: AuditedRecord {
             source: sourceRaw.flatMap(RecordSource.init(rawValue:)) ?? .app,
             merchantID: merchantID,
             viaMerchantID: viaMerchantID,
+            shareToken: shareToken,
         )
     }
 }

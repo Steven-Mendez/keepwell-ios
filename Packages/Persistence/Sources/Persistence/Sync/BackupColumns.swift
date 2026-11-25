@@ -24,7 +24,7 @@ enum BackupColumns {
         "transaction": "id:s date:s status:s description:s kind:s category_id:s? amount:s currency:s account_id:s card_id:s? "
             + "destination_account_id:s? actual_debited_principal:s? rate_principal:s rate_second:s rate:s "
             + "is_shared:b note:s? recurring_id:s? tags:a source:s~ imported_id:s?~ merchant_id:s?~ via_merchant_id:s?~ "
-            + "created_at:s updated_at:s deleted_at:s?",
+            + "share_token:s?~ created_at:s updated_at:s deleted_at:s?",
         "recurringRule": "id:s name:s kind:s category_id:s? amount:s currency:s account_id:s card_id:s? "
             + "destination_account_id:s? frequency:s interval:n start_date:s next_date:s end_date:s? "
             + "is_subscription:b auto_confirm:b is_paused:b note:s? tags:a source:s~ merchant_id:s?~ via_merchant_id:s?~ "

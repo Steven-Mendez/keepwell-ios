@@ -146,7 +146,8 @@ struct DebtDueText: View {
     }
 }
 
-/// "Split" on an expense: each person and their share, equal by default.
+/// "Split" on an expense: each person and their share, equal by default; "Edit split" when it was
+/// split already.
 public struct SplitBillView: View {
     @Bindable private var viewModel: SplitBillViewModel
     private let onDone: () -> Void
@@ -161,19 +162,7 @@ public struct SplitBillView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: KWSpacing.md) {
             KWFlowHeader(.close, action: onClose)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Split the expense", bundle: #bundle).kwTextStyle(.titleSm).accessibilityAddTraits(.isHeader)
-                Text(verbatim: "\(viewModel.transaction.description) · \(viewModel.total)")
-                    .font(KWTextStyle.caption.font)
-                    .foregroundStyle(KWColor.Text.muted)
-                    .lineLimit(1)
-                if let alreadySplit = viewModel.alreadySplit {
-                    Text(alreadySplit)
-                        .font(KWTextStyle.caption.font)
-                        .foregroundStyle(KWColor.Text.secondary)
-                        .monospacedDigit()
-                }
-            }
+            header
             ScrollView {
                 shares
                     .padding(.bottom, KWSpacing.md)
@@ -191,7 +180,11 @@ public struct SplitBillView: View {
                     }
                 }
             } label: {
-                Text("Split", bundle: #bundle)
+                if viewModel.isEditing {
+                    Text("Save", bundle: #bundle)
+                } else {
+                    Text("Split", bundle: #bundle)
+                }
             }
             .buttonStyle(.kw())
             .disabled(!viewModel.canSave)
@@ -205,11 +198,31 @@ public struct SplitBillView: View {
         .task { await viewModel.load() }
     }
 
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Group {
+                if viewModel.isEditing {
+                    Text("Edit split", bundle: #bundle)
+                } else {
+                    Text("Split the expense", bundle: #bundle)
+                }
+            }
+            .kwTextStyle(.titleSm)
+            .accessibilityAddTraits(.isHeader)
+            Text(verbatim: "\(viewModel.transaction.description) · \(viewModel.total)")
+                .font(KWTextStyle.caption.font)
+                .foregroundStyle(KWColor.Text.muted)
+                .lineLimit(1)
+        }
+    }
+
     private var shares: some View {
         VStack(alignment: .leading, spacing: KWSpacing.md) {
-            KWGroupedCard {
-                ForEach(viewModel.shares) { share in
-                    shareRow(share)
+            if !viewModel.shares.isEmpty {
+                KWGroupedCard {
+                    ForEach(viewModel.shares) { share in
+                        shareRow(share)
+                    }
                 }
             }
             HStack {
@@ -217,19 +230,27 @@ public struct SplitBillView: View {
                     Text("Add person", bundle: #bundle)
                 }
                 .buttonStyle(.kw(.surface, size: .small))
-                Button { viewModel.splitEqually() } label: {
-                    Text("Split equally", bundle: #bundle)
+                if !viewModel.shares.isEmpty {
+                    Button { viewModel.splitEqually() } label: {
+                        Text("Split equally", bundle: #bundle)
+                    }
+                    .buttonStyle(.kw(.surface, size: .small))
                 }
-                .buttonStyle(.kw(.surface, size: .small))
             }
             Text(viewModel.yourShare)
                 .font(KWTextStyle.caption.font)
                 .foregroundStyle(KWColor.Text.secondary)
                 .monospacedDigit()
-            Text("Each person gets a debt that owes you their share. Your movement doesn't change.", bundle: #bundle)
-                .font(KWTextStyle.captionSm.font.weight(.regular))
-                .foregroundStyle(KWColor.Text.muted)
-                .fixedSize(horizontal: false, vertical: true)
+            Group {
+                if viewModel.isEditing {
+                    Text("Removing someone deletes their debt. Repayments they deposited stay in their accounts.", bundle: #bundle)
+                } else {
+                    Text("Each person gets a debt that owes you their share. Your movement doesn't change.", bundle: #bundle)
+                }
+            }
+            .font(KWTextStyle.captionSm.font.weight(.regular))
+            .foregroundStyle(KWColor.Text.muted)
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -240,6 +261,34 @@ public struct SplitBillView: View {
                 text: Binding(get: { share.person }, set: { viewModel.setPerson($0, for: share.id) }),
             )
             .font(KWTextStyle.body.font)
+            amount(share)
+            if viewModel.canRemove {
+                Button { viewModel.remove(share.id) } label: {
+                    KWIconView(.close, size: 16).foregroundStyle(KWColor.Text.muted)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Remove", bundle: #bundle))
+            }
+        }
+        .padding(.vertical, KWSpacing.xs)
+    }
+
+    /// A share's amount: typed, or as it stands when it's locked (paid, or in another currency).
+    @ViewBuilder
+    private func amount(_ share: SplitBillViewModel.Share) -> some View {
+        if share.isLocked {
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(viewModel.lockedAmount(share))
+                    .font(.kw(15, weight: 600))
+                    .monospacedDigit()
+                if share.isPaid {
+                    Text("Paid", bundle: #bundle)
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(KWColor.State.positive)
+                }
+            }
+            .frame(minHeight: 40)
+        } else {
             HStack(spacing: 2) {
                 Text(viewModel.symbol.trimmingCharacters(in: .whitespaces))
                     .foregroundStyle(KWColor.Text.muted)
@@ -256,14 +305,6 @@ public struct SplitBillView: View {
             .frame(minHeight: 40)
             .kwInputField()
             .frame(maxWidth: 130)
-            if viewModel.shares.count > 1 {
-                Button { viewModel.remove(share.id) } label: {
-                    KWIconView(.close, size: 16).foregroundStyle(KWColor.Text.muted)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("Remove", bundle: #bundle))
-            }
         }
-        .padding(.vertical, KWSpacing.xs)
     }
 }

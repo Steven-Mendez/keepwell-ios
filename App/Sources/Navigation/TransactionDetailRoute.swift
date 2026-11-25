@@ -13,6 +13,7 @@ struct TransactionDetailRoute: View {
     @State private var editing: PresentedFlow<CreateTransactionViewModel>?
     @State private var receipt: PresentedFlow<CreateTransactionViewModel>?
     @State private var splitBill: SplitBillViewModel?
+    @State private var splitDetail: SplitDetailViewModel?
     @State private var linking: RecurringRulePickerViewModel?
     private let container: AppContainer
     let onBack: () -> Void
@@ -44,6 +45,7 @@ struct TransactionDetailRoute: View {
                 openRecurringRule: onOpenRecurringRule,
                 showTag: onShowTag,
                 linkRecurringRule: { linking = container.makeRecurringRulePickerViewModel(transaction: $0) },
+                openSplit: { splitDetail = container.makeSplitDetailViewModel($0) },
             ),
         )
         .navigationBarBackButtonHidden()
@@ -58,6 +60,23 @@ struct TransactionDetailRoute: View {
                 .presentationBackground(KWColor.Surface.bg)
         }
         .splitBillSheet($splitBill, onDismiss: reload)
+        .sheet(item: $splitDetail, onDismiss: reload) { detail in
+            SplitDetailView(
+                viewModel: detail,
+                onEditSplit: {
+                    // The split sheet can't open over this one: it opens once this one has closed.
+                    let transaction = detail.transaction
+                    splitDetail = nil
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(400))
+                        splitBill = container.makeSplitBillViewModel(transaction)
+                    }
+                },
+                onClose: { splitDetail = nil },
+            )
+            .presentationDetents([.large])
+            .presentationBackground(KWColor.Surface.bg)
+        }
         .sheet(item: $linking, onDismiss: reload) { picker in
             RecurringRulePickerSheet(viewModel: picker) { linking = nil }
                 .presentationDetents([.medium, .large])
