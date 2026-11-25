@@ -41,11 +41,15 @@ public struct SplitDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: KWSpacing.md) {
                     if !viewModel.debts.isEmpty {
+                        summary
                         KWGroupedCard {
                             ForEach(viewModel.debts) { debt in
                                 row(debt)
                             }
                         }
+                        Text("Tap a person to mark their share paid.", bundle: #bundle)
+                            .font(KWTextStyle.captionSm.font.weight(.regular))
+                            .foregroundStyle(KWColor.Text.muted)
                     }
                     if let error = viewModel.errorMessage {
                         Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
@@ -107,44 +111,102 @@ public struct SplitDetailView: View {
             } label: {
                 Text("Mark as unpaid", bundle: #bundle)
             }
-        } message: { _ in
-            Text("The income it deposited is deleted too, and the balance goes back.", bundle: #bundle)
+        } message: { debt in
+            if viewModel.unpayingDeletesIncome(debt) {
+                Text("The income it deposited is deleted too, and the balance goes back.", bundle: #bundle)
+            }
         }
         .task { await viewModel.load() }
     }
 
-    private func row(_ debt: PersonalDebt) -> some View {
-        HStack(spacing: KWSpacing.sm) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(debt.person).font(KWTextStyle.body.font.weight(.semibold)).lineLimit(1)
-                Text(viewModel.status(debt))
-                    .font(KWTextStyle.caption.font)
-                    .foregroundStyle(debt.isSettled ? KWColor.State.positive : KWColor.Text.muted)
-                    .monospacedDigit()
-            }
-            Spacer()
-            Text(viewModel.amount(debt)).font(KWTextStyle.body.font).monospacedDigit()
-            if debt.isSettled {
-                Button {
-                    if viewModel.unpayingDeletesIncome(debt) {
-                        unpaying = debt
-                    } else {
-                        Task { await viewModel.markUnpaid(debt) }
+    /// "C$908.87 left to collect", a bar of what came back and "1 of 3 paid"; a green "Everyone
+    /// paid" once it's done.
+    private var summary: some View {
+        let progress = viewModel.progress
+        return KWGroupedCard {
+            VStack(alignment: .leading, spacing: KWSpacing.sm) {
+                if progress.isDone {
+                    HStack(spacing: KWSpacing.xs) {
+                        KWIconView(.check, size: 14, lineWidth: 3)
+                            .foregroundStyle(.white)
+                            .frame(width: 24, height: 24)
+                            .background(KWColor.State.positive, in: Circle())
+                        Text("Everyone paid", bundle: #bundle)
                     }
-                } label: {
-                    Text("Mark as unpaid", bundle: #bundle)
+                    .font(.kw(20, weight: 700))
+                    .foregroundStyle(KWColor.State.positive)
+                } else {
+                    Text("\(progress.left) left to collect", bundle: #bundle)
+                        .font(.kw(20, weight: 700))
+                        .monospacedDigit()
                 }
-                .buttonStyle(.kw(.surface, size: .small))
-            } else {
-                Button { paying = debt } label: {
-                    Text("Mark as paid", bundle: #bundle)
+                KWProgressBar(progress.fraction, fill: progress.isDone ? KWColor.State.positive : KWColor.Brand.accent, height: 8)
+                HStack {
+                    Text("\(progress.collected) of \(progress.total) collected", bundle: #bundle)
+                    Spacer(minLength: KWSpacing.sm)
+                    Text("\(progress.paid) of \(progress.people) paid", bundle: #bundle)
                 }
-                .buttonStyle(.kw(.surface, size: .small))
+                .font(KWTextStyle.caption.font)
+                .foregroundStyle(KWColor.Text.muted)
+                .monospacedDigit()
             }
+            .padding(.vertical, 12)
+            .accessibilityElement(children: .combine)
         }
+    }
+
+    /// The person's initial in a circle, green with a check once their share is paid.
+    private func avatar(_ debt: PersonalDebt) -> some View {
+        Text(debt.person.trimmingCharacters(in: .whitespaces).first.map { String($0).uppercased() } ?? "?")
+            .font(.kw(16, weight: 700))
+            .foregroundStyle(debt.isSettled ? KWColor.State.positive : .white)
+            .frame(width: 40, height: 40)
+            .background(debt.isSettled ? KWColor.State.positive.opacity(0.14) : KWColor.Brand.b500, in: Circle())
+            .overlay(alignment: .bottomTrailing) {
+                if debt.isSettled {
+                    KWIconView(.check, size: 9, lineWidth: 3)
+                        .foregroundStyle(.white)
+                        .frame(width: 16, height: 16)
+                        .background(KWColor.State.positive, in: Circle())
+                        .overlay(Circle().stroke(KWColor.Surface.surface, lineWidth: 2))
+                        .offset(x: 2, y: 2)
+                }
+            }
+            .accessibilityHidden(true)
+    }
+
+    /// Tapping a person marks their share paid (asking where the money went) or, once paid, unpaid.
+    private func row(_ debt: PersonalDebt) -> some View {
+        Button {
+            if debt.isSettled {
+                unpaying = debt
+            } else {
+                paying = debt
+            }
+        } label: {
+            HStack(spacing: KWSpacing.sm) {
+                avatar(debt)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(debt.person).font(KWTextStyle.body.font.weight(.semibold)).lineLimit(1)
+                    Text(viewModel.status(debt))
+                        .font(KWTextStyle.caption.font)
+                        .foregroundStyle(debt.isSettled ? KWColor.State.positive : KWColor.Text.muted)
+                        .monospacedDigit()
+                }
+                Spacer(minLength: KWSpacing.sm)
+                Text(viewModel.amount(debt))
+                    .font(.kw(17, weight: 600))
+                    .monospacedDigit()
+                    .strikethrough(debt.isSettled, color: KWColor.Text.muted)
+                    .foregroundStyle(debt.isSettled ? KWColor.Text.muted : KWColor.Text.primary)
+            }
+            .padding(.vertical, KWSpacing.xs)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
         .disabled(viewModel.isSaving)
-        .padding(.vertical, KWSpacing.xs)
         .accessibilityElement(children: .combine)
+        .accessibilityHint(debt.isSettled ? Text("Mark as unpaid", bundle: #bundle) : Text("Mark as paid", bundle: #bundle))
     }
 
     private var sharing: some View {
