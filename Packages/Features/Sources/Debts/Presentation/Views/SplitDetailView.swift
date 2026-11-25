@@ -54,7 +54,7 @@ public struct SplitDetailView: View {
                     if let error = viewModel.errorMessage {
                         Text(error).font(KWTextStyle.caption.font).foregroundStyle(KWColor.State.negative)
                     }
-                    sharing
+                    SplitShareSection(viewModel: viewModel)
                 }
                 .padding(.bottom, KWSpacing.md)
             }
@@ -207,51 +207,5 @@ public struct SplitDetailView: View {
         .disabled(viewModel.isSaving)
         .accessibilityElement(children: .combine)
         .accessibilityHint(debt.isSettled ? Text("Mark as unpaid", bundle: #bundle) : Text("Mark as paid", bundle: #bundle))
-    }
-
-    private var sharing: some View {
-        KWGroupedCard {
-            sharingContent
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 12)
-        }
-    }
-
-    private var sharingContent: some View {
-        VStack(alignment: .leading, spacing: KWSpacing.sm) {
-            Text("Public link", bundle: #bundle).font(KWTextStyle.label.font)
-            if !viewModel.canShareLink {
-                Text("A link that stays up to date needs a Keepwell account. Share a summary instead.", bundle: #bundle)
-                    .font(KWTextStyle.caption.font)
-                    .foregroundStyle(KWColor.Text.muted)
-                ShareLink(item: viewModel.summary) {
-                    Text("Share summary", bundle: #bundle)
-                }
-                .buttonStyle(.kw(.surface, size: .small))
-            } else if let url = viewModel.shareURL {
-                Text("Anyone with the link sees what each person owes and who already paid. Only you can change it.", bundle: #bundle)
-                    .font(KWTextStyle.caption.font)
-                    .foregroundStyle(KWColor.Text.muted)
-                HStack {
-                    ShareLink(item: url) {
-                        Text("Share link", bundle: #bundle)
-                    }
-                    .buttonStyle(.kw(size: .small))
-                    Button { Task { await viewModel.stopSharing() } } label: {
-                        Text("Stop sharing", bundle: #bundle)
-                    }
-                    .buttonStyle(.kw(.surface, size: .small))
-                }
-            } else {
-                Text("Send a link so each person sees how much to pay, without an account.", bundle: #bundle)
-                    .font(KWTextStyle.caption.font)
-                    .foregroundStyle(KWColor.Text.muted)
-                Button { Task { await viewModel.share() } } label: {
-                    Text("Create link", bundle: #bundle)
-                }
-                .buttonStyle(.kw(size: .small))
-                .disabled(viewModel.isSaving || viewModel.debts.isEmpty)
-            }
-        }
     }
 }

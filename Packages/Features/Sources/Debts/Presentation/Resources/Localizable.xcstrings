@@ -451,6 +451,16 @@
         }
       }
     },
+    "Everyone" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos"
+          }
+        }
+      }
+    },
     "Everyone paid" : {
       "localizations" : {
         "es" : {
@@ -557,6 +567,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prestamista"
+          }
+        }
+      }
+    },
+    "Link for" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enlace para"
           }
         }
       }
@@ -937,6 +957,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enlace público"
+          }
+        }
+      }
+    },
+    "QR code of the link" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código QR del enlace"
           }
         }
       }

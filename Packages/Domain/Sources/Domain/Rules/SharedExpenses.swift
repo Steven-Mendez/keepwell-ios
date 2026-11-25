@@ -127,8 +127,11 @@ public enum SplitSharing {
             .replacingOccurrences(of: "=", with: "")
     }
 
-    /// The page anyone with the link opens, on the web app (which shares the API's host).
-    public static func url(token: String, web: URL) -> URL {
-        web.appending(path: "s/\(token)")
+    /// The page anyone with the link opens, on the web app (which shares the API's host). With
+    /// `person`, it opens on that person's share (`?p=`, as keepwell-web's `shareURL`).
+    public static func url(token: String, web: URL, person: String? = nil) -> URL {
+        let page = web.appending(path: "s/\(token)")
+        guard let person, !person.isEmpty else { return page }
+        return page.appending(queryItems: [URLQueryItem(name: "p", value: person)])
     }
 }
