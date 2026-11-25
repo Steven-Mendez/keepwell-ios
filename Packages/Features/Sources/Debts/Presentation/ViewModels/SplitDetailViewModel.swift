@@ -138,9 +138,18 @@ public final class SplitDetailViewModel: Identifiable {
         web != nil
     }
 
+    /// Who the link is for: `nil` sends the page as is; a name opens it on that person's share.
+    public var linkFor: String?
+
+    /// The people the link can be made for, each once.
+    public var people: [String] {
+        var seen = Set<String>()
+        return debts.map(\.person).filter { seen.insert($0).inserted }
+    }
+
     public var shareURL: URL? {
         guard let web, let token = transaction.shareToken else { return nil }
-        return SplitSharing.url(token: token, web: web)
+        return SplitSharing.url(token: token, web: web, person: linkFor)
     }
 
     public func share() async {
